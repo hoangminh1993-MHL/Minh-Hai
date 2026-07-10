@@ -1,0 +1,192 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const { Client } = require('pg');
+
+const app = express();
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.static(path.join(__dirname, '.')));
+
+const PORT = process.env.PORT || 3000;
+const DATABASE_URL = process.env.DATABASE_URL;
+
+// Helper to load state from Supabase PostgreSQL or local db.json
+async function loadState() {
+  if (DATABASE_URL) {
+    const client = new Client({
+      connectionString: DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    try {
+      await client.connect();
+      // Ensure table exists
+      await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
+      const res = await client.query('SELECT state_json FROM app_state WHERE id = 1');
+      if (res.rows.length > 0) {
+        return JSON.parse(res.rows[0].state_json);
+      } else {
+        // Seed database from local db.json
+        console.log('Seeding database with default mock data...');
+        const defaultState = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
+        await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1)', [defaultState]);
+        return JSON.parse(defaultState);
+      }
+    } catch (err) {
+      console.error('Database load error:', err);
+    } finally {
+      await client.end().catch(() => {});
+    }
+  }
+  
+  // Local fallback
+  const data = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
+  return JSON.parse(data);
+}
+
+// Helper to save state to Supabase PostgreSQL or local db.json
+async function saveState(state) {
+  if (DATABASE_URL) {
+    const client = new Client({
+      connectionString: DATABASE_URL,
+      ssl: { rejectUnauthorized: false }
+    });
+    try {
+      await client.connect();
+      // Ensure table exists
+      await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
+      const checkRes = await client.query('SELECT 1 FROM app_state WHERE id = 1');
+      if (checkRes.rows.length > 0) {
+        await client.query('UPDATE app_state SET state_json = $1 WHERE id = 1', [JSON.stringify(state)]);
+      } else {
+        await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1)', [JSON.stringify(state)]);
+      }
+    } catch (err) {
+      console.error('Database save error:', err);
+    } finally {
+      await client.end().catch(() => {});
+    }
+  } else {
+    fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(state, null, 2), 'utf8');
+  }
+}
+
+// GET /api/state: Load entire CRM database
+app.get('/api/state', async (req, res) => {
+  try {
+    const state = await loadState();
+    res.json(state);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/state: Save entire CRM database
+app.post('/api/state', async (req, res) => {
+  try {
+    await saveState(req.body);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /webhook: Facebook Webhook verification endpoint
+app.get('/webhook', (req, res) => {
+  const mode = req.query['hub.mode'];
+  const token = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  
+  const VERIFY_TOKEN = 'minh_hai_verify_token_123';
+  
+  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
+    console.log('Webhook verified successfully!');
+    res.status(200).send(challenge);
+  } else {
+    res.sendStatus(403);
+  }
+});
+
+// POST /webhook: Receive Facebook Messenger event payloads
+app.post('/webhook', async (req, res) => {
+  const body = req.body;
+  console.log('POST /webhook body:', JSON.stringify(body));
+  
+  if (body.object === 'page') {
+    try {
+      const state = await loadState();
+      let leadsUpdated = false;
+      
+      for (const entry of body.entry || []) {
+        for (const event of entry.messaging || []) {
+          if (event.message && !event.message.is_echo) {
+            const senderId = event.sender.id;
+            const messageText = event.message.text;
+            console.log(`Received FB Messenger message from ${senderId} - ${messageText}`);
+            
+            // Add lead
+            const leadId = 'lead-fb-' + Math.random().toString(36).substring(2, 10);
+            const now = new Date().toISOString().split('T')[0];
+            const timeStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+            let clientName = `Khách FB (${senderId})`;
+            
+            // Randomly assign sales user
+            const salesUsers = (state.users || []).filter(u => u.role === 'sales');
+            let assignedSalesId = 'usr-4';
+            let assignedSalesName = 'Pham Thanh Binh';
+            if (salesUsers.length > 0) {
+              const randUser = salesUsers[Math.floor(Math.random() * salesUsers.length)];
+              assignedSalesId = randUser.id;
+              assignedSalesName = randUser.name;
+            }
+            
+            const newLead = {
+              id: leadId,
+              name: clientName,
+              phone: '',
+              wechat: '',
+              valRmb: 0,
+              valVnd: 0,
+              note: `[Tin nhắn từ Fanpage]: ${messageText}`,
+              salesId: assignedSalesId,
+              stage: 'receive_info',
+              failReason: null,
+              date: now
+            };
+            
+            state.leads = state.leads || [];
+            state.leads.push(newLead);
+            
+            const newNotif = {
+              id: 'notif-' + Math.random().toString(36).substring(2, 10),
+              title: 'Tin nhắn từ Fanpage',
+              text: `Khách hàng ${clientName} vừa nhắn tin. Đã thêm vào CRM và giao cho Sales ${assignedSalesName}.`,
+              read: false,
+              time: timeStr
+            };
+            state.notifications = state.notifications || [];
+            state.notifications.push(newNotif);
+            
+            leadsUpdated = true;
+          }
+        }
+      }
+      
+      if (leadsUpdated) {
+        await saveState(state);
+      }
+      res.status(200).send('EVENT_RECEIVED');
+    } catch (err) {
+      console.error('Error processing webhook:', err);
+      res.sendStatus(500);
+    }
+  } else {
+    res.sendStatus(404);
+  }
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

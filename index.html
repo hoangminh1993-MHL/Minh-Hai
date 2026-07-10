@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc</title>
+  <!-- Google Fonts - Raleway -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon" style="background: var(--color-primary); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(255, 204, 41, 0.2);">
+          <svg viewBox="0 0 100 80" width="30" height="24" style="fill: var(--bg-app);">
+            <!-- Skewed M -->
+            <path d="M5 70 L15 10 L25 10 L30 42 L35 10 L45 10 L35 70 L26 70 L22 38 L16 70 Z" />
+            <!-- Skewed H -->
+            <path d="M52 70 L62 10 L70 10 L66 36 L78 36 L82 10 L90 10 L80 70 L72 70 L76 44 L64 44 L60 70 Z" />
+            <!-- Logistics Arrow overlay -->
+            <path d="M22 42 L78 42 L70 34 L88 46 L70 58 L75 50 L22 50 Z" fill="var(--color-primary)" stroke="var(--bg-app)" stroke-width="4" />
+          </svg>
+        </div>
+        <div class="brand-name">
+          <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
+          <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" data-view="dashboard">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Báo Cáo Tổng Quan</span>
+        </a>
+        <a href="#crm" class="nav-item" data-view="crm">
+          <i class="fa-solid fa-users-gear"></i>
+          <span>Bảng CRM Khách Hàng</span>
+        </a>
+        <a href="#tasks" class="nav-item" data-view="tasks">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Quản Lý Công Việc</span>
+        </a>
+        <a href="#workflows" class="nav-item" data-view="workflows">
+          <i class="fa-solid fa-route"></i>
+          <span>Cấu Hình Quy Trình</span>
+        </a>
+        <a href="#inbox-simulator" class="nav-item" data-view="inbox-simulator">
+          <i class="fa-solid fa-comments"></i>
+          <span>Giả Lập Tin Nhắn <span class="badge badge-pulse" id="sim-badge" style="display:none;">New</span></span>
+        </a>
+        <a href="#facebook-config" class="nav-item" data-view="facebook-config">
+          <i class="fa-brands fa-facebook"></i>
+          <span>Cấu Hình Fanpage</span>
+        </a>
+        <a href="#rewards" class="nav-item" data-view="rewards">
+          <i class="fa-solid fa-award"></i>
+          <span>Bảng Xếp Hạng</span>
+        </a>
+      </nav>
+
+      <!-- Current User Profile Card inside Sidebar -->
+      <div class="current-user-card">
+        <div class="user-avatar" id="current-user-avatar">
+          <i class="fa-solid fa-user-tie"></i>
+        </div>
+        <div class="user-info">
+          <h4 id="current-user-name">Đang tải...</h4>
+          <span id="current-user-role-badge" class="role-badge badge-admin">Admin</span>
+        </div>
+        <div class="user-sausage-points" title="Số dư Xúc xích hiện tại">
+          <i class="fa-solid fa-hotdog points-icon"></i>
+          <span id="current-user-points">0</span>
+          <span class="points-unit">xúc xích</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="page-title">
+          <h1 id="view-title">Báo Cáo Tổng Quan</h1>
+          <p id="view-description">Tổng quan doanh số chuyển đổi và hiệu suất công việc phòng ban.</p>
+        </div>
+
+        <div class="topbar-actions">
+          <!-- Notification System -->
+          <div class="notification-bell" id="notification-bell">
+            <i class="fa-solid fa-bell"></i>
+            <span class="bell-badge" id="bell-badge" style="display:none;">0</span>
+            <div class="notification-dropdown" id="notification-dropdown">
+              <div class="dropdown-header">
+                <h3>Thông báo mới</h3>
+                <button class="btn-text" id="clear-notifications">Xóa tất cả</button>
+              </div>
+              <div class="dropdown-list" id="notification-list">
+                <div class="empty-state">Không có thông báo mới.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Test User Switcher -->
+          <div class="test-user-selector">
+            <label for="user-switcher"><i class="fa-solid fa-user-gear"></i> Vai trò giả lập:</label>
+            <select id="user-switcher" class="form-control-sm">
+              <!-- Dynamically populated in app.js -->
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="view-container">
+
+        <!-- VIEW: DASHBOARD -->
+        <section id="view-dashboard" class="app-view active">
+          <!-- Stat Cards -->
+          <div class="stats-grid">
+            <div class="stat-card" id="card-stat-leads">
+              <div class="stat-icon bg-blue">
+                <i class="fa-solid fa-user-plus"></i>
+              </div>
+              <div class="stat-data">
+                <span class="stat-label">Tổng khách hàng (Lead)</span>
+                <h3 id="stat-total-leads">0</h3>
+                <span class="stat-trend trend-up"><i class="fa-solid fa-arrow-trend-up"></i> Khách hàng tiềm năng</span>
+              </div>
+            </div>
+            
+            <div class="stat-card" id="card-stat-success">
+              <div class="stat-icon bg-emerald">
+                <i class="fa-solid fa-circle-check"></i>
+              </div>
+              <div class="stat-data">
+                <span class="stat-label">Chốt đơn thành công</span>
+                <h3 id="stat-success-leads">0</h3>
+                <span class="stat-trend trend-up" id="stat-conversion-rate">0% Tỉ lệ chuyển đổi</span>
+              </div>
+            </div>
+
+            <div class="stat-card" id="card-stat-failed">
+              <div class="stat-icon bg-rose">
+                <i class="fa-solid fa-circle-xmark"></i>
+              </div>
+              <div class="stat-data">
+                <span class="stat-label">Khách hàng thất bại</span>
+                <h3 id="stat-failed-leads">0</h3>
+                <span class="stat-trend trend-down" id="stat-fail-rate">0% Tỉ lệ thất bại</span>
+              </div>
+            </div>
+
+            <div class="stat-card" id="card-stat-sausage">
+              <div class="stat-icon bg-gold">
+                <i class="fa-solid fa-hotdog"></i>
+              </div>
+              <div class="stat-data">
+                <span class="stat-label">Tổng quỹ "Xúc xích"</span>
+                <h3 id="stat-total-sausage">0</h3>
+                <span class="stat-trend text-gold"><i class="fa-solid fa-trophy"></i> Điểm thi đua của 20 nhân viên</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts & Leaderboards Section -->
+          <div class="dashboard-grid">
+            <div class="dashboard-card chart-card">
+              <div class="card-header">
+                <h3>Phễu Chuyển Đổi Khách Hàng (CRM)</h3>
+                <span class="card-subtitle">Thống kê số lượng qua từng giai đoạn</span>
+              </div>
+              <div class="card-body chart-container-wrapper">
+                <canvas id="crmFunnelChart"></canvas>
+              </div>
+            </div>
+
+            <div class="dashboard-card chart-card">
+              <div class="card-header">
+                <h3>Tỷ Lệ Lý Do Thất Bại</h3>
+                <span class="card-subtitle">Phân tích nguyên nhân khách từ chối dịch vụ</span>
+              </div>
+              <div class="card-body chart-container-wrapper">
+                <canvas id="crmFailReasonsChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-grid grid-1-3">
+            <!-- Active Tasks Summary -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <h3>Tiến độ công việc hôm nay</h3>
+                <button class="btn btn-sm btn-outline nav-shortcut" data-target="tasks">Xem danh sách</button>
+              </div>
+              <div class="card-body">
+                <div class="task-progress-overview">
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="dashboard-task-progress" style="width: 0%;"></div>
+                  </div>
+                  <span class="progress-label" id="dashboard-task-progress-text">0% hoàn thành (0/0 công việc)</span>
+                </div>
+                <div class="mini-task-list" id="dashboard-mini-tasks">
+                  <!-- Dynamically populated in app.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Leaderboard -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-fire text-orange"></i> Vua Xúc Xích Tuần Này</h3>
+                <button class="btn btn-sm btn-outline nav-shortcut" data-target="rewards">Chi tiết</button>
+              </div>
+              <div class="card-body">
+                <div class="leaderboard-ranking ranking-mini" id="dashboard-leaderboard">
+                  <!-- Dynamically populated in app.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- VIEW: CRM KANBAN -->
+        <section id="view-crm" class="app-view">
+          <div class="crm-controls">
+            <div class="search-filter">
+              <input type="text" id="crm-search" class="form-control" placeholder="Tìm kiếm khách hàng (Tên, SĐT, Nhu cầu)...">
+            </div>
+            <!-- Only Sales and Admin can add leads -->
+            <div class="crm-actions">
+              <button class="btn btn-primary" id="btn-add-lead-modal">
+                <i class="fa-solid fa-plus"></i> Thêm Khách Hàng Mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Kanban Board -->
+          <div class="kanban-board-wrapper">
+            <div class="kanban-board" id="crm-kanban-board">
+              
+              <!-- Column 1: Nhận Thông Tin -->
+              <div class="kanban-column" data-stage="receive_info" id="col-receive_info">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-blue"></span>
+                    <h3>Nhận thông tin</h3>
+                  </div>
+                  <span class="col-count" id="count-receive_info">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="receive_info"></div>
+              </div>
+
+              <!-- Column 2: Lấy SĐT -->
+              <div class="kanban-column" data-stage="get_phone" id="col-get_phone">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-purple"></span>
+                    <h3>Lấy SĐT</h3>
+                  </div>
+                  <span class="col-count" id="count-get_phone">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="get_phone"></div>
+              </div>
+
+              <!-- Column 3: Tư vấn sơ bộ -->
+              <div class="kanban-column" data-stage="consulting" id="col-consulting">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-cyan"></span>
+                    <h3>Tư vấn sơ bộ</h3>
+                  </div>
+                  <span class="col-count" id="count-consulting">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="consulting"></div>
+              </div>
+
+              <!-- Column 4: Báo giá -->
+              <div class="kanban-column" data-stage="quotation" id="col-quotation">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-yellow"></span>
+                    <h3>Báo giá</h3>
+                  </div>
+                  <span class="col-count" id="count-quotation">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="quotation"></div>
+              </div>
+
+              <!-- Column 5: Thương lượng -->
+              <div class="kanban-column" data-stage="negotiating" id="col-negotiating">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-orange"></span>
+                    <h3>Thương lượng</h3>
+                  </div>
+                  <span class="col-count" id="count-negotiating">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="negotiating"></div>
+              </div>
+
+              <!-- Column 6: Thành công -->
+              <div class="kanban-column" data-stage="success" id="col-success">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-emerald"></span>
+                    <h3>Thành công</h3>
+                  </div>
+                  <span class="col-count" id="count-success">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="success"></div>
+              </div>
+
+              <!-- Column 7: Thất bại -->
+              <div class="kanban-column column-failed" data-stage="failed" id="col-failed">
+                <div class="column-header">
+                  <div class="col-title">
+                    <span class="col-dot dot-rose"></span>
+                    <h3>Thất bại</h3>
+                  </div>
+                  <span class="col-count" id="count-failed">0</span>
+                </div>
+                <div class="kanban-cards-container" data-stage="failed"></div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+
+        <!-- VIEW: TASK MANAGER -->
+        <section id="view-tasks" class="app-view">
+          <div class="task-page-header">
+            <div class="task-filters">
+              <div class="filter-group">
+                <button class="btn btn-filter active" data-dept="all">Tất cả phòng ban</button>
+                <button class="btn btn-filter" data-dept="admin">Admin</button>
+                <button class="btn btn-filter" data-dept="sales">Sales & CSKH</button>
+                <button class="btn btn-filter" data-dept="sourcing">Sourcing (Đặt hàng)</button>
+                <button class="btn btn-filter" data-dept="warehouse">Kho hàng</button>
+              </div>
+              <div class="filter-status-wrapper">
+                <select id="task-status-filter" class="form-control">
+                  <option value="all">Tất cả trạng thái</option>
+                  <option value="pending">Chờ thực hiện / Chưa làm</option>
+                  <option value="doing">Đang làm</option>
+                  <option value="checking">Đang kiểm duyệt (Chờ Admin duyệt)</option>
+                  <option value="completed">Đã hoàn thành (Đã duyệt nhận xúc xích)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="task-actions" id="task-actions-wrapper">
+              <!-- Showed dynamically or based on role -->
+              <button class="btn btn-primary" id="btn-add-task-modal">
+                <i class="fa-solid fa-plus"></i> Giao việc mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Tasks Table/List -->
+          <div class="table-container">
+            <table class="data-table" id="tasks-table">
+              <thead>
+                <tr>
+                  <th>Tên Công Việc</th>
+                  <th>Phòng Ban</th>
+                  <th>Người Thực Hiện</th>
+                  <th>Tiến Trình (Workflow)</th>
+                  <th>Hạn Hoàn Thành</th>
+                  <th>Phần Thưởng</th>
+                  <th>Trạng Thái</th>
+                  <th>Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="tasks-list-body">
+                <!-- Dynamically populated in tasks.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+
+        <!-- VIEW: WORKFLOW SETTINGS -->
+        <section id="view-workflows" class="app-view">
+          <div class="workflow-desc">
+            <p><i class="fa-solid fa-info-circle text-blue"></i> Tại đây, Quản lý/Admin có thể thiết lập các bước quy trình làm việc chi tiết cho từng phòng ban. Khi nhân viên thực hiện công việc, quy trình tương ứng sẽ được tự động hiển thị để cập nhật tiến độ từng bước.</p>
+          </div>
+
+          <div class="workflow-grid">
+            <!-- Left Side: Select Department -->
+            <div class="workflow-card dept-list-card">
+              <h3>Phòng Ban</h3>
+              <div class="dept-selector-list" id="workflow-dept-selector">
+                <button class="dept-select-item active" data-dept="sales">
+                  <i class="fa-solid fa-headset"></i>
+                  <div class="dept-info">
+                    <h4>Sales & Chăm Sóc Khách Hàng</h4>
+                    <span>Mặc định dựa trên bảng CRM</span>
+                  </div>
+                </button>
+                <button class="dept-select-item" data-dept="sourcing">
+                  <i class="fa-solid fa-cart-shopping"></i>
+                  <div class="dept-info">
+                    <h4>Sourcing & Đặt Hàng</h4>
+                    <span id="steps-count-sourcing">4 bước</span>
+                  </div>
+                </button>
+                <button class="dept-select-item" data-dept="warehouse">
+                  <i class="fa-solid fa-warehouse"></i>
+                  <div class="dept-info">
+                    <h4>Quản Lý Kho Hàng</h4>
+                    <span id="steps-count-warehouse">4 bước</span>
+                  </div>
+                </button>
+                <button class="dept-select-item" data-dept="admin">
+                  <i class="fa-solid fa-user-shield"></i>
+                  <div class="dept-info">
+                    <h4>Bộ Phận Admin & Kế Toán</h4>
+                    <span id="steps-count-admin">3 bước</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Right Side: Edit Workflow Steps -->
+            <div class="workflow-card steps-edit-card">
+              <div class="card-header-actions">
+                <h3 id="current-workflow-dept-name">Quy trình: Sourcing & Đặt Hàng</h3>
+                <span class="role-restricted-notice text-orange" id="workflow-restricted-notice" style="display:none;">
+                  <i class="fa-solid fa-lock"></i> Chỉ Admin mới có quyền sửa quy trình này
+                </span>
+              </div>
+              
+              <div class="workflow-steps-builder">
+                <p class="section-hint">Kéo thả để sắp xếp thứ tự các bước hoặc sửa đổi nội dung.</p>
+                <div class="steps-list" id="workflow-steps-list">
+                  <!-- Dynamically populated in tasks.js -->
+                </div>
+                
+                <div class="add-step-control" id="workflow-add-step-area">
+                  <input type="text" id="new-step-name" class="form-control" placeholder="Tên bước quy trình mới (ví dụ: Chờ thanh toán)...">
+                  <button class="btn btn-secondary" id="btn-add-workflow-step"><i class="fa-solid fa-plus"></i> Thêm bước</button>
+                </div>
+              </div>
+
+              <div class="workflow-actions-save" id="workflow-save-area">
+                <button class="btn btn-primary" id="btn-save-workflow">
+                  <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình quy trình
+                </button>
+                <button class="btn btn-outline" id="btn-reset-workflow">Khôi phục mặc định</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- VIEW: INBOX SIMULATOR -->
+        <section id="view-inbox-simulator" class="app-view">
+          <div class="inbox-desc">
+            <p><i class="fa-solid fa-robot text-purple"></i> <strong>Tính năng mô phỏng khách hàng tự động:</strong> Giả lập việc khách hàng nhắn tin lên Fanpage Facebook. Khi bạn gửi tin nhắn giả lập từ khách hàng mới tại đây, hệ thống sẽ <strong>tự động tạo ra một khách hàng tiềm năng mới (Lead) ở cột đầu tiên của phễu CRM (Nhận thông tin)</strong> để phòng Sales chăm sóc.</p>
+          </div>
+
+          <div class="simulator-chat-container">
+            <!-- Left Side: Simulator Config -->
+            <div class="simulator-card sidebar-config">
+              <h3>Thông Tin Khách Giả Lập</h3>
+              
+              <div class="form-group">
+                <label for="sim-client-name">Tên khách hàng</label>
+                <input type="text" id="sim-client-name" class="form-control" placeholder="Nhập tên khách hàng (Ví dụ: Nguyễn Văn Đại)">
+              </div>
+
+              <div class="form-group">
+                <label for="sim-client-phone">Số điện thoại (nếu có)</label>
+                <input type="text" id="sim-client-phone" class="form-control" placeholder="Để trống nếu chưa lấy được SĐT">
+              </div>
+
+              <div class="form-group">
+                <label for="sim-client-avatar">Chọn Avatar giả lập</label>
+                <div class="avatar-selectors">
+                  <label class="avatar-option active"><input type="radio" name="sim-avatar" value="fa-user-tie" checked><i class="fa-solid fa-user-tie"></i></label>
+                  <label class="avatar-option"><input type="radio" name="sim-avatar" value="fa-user-ninja"><i class="fa-solid fa-user-ninja"></i></label>
+                  <label class="avatar-option"><input type="radio" name="sim-avatar" value="fa-user-nurse"><i class="fa-solid fa-user-nurse"></i></label>
+                  <label class="avatar-option"><input type="radio" name="sim-avatar" value="fa-user-astronaut"><i class="fa-solid fa-user-astronaut"></i></label>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Gợi ý tin nhắn mẫu:</label>
+                <div class="quick-messages">
+                  <button class="btn btn-xs btn-outline btn-quick-msg">Em muốn ký gửi lô quần áo 50kg từ Quảng Châu về Hà Nội</button>
+                  <button class="btn btn-xs btn-outline btn-quick-msg">Bên mình có nhận mua hộ hàng Taobao không ạ?</button>
+                  <button class="btn btn-xs btn-outline btn-quick-msg">Giá vận chuyển hàng lô từ Bằng Tường về Sài Gòn là bao nhiêu?</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Chat Window -->
+            <div class="simulator-card chat-window">
+              <div class="chat-header">
+                <div class="chat-user-avatar">
+                  <i class="fa-solid fa-user" id="chat-header-avatar-icon"></i>
+                </div>
+                <div class="chat-user-info">
+                  <h4 id="chat-header-name">Nguyễn Văn Đại</h4>
+                  <span>Đang hoạt động trên Facebook Messenger</span>
+                </div>
+              </div>
+
+              <div class="chat-messages" id="chat-messages-box">
+                <div class="system-message">Hệ thống đã kết nối. Nhập tin nhắn bên dưới để giả lập.</div>
+              </div>
+
+              <div class="chat-input-area">
+                <textarea id="chat-input" class="form-control" placeholder="Nhập tin nhắn khách hàng gửi..." rows="2"></textarea>
+                <button class="btn btn-primary" id="btn-send-sim-msg">
+                  <i class="fa-solid fa-paper-plane"></i> Gửi Tin Nhắn
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: FACEBOOK CONFIG -->
+        <section id="view-facebook-config" class="app-view">
+          <div class="workflow-desc">
+            <p><i class="fa-solid fa-gears text-blue"></i> <strong>Liên kết Fanpage Facebook thực tế:</strong> Tại đây bạn có thể cấu hình kết nối ứng dụng với Fanpage <strong>Minh Hải Logistics</strong> để tự động nhận tin nhắn của khách hàng.</p>
+          </div>
+
+          <div class="dashboard-grid grid-1-3" style="margin-top: 24px;">
+            <!-- Left Side: Config Form -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div>
+                  <h3>Thông Tin Cấu Hình Webhook</h3>
+                  <span class="card-subtitle">Cấu hình kết nối với Fanpage</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <form id="form-fb-config">
+                  <div class="form-group">
+                    <label>Link Fanpage đang liên kết</label>
+                    <input type="text" class="form-control" value="https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet" readonly style="background-color: rgba(255,255,255,0.02); color: var(--text-muted); font-size: 11px;">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Webhook URL (Callback URL)</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input type="text" id="fb-config-webhook-url" class="form-control" readonly value="https://<ngrok-domain-cua-ban>/webhook" style="background-color: rgba(255,255,255,0.02);">
+                      <button type="button" class="btn btn-outline btn-sm" id="btn-copy-webhook" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">* Cần chạy ngrok hoặc deploy lên VPS để có URL công khai (HTTPS).</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label>Verify Token</label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <input type="text" class="form-control" readonly value="minh_hai_verify_token_123" id="fb-config-verify-token" style="background-color: rgba(255,255,255,0.02);">
+                      <button type="button" class="btn btn-outline btn-sm" id="btn-copy-verify" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="fb-config-access-token">Page Access Token (Mã truy cập Trang)</label>
+                    <textarea id="fb-config-access-token" class="form-control" rows="4" placeholder="Nhập Page Access Token từ Facebook Developer Portal để lấy tên thật khách hàng..."></textarea>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Right Side: Step-by-Step Guide -->
+            <div class="dashboard-card">
+              <div class="card-header">
+                <div>
+                  <h3><i class="fa-solid fa-circle-info text-blue"></i> Hướng Dẫn Từng Bước Liên Kết</h3>
+                  <span class="card-subtitle">Cấu hình kết nối cho trang Developers</span>
+                </div>
+              </div>
+              <div class="card-body" style="font-size: 13px; line-height: 1.6; display: flex; flex-direction: column; gap: 14px;">
+                <div>
+                  <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 1: Mở cổng HTTPS công khai</h4>
+                  <p>Vì Facebook chỉ gửi dữ liệu qua HTTPS công khai, bạn cần chạy ngrok tại cổng 3000 ở máy tính:</p>
+                  <code style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: var(--radius-sm); display:block; margin-top:6px; font-family: monospace;">ngrok http 3000</code>
+                  <p style="margin-top: 6px;">Sau đó sao chép link HTTPS ngrok cấp (ví dụ: <code style="font-family: monospace;">https://abc.ngrok-free.app</code>) điền thêm đuôi <code style="font-family: monospace;">/webhook</code> dán vào ô Webhook URL bên trái.</p>
+                </div>
+
+                <div>
+                  <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 2: Tạo ứng dụng Facebook App</h4>
+                  <p>Truy cập <a href="https://developers.facebook.com/" target="_blank" style="color:var(--color-info); text-decoration: underline;">Facebook Developers</a>, đăng nhập tài khoản của bạn (<strong>Minhracle93</strong>) và tạo ứng dụng mới loại <strong>Other</strong> hoặc <strong>Business</strong>, chọn sản phẩm <strong>Messenger</strong>.</p>
+                </div>
+
+                <div>
+                  <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 3: Liên kết Fanpage & Lấy Token</h4>
+                  <p>Trong cài đặt Messenger, thêm Fanpage <strong>Minh Hải Logistics</strong> của bạn. Tạo Page Access Token và sao chép dán vào ô Page Access Token bên trái rồi bấm <strong>Lưu cấu hình</strong>.</p>
+                </div>
+
+                <div>
+                  <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 4: Cấu hình Webhooks trên Facebook</h4>
+                  <p>Ở mục Webhooks của Messenger, nhấn <strong>Configure</strong> và nhập:</p>
+                  <ul style="margin-left: 16px; margin-top: 4px;">
+                    <li><strong>Callback URL</strong>: Link ngrok của bạn kèm đuôi <code style="font-family: monospace;">/webhook</code></li>
+                    <li><strong>Verify Token</strong>: <code style="font-family: monospace;">minh_hai_verify_token_123</code></li>
+                  </ul>
+                  <p style="margin-top:6px;">Bấm <strong>Verify and Save</strong>. Sau đó Đăng ký (Subscribe) sự kiện <strong>messages</strong>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: REWARDS & LEADERBOARD -->
+        <section id="view-rewards" class="app-view">
+          <div class="rewards-grid">
+            <!-- Left Side: Global Leaderboard -->
+            <div class="rewards-card leaderboard-card-full">
+              <div class="card-header-icon">
+                <i class="fa-solid fa-trophy trophy-header-icon"></i>
+                <div>
+                  <h3>Bảng Xếp Hạng Điểm Thưởng</h3>
+                  <p>Xếp hạng thành tích tích lũy "Xúc Xích" của 20 nhân viên Minh Hải Logistics</p>
+                </div>
+              </div>
+              
+              <div class="leaderboard-table-wrapper">
+                <table class="leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th class="text-center">Hạng</th>
+                      <th>Nhân Viên</th>
+                      <th>Phòng Ban</th>
+                      <th class="text-center">Số Xúc Xích Hiện Tại</th>
+                      <th class="text-center">Tổng Số Đã Nhận</th>
+                      <th>Danh Hiệu</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rewards-leaderboard-body">
+                    <!-- Dynamically populated in app.js -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right Side: Point Rules & Log -->
+            <div class="rewards-card rules-card">
+              <h3>Quy Chế Tích Lũy Điểm</h3>
+              <div class="points-rule-list">
+                <div class="rule-item">
+                  <div class="rule-points">+50 <i class="fa-solid fa-hotdog"></i></div>
+                  <div class="rule-desc">
+                    <h4>Chốt đơn thành công (Sales)</h4>
+                    <p>Khi thẻ khách hàng trên CRM chuyển thành "Thành công" và hoàn thành đơn hàng đầu tiên.</p>
+                  </div>
+                </div>
+                <div class="rule-item">
+                  <div class="rule-points">+10 - +100 <i class="fa-solid fa-hotdog"></i></div>
+                  <div class="rule-desc">
+                    <h4>Hoàn thành nhiệm vụ được giao</h4>
+                    <p>Mỗi công việc tùy theo độ phức tạp sẽ được gán sẵn một số lượng điểm thưởng xúc xích khác nhau.</p>
+                  </div>
+                </div>
+                <div class="rule-item">
+                  <div class="rule-points">+20 <i class="fa-solid fa-hotdog"></i></div>
+                  <div class="rule-desc">
+                    <h4>Xử lý hàng nhanh / Không sai sót</h4>
+                    <p>Điểm cộng khích lệ từ Admin cho các nhân viên kho/sourcing hoàn thành đúng tiến độ trong ngày.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="recent-logs-section">
+                <h3>Nhật Ký Tích Điểm Gần Đây</h3>
+                <div class="log-list" id="rewards-points-log">
+                  <!-- Dynamically populated in app.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- MODAL: ADD CLIENT (CRM LEAD) -->
+  <div class="modal" id="modal-add-lead">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Thêm Khách Hàng Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-lead">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-lead">
+          <div class="form-group">
+            <label for="lead-name">Tên khách hàng <span class="text-rose">*</span></label>
+            <input type="text" id="lead-name" class="form-control" placeholder="Nhập tên khách hàng" required>
+          </div>
+          <div class="form-group">
+            <label for="lead-phone">Số điện thoại</label>
+            <input type="text" id="lead-phone" class="form-control" placeholder="Nhập số điện thoại (ví dụ: 0987xxxxxx)">
+          </div>
+          <div class="form-group">
+            <label for="lead-wechat">Wechat/Zalo</label>
+            <input type="text" id="lead-wechat" class="form-control" placeholder="Nhập tài khoản Wechat hoặc Zalo">
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="lead-val-rmb">Giá trị đơn hàng dự kiến (RMB - Tệ)</label>
+              <input type="number" id="lead-val-rmb" class="form-control" placeholder="0" min="0">
+            </div>
+            <div class="form-group col-6">
+              <label for="lead-val-vnd">Giá trị đơn hàng dự kiến (VND)</label>
+              <input type="number" id="lead-val-vnd" class="form-control" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="lead-note">Ghi chú nhu cầu khách hàng</label>
+            <textarea id="lead-note" class="form-control" rows="3" placeholder="Ví dụ: Cần tìm nguồn giày thể thao Quảng Châu, ký gửi vận chuyển về Hà Nội..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="lead-sales">Sales phụ trách</label>
+            <select id="lead-sales" class="form-control">
+              <!-- Dynamically populated in app.js with Sales users -->
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-lead">Hủy</button>
+            <button type="submit" class="btn btn-primary">Thêm cơ hội</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: ADD TASK (Giao việc mới) -->
+  <div class="modal" id="modal-add-task">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Giao Nhiệm Vụ Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-task">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-task">
+          <div class="form-group">
+            <label for="task-title">Tên công việc <span class="text-rose">*</span></label>
+            <input type="text" id="task-title" class="form-control" placeholder="Ví dụ: Kiểm đếm bao hàng mã HN-102" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="task-dept">Phòng ban phụ trách <span class="text-rose">*</span></label>
+              <select id="task-dept" class="form-control" required>
+                <option value="sales">Sales & CSKH</option>
+                <option value="sourcing">Sourcing (Đặt hàng)</option>
+                <option value="warehouse">Kho hàng</option>
+                <option value="admin">Admin & Kế toán</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label for="task-assignee">Người thực hiện <span class="text-rose">*</span></label>
+              <select id="task-assignee" class="form-control" required>
+                <!-- Dynamically populated based on selected dept in app.js -->
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="task-sausage">Phần thưởng (Xúc xích) <span class="text-rose">*</span></label>
+              <input type="number" id="task-sausage" class="form-control" value="20" min="5" max="200" required>
+            </div>
+            <div class="form-group col-6">
+              <label for="task-deadline">Hạn hoàn thành</label>
+              <input type="date" id="task-deadline" class="form-control" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="task-desc">Chi tiết công việc / Hướng dẫn</label>
+            <textarea id="task-desc" class="form-control" rows="3" placeholder="Mô tả chi tiết nội dung công việc cần thực hiện..."></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-task">Hủy</button>
+            <button type="submit" class="btn btn-primary">Giao việc</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: CRM LEAD DETAIL & EDIT -->
+  <div class="modal" id="modal-lead-detail">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Chi Tiết Cơ Hội Khách Hàng</h3>
+        <button class="btn-close-modal" data-modal="modal-lead-detail">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-edit-lead">
+          <input type="hidden" id="edit-lead-id">
+          <div class="detail-client-header">
+            <div class="client-avatar-large">
+              <i class="fa-solid fa-user" id="edit-lead-avatar-icon"></i>
+            </div>
+            <div class="client-info-basic">
+              <h3 id="edit-lead-title-name">Tên Khách</h3>
+              <p id="edit-lead-stage-badge" class="badge">Nhận thông tin</p>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-lead-name">Tên khách hàng</label>
+            <input type="text" id="edit-lead-name" class="form-control" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="edit-lead-phone">Số điện thoại</label>
+              <input type="text" id="edit-lead-phone" class="form-control">
+            </div>
+            <div class="form-group col-6">
+              <label for="edit-lead-wechat">Wechat/Zalo</label>
+              <input type="text" id="edit-lead-wechat" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="edit-lead-val-rmb">Giá trị ước tính (RMB - Tệ)</label>
+              <input type="number" id="edit-lead-val-rmb" class="form-control" min="0">
+            </div>
+            <div class="form-group col-6">
+              <label for="edit-lead-val-vnd">Giá trị ước tính (VND)</label>
+              <input type="number" id="edit-lead-val-vnd" class="form-control" min="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit-lead-note">Ghi chú lịch sử tư vấn</label>
+            <textarea id="edit-lead-note" class="form-control" rows="4"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="edit-lead-sales">Sales phụ trách</label>
+              <select id="edit-lead-sales" class="form-control">
+                <!-- Sales dropdown -->
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label for="edit-lead-stage">Bước chuyển đổi</label>
+              <select id="edit-lead-stage" class="form-control">
+                <option value="receive_info">Nhận thông tin</option>
+                <option value="get_phone">Lấy SĐT</option>
+                <option value="consulting">Tư vấn sơ bộ</option>
+                <option value="quotation">Báo giá</option>
+                <option value="negotiating">Thương lượng</option>
+                <option value="success">Thành công</option>
+                <option value="failed">Thất bại</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" id="edit-lead-fail-reason-group" style="display:none;">
+            <label for="edit-lead-fail-reason" class="text-rose">Lý do thất bại <span class="text-rose">*</span></label>
+            <select id="edit-lead-fail-reason" class="form-control">
+              <option value="">-- Chọn lý do thất bại --</option>
+              <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
+              <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
+              <option value="Mất liên lạc / Không nghe máy">Mất liên lạc / Không nghe máy</option>
+              <option value="Đã chọn đối thủ cạnh tranh">Đã chọn đối thủ cạnh tranh</option>
+              <option value="Không có nhu cầu thực tế">Không có nhu cầu thực tế</option>
+              <option value="Khác">Lý do khác</option>
+            </select>
+            <input type="text" id="edit-lead-fail-reason-other" class="form-control mt-2" placeholder="Nhập lý do cụ thể..." style="display:none; margin-top: 8px;">
+          </div>
+
+          <div class="modal-footer" id="edit-lead-footer">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-lead-detail">Đóng</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-lead">Lưu thông tin</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: FAIL REASON INPUT (Khi kéo thẻ sang cột Thất Bại) -->
+  <div class="modal" id="modal-fail-reason-prompt">
+    <div class="modal-content modal-sm">
+      <div class="modal-header bg-rose text-white">
+        <h3><i class="fa-solid fa-circle-xmark"></i> Xác Nhận Khách Thất Bại</h3>
+        <button class="btn-close-modal text-white" data-modal="modal-fail-reason-prompt">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Vui lòng chọn lý do khách hàng <strong><span id="fail-prompt-client-name">Khách hàng</span></strong> dừng giao dịch để lưu thống kê tỷ lệ:</p>
+        
+        <div class="form-group mt-3">
+          <label for="prompt-fail-reason">Lý do thất bại <span class="text-rose">*</span></label>
+          <select id="prompt-fail-reason" class="form-control" required>
+            <option value="">-- Chọn nguyên nhân --</option>
+            <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
+            <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
+            <option value="Mất liên lạc / Không nghe máy">Mất liên lạc / Không nghe máy</option>
+            <option value="Đã chọn đối thủ cạnh tranh">Đã chọn đối thủ cạnh tranh</option>
+            <option value="Không có nhu cầu thực tế">Không có nhu cầu thực tế</option>
+            <option value="Khác">Lý do khác</option>
+          </select>
+          <input type="text" id="prompt-fail-reason-other" class="form-control" placeholder="Nhập lý do khác cụ thể..." style="display:none; margin-top: 8px;">
+        </div>
+
+        <div class="modal-footer mt-4">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-fail-reason-prompt">Hủy</button>
+          <button type="button" class="btn btn-danger" id="btn-confirm-fail">Xác nhận thất bại</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SHOW LEADS LIST (Khi click vào các chỉ số Thống kê ở Dashboard) -->
+  <div class="modal" id="modal-leads-list">
+    <div class="modal-content" style="width: 720px; max-width: 95%;">
+      <div class="modal-header">
+        <h3 id="leads-list-modal-title">Danh Sách Khách Hàng</h3>
+        <button class="btn-close-modal" data-modal="modal-leads-list">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <div class="table-container" style="max-height: 400px; overflow-y: auto; border-radius: var(--radius-md);">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Khách Hàng</th>
+                <th>SĐT / Zalo / WeChat</th>
+                <th>Sales Phụ Trách</th>
+                <th>Giá Trị</th>
+                <th>Ngày Tạo</th>
+                <th id="leads-list-modal-th-extra">Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody id="leads-list-modal-body">
+              <!-- Dynamically populated in app.js -->
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer" style="margin-top: 20px;">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-leads-list">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Custom Scripts -->
+  <script src="app.js?v=1.0.1"></script>
+  <script src="crm.js?v=1.0.1"></script>
+  <script src="tasks.js?v=1.0.1"></script>
+  <script src="inbox-sim.js?v=1.0.1"></script>
+</body>
+</html>
