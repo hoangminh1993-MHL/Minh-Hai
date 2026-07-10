@@ -643,6 +643,7 @@ function openFlowDetailModal(flowId) {
   // Handle Add files / checklist inline
   document.getElementById('btn-flow-step-add-chk').onclick = handleFlowAddStepChecklistItem;
   document.getElementById('btn-flow-step-add-file').onclick = handleFlowAddStepFile;
+  document.getElementById('btn-flow-step-add-comment').onclick = handleFlowAddStepComment;
 
   openModal('modal-flow-detail');
 }
@@ -716,7 +717,7 @@ function renderActiveStepPanel() {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
-  // Render step files
+  // Render step files (with image previews support)
   const filesContainer = document.getElementById('flow-step-files-list');
   filesContainer.innerHTML = '';
   
@@ -725,16 +726,26 @@ function renderActiveStepPanel() {
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
       const row = document.createElement('div');
-      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:12px; background:#111827; padding:4px 8px; border-radius:4px;';
+      row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
+      
+      const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || file.url.toLowerCase().includes('drive.google.com/thumbnail') || file.url.toLowerCase().includes('googleusercontent.com');
+      const imgPreview = isImage ? `<img src="${file.url}" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+
       row.innerHTML = `
-        <a href="${file.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-paperclip"></i> ${file.name}</a>
-        <button class="btn btn-sm btn-outline text-rose" style="padding:2px 6px; font-size:10px;" onclick="handleDeleteFlowFile(${idx})"><i class="fa-solid fa-trash-can"></i></button>
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <a href="${file.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-paperclip"></i> ${file.name}</a>
+          <button class="btn btn-sm btn-outline text-rose" style="padding:2px 6px; font-size:10px;" onclick="handleDeleteFlowFile(${idx})"><i class="fa-solid fa-trash-can"></i></button>
+        </div>
+        ${imgPreview}
       `;
       filesContainer.appendChild(row);
     });
   } else {
     filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm bước.</span>`;
   }
+
+  // Render comments for this step (v18)
+  renderActiveStepComments();
 }
 
 function handleSaveActiveStepData() {
@@ -1906,4 +1917,61 @@ function populateProjectMembersChecklist() {
     `;
     container.appendChild(div);
   });
+}
+
+function renderActiveStepComments() {
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+  const stepData = flow.steps.find(s => s.stepNum === currentActiveStepNum);
+  if (!stepData) return;
+
+  const container = document.getElementById('flow-step-comments');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (stepData.comments && stepData.comments.length > 0) {
+    stepData.comments.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'chat-msg-row';
+      row.innerHTML = `
+        <div class="chat-msg-header">
+          <strong>${c.user}</strong>
+          <span>${c.date}</span>
+        </div>
+        <div class="chat-msg-body">${c.text}</div>
+      `;
+      container.appendChild(row);
+    });
+    container.scrollTop = container.scrollHeight;
+  } else {
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào ở bước này.</span>`;
+  }
+}
+
+function handleFlowAddStepComment() {
+  const input = document.getElementById('flow-step-new-comment');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+  const stepData = flow.steps.find(s => s.stepNum === currentActiveStepNum);
+  if (stepData) {
+    if (!stepData.comments) stepData.comments = [];
+    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân sự' };
+    
+    const now = new Date();
+    const dateStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} ${now.getDate()}/${now.getMonth() + 1}`;
+    
+    stepData.comments.push({
+      user: user.name,
+      text: text,
+      date: dateStr
+    });
+
+    input.value = '';
+    saveState();
+    renderActiveStepComments();
+  }
 }
