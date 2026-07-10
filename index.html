@@ -43,6 +43,11 @@
           <i class="fa-solid fa-chart-pie"></i>
           <span>Báo Cáo Tổng Quan</span>
         </a>
+        <a href="#my-tasks" class="nav-item" data-view="my-tasks" id="nav-my-tasks">
+          <i class="fa-solid fa-clipboard-user"></i>
+          <span>Công Việc Của Tôi</span>
+          <span class="badge bg-rose" id="my-tasks-badge" style="margin-left: auto; display: none; background: #ef4444; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; color: white;">0</span>
+        </a>
         <!-- CRM & TRUYỀN THÔNG -->
         <div class="menu-section-header" style="padding: 12px 16px 4px 16px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px;">Khách Hàng Mới</div>
         <a href="#crm" class="nav-item" data-view="crm">
@@ -763,6 +768,46 @@
           <div class="kanban-board-wrapper" style="margin-top: 20px; overflow-x: auto; padding-bottom: 15px;">
             <div class="kanban-board" id="ops-workflows-kanban" style="grid-template-columns: repeat(11, 290px); gap: 16px;">
               <!-- 11 columns dynamically rendered by ops.js -->
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==================== VIEW: CÔNG VIỆC CỦA TÔI ==================== -->
+        <section id="view-my-tasks" class="app-view" style="display: none;">
+          <div class="workflow-desc">
+            <p><i class="fa-solid fa-clipboard-user text-blue"></i> <strong>Công Việc Của Tôi:</strong> Xem và quản lý tập trung toàn bộ các đầu việc, khâu vận chuyển lô hàng và dự án được giao cho riêng bạn.</p>
+          </div>
+
+          <div class="dashboard-grid grid-3" style="margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <!-- Column 1: Lô Hàng 11 bước đang phụ trách -->
+            <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
+              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--color-primary);">
+                <i class="fa-solid fa-truck-ramp-box"></i> 🚚 Lô Hàng Phụ Trách (<span id="my-flows-count">0</span>)
+              </h3>
+              <div id="my-flows-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
+                <!-- JS Rendered -->
+              </div>
+            </div>
+
+            <!-- Column 2: Công việc đơn lẻ -->
+            <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
+              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #f59e0b;">
+                <i class="fa-solid fa-list-check"></i> 📋 Việc Đơn Lẻ (<span id="my-single-tasks-count">0</span>)
+              </h3>
+              <div id="my-single-tasks-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
+                <!-- JS Rendered -->
+              </div>
+            </div>
+
+            <!-- Column 3: Việc dự án -->
+            <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
+              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #10b981; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #10b981;">
+                <i class="fa-solid fa-folder-tree"></i> 📂 Việc Dự Án VIP (<span id="my-project-tasks-count">0</span>)
+              </h3>
+              <div id="my-project-tasks-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
+                <!-- JS Rendered -->
+              </div>
             </div>
           </div>
         </section>

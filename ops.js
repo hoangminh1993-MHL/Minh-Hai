@@ -166,6 +166,8 @@ function handleOpsViewRouting() {
     renderOpsSingleTasks();
   } else if (hash === 'tasks-projects') {
     renderOpsProjects();
+  } else if (hash === 'my-tasks') {
+    renderMyTasks();
   } else if (hash === 'dashboard') {
     // If the active dashboard tab is "ops", render the operations dashboard
     const activeTab = document.querySelector('.dashboard-tab-btn.active');
@@ -1984,5 +1986,127 @@ function handleFlowAddStepComment() {
     input.value = '';
     saveState();
     renderActiveStepComments();
+  }
+}
+
+function renderMyTasks() {
+  const container = document.getElementById('view-my-tasks');
+  if (!container) return;
+
+  const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  const userId = AppState.currentUserId || loggedUser.id || 'usr-admin';
+
+  // Containers
+  const myFlowsList = document.getElementById('my-flows-list');
+  const mySingleTasksList = document.getElementById('my-single-tasks-list');
+  const myProjectTasksList = document.getElementById('my-project-tasks-list');
+
+  myFlowsList.innerHTML = '';
+  mySingleTasksList.innerHTML = '';
+  myProjectTasksList.innerHTML = '';
+
+  // Step names translation mapping
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+  ];
+
+  // 1. Shipment workflows - steps assigned to user
+  let flowsCount = 0;
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(flow => {
+      const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+      if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+        flowsCount++;
+        const client = AppState.clients.find(c => c.id === flow.clientId) || {};
+        
+        // Checklist progress count
+        const chkDone = stepData.checklist ? stepData.checklist.filter(c => c.done).length : 0;
+        const chkTotal = stepData.checklist ? stepData.checklist.length : 0;
+
+        const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.style.cssText = 'cursor: pointer; border-left: 4px solid #3b82f6; transition: transform 0.2s; margin-bottom: 8px;';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:10px; font-weight:bold; color:#3b82f6;">${client.code || 'KH CŨ'}</span>
+            <span class="badge bg-blue" style="font-size:9px; padding:2px 4px;">Bước ${flow.stage}</span>
+          </div>
+          <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${flow.name}</div>
+          <div style="font-size:11px; opacity:0.8; margin-top:4px;">Khâu: <strong>${stepNames[flow.stage - 1]}</strong></div>
+          <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
+            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Không có'}</span>
+          </div>
+        `;
+        card.onclick = () => {
+          openFlowDetailModal(flow.id);
+        };
+        myFlowsList.appendChild(card);
+      }
+    });
+  }
+  document.getElementById('my-flows-count').innerText = flowsCount;
+  if (flowsCount === 0) {
+    myFlowsList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có lô hàng nào chờ bạn xử lý.</span>`;
+  }
+
+  // 2. Single Tasks & 3. Project Tasks
+  let singleCount = 0;
+  let projectCount = 0;
+
+  if (AppState.single_tasks) {
+    AppState.single_tasks.forEach(task => {
+      if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled') {
+        const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
+        const chkTotal = task.checklist ? task.checklist.length : 0;
+        
+        const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
+        const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
+
+        const isOverdue = task.deadline && new Date(task.deadline) < new Date();
+
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.style.cssText = `cursor: pointer; border-left: 4px solid ${task.projectId ? '#10b981' : '#f59e0b'}; transition: transform 0.2s; margin-bottom: 8px;`;
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
+            <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
+          </div>
+          <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
+          <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
+            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
+          </div>
+        `;
+        
+        card.onclick = () => {
+          if (typeof openOpsTaskDetail === 'function') {
+            openOpsTaskDetail(task.id);
+          }
+        };
+
+        if (task.projectId) {
+          projectCount++;
+          myProjectTasksList.appendChild(card);
+        } else {
+          singleCount++;
+          mySingleTasksList.appendChild(card);
+        }
+      }
+    });
+  }
+
+  document.getElementById('my-single-tasks-count').innerText = singleCount;
+  if (singleCount === 0) {
+    mySingleTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có nhiệm vụ đơn lẻ nào cần làm.</span>`;
+  }
+
+  document.getElementById('my-project-tasks-count').innerText = projectCount;
+  if (projectCount === 0) {
+    myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có việc dự án VIP nào cần làm.</span>`;
   }
 }

@@ -248,6 +248,7 @@ async function syncLoadState() {
       localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
       localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
       localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
+      updateMyTasksBadge();
       return;
     }
   } catch (err) {
@@ -269,6 +270,7 @@ function loadState() {
   AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
   AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
   AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
+  updateMyTasksBadge();
 }
 
 async function saveState() {
@@ -296,6 +298,7 @@ async function saveState() {
   } catch (err) {
     console.error('Không lưu được lên server API:', err);
   }
+  updateMyTasksBadge();
 }
 
 let pollingInterval = null;
@@ -358,6 +361,7 @@ function startStatePolling() {
           // Refresh user context and notification dropdown
           renderCurrentUser();
           renderNotifications();
+          updateMyTasksBadge();
         }
       }
     } catch (err) {
@@ -429,7 +433,8 @@ function navigateToView(viewId, updateHash = true) {
     'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' },
     'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
     'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
-    'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' }
+    'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
+    'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' }
   };
 
   if (titles[viewId]) {
@@ -452,6 +457,8 @@ function navigateToView(viewId, updateHash = true) {
     if (typeof renderOpsSingleTasks === 'function') renderOpsSingleTasks();
   } else if (viewId === 'tasks-projects') {
     if (typeof renderOpsProjects === 'function') renderOpsProjects();
+  } else if (viewId === 'my-tasks') {
+    if (typeof renderMyTasks === 'function') renderMyTasks();
   } else if (viewId === 'rewards') {
     renderRewardsView();
   } else if (viewId === 'facebook-config') {
@@ -1239,5 +1246,39 @@ function renderStaffManagementTable() {
       }
     };
   });
+}
+
+function updateMyTasksBadge() {
+  const badge = document.getElementById('my-tasks-badge');
+  if (!badge) return;
+
+  const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  const userId = AppState.currentUserId || loggedUser.id || 'usr-admin';
+
+  // 1. Shipment steps owned by the user
+  let flowsCount = 0;
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(flow => {
+      const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+      if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+        flowsCount++;
+      }
+    });
+  }
+
+  // 2. Single tasks and project tasks owned by the user
+  let singleCount = 0;
+  if (AppState.single_tasks) {
+    singleCount = AppState.single_tasks.filter(t => t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled').length;
+  }
+
+  const totalPending = flowsCount + singleCount;
+
+  if (totalPending > 0) {
+    badge.innerText = totalPending;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
 }
 
