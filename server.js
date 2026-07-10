@@ -27,18 +27,35 @@ async function loadState() {
       if (res.rows.length > 0) {
         const dbState = JSON.parse(res.rows[0].state_json);
         
-        // Auto-sync users list from local db.json if the database users list is different or doesn't have the new users
+        // Auto-sync users list and new operational fields from local db.json if missing in database state
         try {
           const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
           const localState = JSON.parse(localStateRaw);
+          let needsUpdate = false;
+
+          // Check if users need sync
           const hasNewUsers = localState.users && (!dbState.users || dbState.users.length !== localState.users.length || !dbState.users.some(u => u.username === 'hoangminh'));
           if (hasNewUsers) {
             console.log('Syncing updated users list from db.json to Supabase...');
             dbState.users = localState.users;
+            needsUpdate = true;
+          }
+
+          // Check if new operational tables need sync (v18)
+          const opFields = ['clients', 'projects', 'shipment_workflows', 'single_tasks'];
+          opFields.forEach(field => {
+            if (localState[field] && (!dbState[field] || dbState[field].length === 0)) {
+              console.log(`Syncing new operational field: ${field} from db.json to Supabase...`);
+              dbState[field] = localState[field];
+              needsUpdate = true;
+            }
+          });
+
+          if (needsUpdate) {
             await client.query('UPDATE app_state SET state_json = $1 WHERE id = 1', [JSON.stringify(dbState)]);
           }
         } catch (e) {
-          console.error('Failed to sync users list:', e);
+          console.error('Failed to sync database state:', e);
         }
         
         return dbState;
