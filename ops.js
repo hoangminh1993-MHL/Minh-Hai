@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Global state variables for operations drag and drop
 let draggingFlowId = null;
 let targetFlowStage = null;
+let confirmingMoveFlowId = null;
+let confirmingMoveTargetStage = null;
 let currentActiveProjectId = null;
 let currentSingleTaskLayout = 'list'; // 'list' | 'board' | 'calendar'
 let currentCalendarMonth = new Date().getMonth();
@@ -499,8 +501,8 @@ function handleFlowMoveAttempt(flowId, targetStage) {
     
     if (requiredPending.length > 0) {
       // Must prompt checklist modal
-      draggingFlowId = flowId;
-      targetFlowStage = targetStage;
+      confirmingMoveFlowId = flowId;
+      confirmingMoveTargetStage = targetStage;
       
       const checklistContainer = document.getElementById('ops-mandatory-checklist-list');
       checklistContainer.innerHTML = '';
@@ -535,8 +537,8 @@ function handleFlowMoveAttempt(flowId, targetStage) {
 }
 
 function handleConfirmedFlowMove() {
-  if (!draggingFlowId || !targetFlowStage) return;
-  const flow = AppState.shipment_workflows.find(f => f.id === draggingFlowId);
+  if (!confirmingMoveFlowId || !confirmingMoveTargetStage) return;
+  const flow = AppState.shipment_workflows.find(f => f.id === confirmingMoveFlowId);
   if (!flow) return;
 
   const currentStage = flow.stage;
@@ -551,9 +553,9 @@ function handleConfirmedFlowMove() {
   }
 
   closeModal('modal-step-checklist-confirm');
-  executeFlowMove(flow, targetFlowStage);
-  draggingFlowId = null;
-  targetFlowStage = null;
+  executeFlowMove(flow, confirmingMoveTargetStage);
+  confirmingMoveFlowId = null;
+  confirmingMoveTargetStage = null;
 }
 
 function executeFlowMove(flow, targetStage) {
