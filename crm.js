@@ -6,6 +6,15 @@ document.addEventListener('DOMContentLoaded', () => {
 let draggingLeadId = null; // Backup reference for touch devices or simple drag tracking
 let failPromptCallback = null; // Callback for confirm button on fail modal
 
+function formatDateTime(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  const h = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  return `${y}-${m}-${d} ${h}:${min}`;
+}
+
 function initCRMEvents() {
   // Search input
   const searchInput = document.getElementById('crm-search');
@@ -17,12 +26,7 @@ function initCRMEvents() {
   const btnAddLead = document.getElementById('btn-add-lead-modal');
   if (btnAddLead) {
     btnAddLead.addEventListener('click', () => {
-      const user = getCurrentUser();
-      if (user.role !== 'admin' && user.role !== 'sales') {
-        showToast('Bạn không có quyền thêm khách hàng. Chỉ Sales và Admin được phép.', 'danger');
-        return;
-      }
-      populateSalesDropdown('lead-sales');
+      populateSalesDropdown('lead-sales', getCurrentUser().id);
       openModal('modal-add-lead');
     });
   }
@@ -120,11 +124,12 @@ function populateSalesDropdown(selectId, selectedId = '') {
   if (!select) return;
   select.innerHTML = '';
 
-  const salesUsers = AppState.users.filter(u => u.role === 'sales' || u.role === 'admin');
+  const salesUsers = AppState.users.filter(u => u.role === 'staff' || u.role === 'manager' || u.role === 'admin');
+  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
   salesUsers.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.id;
-    opt.innerText = `${u.name} (${u.role.toUpperCase()})`;
+    opt.innerText = `${u.name} (${roleLabels[u.role] || u.role})`;
     if (u.id === selectedId) {
       opt.selected = true;
     }
@@ -146,8 +151,12 @@ function renderCRMBoard() {
     if (container) container.innerHTML = '';
   });
 
-  // Filter leads by search query
+  // Filter leads by search query and user role permission
+  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
   const filteredLeads = AppState.leads.filter(lead => {
+    if (sessionUser.role === 'staff' && lead.salesId !== sessionUser.id) {
+      return false;
+    }
     const matchesSearch = lead.name.toLowerCase().includes(searchVal) || 
                           (lead.phone && lead.phone.includes(searchVal)) ||
                           (lead.note && lead.note.toLowerCase().includes(searchVal));
@@ -161,7 +170,7 @@ function renderCRMBoard() {
 
     const card = document.createElement('div');
     card.className = `kanban-card ${lead.stage === 'failed' ? 'failed-card' : ''}`;
-    card.setAttribute('draggable', (user.role === 'admin' || user.role === 'sales') ? 'true' : 'false');
+    card.setAttribute('draggable', (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') ? 'true' : 'false');
     card.setAttribute('data-id', lead.id);
 
     // Get assigned sales name
@@ -188,21 +197,23 @@ function renderCRMBoard() {
         </div>
         <div class="card-value">${valDisplay}</div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-        <span class="card-sales-assignee" title="Sales phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
-        <span style="font-size: 9px; color: var(--text-muted);">${lead.date}</span>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
+        <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
+        <div style="font-size: 9px; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
+          <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
+          <div><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
+        </div>
       </div>
     `;
 
     // Click card to open detail
     card.addEventListener('click', (e) => {
-      // Don't open detail if dragging
       if (card.classList.contains('dragging')) return;
       openLeadDetailModal(lead.id);
     });
 
     // Drag and Drop events
-    if (user.role === 'admin' || user.role === 'sales') {
+    if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
       card.addEventListener('dragstart', (e) => {
         draggingLeadId = lead.id;
         e.dataTransfer.setData('text/plain', lead.id);
@@ -219,18 +230,16 @@ function renderCRMBoard() {
     container.appendChild(card);
   });
 
-  // Setup Column Dragover/Drop listeners (Only if user has edit permission)
+  // Setup Column Dragover/Drop listeners
   stages.forEach(st => {
     const col = document.getElementById(`col-${st}`);
     const container = col.querySelector('.kanban-cards-container');
     
-    // Update counts
     const countSpan = document.getElementById(`count-${st}`);
     const count = AppState.leads.filter(l => l.stage === st).length;
     countSpan.innerText = count;
 
-    if (user.role === 'admin' || user.role === 'sales') {
-      // Drag over
+    if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
       col.addEventListener('dragover', (e) => {
         e.preventDefault();
         col.classList.add('drag-over');
@@ -260,7 +269,7 @@ function handleLeadMove(leadId, targetStage) {
   if (lead.stage === targetStage) return;
 
   const currentRole = getCurrentUser().role;
-  if (currentRole !== 'admin' && currentRole !== 'sales') {
+  if (currentRole !== 'admin' && currentRole !== 'manager' && currentRole !== 'staff') {
     showToast('Bạn không có quyền chuyển đổi trạng thái khách hàng!', 'danger');
     return;
   }
@@ -278,6 +287,7 @@ function handleLeadMove(leadId, targetStage) {
       const oldStage = lead.stage;
       lead.stage = 'failed';
       lead.failReason = reason;
+      lead.updatedTime = formatDateTime(new Date());
       saveState();
       renderCRMBoard();
       addNotification('Cập nhật CRM', `Khách hàng ${lead.name} đã chuyển sang Thất bại: ${reason}`, 'warning');
@@ -288,6 +298,7 @@ function handleLeadMove(leadId, targetStage) {
     const oldStage = lead.stage;
     lead.stage = 'success';
     lead.failReason = null;
+    lead.updatedTime = formatDateTime(new Date());
     
     // Reward sales owner (+50 points)
     const salesRep = AppState.users.find(u => u.id === lead.salesId);
@@ -320,6 +331,7 @@ function handleLeadMove(leadId, targetStage) {
     const oldStage = lead.stage;
     lead.stage = targetStage;
     lead.failReason = null;
+    lead.updatedTime = formatDateTime(new Date());
     saveState();
     renderCRMBoard();
     
@@ -337,12 +349,6 @@ function handleLeadMove(leadId, targetStage) {
 // ==================== ADD LEAD LOGIC ==================== //
 function handleAddLeadSubmit(e) {
   e.preventDefault();
-  
-  const user = getCurrentUser();
-  if (user.role !== 'admin' && user.role !== 'sales') {
-    showToast('Chỉ Sales và Admin mới có quyền tạo mới khách hàng.', 'danger');
-    return;
-  }
 
   const name = document.getElementById('lead-name').value.trim();
   const phone = document.getElementById('lead-phone').value.trim();
@@ -354,6 +360,7 @@ function handleAddLeadSubmit(e) {
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const nowStr = formatDateTime(now);
 
   const newLead = {
     id: `lead-${Date.now()}`,
@@ -366,7 +373,9 @@ function handleAddLeadSubmit(e) {
     salesId,
     stage: 'receive_info',
     failReason: null,
-    date: dateStr
+    date: dateStr,
+    createdTime: nowStr,
+    updatedTime: nowStr
   };
 
   AppState.leads.push(newLead);
@@ -385,7 +394,7 @@ function openLeadDetailModal(leadId) {
   if (!lead) return;
 
   const user = getCurrentUser();
-  const isEditable = (user.role === 'admin' || user.role === 'sales');
+  const isEditable = (user.role === 'admin' || user.role === 'manager' || user.role === 'staff');
 
   document.getElementById('edit-lead-id').value = lead.id;
   document.getElementById('edit-lead-title-name').innerText = lead.name;
@@ -497,7 +506,7 @@ function handleEditLeadSubmit(e) {
   e.preventDefault();
 
   const user = getCurrentUser();
-  if (user.role !== 'admin' && user.role !== 'sales') {
+  if (user.role !== 'admin' && user.role !== 'manager' && user.role !== 'staff') {
     showToast('Bạn không có quyền sửa thông tin khách hàng.', 'danger');
     return;
   }
@@ -517,6 +526,10 @@ function handleEditLeadSubmit(e) {
   lead.note = document.getElementById('edit-lead-note').value.trim();
   lead.salesId = document.getElementById('edit-lead-sales').value;
   lead.stage = newStage;
+
+  if (oldStage !== newStage) {
+    lead.updatedTime = formatDateTime(new Date());
+  }
 
   if (newStage === 'failed') {
     const failSelect = document.getElementById('edit-lead-fail-reason');

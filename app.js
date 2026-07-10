@@ -100,6 +100,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebarRouter();
   initNotificationSystem();
   initRoleSwitcher();
+  initStaffManagement();
+  
+  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  const navStaff = document.getElementById('nav-staff-mgmt');
+  if (navStaff) {
+    navStaff.style.display = sessionUser.role === 'admin' ? 'block' : 'none';
+  }
+  
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.onclick = (e) => {
+      e.preventDefault();
+      localStorage.removeItem('minhhai_user');
+      window.location.href = 'login.html';
+    };
+  }
   
   // Initial render
   renderCurrentUser();
@@ -175,7 +191,8 @@ async function syncLoadState() {
       AppState.sausageLogs = data.sausageLogs;
       AppState.notifications = data.notifications;
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
-      AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || (data.users && data.users[0]?.id) || 'usr-1';
+      const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+      AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || loggedUser.id || (data.users && data.users[0]?.id) || 'usr-admin';
       
       // Also cache locally
       localStorage.setItem(CONFIG.LS_KEY_USERS, JSON.stringify(AppState.users));
@@ -328,7 +345,8 @@ function navigateToView(viewId, updateHash = true) {
     workflows: { main: 'Cấu Hình Quy Trình Công Việc', sub: 'Tùy chỉnh các bước thực hiện nghiệp vụ cho từng bộ phận.' },
     'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
     'facebook-config': { main: 'Cấu Hình Liên Kết Fanpage', sub: 'Kết nối Fanpage Facebook thực tế để tự động nhận tin nhắn khách hàng đổ về CRM.' },
-    rewards: { main: 'Đua Top Tích Xúc Xích', sub: 'Bảng thi đua xếp hạng thưởng dựa trên điểm hoàn thành công việc.' }
+    rewards: { main: 'Đua Top Tích Xúc Xích', sub: 'Bảng thi đua xếp hạng thưởng dựa trên điểm hoàn thành công việc.' },
+    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' }
   };
 
   if (titles[viewId]) {
@@ -349,6 +367,8 @@ function navigateToView(viewId, updateHash = true) {
     renderRewardsView();
   } else if (viewId === 'facebook-config') {
     renderFacebookConfig();
+  } else if (viewId === 'staff-management') {
+    renderStaffManagementTable();
   }
 }
 
@@ -421,12 +441,21 @@ function renderFacebookConfig() {
   }
 }
 
-// ==================== ROLE SWITCHER & USER INFO ==================== //
 function initRoleSwitcher() {
+  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  const selectorContainer = document.querySelector('.test-user-selector');
+  if (selectorContainer) {
+    if (sessionUser.role === 'admin' || sessionUser.role === 'manager') {
+      selectorContainer.style.display = 'flex';
+    } else {
+      selectorContainer.style.display = 'none';
+    }
+  }
+
   const switcher = document.getElementById('user-switcher');
   switcher.innerHTML = '';
   
-  const roleLabels = { admin: 'Admin', sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
   AppState.users.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.id;
@@ -454,7 +483,8 @@ function initRoleSwitcher() {
 }
 
 function getCurrentUser() {
-  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0];
 }
 
 function renderCurrentUser() {
@@ -465,13 +495,13 @@ function renderCurrentUser() {
   // Set role badge classes
   const badge = document.getElementById('current-user-role-badge');
   badge.className = 'role-badge';
-  const roleLabels = { admin: 'Quản lý / Admin', sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+  const roleLabels = { admin: 'Quản trị viên (Admin)', manager: 'Quản lý', staff: 'Nhân viên' };
   badge.innerText = roleLabels[user.role] || user.role;
   badge.classList.add(`badge-${user.role}`);
   
   // Set user avatar
   const avatarDiv = document.getElementById('current-user-avatar');
-  avatarDiv.innerHTML = `<i class="fa-solid ${user.avatar}"></i>`;
+  avatarDiv.innerHTML = `<i class="fa-solid ${user.avatar || 'fa-user'}"></i>`;
 }
 
 // ==================== DASHBOARD RENDER & CHARTS ==================== //
@@ -1022,5 +1052,95 @@ function openLeadsListModal(type) {
   });
 
   openModal('modal-leads-list');
+}
+
+function initStaffManagement() {
+  const formAddUser = document.getElementById('form-add-user');
+  if (formAddUser) {
+    formAddUser.onsubmit = async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('new-user-name').value.trim();
+      const u = document.getElementById('new-user-username').value.trim();
+      const p = document.getElementById('new-user-password').value.trim();
+      const r = document.getElementById('new-user-role').value;
+
+      try {
+        const res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, username: u, password: p, role: r })
+        });
+        const result = await res.json();
+        if (result.success) {
+          showToast('Đã tạo tài khoản nhân viên thành công!', 'success');
+          formAddUser.reset();
+          await syncLoadState();
+          renderStaffManagementTable();
+          initRoleSwitcher();
+        } else {
+          showToast(result.message || 'Lỗi khi tạo tài khoản!', 'error');
+        }
+      } catch (err) {
+        showToast('Không thể kết nối đến máy chủ!', 'error');
+      }
+    };
+  }
+}
+
+function renderStaffManagementTable() {
+  const tbody = document.getElementById('staff-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
+  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+
+  AppState.users.forEach(u => {
+    const tr = document.createElement('tr');
+    
+    const isSelf = u.id === sessionUser.id;
+    const isSupremeAdmin = u.id === 'usr-admin';
+    const deleteBtnHtml = (isSelf || isSupremeAdmin)
+      ? `<span class="text-muted" style="font-size:11px;">Mặc định</span>`
+      : `<button class="btn btn-outline btn-xs btn-delete-user" data-id="${u.id}" style="color:var(--color-error); border-color:var(--color-error);"><i class="fa-solid fa-trash-can"></i> Xóa</button>`;
+
+    tr.innerHTML = `
+      <td>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <div class="user-avatar" style="width:28px; height:28px; font-size:11px;"><i class="fa-solid ${u.avatar || 'fa-user'}"></i></div>
+          <div><strong>${u.name}</strong></div>
+        </div>
+      </td>
+      <td><code>${u.username || ''}</code></td>
+      <td><span class="role-badge badge-${u.role}">${roleLabels[u.role] || u.role}</span></td>
+      <td class="text-center"><strong>${u.points}</strong> <i class="fa-solid fa-hotdog" style="color:var(--color-primary); font-size:11px;"></i></td>
+      <td class="text-center">${deleteBtnHtml}</td>
+    `;
+    
+    tbody.appendChild(tr);
+  });
+
+  tbody.querySelectorAll('.btn-delete-user').forEach(btn => {
+    btn.onclick = async (e) => {
+      const userId = e.currentTarget.getAttribute('data-id');
+      if (!confirm('Bạn có chắc chắn muốn xóa nhân viên này khỏi hệ thống không?')) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (result.success) {
+          showToast('Đã xóa tài khoản nhân viên!', 'success');
+          await syncLoadState();
+          renderStaffManagementTable();
+          initRoleSwitcher();
+        } else {
+          showToast(result.message || 'Lỗi khi xóa nhân viên!', 'error');
+        }
+      } catch (err) {
+        showToast('Không thể kết nối đến máy chủ!', 'error');
+      }
+    };
+  });
 }
 

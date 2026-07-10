@@ -12,7 +12,7 @@ function initTasksEvents() {
   if (btnAddTask) {
     btnAddTask.addEventListener('click', () => {
       const user = getCurrentUser();
-      if (user.role !== 'admin') {
+      if (user.role !== 'admin' && user.role !== 'manager') {
         showToast('Chỉ Quản lý/Admin mới có quyền giao việc!', 'danger');
         return;
       }
@@ -97,25 +97,13 @@ function populateAssigneeDropdown(dept) {
   if (!select) return;
   select.innerHTML = '';
 
-  // Filter users by department
-  const filteredUsers = AppState.users.filter(u => u.dept === dept);
-  
-  if (filteredUsers.length === 0) {
-    // If no users in that department, show all
-    AppState.users.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u.id;
-      opt.innerText = `${u.name} (${u.role.toUpperCase()})`;
-      select.appendChild(opt);
-    });
-  } else {
-    filteredUsers.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u.id;
-      opt.innerText = u.name;
-      select.appendChild(opt);
-    });
-  }
+  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
+  AppState.users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.innerText = `${u.name} (${roleLabels[u.role] || u.role})`;
+    select.appendChild(opt);
+  });
 }
 
 // ==================== RENDERING TASKS LIST ==================== //
@@ -139,7 +127,7 @@ function renderTasksList() {
 
   // Task Action controls wrapper
   const actionWrapper = document.getElementById('task-actions-wrapper');
-  if (user.role === 'admin') {
+  if (user.role === 'admin' || user.role === 'manager') {
     actionWrapper.style.display = 'block';
   } else {
     actionWrapper.style.display = 'none';
@@ -169,7 +157,7 @@ function renderTasksList() {
     // Workflow Select rendering
     const steps = AppState.workflows[task.dept] || [];
     const isAssignee = (user.id === task.assigneeId);
-    const isManager = (user.role === 'admin');
+    const isManager = (user.role === 'admin' || user.role === 'manager');
     const isCompleted = (task.status === 'completed');
     const canEditProgress = (isAssignee || isManager) && !isCompleted;
 
@@ -230,7 +218,7 @@ function renderTasksList() {
               <i class="fa-solid fa-share-from-square"></i> Nộp kết quả
             </button>
           `;
-        } else if (user.role === 'admin') {
+        } else if (user.role === 'admin' || user.role === 'manager') {
           actionButtons = `
             <button class="btn btn-xs btn-secondary btn-complete-direct" data-id="${task.id}">
               <i class="fa-solid fa-check"></i> Xong ngay
@@ -242,8 +230,8 @@ function renderTasksList() {
       }
     }
 
-    // Admin can delete any active task
-    if (user.role === 'admin') {
+    // Admin/Manager can delete any active task
+    if (user.role === 'admin' || user.role === 'manager') {
       actionButtons += `
         <button class="btn btn-xs btn-outline btn-delete-task" data-id="${task.id}" style="margin-left: 6px;" title="Xóa công việc">
           <i class="fa-solid fa-trash"></i>
@@ -314,8 +302,8 @@ function handleAddTaskSubmit(e) {
   e.preventDefault();
 
   const user = getCurrentUser();
-  if (user.role !== 'admin') {
-    showToast('Chỉ Admin mới có quyền giao việc!', 'danger');
+  if (user.role !== 'admin' && user.role !== 'manager') {
+    showToast('Chỉ Quản lý/Admin mới có quyền giao việc!', 'danger');
     return;
   }
 
@@ -401,7 +389,7 @@ function approveTask(taskId, direct = false) {
   if (!task) return;
 
   const user = getCurrentUser();
-  if (user.role !== 'admin') {
+  if (user.role !== 'admin' && user.role !== 'manager') {
     showToast('Chỉ Quản lý/Admin mới có quyền phê duyệt công việc!', 'danger');
     return;
   }

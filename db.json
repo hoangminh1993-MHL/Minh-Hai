@@ -1,37 +1,204 @@
 {
   "users": [
-    {"id":"usr-1","name":"Nguyen Duc Viet","role":"admin","dept":"admin","points":0,"avatar":"fa-user-tie"},
-    {"id":"usr-2","name":"Tran Thi Mai","role":"admin","dept":"admin","points":0,"avatar":"fa-user-tie"},
-    {"id":"usr-3","name":"Le Hoang Yen","role":"admin","dept":"admin","points":0,"avatar":"fa-user-tie"},
-    {"id":"usr-4","name":"Pham Thanh Binh","role":"sales","dept":"sales","points":0,"avatar":"fa-user-nurse"},
-    {"id":"usr-5","name":"Hoang Kim Oanh","role":"sales","dept":"sales","points":0,"avatar":"fa-user-nurse"},
-    {"id":"usr-6","name":"Le Anh Tuan","role":"sales","dept":"sales","points":0,"avatar":"fa-user-ninja"},
-    {"id":"usr-7","name":"Do Hong Hanh","role":"sales","dept":"sales","points":0,"avatar":"fa-user-nurse"},
-    {"id":"usr-8","name":"Nguyen Van Dung","role":"sales","dept":"sales","points":0,"avatar":"fa-user-ninja"},
-    {"id":"usr-9","name":"Bui Quoc Dat","role":"sourcing","dept":"sourcing","points":0,"avatar":"fa-user-astronaut"},
-    {"id":"usr-10","name":"Dang Khanh Linh","role":"sourcing","dept":"sourcing","points":0,"avatar":"fa-user-nurse"},
-    {"id":"usr-11","name":"Ngo Gia Bao","role":"sourcing","dept":"sourcing","points":0,"avatar":"fa-user-astronaut"},
-    {"id":"usr-12","name":"Phung Tien Dung","role":"sourcing","dept":"sourcing","points":0,"avatar":"fa-user-ninja"},
-    {"id":"usr-13","name":"Trinh Hoai Nam","role":"sourcing","dept":"sourcing","points":0,"avatar":"fa-user-ninja"},
-    {"id":"usr-14","name":"Ly Hai Nam","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Quang Chau"},
-    {"id":"usr-15","name":"Vuong Hong Quan","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Tham Quyen"},
-    {"id":"usr-16","name":"Nguyen Van Hung","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Ha Noi"},
-    {"id":"usr-17","name":"Le Van Nam","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Ha Noi"},
-    {"id":"usr-18","name":"Dinh Gia Huy","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Sai Gon"},
-    {"id":"usr-19","name":"Vo Minh Triet","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Sai Gon"},
-    {"id":"usr-20","name":"Truong Quoc Khanh","role":"warehouse","dept":"warehouse","points":0,"avatar":"fa-user-ninja","loc":"Kho Sai Gon"}
+    {
+      "id": "usr-admin",
+      "name": "Quản trị viên Minh Hải",
+      "username": "admin",
+      "password": "minhhai_admin_2026",
+      "role": "admin",
+      "points": 0,
+      "avatar": "fa-user-tie"
+    },
+    {
+      "id": "usr-1",
+      "name": "Nguyễn Hoàng Minh",
+      "username": "hoangminh",
+      "password": "Hoangminh93!0911",
+      "role": "admin",
+      "points": 0,
+      "avatar": "fa-user-tie"
+    },
+    {
+      "id": "usr-2",
+      "name": "Trần Tú Anh",
+      "username": "tuanh",
+      "password": "a123",
+      "role": "admin",
+      "points": 0,
+      "avatar": "fa-user-tie"
+    },
+    {
+      "id": "usr-3",
+      "name": "Phùng Thị Minh Phương",
+      "username": "minhphuong",
+      "password": "a123",
+      "role": "manager",
+      "points": 0,
+      "avatar": "fa-user-nurse"
+    },
+    {
+      "id": "usr-4",
+      "name": "Đoàn Thị Hải Linh",
+      "username": "hailinh",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-5",
+      "name": "Đặng Thị Phương Thảo",
+      "username": "phuongthao",
+      "password": "a123",
+      "role": "manager",
+      "points": 0,
+      "avatar": "fa-user-nurse"
+    },
+    {
+      "id": "usr-6",
+      "name": "Lê Thị Thùy Trang",
+      "username": "thuytrang",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-7",
+      "name": "Bùi Thị Bích Phượng",
+      "username": "bichphuong",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-8",
+      "name": "Nguyễn Phương Anh",
+      "username": "phuonganh",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-9",
+      "name": "Phạm Duy Hưng",
+      "username": "duyhung",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-10",
+      "name": "Đỗ Như Quỳnh",
+      "username": "nhuquynh",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-11",
+      "name": "Vũ Linh Chi",
+      "username": "linhchi",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-12",
+      "name": "Lưu Thành Đạt",
+      "username": "thanhdat",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-13",
+      "name": "Dương Thị Hồng Yến",
+      "username": "hongyen",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-14",
+      "name": "Đào Minh Tuấn",
+      "username": "minhtuan",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-15",
+      "name": "Nguyễn Tuấn Anh",
+      "username": "tuananh",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-16",
+      "name": "Trịnh Thị Bình Dương",
+      "username": "binhduong",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    },
+    {
+      "id": "usr-17",
+      "name": "Mai Thị Thu Hiền",
+      "username": "thuhien",
+      "password": "a123",
+      "role": "staff",
+      "points": 0,
+      "avatar": "fa-user-ninja"
+    }
   ],
   "leads": [],
   "tasks": [],
   "workflows": {
-    "sales": ["Nhan thong tin","Lay SDT","Tu van so bo","Bao gia","Thuong luong","Thanh cong","That bai"],
-    "sourcing": ["Nhan yeu cau dat hang","Tim nguon & Dam phan gia","Yeu cau khach coc","Mua hang & Thanh toan te (RMB)","Hang ve kho Quang Chau"],
-    "warehouse": ["Nhan hang tai Quang Chau","Kiem dem & Dong bao go","Xuat kho Trung Quoc","Thong quan bien gioi","Nhap kho dich (HN/SG)","Giao hang thanh cong"],
-    "admin": ["Nhan phieu yeu cau chi","Ke toan phe duyet thanh toan","Doi soat cong no cuoi thang"]
+    "sales": [
+      "Nhận thông tin",
+      "Lấy SĐT",
+      "Tư vấn sơ bộ",
+      "Báo giá",
+      "Thương lượng",
+      "Thành công",
+      "Thất bại"
+    ],
+    "sourcing": [
+      "Nhận yêu cầu đặt hàng",
+      "Tìm nguồn & Đàm phán giá",
+      "Yêu cầu khách cọc",
+      "Mua hàng & Thanh toán tệ (RMB)",
+      "Hàng về kho Quảng Châu"
+    ],
+    "warehouse": [
+      "Nhận hàng tại Quảng Châu",
+      "Kiểm đếm & Đóng bao gỗ",
+      "Xuất kho Trung Quốc",
+      "Thông quan biên giới",
+      "Nhập kho đích (HN/SG)",
+      "Giao hàng thành công"
+    ],
+    "admin": [
+      "Nhận phiếu yêu cầu chi",
+      "Kế toán phê duyệt thanh toán",
+      "Đối soát công nợ cuối tháng"
+    ]
   },
   "sausageLogs": [],
   "notifications": [],
-  "currentUserId": "usr-1",
+  "currentUserId": "usr-admin",
   "fbConfig": {
     "accessToken": "",
     "pageUrl": ""

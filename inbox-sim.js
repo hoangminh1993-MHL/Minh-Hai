@@ -81,8 +81,8 @@ function handleSendSimMsg() {
   messagesBox.scrollTop = messagesBox.scrollHeight;
 
   // 2. Automate Lead creation in CRM first stage (Nhận thông tin)
-  // Randomly assign to one of the Sales reps
-  const salesUsers = AppState.users.filter(u => u.role === 'sales');
+  // Randomly assign to one of the active Staff or Manager reps
+  const salesUsers = AppState.users.filter(u => u.role === 'staff' || u.role === 'manager');
   const randomSales = salesUsers[Math.floor(Math.random() * salesUsers.length)] || AppState.users[0];
 
   const now = new Date();
@@ -113,13 +113,13 @@ function handleSendSimMsg() {
 
   // 3. Render System Response after 1.2s delay
   setTimeout(() => {
-    const autoReplyText = `[Minh Hải Logistics] Dạ chào anh/chị ${clientName}! Hệ thống đã nhận được nhu cầu của mình: "${messageText.substring(0, 40)}${messageText.length > 40 ? '...' : ''}". Cước vận chuyển và thủ tục hải quan đã được gửi cho Sales ${randomSales.name} phụ trách. Anh/chị đợi chút Sales sẽ liên hệ tư vấn qua SĐT/Zalo ngay ạ!`;
+    const autoReplyText = `[Minh Hải Logistics] Dạ chào anh/chị ${clientName}! Hệ thống đã nhận được nhu cầu của mình: "${messageText.substring(0, 40)}${messageText.length > 40 ? '...' : ''}". Yêu cầu đã được chuyển cho nhân viên ${randomSales.name} phụ trách. Anh/chị đợi chút chúng em sẽ liên hệ tư vấn qua SĐT/Zalo ngay ạ!`;
     
     appendChatBubble(messagesBox, autoReplyText, 'sent');
     messagesBox.scrollTop = messagesBox.scrollHeight;
 
     // Trigger visual notification & badge
-    addNotification('Khách hàng mới tự động 📩', `Khách hàng ${clientName} nhắn tin lên fanpage. Tự động thêm vào phễu CRM (Nhận thông tin). Giao cho Sales: ${randomSales.name}.`, 'success');
+    addNotification('Khách hàng mới tự động 📩', `Khách hàng ${clientName} nhắn tin lên fanpage. Tự động thêm vào phễu CRM (Nhận thông tin). Giao cho: ${randomSales.name}.`, 'success');
     
     // Toggle pulse badge in sidebar if not on simulator tab
     if (activeTab !== 'inbox-simulator') {

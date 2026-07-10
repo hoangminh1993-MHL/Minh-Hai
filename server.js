@@ -121,6 +121,87 @@ app.post('/api/reset', async (req, res) => {
   }
 });
 
+// POST /api/login: User authentication
+app.post('/api/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, message: 'Vui lòng điền tài khoản và mật khẩu!' });
+  }
+  
+  try {
+    const state = await loadState();
+    const user = (state.users || []).find(
+      u => u.username && u.username.toLowerCase() === username.toLowerCase() && u.password === password
+    );
+    
+    if (user) {
+      const safeUser = { id: user.id, name: user.name, username: user.username, role: user.role };
+      res.json({ success: true, user: safeUser });
+    } else {
+      res.status(401).json({ success: false, message: 'Tài khoản hoặc mật khẩu không chính xác!' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// POST /api/users: Add new staff account
+app.post('/api/users', async (req, res) => {
+  const { name, username, password, role } = req.body;
+  if (!name || !username || !password || !role) {
+    return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ thông tin nhân viên!' });
+  }
+  
+  try {
+    const state = await loadState();
+    state.users = state.users || [];
+    
+    const exists = state.users.some(u => u.username && u.username.toLowerCase() === username.toLowerCase());
+    if (exists) {
+      return res.status(400).json({ success: false, message: 'Tên đăng nhập đã tồn tại!' });
+    }
+    
+    const newUser = {
+      id: 'usr-' + Math.random().toString(36).substring(2, 10),
+      name,
+      username,
+      password,
+      role,
+      points: 0,
+      avatar: role === 'admin' ? 'fa-user-tie' : (role === 'manager' ? 'fa-user-nurse' : 'fa-user-ninja')
+    };
+    
+    state.users.push(newUser);
+    await saveState(state);
+    res.json({ success: true, user: { id: newUser.id, name: newUser.name, role: newUser.role } });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// DELETE /api/users/:id: Delete staff account
+app.delete('/api/users/:id', async (req, res) => {
+  const userId = req.params.id;
+  if (userId === 'usr-admin') {
+    return res.status(400).json({ success: false, message: 'Không thể xóa tài khoản Admin tối cao!' });
+  }
+  
+  try {
+    const state = await loadState();
+    state.users = state.users || [];
+    const index = state.users.findIndex(u => u.id === userId);
+    if (index !== -1) {
+      state.users.splice(index, 1);
+      await saveState(state);
+      res.json({ success: true, message: 'Đã xóa nhân viên thành công!' });
+    } else {
+      res.status(404).json({ success: false, message: 'Không tìm thấy nhân viên!' });
+    }
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // GET /webhook: Facebook Webhook verification endpoint
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
@@ -183,8 +264,9 @@ app.post('/webhook', async (req, res) => {
             
             // Add lead
             const leadId = 'lead-fb-' + Math.random().toString(36).substring(2, 10);
-            const now = new Date().toISOString().split('T')[0];
-            const timeStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
+            const localNow = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+            const now = localNow.toISOString().split('T')[0];
+            const timeStr = localNow.toISOString().replace('T', ' ').substring(0, 16);
             let clientName = `Khách FB (${senderId})`;
             
             // Try to resolve sender name via Facebook Graph API using the Access Token
@@ -197,9 +279,9 @@ app.post('/webhook', async (req, res) => {
             }
             
             // Randomly assign sales user
-            const salesUsers = (state.users || []).filter(u => u.role === 'sales');
-            let assignedSalesId = 'usr-4';
-            let assignedSalesName = 'Pham Thanh Binh';
+            const salesUsers = (state.users || []).filter(u => u.role === 'staff' || u.role === 'manager');
+            let assignedSalesId = 'usr-admin';
+            let assignedSalesName = 'Quản trị viên';
             if (salesUsers.length > 0) {
               const randUser = salesUsers[Math.floor(Math.random() * salesUsers.length)];
               assignedSalesId = randUser.id;
@@ -217,7 +299,9 @@ app.post('/webhook', async (req, res) => {
               salesId: assignedSalesId,
               stage: 'receive_info',
               failReason: null,
-              date: now
+              date: now,
+              createdTime: timeStr,
+              updatedTime: timeStr
             };
             
             state.leads = state.leads || [];
