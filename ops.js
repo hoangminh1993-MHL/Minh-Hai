@@ -728,7 +728,16 @@ function renderActiveStepPanel() {
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
       
-      const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || file.url.toLowerCase().includes('drive.google.com/thumbnail') || file.url.toLowerCase().includes('googleusercontent.com');
+      const nameLower = file.name.toLowerCase();
+      const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
+                      file.url.toLowerCase().includes('drive.google.com/thumbnail') || 
+                      file.url.toLowerCase().includes('googleusercontent.com') ||
+                      nameLower.includes('ảnh') || 
+                      nameLower.includes('anh') || 
+                      nameLower.includes('image') || 
+                      nameLower.includes('png') || 
+                      nameLower.includes('jpg') || 
+                      nameLower.includes('jpeg');
       const imgPreview = isImage ? `<img src="${file.url}" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
 
       row.innerHTML = `
