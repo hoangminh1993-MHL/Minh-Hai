@@ -398,6 +398,27 @@ function renderFacebookConfig() {
       showToast('Đã lưu cấu hình Fanpage thành công!', 'success');
     };
   }
+
+  const btnReset = document.getElementById('btn-reset-db');
+  if (btnReset) {
+    btnReset.onclick = async () => {
+      if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu nháp (khách hàng, công việc, thông báo, nhật ký xúc xích) để nhập test mới từ đầu không?')) {
+        return;
+      }
+      try {
+        const res = await fetch('/api/reset', { method: 'POST' });
+        const result = await res.json();
+        if (result.success) {
+          showToast('Đã xóa dữ liệu nháp thành công! Đang tải lại...', 'success');
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          showToast('Có lỗi xảy ra: ' + result.error, 'error');
+        }
+      } catch (err) {
+        showToast('Không thể kết nối đến máy chủ!', 'error');
+      }
+    };
+  }
 }
 
 // ==================== ROLE SWITCHER & USER INFO ==================== //

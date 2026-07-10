@@ -92,6 +92,35 @@ app.post('/api/state', async (req, res) => {
   }
 });
 
+// POST /api/reset: Clear all leads, tasks, notifications, and logs to clean test state
+app.post('/api/reset', async (req, res) => {
+  try {
+    const state = await loadState();
+    
+    // Clear leads, tasks, logs, and notifications
+    state.leads = [];
+    state.tasks = [];
+    state.sausageLogs = [];
+    state.notifications = [];
+    state.fbConfig = {
+      accessToken: state.fbConfig ? state.fbConfig.accessToken : "",
+      pageUrl: state.fbConfig ? state.fbConfig.pageUrl : ""
+    };
+    
+    // Reset user points
+    if (Array.isArray(state.users)) {
+      state.users.forEach(u => {
+        u.points = 0;
+      });
+    }
+    
+    await saveState(state);
+    res.json({ success: true, message: 'Database reset successfully!' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /webhook: Facebook Webhook verification endpoint
 app.get('/webhook', (req, res) => {
   const mode = req.query['hub.mode'];
