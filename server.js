@@ -25,7 +25,23 @@ async function loadState() {
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
       const res = await client.query('SELECT state_json FROM app_state WHERE id = 1');
       if (res.rows.length > 0) {
-        return JSON.parse(res.rows[0].state_json);
+        const dbState = JSON.parse(res.rows[0].state_json);
+        
+        // Auto-sync users list from local db.json if the database users list is different or doesn't have the new users
+        try {
+          const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
+          const localState = JSON.parse(localStateRaw);
+          const hasNewUsers = localState.users && (!dbState.users || dbState.users.length !== localState.users.length || !dbState.users.some(u => u.username === 'hoangminh'));
+          if (hasNewUsers) {
+            console.log('Syncing updated users list from db.json to Supabase...');
+            dbState.users = localState.users;
+            await client.query('UPDATE app_state SET state_json = $1 WHERE id = 1', [JSON.stringify(dbState)]);
+          }
+        } catch (e) {
+          console.error('Failed to sync users list:', e);
+        }
+        
+        return dbState;
       } else {
         // Seed database from local db.json
         console.log('Seeding database with default mock data...');
