@@ -137,6 +137,33 @@ app.get('/webhook', (req, res) => {
   }
 });
 
+const https = require('https');
+
+function getFBProfileName(senderId, accessToken) {
+  return new Promise((resolve) => {
+    const url = `https://graph.facebook.com/v20.0/${senderId}?fields=first_name,last_name&access_token=${accessToken}`;
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const profile = JSON.parse(data);
+          if (profile && profile.first_name) {
+            const fullName = `${profile.first_name} ${profile.last_name || ''}`.trim();
+            resolve(fullName);
+          } else {
+            resolve(null);
+          }
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    }).on('error', () => {
+      resolve(null);
+    });
+  });
+}
+
 // POST /webhook: Receive Facebook Messenger event payloads
 app.post('/webhook', async (req, res) => {
   const body = req.body;
@@ -159,6 +186,15 @@ app.post('/webhook', async (req, res) => {
             const now = new Date().toISOString().split('T')[0];
             const timeStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
             let clientName = `Khách FB (${senderId})`;
+            
+            // Try to resolve sender name via Facebook Graph API using the Access Token
+            if (state.fbConfig && state.fbConfig.accessToken) {
+              const fbName = await getFBProfileName(senderId, state.fbConfig.accessToken);
+              if (fbName) {
+                clientName = fbName;
+                console.log(`Resolved sender profile name: ${clientName}`);
+              }
+            }
             
             // Randomly assign sales user
             const salesUsers = (state.users || []).filter(u => u.role === 'sales');
