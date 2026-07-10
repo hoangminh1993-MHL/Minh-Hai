@@ -1,4 +1,13 @@
 // ==================== GLOBAL STATE & CONFIGURATION ==================== //
+function getApiUrl(path) {
+  const customApiBase = localStorage.getItem('minhhai_custom_api_base');
+  if (customApiBase) {
+    const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
+    return `${base}${path}`;
+  }
+  return path;
+}
+
 const CONFIG = {
   LS_KEY_USERS: 'votr_users_db',
   LS_KEY_LEADS: 'votr_leads_db',
@@ -108,6 +117,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     navStaff.style.display = sessionUser.role === 'admin' ? 'block' : 'none';
   }
   
+  const btnConfigApi = document.getElementById('btn-config-api');
+  if (btnConfigApi) {
+    btnConfigApi.onclick = (e) => {
+      e.preventDefault();
+      const current = localStorage.getItem('minhhai_custom_api_base') || '';
+      const url = prompt('Nhập địa chỉ API Server (ví dụ: https://xxxx.free.pinggy.net hoặc http://localhost:3000):', current);
+      if (url !== null) {
+        localStorage.setItem('minhhai_custom_api_base', url.trim());
+        alert('Đã lưu cấu hình kết nối API! Trình duyệt sẽ tự động tải lại.');
+        window.location.reload();
+      }
+    };
+  }
+
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) {
     btnLogout.onclick = (e) => {
@@ -181,7 +204,7 @@ function initLocalStorage() {
 
 async function syncLoadState() {
   try {
-    const res = await fetch('/api/state');
+    const res = await fetch(getApiUrl('/api/state'));
     if (res.ok) {
       const data = await res.json();
       AppState.users = data.users;
@@ -231,7 +254,7 @@ async function saveState() {
   
   // Sync to server API in background
   try {
-    await fetch('/api/state', {
+    await fetch(getApiUrl('/api/state'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(AppState)
@@ -246,7 +269,7 @@ function startStatePolling() {
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(async () => {
     try {
-      const res = await fetch('/api/state');
+      const res = await fetch(getApiUrl('/api/state'));
       if (res.ok) {
         const data = await res.json();
         
@@ -426,7 +449,7 @@ function renderFacebookConfig() {
         return;
       }
       try {
-        const res = await fetch('/api/reset', { method: 'POST' });
+        const res = await fetch(getApiUrl('/api/reset'), { method: 'POST' });
         const result = await res.json();
         if (result.success) {
           showToast('Đã xóa dữ liệu nháp thành công! Đang tải lại...', 'success');
@@ -1068,7 +1091,7 @@ function initStaffManagement() {
       const r = document.getElementById('new-user-role').value;
 
       try {
-        const res = await fetch('/api/users', {
+        const res = await fetch(getApiUrl('/api/users'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, username: u, password: p, role: r })
@@ -1130,7 +1153,7 @@ function renderStaffManagementTable() {
         return;
       }
       try {
-        const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+        const res = await fetch(getApiUrl(`/api/users/${userId}`), { method: 'DELETE' });
         const result = await res.json();
         if (result.success) {
           showToast('Đã xóa tài khoản nhân viên!', 'success');
