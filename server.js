@@ -308,7 +308,7 @@ app.post('/webhook', async (req, res) => {
               id: leadId,
               name: clientName,
               phone: '',
-              wechat: '',
+              source: 'Fanpage',
               valRmb: 0,
               valVnd: 0,
               note: `[Tin nhắn từ Fanpage]: ${messageText}`,

@@ -92,7 +92,7 @@ function handleSendSimMsg() {
     id: `lead-${Date.now()}`,
     name: clientName,
     phone: clientPhone,
-    wechat: '',
+    source: 'Fanpage',
     valRmb: 0,
     valVnd: 0,
     note: `[Nhắn tin từ Fanpage]: ${messageText}`,

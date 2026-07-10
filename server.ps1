@@ -110,7 +110,7 @@ if ($HttpServer) {
             id = $leadId
             name = $clientName
             phone = ""
-            wechat = ""
+            source = "Fanpage"
             valRmb = 0
             valVnd = 0
             note = "[Tin nhan tu Fanpage]: $messageText"

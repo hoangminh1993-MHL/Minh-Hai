@@ -738,8 +738,15 @@
             <input type="text" id="lead-phone" class="form-control" placeholder="Nhập số điện thoại (ví dụ: 0987xxxxxx)">
           </div>
           <div class="form-group">
-            <label for="lead-wechat">Wechat/Zalo</label>
-            <input type="text" id="lead-wechat" class="form-control" placeholder="Nhập tài khoản Wechat hoặc Zalo">
+            <label for="lead-source">Nguồn KH</label>
+            <select id="lead-source" class="form-control">
+              <option value="Fanpage">Fanpage</option>
+              <option value="KH cũ">KH cũ</option>
+              <option value="BNI">BNI</option>
+              <option value="GT">GT</option>
+              <option value="Cá nhân">Cá nhân</option>
+              <option value="Giới thiệu">Giới thiệu</option>
+            </select>
           </div>
           <div class="form-row">
             <div class="form-group col-6">
@@ -856,8 +863,15 @@
               <input type="text" id="edit-lead-phone" class="form-control">
             </div>
             <div class="form-group col-6">
-              <label for="edit-lead-wechat">Wechat/Zalo</label>
-              <input type="text" id="edit-lead-wechat" class="form-control">
+              <label for="edit-lead-source">Nguồn KH</label>
+              <select id="edit-lead-source" class="form-control">
+                <option value="Fanpage">Fanpage</option>
+                <option value="KH cũ">KH cũ</option>
+                <option value="BNI">BNI</option>
+                <option value="GT">GT</option>
+                <option value="Cá nhân">Cá nhân</option>
+                <option value="Giới thiệu">Giới thiệu</option>
+              </select>
             </div>
           </div>
 
@@ -904,9 +918,15 @@
               <option value="">-- Chọn lý do thất bại --</option>
               <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
               <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
-              <option value="Mất liên lạc / Không nghe máy">Mất liên lạc / Không nghe máy</option>
-              <option value="Đã chọn đối thủ cạnh tranh">Đã chọn đối thủ cạnh tranh</option>
-              <option value="Không có nhu cầu thực tế">Không có nhu cầu thực tế</option>
+              <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
+              <option value="Trả lời chậm">Trả lời chậm</option>
+              <option value="Hàng khó từ chối">Hàng khó từ chối</option>
+              <option value="Không đủ năng lực xử lý hàng">Không đủ năng lực xử lý hàng</option>
+              <option value="Không cạnh tranh được giá dịch vụ với đối thủ">Không cạnh tranh được giá dịch vụ với đối thủ</option>
+              <option value="Không tìm được hàng cho KH">Không tìm được hàng cho KH</option>
+              <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
+              <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
+              <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
               <option value="Khác">Lý do khác</option>
             </select>
             <input type="text" id="edit-lead-fail-reason-other" class="form-control mt-2" placeholder="Nhập lý do cụ thể..." style="display:none; margin-top: 8px;">
@@ -938,9 +958,15 @@
             <option value="">-- Chọn nguyên nhân --</option>
             <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
             <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
-            <option value="Mất liên lạc / Không nghe máy">Mất liên lạc / Không nghe máy</option>
-            <option value="Đã chọn đối thủ cạnh tranh">Đã chọn đối thủ cạnh tranh</option>
-            <option value="Không có nhu cầu thực tế">Không có nhu cầu thực tế</option>
+            <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
+            <option value="Trả lời chậm">Trả lời chậm</option>
+            <option value="Hàng khó từ chối">Hàng khó từ chối</option>
+            <option value="Không đủ năng lực xử lý hàng">Không đủ năng lực xử lý hàng</option>
+            <option value="Không cạnh tranh được giá dịch vụ với đối thủ">Không cạnh tranh được giá dịch vụ với đối thủ</option>
+            <option value="Không tìm được hàng cho KH">Không tìm được hàng cho KH</option>
+            <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
+            <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
+            <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
             <option value="Khác">Lý do khác</option>
           </select>
           <input type="text" id="prompt-fail-reason-other" class="form-control" placeholder="Nhập lý do khác cụ thể..." style="display:none; margin-top: 8px;">
@@ -967,7 +993,7 @@
             <thead>
               <tr>
                 <th>Khách Hàng</th>
-                <th>SĐT / Zalo / WeChat</th>
+                <th>SĐT / Nguồn KH</th>
                 <th>Sales Phụ Trách</th>
                 <th>Giá Trị</th>
                 <th>Ngày Tạo</th>

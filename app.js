@@ -1032,7 +1032,10 @@ function openLeadsListModal(type) {
     tr.title = 'Click để xem chi tiết';
     tr.innerHTML = `
       <td><strong>${lead.name}</strong></td>
-      <td>${lead.phone || 'Chưa có SĐT'}</td>
+      <td>
+        <div>${lead.phone || 'Chưa có SĐT'}</div>
+        <div style="font-size: 11px; color: var(--text-secondary);">${lead.source || 'Fanpage'}</div>
+      </td>
       <td>${salesName}</td>
       <td class="text-gold" style="font-weight:600;">${valDisplay}</td>
       <td><span style="font-size:11px; color:var(--text-muted);">${lead.date}</span></td>

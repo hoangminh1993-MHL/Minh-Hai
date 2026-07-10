@@ -352,7 +352,7 @@ function handleAddLeadSubmit(e) {
 
   const name = document.getElementById('lead-name').value.trim();
   const phone = document.getElementById('lead-phone').value.trim();
-  const wechat = document.getElementById('lead-wechat').value.trim();
+  const source = document.getElementById('lead-source').value;
   const valRmb = parseInt(document.getElementById('lead-val-rmb').value) || 0;
   const valVnd = parseInt(document.getElementById('lead-val-vnd').value) || 0;
   const note = document.getElementById('lead-note').value.trim();
@@ -366,7 +366,7 @@ function handleAddLeadSubmit(e) {
     id: `lead-${Date.now()}`,
     name,
     phone,
-    wechat,
+    source,
     valRmb,
     valVnd,
     note,
@@ -419,7 +419,7 @@ function openLeadDetailModal(leadId) {
   // Fill form
   document.getElementById('edit-lead-name').value = lead.name;
   document.getElementById('edit-lead-phone').value = lead.phone || '';
-  document.getElementById('edit-lead-wechat').value = lead.wechat || '';
+  document.getElementById('edit-lead-source').value = lead.source || 'Fanpage';
   document.getElementById('edit-lead-val-rmb').value = lead.valRmb || 0;
   document.getElementById('edit-lead-val-vnd').value = lead.valVnd || 0;
   document.getElementById('edit-lead-note').value = lead.note || '';
@@ -520,7 +520,7 @@ function handleEditLeadSubmit(e) {
 
   lead.name = document.getElementById('edit-lead-name').value.trim();
   lead.phone = document.getElementById('edit-lead-phone').value.trim();
-  lead.wechat = document.getElementById('edit-lead-wechat').value.trim();
+  lead.source = document.getElementById('edit-lead-source').value;
   lead.valRmb = parseInt(document.getElementById('edit-lead-val-rmb').value) || 0;
   lead.valVnd = parseInt(document.getElementById('edit-lead-val-vnd').value) || 0;
   lead.note = document.getElementById('edit-lead-note').value.trim();
