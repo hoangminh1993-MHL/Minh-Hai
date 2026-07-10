@@ -613,5 +613,336 @@
     "fbConfig":  {
                      "accessToken":  "EAAO6Kh5a5pYBRwZBqSnaNDFDxnKPwGtyz2npfejiHIYllZCRLkuTMoqCuebmgPcacjF1ZBvlWSsXi5FT4v9EzIhb3QyfyIxh1dispZCsTqhuZBUknz0eLmi9scGEgrPHQf9SuKMkdZA1V4PUZA4X9KWj09DEIIqiuQyG6EeRCMqGp7RNoqWNk9vN6XBaYwMmjuiL4ZAut4A7",
                      "pageUrl":  ""
-                 }
+                 },
+    "clients":  [
+                    {
+                        "source":  "khach cu",
+                        "id":  "client-1",
+                        "type":  "chinh ngach",
+                        "tier":  "VIP 1",
+                        "note":  "Khach si nhap vai lo lon",
+                        "social":  "fb.com/namthuan",
+                        "name":  "Nam Thuan Textile",
+                        "cskhId":  "usr-6",
+                        "createdTime":  "2026-07-10 14:00",
+                        "code":  "MH401",
+                        "phone":  "0988776655",
+                        "managerId":  "usr-admin"
+                    },
+                    {
+                        "source":  "doi tac",
+                        "id":  "client-2",
+                        "type":  "ca hai",
+                        "tier":  "VIP 2",
+                        "note":  "Nhap do bep gia dung",
+                        "social":  "zalo.me/gia_dung_hp",
+                        "name":  "Bach Hoa Gia Dung Hai Phong",
+                        "cskhId":  "usr-7",
+                        "createdTime":  "2026-07-10 15:00",
+                        "code":  "MH402",
+                        "phone":  "0911223344",
+                        "managerId":  "usr-admin"
+                    }
+                ],
+    "projects":  [
+                     {
+                         "history":  [
+
+                                     ],
+                         "id":  "project-1",
+                         "type":  "khach hang VIP",
+                         "documents":  [
+                                           {
+                                               "url":  "https://drive.google.com",
+                                               "name":  "Hop dong khung 2026",
+                                               "note":  "Ban scan goc",
+                                               "type":  "drive"
+                                           }
+                                       ],
+                         "notes":  "Can chu y chung tu hai quan vi ap ma HS uu dai thue quan dac biet.",
+                         "name":  "Du an det may Nam Thuan",
+                         "members":  [
+                                         "usr-6",
+                                         "usr-7"
+                                     ],
+                         "desc":  "Quan ly toan bo cac lo hang va thu tuc nhap khau cho det may Nam Thuan",
+                         "status":  "doing",
+                         "managerId":  "usr-admin"
+                     }
+                 ],
+    "shipment_workflows":  [
+                               {
+                                   "id":  "flow-1",
+                                   "files":  [
+
+                                             ],
+                                   "serviceType":  "chinh ngach",
+                                   "clientId":  "client-1",
+                                   "warehouseVn":  "Hai Phong",
+                                   "quoterId":  "usr-6",
+                                   "revenue":  24000000,
+                                   "deadline":  "2026-07-20",
+                                   "profit":  9500000,
+                                   "assigneeId":  "usr-admin",
+                                   "debt":  50000000,
+                                   "steps":  [
+                                                 {
+                                                     "checklist":  [
+                                                                       {
+                                                                           "done":  true,
+                                                                           "text":  "Nhap thong tin khach hang",
+                                                                           "required":  true
+                                                                       },
+                                                                       {
+                                                                           "done":  true,
+                                                                           "text":  "Nhap mat hang",
+                                                                           "required":  true
+                                                                       },
+                                                                       {
+                                                                           "done":  true,
+                                                                           "text":  "Xac dinh loai dich vu",
+                                                                           "required":  true
+                                                                       }
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Nhan thong tin",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "done",
+                                                     "stepNum":  1,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Bao gia",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "done",
+                                                     "stepNum":  2,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Thuong luong",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "done",
+                                                     "stepNum":  3,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Thanh cong",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "done",
+                                                     "stepNum":  4,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+                                                                       {
+                                                                           "done":  false,
+                                                                           "text":  "Thanh toan shop/xuong",
+                                                                           "required":  true
+                                                                       },
+                                                                       {
+                                                                           "done":  false,
+                                                                           "text":  "Luu bill/thong tin thanh toan",
+                                                                           "required":  true
+                                                                       }
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Mua hang",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "doing",
+                                                     "stepNum":  5,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Shop Trung Quoc gui hang",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "todo",
+                                                     "stepNum":  6,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Ve den kho Trung Quoc",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "todo",
+                                                     "stepNum":  7,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Ve den kho Ha Noi/Hai Phong",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "todo",
+                                                     "stepNum":  8,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Giao hang cho khach",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "todo",
+                                                     "stepNum":  9,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Thu no",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "todo",
+                                                     "stepNum":  10,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 },
+                                                 {
+                                                     "checklist":  [
+
+                                                                   ],
+                                                     "assigneeId":  "usr-6",
+                                                     "name":  "Hoan tat",
+                                                     "comments":  [
+
+                                                                  ],
+                                                     "status":  "todo",
+                                                     "stepNum":  11,
+                                                     "note":  "",
+                                                     "deadline":  "2026-07-18"
+                                                 }
+                                             ],
+                                   "history":  [
+                                                   "2026-07-10 14:00: Khoi tao quy quy trinh"
+                                               ],
+                                   "cskhId":  "usr-6",
+                                   "valTotal":  180000000,
+                                   "name":  "Lo hang Vai K1090 - Nam Thuan",
+                                   "warehouseCn":  "Bang Tuong",
+                                   "riskNote":  "Chu y hai quan kiem hoa lo hang vai det.",
+                                   "buyerId":  "usr-2",
+                                   "stage":  5
+                               }
+                           ],
+    "single_tasks":  [
+                         {
+                             "dept":  "warehouse",
+                             "desc":  "Yeu cau kiem ky tem mac va mau sac truoc khi xuat kho Quang Chau.",
+                             "priority":  "high",
+                             "checklist":  [
+                                               {
+                                                   "text":  "Chup anh tem mac",
+                                                   "done":  true
+                                               },
+                                               {
+                                                   "text":  "Do can nang chinh xac",
+                                                   "done":  false
+                                               }
+                                           ],
+                             "status":  "doing",
+                             "id":  "task-ops-1",
+                             "history":  [
+                                             "2026-07-10 14:00: Tao boi Admin"
+                                         ],
+                             "assigneeId":  "usr-6",
+                             "deadline":  "2026-07-13",
+                             "comments":  [
+
+                                          ],
+                             "helperId":  "usr-7",
+                             "clientId":  "client-1",
+                             "workflowId":  "flow-1",
+                             "projectId":  "project-1",
+                             "attachments":  [
+
+                                             ],
+                             "tags":  [
+                                          "kho",
+                                          "khach VIP"
+                                      ],
+                             "title":  "Kiem dem kien hang vai tho lo K1090"
+                         },
+                         {
+                             "dept":  "admin",
+                             "desc":  "Tong hop bien ban ban giao va doi chieu cong no van chuyen.",
+                             "priority":  "urgent",
+                             "checklist":  [
+
+                                           ],
+                             "status":  "todo",
+                             "id":  "task-ops-2",
+                             "history":  [
+                                             "2026-07-10 15:00: Tao boi Ke toan"
+                                         ],
+                             "assigneeId":  "usr-admin",
+                             "deadline":  "2026-07-12",
+                             "comments":  [
+
+                                          ],
+                             "helperId":  "usr-2",
+                             "clientId":  "client-2",
+                             "workflowId":  null,
+                             "projectId":  null,
+                             "attachments":  [
+
+                                             ],
+                             "tags":  [
+                                          "cong no",
+                                          "tai chinh"
+                                      ],
+                             "title":  "Doi soat cong no thang 6 voi Hai Phong"
+                         }
+                     ]
 }

@@ -1,0 +1,1909 @@
+// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
+
+document.addEventListener('DOMContentLoaded', () => {
+  initOpsEvents();
+  setupFounderDashboardTabs();
+});
+
+// Global state variables for operations drag and drop
+let draggingFlowId = null;
+let targetFlowStage = null;
+let currentActiveProjectId = null;
+let currentSingleTaskLayout = 'list'; // 'list' | 'board' | 'calendar'
+let currentCalendarMonth = new Date().getMonth();
+let currentCalendarYear = new Date().getFullYear();
+
+function initOpsEvents() {
+  // Listen to hash/view navigation changes
+  window.addEventListener('hashchange', handleOpsViewRouting);
+  // Initial check on load
+  handleOpsViewRouting();
+
+  // --- CRM Khách Cũ & Lô Hàng events ---
+  const btnAddFlowModal = document.getElementById('btn-add-flow-modal');
+  if (btnAddFlowModal) {
+    btnAddFlowModal.onclick = () => {
+      populateFlowUserDropdowns();
+      populateFlowClientDropdown();
+      openModal('modal-add-ops-flow');
+    };
+  }
+
+  const formAddOpsFlow = document.getElementById('form-add-ops-flow');
+  if (formAddOpsFlow) {
+    formAddOpsFlow.onsubmit = handleAddFlowSubmit;
+  }
+
+  const clientSelect = document.getElementById('flow-client-select');
+  if (clientSelect) {
+    clientSelect.onchange = (e) => {
+      const newFields = document.getElementById('flow-new-client-fields');
+      const extraFields = document.getElementById('flow-new-client-extra');
+      if (e.target.value === 'new') {
+        newFields.style.display = 'block';
+        extraFields.style.display = 'block';
+      } else {
+        newFields.style.display = 'none';
+        extraFields.style.display = 'none';
+      }
+    };
+  }
+
+  // Confirm transition checklist
+  const btnOpsConfirmMove = document.getElementById('btn-ops-confirm-move');
+  if (btnOpsConfirmMove) {
+    btnOpsConfirmMove.onclick = handleConfirmedFlowMove;
+  }
+
+  // Export flows CSV
+  const btnExportCSV = document.getElementById('btn-export-flows-excel');
+  if (btnExportCSV) {
+    btnExportCSV.onclick = exportWorkflowsToCSV;
+  }
+
+  // Filter triggers
+  document.getElementById('ops-flow-search').oninput = renderOpsWorkflows;
+  document.getElementById('ops-flow-filter-service').onchange = renderOpsWorkflows;
+  document.getElementById('ops-flow-filter-assignee').onchange = renderOpsWorkflows;
+  document.getElementById('ops-flow-filter-overdue').onchange = renderOpsWorkflows;
+
+  // --- Single Tasks events ---
+  const btnAddSingleTaskModal = document.getElementById('btn-add-single-task-modal');
+  if (btnAddSingleTaskModal) {
+    btnAddSingleTaskModal.onclick = () => {
+      populateTaskUserDropdowns();
+      populateTaskProjectAndClientDropdowns();
+      
+      const today = new Date();
+      today.setDate(today.getDate() + 3);
+      document.getElementById('ops-task-deadline').value = today.toISOString().split('T')[0];
+      
+      openModal('modal-add-ops-task');
+    };
+  }
+
+  const formAddOpsTask = document.getElementById('form-add-ops-task');
+  if (formAddOpsTask) {
+    formAddOpsTask.onsubmit = handleAddSingleTaskSubmit;
+  }
+
+  // Layout toggles
+  document.getElementById('btn-layout-list').onclick = () => switchSingleTaskLayout('list');
+  document.getElementById('btn-layout-board').onclick = () => switchSingleTaskLayout('board');
+  document.getElementById('btn-layout-calendar').onclick = () => switchSingleTaskLayout('calendar');
+
+  // Calendar navigations
+  document.getElementById('btn-calendar-prev').onclick = () => navigateCalendar(-1);
+  document.getElementById('btn-calendar-next').onclick = () => navigateCalendar(1);
+
+  // Single tasks filters
+  document.getElementById('tasks-single-search').oninput = renderOpsSingleTasks;
+  document.getElementById('tasks-single-filter-dept').onchange = renderOpsSingleTasks;
+  document.getElementById('tasks-single-filter-assignee').onchange = renderOpsSingleTasks;
+  document.getElementById('tasks-single-filter-priority').onchange = renderOpsSingleTasks;
+
+  // Save/Delete Task Detail Handlers
+  document.getElementById('btn-ops-task-save').onclick = handleSaveTaskDetails;
+  document.getElementById('btn-ops-task-delete').onclick = handleDeleteTask;
+  document.getElementById('btn-ops-task-detail-add-chk').onclick = handleAddTaskChecklistItem;
+  document.getElementById('btn-ops-task-add-file').onclick = handleAddTaskFile;
+  document.getElementById('btn-ops-task-add-comment').onclick = handleAddTaskComment;
+
+  // --- Projects events ---
+  const btnAddProjectModal = document.getElementById('btn-add-project-modal');
+  if (btnAddProjectModal) {
+    btnAddProjectModal.onclick = () => {
+      populateProjectManagerDropdown();
+      populateProjectMembersChecklist();
+      openModal('modal-add-ops-project');
+    };
+  }
+
+  const formAddOpsProject = document.getElementById('form-add-ops-project');
+  if (formAddOpsProject) {
+    formAddOpsProject.onsubmit = handleAddProjectSubmit;
+  }
+
+  // Tabs buttons inside project detail card
+  const projectTabs = document.querySelectorAll('.project-tab-btn');
+  projectTabs.forEach(btn => {
+    btn.onclick = (e) => {
+      projectTabs.forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      switchProjectTab(e.target.getAttribute('data-tab'));
+    };
+  });
+
+  // Project details sub-modals
+  document.getElementById('btn-project-add-doc').onclick = () => {
+    openModal('modal-project-add-doc');
+  };
+  document.getElementById('form-project-add-doc').onsubmit = handleProjectAddDocSubmit;
+
+  document.getElementById('btn-project-add-task').onclick = () => {
+    populateTaskUserDropdowns();
+    populateTaskProjectAndClientDropdowns();
+    document.getElementById('ops-task-project').value = currentActiveProjectId;
+    
+    const today = new Date();
+    today.setDate(today.getDate() + 3);
+    document.getElementById('ops-task-deadline').value = today.toISOString().split('T')[0];
+    
+    openModal('modal-add-ops-task');
+  };
+
+  document.getElementById('project-chat-form').onsubmit = handleProjectChatSubmit;
+}
+
+// Router hook to trigger rendering
+function handleOpsViewRouting() {
+  const hash = window.location.hash.substring(1) || 'dashboard';
+  if (hash === 'crm-clients-workflows') {
+    renderOpsWorkflows();
+  } else if (hash === 'tasks-single') {
+    renderOpsSingleTasks();
+  } else if (hash === 'tasks-projects') {
+    renderOpsProjects();
+  } else if (hash === 'dashboard') {
+    // If the active dashboard tab is "ops", render the operations dashboard
+    const activeTab = document.querySelector('.dashboard-tab-btn.active');
+    if (activeTab && activeTab.getAttribute('data-tab') === 'ops') {
+      renderFounderDashboard();
+    }
+  }
+}
+
+// ==================== FOUNDER DASHBOARD LOGIC ==================== //
+function setupFounderDashboardTabs() {
+  const dashContainer = document.getElementById('view-dashboard');
+  if (!dashContainer) return;
+
+  // Insert Tab buttons at the very top of dashboard
+  const tabWrapper = document.createElement('div');
+  tabWrapper.className = 'dashboard-tabs';
+  tabWrapper.style.cssText = 'display:flex; gap:12px; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:8px;';
+  tabWrapper.innerHTML = `
+    <button class="dashboard-tab-btn active project-tab-btn" data-tab="crm" style="font-size: 15px;">CRM Khách Mới</button>
+    <button class="dashboard-tab-btn project-tab-btn" data-tab="ops" style="font-size: 15px;">Vận Hành & Khách Cũ (Founder)</button>
+  `;
+
+  const topHeader = dashContainer.firstElementChild;
+  dashContainer.insertBefore(tabWrapper, topHeader);
+
+  // Add container for operations dashboard metrics (default hidden)
+  const opsDashboardContent = document.createElement('div');
+  opsDashboardContent.id = 'ops-dashboard-content';
+  opsDashboardContent.style.display = 'none';
+  dashContainer.appendChild(opsDashboardContent);
+
+  // Tab switching
+  const tabs = tabWrapper.querySelectorAll('.dashboard-tab-btn');
+  tabs.forEach(tab => {
+    tab.onclick = (e) => {
+      tabs.forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      
+      const mode = e.target.getAttribute('data-tab');
+      const crmCards = dashContainer.querySelector('.stats-grid');
+      const crmCharts = dashContainer.querySelector('.dashboard-grid');
+      const crmTable = dashContainer.querySelector('.grid-1-3');
+      
+      if (mode === 'crm') {
+        crmCards.style.display = 'grid';
+        crmCharts.style.display = 'grid';
+        crmTable.style.display = 'grid';
+        opsDashboardContent.style.display = 'none';
+      } else {
+        crmCards.style.display = 'none';
+        crmCharts.style.display = 'none';
+        crmTable.style.display = 'none';
+        opsDashboardContent.style.display = 'block';
+        renderFounderDashboard();
+      }
+    };
+  });
+}
+
+function renderFounderDashboard() {
+  const container = document.getElementById('ops-dashboard-content');
+  if (!container) return;
+
+  const totalTasks = AppState.single_tasks.length;
+  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
+  const completedTodayTasks = AppState.single_tasks.filter(t => t.status === 'completed').length; // Simplification for today
+
+  const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: Báo giá
+  const waitingShop = AppState.shipment_workflows.filter(w => w.stage === 6).length; // Step 6: Shop gửi hàng
+  const arrivingCn = AppState.shipment_workflows.filter(w => w.stage === 7).length; // Step 7: Kho Trung Quốc
+  const waitingDebt = AppState.shipment_workflows.filter(w => w.stage === 10).length; // Step 10: Thu nợ
+
+  // Render KPI grid cards
+  let html = `
+    <div class="stats-grid" style="margin-top: 15px;">
+      <div class="stat-card">
+        <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Tổng task đang mở</span>
+          <h3>${AppState.single_tasks.filter(t => t.status !== 'completed').length}</h3>
+          <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Công việc quá hạn</span>
+          <h3 class="text-rose">${overdueTasks}</h3>
+          <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cần xử lý gấp!</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Việc đã hoàn thành</span>
+          <h3>${completedTodayTasks}</h3>
+          <span class="stat-trend trend-up">Vận hành nội bộ</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Đơn chờ thu nợ (Bước 10)</span>
+          <h3 class="text-gold">${waitingDebt}</h3>
+          <span class="stat-trend text-gold"><i class="fa-solid fa-receipt"></i> Đối soát kế toán</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Second row metrics -->
+    <div class="dashboard-grid" style="margin-top: 24px;">
+      <div class="dashboard-card">
+        <div class="card-header"><h3>Thống Kê Trạng Thái Lô Hàng Vận Hành</h3></div>
+        <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between;"><span>Lô hàng đang báo giá (Bước 2):</span><strong>${billingPending}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Chờ shop Trung Quốc phát hàng (Bước 6):</span><strong>${waitingShop}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Hàng đang tại kho Trung Quốc (Bước 7):</span><strong>${arrivingCn}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Đang thu nợ khách hàng (Bước 10):</span><strong>${waitingDebt}</strong></div>
+        </div>
+      </div>
+
+      <div class="dashboard-card">
+        <div class="card-header"><h3>Phòng Ban & Nhân Sự Chậm Việc</h3></div>
+        <div class="card-body" style="padding:0;">
+          <div class="leaderboard-table-wrapper" style="margin:0; border:none; border-radius:0;">
+            <table class="leaderboard-table" style="min-width:100%;">
+              <thead>
+                <tr>
+                  <th>Nhân sự</th>
+                  <th class="text-center">Số task quá hạn</th>
+                  <th>Phòng ban</th>
+                </tr>
+              </thead>
+              <tbody>
+  `;
+
+  // Calculate top overdue users
+  const userOverdueCounts = {};
+  AppState.users.forEach(u => { userOverdueCounts[u.id] = 0; });
+  AppState.single_tasks.forEach(t => {
+    const isOverdue = t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date());
+    if (isOverdue && t.assigneeId) {
+      userOverdueCounts[t.assigneeId] = (userOverdueCounts[t.assigneeId] || 0) + 1;
+    }
+  });
+
+  const sortedUsers = AppState.users
+    .map(u => ({ name: u.name, count: userOverdueCounts[u.id] || 0, dept: u.dept }))
+    .filter(u => u.count > 0)
+    .sort((a,b) => b.count - a.count);
+
+  if (sortedUsers.length === 0) {
+    html += `<tr><td colspan="3" class="text-center text-muted" style="padding:15px;">Tuyệt vời! Không có nhân sự nào bị trễ việc.</td></tr>`;
+  } else {
+    sortedUsers.slice(0, 5).forEach(u => {
+      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán/Admin' };
+      html += `
+        <tr>
+          <td><strong>${u.name}</strong></td>
+          <td class="text-center text-rose"><strong>${u.count}</strong></td>
+          <td>${deptLabels[u.dept] || u.dept}</td>
+        </tr>
+      `;
+    });
+  }
+
+  html += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+
+// ==================== CRM KHÁCH CŨ & LÔ HÀNG (11 BƯỚC) ==================== //
+function renderOpsWorkflows() {
+  const container = document.getElementById('ops-workflows-kanban');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const searchVal = document.getElementById('ops-flow-search').value.toLowerCase().trim();
+  const serviceVal = document.getElementById('ops-flow-filter-service').value;
+  const assigneeVal = document.getElementById('ops-flow-filter-assignee').value;
+  const overdueVal = document.getElementById('ops-flow-filter-overdue').checked;
+
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+  ];
+
+  // 11 steps arrays
+  const stepLists = Array.from({ length: 11 }, () => []);
+
+  // Filter shipment workflows
+  AppState.shipment_workflows.forEach(flow => {
+    const client = AppState.clients.find(c => c.id === flow.clientId) || {};
+    
+    // Search filter
+    const matchesSearch = flow.name.toLowerCase().includes(searchVal) ||
+                          (client.code && client.code.toLowerCase().includes(searchVal)) ||
+                          (client.name && client.name.toLowerCase().includes(searchVal));
+    if (!matchesSearch) return;
+
+    // Service type filter
+    if (serviceVal !== 'all' && flow.serviceType !== serviceVal) return;
+
+    // Assignee filter
+    if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
+
+    // Overdue filter
+    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+    if (overdueVal && !isOverdue) return;
+
+    // Place into corresponding step array (flow.stage is 1-indexed)
+    const idx = flow.stage - 1;
+    if (idx >= 0 && idx < 11) {
+      stepLists[idx].push(flow);
+    }
+  });
+
+  // Render 11 columns
+  for (let i = 0; i < 11; i++) {
+    const col = document.createElement('div');
+    col.className = 'kanban-column';
+    col.setAttribute('data-stage', i + 1);
+    col.id = `ops-col-stage-${i + 1}`;
+
+    const colHeader = document.createElement('div');
+    colHeader.className = 'column-header';
+    colHeader.innerHTML = `
+      <div class="col-title">
+        <span class="col-dot" style="background: var(--color-primary);"></span>
+        <h3>${i + 1}. ${stepNames[i]}</h3>
+      </div>
+      <span class="col-count">${stepLists[i].length}</span>
+    `;
+    col.appendChild(colHeader);
+
+    const cardsContainer = document.createElement('div');
+    cardsContainer.className = 'kanban-cards-container';
+    cardsContainer.setAttribute('data-stage', i + 1);
+    cardsContainer.style.minHeight = '350px';
+
+    // Dragover / Drop event listeners for columns
+    cardsContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      col.classList.add('drag-over');
+    });
+
+    cardsContainer.addEventListener('dragleave', () => {
+      col.classList.remove('drag-over');
+    });
+
+    cardsContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const flowId = e.dataTransfer.getData('text/plain') || draggingFlowId;
+      const targetStage = i + 1;
+      handleFlowMoveAttempt(flowId, targetStage);
+    });
+
+    // Populate columns cards
+    stepLists[i].forEach(flow => {
+      const client = AppState.clients.find(c => c.id === flow.clientId) || {};
+      const card = document.createElement('div');
+      card.className = 'kanban-card';
+      card.setAttribute('draggable', 'true');
+      card.setAttribute('data-id', flow.id);
+      
+      const salesUser = AppState.users.find(u => u.id === flow.cskhId);
+      const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
+      const assigneeName = assigneeUser ? assigneeUser.name.split(' ').pop() : 'Chưa giao';
+
+      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+      const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="Quá hạn chót lô hàng!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` : '';
+
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.code || 'KH CŨ'}</span>
+          <span class="badge bg-blue" style="font-size:9px; padding:2px 4px;">${flow.serviceType}</span>
+        </div>
+        <div class="card-client-name" style="margin-top:6px; font-size:13.5px;">${flow.name}</div>
+        <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
+        ${overdueBadge}
+        <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> Phụ trách: ${assigneeName}</span>
+          <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
+        </div>
+      `;
+
+      card.addEventListener('dragstart', (e) => {
+        draggingFlowId = flow.id;
+        e.dataTransfer.setData('text/plain', flow.id);
+        card.classList.add('dragging');
+      });
+
+      card.addEventListener('dragend', () => {
+        card.classList.remove('dragging');
+        draggingFlowId = null;
+      });
+
+      card.addEventListener('click', () => {
+        openFlowDetailModal(flow.id);
+      });
+
+      cardsContainer.appendChild(card);
+    });
+
+    col.appendChild(cardsContainer);
+    container.appendChild(col);
+  }
+
+  // Also populate flow filters users list once
+  populateFlowFilterUsers();
+}
+
+function handleFlowMoveAttempt(flowId, targetStage) {
+  const flow = AppState.shipment_workflows.find(f => f.id === flowId);
+  if (!flow) return;
+
+  const currentStage = flow.stage;
+  if (currentStage === targetStage) return;
+
+  // Verify transition checklists of the current step
+  const currentStepData = flow.steps.find(s => s.stepNum === currentStage);
+  if (currentStepData && currentStepData.checklist && currentStepData.checklist.length > 0) {
+    const requiredPending = currentStepData.checklist.filter(c => c.required && !c.done);
+    
+    if (requiredPending.length > 0) {
+      // Must prompt checklist modal
+      draggingFlowId = flowId;
+      targetFlowStage = targetStage;
+      
+      const checklistContainer = document.getElementById('ops-mandatory-checklist-list');
+      checklistContainer.innerHTML = '';
+      
+      currentStepData.checklist.forEach((item, chkIdx) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `mandatory-item ${item.done ? 'checked' : 'unchecked'}`;
+        itemDiv.innerHTML = `
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; width:100%;">
+            <input type="checkbox" data-idx="${chkIdx}" ${item.done ? 'checked' : ''} ${item.required ? 'data-required="true"' : ''}>
+            <span>${item.text} ${item.required ? '<span style="color:#ef4444; font-weight:bold;">*</span>' : ''}</span>
+          </label>
+        `;
+        
+        // Listen to change
+        itemDiv.querySelector('input').onchange = (e) => {
+          item.done = e.target.checked;
+          itemDiv.className = `mandatory-item ${item.done ? 'checked' : 'unchecked'}`;
+          document.getElementById('ops-checklist-warning-text').style.display = 'none';
+        };
+        
+        checklistContainer.appendChild(itemDiv);
+      });
+      
+      openModal('modal-step-checklist-confirm');
+      return;
+    }
+  }
+
+  // Standard safe transition
+  executeFlowMove(flow, targetStage);
+}
+
+function handleConfirmedFlowMove() {
+  if (!draggingFlowId || !targetFlowStage) return;
+  const flow = AppState.shipment_workflows.find(f => f.id === draggingFlowId);
+  if (!flow) return;
+
+  const currentStage = flow.stage;
+  const currentStepData = flow.steps.find(s => s.stepNum === currentStage);
+  
+  if (currentStepData) {
+    const requiredPending = currentStepData.checklist.filter(c => c.required && !c.done);
+    if (requiredPending.length > 0) {
+      document.getElementById('ops-checklist-warning-text').style.display = 'block';
+      return;
+    }
+  }
+
+  closeModal('modal-step-checklist-confirm');
+  executeFlowMove(flow, targetFlowStage);
+  draggingFlowId = null;
+  targetFlowStage = null;
+}
+
+function executeFlowMove(flow, targetStage) {
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+  ];
+  const oldStage = flow.stage;
+  flow.stage = targetStage;
+  
+  // Set stage statuses
+  flow.steps.forEach(s => {
+    if (s.stepNum < targetStage) s.status = 'done';
+    else if (s.stepNum === targetStage) s.status = 'doing';
+    else s.status = 'todo';
+  });
+
+  const now = new Date();
+  const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  flow.history.push(`${dateStr}: Di chuyển từ bước ${oldStage} sang ${targetStage} (${stepNames[targetStage - 1]})`);
+
+  saveState();
+  renderOpsWorkflows();
+  addNotification('Cập nhật Lô Hàng 🚚', `Đã chuyển lô hàng "${flow.name}" sang bước: ${stepNames[targetStage - 1]}`, 'success');
+}
+
+// Open detail modal for 11 steps workflow
+let currentActiveFlowId = null;
+let currentActiveStepNum = 1;
+
+function openFlowDetailModal(flowId) {
+  const flow = AppState.shipment_workflows.find(f => f.id === flowId);
+  if (!flow) return;
+
+  currentActiveFlowId = flowId;
+  currentActiveStepNum = flow.stage; // Set default view to current active step
+
+  document.getElementById('flow-detail-title').innerText = flow.name;
+  const client = AppState.clients.find(c => c.id === flow.clientId) || {};
+  document.getElementById('flow-detail-subtitle').innerText = `${flow.serviceType.toUpperCase()} - Khách: ${client.name || 'Không rõ'} (${client.code || 'KH CŨ'})`;
+
+  // Render 11 steps timeline bubbles
+  const timeline = document.querySelector('.flow-steps-timeline');
+  timeline.innerHTML = '';
+  
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+  ];
+
+  for (let i = 1; i <= 11; i++) {
+    const bubble = document.createElement('div');
+    const stepData = flow.steps.find(s => s.stepNum === i) || {};
+    
+    bubble.className = `flow-step-bubble ${stepData.status} ${i === currentActiveStepNum ? 'active' : ''}`;
+    bubble.innerHTML = `
+      <div class="flow-step-circle">${i}</div>
+      <span class="flow-step-lbl">${stepNames[i - 1]}</span>
+    `;
+
+    bubble.onclick = () => {
+      document.querySelectorAll('.flow-step-bubble').forEach(b => b.classList.remove('active'));
+      bubble.classList.add('active');
+      currentActiveStepNum = i;
+      renderActiveStepPanel();
+    };
+
+    timeline.appendChild(bubble);
+  }
+
+  renderActiveStepPanel();
+
+  // Handle Delete flow button
+  document.getElementById('btn-flow-delete').onclick = () => {
+    if (confirm(`Bạn chắc chắn muốn xóa lô hàng "${flow.name}"?`)) {
+      AppState.shipment_workflows = AppState.shipment_workflows.filter(f => f.id !== flowId);
+      saveState();
+      closeModal('modal-flow-detail');
+      renderOpsWorkflows();
+      addNotification('Xóa Lô Hàng', `Đã xóa lô hàng thành công.`, 'warning');
+    }
+  };
+
+  // Handle Save active step information
+  document.getElementById('btn-flow-step-save').onclick = handleSaveActiveStepData;
+
+  // Handle Add files / checklist inline
+  document.getElementById('btn-flow-step-add-chk').onclick = handleFlowAddStepChecklistItem;
+  document.getElementById('btn-flow-step-add-file').onclick = handleFlowAddStepFile;
+
+  openModal('modal-flow-detail');
+}
+
+function renderActiveStepPanel() {
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+
+  const stepData = flow.steps.find(s => s.stepNum === currentActiveStepNum);
+  if (!stepData) return;
+
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+  ];
+
+  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1]}`;
+
+  // Populate users
+  const assigneeSelect = document.getElementById('flow-step-assignee');
+  assigneeSelect.innerHTML = '';
+  AppState.users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.innerText = u.name;
+    if (u.id === stepData.assigneeId) opt.selected = true;
+    assigneeSelect.appendChild(opt);
+  });
+
+  // Set deadline
+  document.getElementById('flow-step-deadline').value = stepData.deadline || '';
+
+  // Set notes
+  document.getElementById('flow-step-note').value = stepData.note || '';
+
+  // Checklist render
+  const chkContainer = document.getElementById('flow-step-checklist-container');
+  chkContainer.innerHTML = '';
+  if (stepData.checklist && stepData.checklist.length > 0) {
+    stepData.checklist.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px;';
+      
+      const label = document.createElement('label');
+      label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer;';
+      label.innerHTML = `
+        <input type="checkbox" ${item.done ? 'checked' : ''}>
+        <span style="${item.done ? 'text-decoration:line-through; opacity:0.6;' : ''}">${item.text} ${item.required ? '<span style="color:#ef4444;">*</span>' : ''}</span>
+      `;
+      
+      label.querySelector('input').onchange = (e) => {
+        item.done = e.target.checked;
+        renderActiveStepPanel();
+      };
+
+      const btnDel = document.createElement('button');
+      btnDel.type = 'button';
+      btnDel.className = 'btn btn-sm btn-outline';
+      btnDel.style.cssText = 'padding: 2px 6px; font-size:10px; color:#ef4444; border-color:rgba(239,68,68,0.2);';
+      btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      btnDel.onclick = () => {
+        stepData.checklist.splice(idx, 1);
+        renderActiveStepPanel();
+      };
+
+      row.appendChild(label);
+      row.appendChild(btnDel);
+      chkContainer.appendChild(row);
+    });
+  } else {
+    chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
+  }
+
+  // Render step files
+  const filesContainer = document.getElementById('flow-step-files-list');
+  filesContainer.innerHTML = '';
+  
+  // Also collect files associated with this step (stage files)
+  const stepFiles = flow.files ? flow.files.filter(f => f.stepNum === currentActiveStepNum) : [];
+  if (stepFiles.length > 0) {
+    stepFiles.forEach((file, idx) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:12px; background:#111827; padding:4px 8px; border-radius:4px;';
+      row.innerHTML = `
+        <a href="${file.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-paperclip"></i> ${file.name}</a>
+        <button class="btn btn-sm btn-outline text-rose" style="padding:2px 6px; font-size:10px;" onclick="handleDeleteFlowFile(${idx})"><i class="fa-solid fa-trash-can"></i></button>
+      `;
+      filesContainer.appendChild(row);
+    });
+  } else {
+    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm bước.</span>`;
+  }
+}
+
+function handleSaveActiveStepData() {
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+
+  const stepData = flow.steps.find(s => s.stepNum === currentActiveStepNum);
+  if (!stepData) return;
+
+  stepData.assigneeId = document.getElementById('flow-step-assignee').value;
+  stepData.deadline = document.getElementById('flow-step-deadline').value;
+  stepData.note = document.getElementById('flow-step-note').value.trim();
+
+  // If status is not complete, we can keep it as is, or set to completed if all checklists are ticked!
+  const hasPending = stepData.checklist.some(c => !c.done);
+  if (!hasPending && stepData.status !== 'done') {
+    stepData.status = 'done';
+  } else if (hasPending && stepData.status === 'done') {
+    stepData.status = 'doing';
+  }
+
+  saveState();
+  closeModal('modal-flow-detail');
+  renderOpsWorkflows();
+  showToast('Đã lưu thông tin bước xử lý!', 'success');
+}
+
+function handleFlowAddStepChecklistItem() {
+  const textInput = document.getElementById('flow-step-new-chk');
+  const text = textInput.value.trim();
+  if (!text) return;
+
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+
+  const stepData = flow.steps.find(s => s.stepNum === currentActiveStepNum);
+  if (stepData) {
+    if (!stepData.checklist) stepData.checklist = [];
+    stepData.checklist.push({ text: text, done: false, required: false });
+    textInput.value = '';
+    renderActiveStepPanel();
+  }
+}
+
+function handleFlowAddStepFile() {
+  const nameInput = document.getElementById('flow-step-new-file-name');
+  const urlInput = document.getElementById('flow-step-new-file-url');
+  
+  const name = nameInput.value.trim();
+  const url = urlInput.value.trim();
+  if (!name || !url) return;
+
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+
+  if (!flow.files) flow.files = [];
+  flow.files.push({
+    name: name,
+    url: url,
+    stepNum: currentActiveStepNum,
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  nameInput.value = '';
+  urlInput.value = '';
+  renderActiveStepPanel();
+}
+
+window.handleDeleteFlowFile = function(idx) {
+  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
+  if (!flow) return;
+
+  // Filter step files and delete the matching index
+  let fileCounter = 0;
+  flow.files = flow.files.filter((file) => {
+    if (file.stepNum === currentActiveStepNum) {
+      if (fileCounter === idx) {
+        fileCounter++;
+        return false;
+      }
+      fileCounter++;
+    }
+    return true;
+  });
+
+  renderActiveStepPanel();
+};
+
+function handleAddFlowSubmit(e) {
+  e.preventDefault();
+  
+  const name = document.getElementById('flow-name').value.trim();
+  const serviceType = document.getElementById('flow-service-type').value;
+  const clientSelectVal = document.getElementById('flow-client-select').value;
+  
+  let clientId = clientSelectVal;
+
+  // Handle create new client if "new" is selected
+  if (clientSelectVal === 'new') {
+    const cName = document.getElementById('flow-client-name').value.trim();
+    const cPhone = document.getElementById('flow-client-phone').value.trim();
+    const cSocial = document.getElementById('flow-client-social').value.trim();
+
+    if (!cName) {
+      alert('Vui lòng nhập tên khách hàng mới!');
+      return;
+    }
+
+    const newClientId = `client-${Date.now()}`;
+    const newClientCode = `MH${400 + AppState.clients.length + 1}`;
+    
+    const newClient = {
+      id: newClientId,
+      code: newClientCode,
+      name: cName,
+      phone: cPhone,
+      social: cSocial,
+      type: serviceType,
+      tier: 'VIP 5', // default lowest VIP
+      source: 'tự sales',
+      cskhId: document.getElementById('flow-cskh').value || 'usr-admin',
+      managerId: 'usr-admin',
+      note: 'Khách hàng mới tạo qua Lô hàng',
+      createdTime: new Date().toISOString().split('T')[0]
+    };
+
+    AppState.clients.push(newClient);
+    clientId = newClientId;
+  }
+
+  // Pre-generate 11 steps templates
+  const flowSteps = [];
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop Trung Quốc gửi hàng", "Về đến kho Trung Quốc", "Về đến kho Hà Nội/Hải Phòng",
+    "Giao hàng cho khách", "Thu nợ", "Hoàn tất"
+  ];
+  
+  for (let i = 1; i <= 11; i++) {
+    const isFirst = (i === 1);
+    
+    // Add default required checklists for step 1, 5, 10
+    let stepChecklist = [];
+    if (i === 1) {
+      stepChecklist = [
+        { text: "Nhập thông tin khách hàng", done: true, required: true },
+        { text: "Nhập mặt hàng & link", done: true, required: true },
+        { text: "Xác định loại dịch vụ", done: true, required: true }
+      ];
+    } else if (i === 2) {
+      stepChecklist = [
+        { text: "Tìm nguồn/shop/xưởng", done: false, required: true },
+        { text: "Gửi báo giá cho khách", done: false, required: true },
+        { text: "Lưu file báo giá", done: false, required: false }
+      ];
+    } else if (i === 5) {
+      stepChecklist = [
+        { text: "Thanh toán shop/xưởng", done: false, required: true },
+        { text: "Lưu bill/thông tin thanh toán", done: false, required: true }
+      ];
+    } else if (i === 10) {
+      stepChecklist = [
+        { text: "Tổng kết công nợ", done: false, required: true },
+        { text: "Xác nhận khách thanh toán", done: false, required: true }
+      ];
+    }
+
+    flowSteps.push({
+      stepNum: i,
+      name: stepNames[i - 1],
+      assigneeId: document.getElementById('flow-assignee').value,
+      deadline: document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : '',
+      status: isFirst ? 'doing' : 'todo',
+      checklist: stepChecklist,
+      note: '',
+      comments: []
+    });
+  }
+
+  const newFlow = {
+    id: `flow-${Date.now()}`,
+    name: name,
+    clientId: clientId,
+    serviceType: serviceType,
+    assigneeId: document.getElementById('flow-assignee').value,
+    cskhId: document.getElementById('flow-cskh').value,
+    quoterId: document.getElementById('flow-cskh').value,
+    buyerId: document.getElementById('flow-buyer').value,
+    warehouseCn: document.getElementById('flow-warehouse-cn').value.trim() || 'Bằng Tường',
+    warehouseVn: document.getElementById('flow-warehouse-vn').value.trim() || 'Hà Nội',
+    stage: 1,
+    valTotal: parseInt(document.getElementById('flow-val-total').value) || 0,
+    revenue: parseInt(document.getElementById('flow-revenue').value) || 0,
+    profit: parseInt(document.getElementById('flow-profit').value) || 0,
+    debt: parseInt(document.getElementById('flow-revenue').value) || 0, // Default debt = revenue
+    deadline: document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : '',
+    files: [],
+    riskNote: document.getElementById('flow-risk').value.trim(),
+    history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo quy trình lô hàng`],
+    steps: flowSteps
+  };
+
+  AppState.shipment_workflows.push(newFlow);
+  saveState();
+  closeModal('modal-add-ops-flow');
+  document.getElementById('form-add-ops-flow').reset();
+  renderOpsWorkflows();
+  addNotification('Lô Hàng Mới 🚚', `Đã khởi tạo quy trình vận chuyển "${name}" thành công!`, 'success');
+}
+
+function populateFlowUserDropdowns() {
+  const users = AppState.users;
+  ['flow-assignee', 'flow-cskh', 'flow-buyer'].forEach(id => {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = '';
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.innerText = u.name;
+      select.appendChild(opt);
+    });
+  });
+}
+
+function populateFlowClientDropdown() {
+  const select = document.getElementById('flow-client-select');
+  if (!select) return;
+  
+  // Keep the first "new" option
+  select.innerHTML = '<option value="new">-- Tạo Khách Hàng Mới --</option>';
+  AppState.clients.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.innerText = `${c.name} (${c.code})`;
+    select.appendChild(opt);
+  });
+}
+
+function populateFlowFilterUsers() {
+  const select = document.getElementById('ops-flow-filter-assignee');
+  if (!select || select.children.length > 1) return;
+  AppState.users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.innerText = u.name;
+    select.appendChild(opt);
+  });
+}
+
+// Export workflows to CSV
+function exportWorkflowsToCSV() {
+  let csvContent = "\uFEFF"; // UTF-8 BOM
+  csvContent += "Ma Khach Hang,Ten Khach Hang,Ten Lo Hang,Loai Dich Vu,Buoc Hien Tai,Gia Tri Don Hang,Doanh Thu,Cong No,Han Luu Kho\n";
+  
+  AppState.shipment_workflows.forEach(w => {
+    const client = AppState.clients.find(c => c.id === w.clientId) || {};
+    const stepNames = [
+      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+      "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+    ];
+    const currentStepName = stepNames[w.stage - 1] || "Không rõ";
+    csvContent += `"${client.code || ''}","${client.name || ''}","${w.name}","${w.serviceType}","${currentStepName}",${w.valTotal},${w.revenue},${w.debt},"${w.deadline || ''}"\n`;
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", `quan_ly_lo_hang_minh_hai_${new Date().toISOString().split('T')[0]}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast('Đã xuất báo cáo CSV thành công!', 'success');
+}
+
+
+// ==================== CÔNG VIỆC ĐƠN LẺ LOGIC ==================== //
+function switchSingleTaskLayout(layout) {
+  currentSingleTaskLayout = layout;
+  
+  // Toggle button active state
+  ['list', 'board', 'calendar'].forEach(mode => {
+    const btn = document.getElementById(`btn-layout-${mode}`);
+    if (mode === layout) btn.classList.add('active');
+    else btn.classList.remove('active');
+  });
+
+  // Toggle containers
+  document.getElementById('tasks-single-list-container').style.display = (layout === 'list') ? 'block' : 'none';
+  document.getElementById('tasks-single-board-container').style.display = (layout === 'board') ? 'block' : 'none';
+  document.getElementById('tasks-single-calendar-container').style.display = (layout === 'calendar') ? 'block' : 'none';
+
+  renderOpsSingleTasks();
+}
+
+function renderOpsSingleTasks() {
+  const searchVal = document.getElementById('tasks-single-search').value.toLowerCase().trim();
+  const deptVal = document.getElementById('tasks-single-filter-dept').value;
+  const assigneeVal = document.getElementById('tasks-single-filter-assignee').value;
+  const priorityVal = document.getElementById('tasks-single-filter-priority').value;
+
+  const filtered = AppState.single_tasks.filter(t => {
+    const matchesSearch = t.title.toLowerCase().includes(searchVal) || (t.desc && t.desc.toLowerCase().includes(searchVal));
+    if (!matchesSearch) return false;
+
+    if (deptVal !== 'all' && t.dept !== deptVal) return false;
+    if (assigneeVal !== 'all' && t.assigneeId !== assigneeVal) return false;
+    if (priorityVal !== 'all' && t.priority !== priorityVal) return false;
+
+    return true;
+  });
+
+  // Render based on current layout
+  if (currentSingleTaskLayout === 'list') {
+    renderSingleTasksList(filtered);
+  } else if (currentSingleTaskLayout === 'board') {
+    renderSingleTasksBoard(filtered);
+  } else if (currentSingleTaskLayout === 'calendar') {
+    renderSingleTasksCalendar(filtered);
+  }
+
+  populateTasksFiltersOnce();
+}
+
+function renderSingleTasksList(tasks) {
+  const tbody = document.getElementById('tasks-single-list-body');
+  tbody.innerHTML = '';
+
+  if (tasks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-list-check empty-state-icon"></i><span>Không có công việc nào trùng khớp.</span></div></td></tr>`;
+    return;
+  }
+
+  const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
+  const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
+  const priorityBadges = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
+  const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
+  const statusBadges = { todo: 'bg-blue', doing: 'bg-orange', waiting: 'bg-purple', completed: 'bg-emerald', overdue: 'bg-rose', canceled: 'bg-gray' };
+
+  tasks.forEach(t => {
+    const assignee = AppState.users.find(u => u.id === t.assigneeId);
+    const helper = AppState.users.find(u => u.id === t.helperId);
+    
+    // Highlight if updated today
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+    const isToday = t.deadline === todayStr; // simplification
+    const timeHighlight = isToday ? 'time-updated-today' : '';
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${t.title}</strong></td>
+      <td><span class="badge bg-gray">${deptLabels[t.dept] || t.dept}</span></td>
+      <td>${assignee ? assignee.name : 'Chưa giao'}</td>
+      <td>${helper ? helper.name : 'Không'}</td>
+      <td><span class="badge ${priorityBadges[t.priority]}">${priorityLabels[t.priority]}</span></td>
+      <td class="${timeHighlight}">${t.deadline || 'Chưa đặt'}</td>
+      <td><span class="badge ${statusBadges[t.status]}">${statusLabels[t.status]}</span></td>
+      <td class="text-center">
+        <button class="btn btn-sm btn-outline" onclick="openOpsTaskDetail('${t.id}')">Chi tiết</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderSingleTasksBoard(tasks) {
+  // Clear all board cards containers
+  ['todo', 'doing', 'waiting', 'completed', 'overdue', 'canceled'].forEach(status => {
+    const container = document.querySelector(`.kanban-cards-container[data-status="${status}"]`);
+    if (container) container.innerHTML = '';
+  });
+
+  tasks.forEach(t => {
+    const container = document.querySelector(`.kanban-cards-container[data-status="${t.status}"]`);
+    if (!container) return;
+
+    const assignee = AppState.users.find(u => u.id === t.assigneeId);
+    const card = document.createElement('div');
+    card.className = 'kanban-card';
+    card.setAttribute('draggable', 'true');
+    card.setAttribute('data-id', t.id);
+
+    card.innerHTML = `
+      <div class="card-client-name">${t.title}</div>
+      <div class="card-desc">${t.desc || 'Không có mô tả.'}</div>
+      <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> ${assignee ? assignee.name.split(' ').pop() : 'Chưa giao'}</span>
+        <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> ${t.deadline}</span>
+      </div>
+    `;
+
+    card.addEventListener('dragstart', (e) => {
+      draggingFlowId = t.id; // reuse the global dragging variable
+      e.dataTransfer.setData('text/plain', t.id);
+      card.classList.add('dragging');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging');
+      draggingFlowId = null;
+    });
+
+    card.addEventListener('click', () => {
+      openOpsTaskDetail(t.id);
+    });
+
+    container.appendChild(card);
+  });
+
+  // Setup dragover / drop on single task board status columns
+  document.querySelectorAll('#tasks-single-board-container .kanban-column').forEach(col => {
+    const cardsContainer = col.querySelector('.kanban-cards-container');
+    const status = col.getAttribute('data-status');
+
+    cardsContainer.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      col.classList.add('drag-over');
+    });
+
+    cardsContainer.addEventListener('dragleave', () => {
+      col.classList.remove('drag-over');
+    });
+
+    cardsContainer.addEventListener('drop', (e) => {
+      e.preventDefault();
+      col.classList.remove('drag-over');
+      const taskId = e.dataTransfer.getData('text/plain') || draggingFlowId;
+      const task = AppState.single_tasks.find(tk => tk.id === taskId);
+      if (task && task.status !== status) {
+        task.status = status;
+        saveState();
+        renderOpsSingleTasks();
+        addNotification('Cập nhật Công việc 📝', `Đã chuyển công việc "${task.title}" sang cột ${status.toUpperCase()}`, 'info');
+      }
+    });
+  });
+}
+
+function renderSingleTasksCalendar(tasks) {
+  const grid = document.getElementById('calendar-days-grid');
+  grid.innerHTML = '';
+
+  const monthYearLabel = document.getElementById('calendar-month-year');
+  const monthNames = ["Tháng 01", "Tháng 02", "Tháng 03", "Tháng 04", "Tháng 05", "Tháng 06", "Tháng 07", "Tháng 08", "Tháng 09", "Tháng 10", "Tháng 11", "Tháng 12"];
+  monthYearLabel.innerText = `${monthNames[currentCalendarMonth]} / ${currentCalendarYear}`;
+
+  // First day of currentCalendarMonth
+  const firstDay = new Date(currentCalendarYear, currentCalendarMonth, 1).getDay();
+  // Total days in month
+  const totalDays = new Date(currentCalendarYear, currentCalendarMonth + 1, 0).getDate();
+
+  const prevMonthTotalDays = new Date(currentCalendarYear, currentCalendarMonth, 0).getDate();
+
+  // Render empty cells for previous month padding
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const day = prevMonthTotalDays - i;
+    const cell = document.createElement('div');
+    cell.className = 'calendar-cell';
+    cell.style.opacity = '0.3';
+    cell.innerHTML = `<div class="calendar-cell-header">${day}</div>`;
+    grid.appendChild(cell);
+  }
+
+  // Render days of the month
+  const today = new Date();
+  for (let d = 1; d <= totalDays; d++) {
+    const cell = document.createElement('div');
+    const isToday = today.getDate() === d && today.getMonth() === currentCalendarMonth && today.getFullYear() === currentCalendarYear;
+    
+    cell.className = `calendar-cell ${isToday ? 'today' : ''}`;
+    
+    let html = `<div class="calendar-cell-header">${d}</div><div class="calendar-cell-tasks">`;
+
+    // Filter tasks for this specific date
+    const dateStr = `${currentCalendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    const dayTasks = tasks.filter(t => t.deadline === dateStr);
+
+    dayTasks.forEach(task => {
+      const priorityColors = { low: '#3b82f6', normal: '#6b7280', high: '#f59e0b', urgent: '#ef4444' };
+      html += `
+        <div class="calendar-task-tag" style="background:${priorityColors[task.priority]};" onclick="event.stopPropagation(); openOpsTaskDetail('${task.id}')" title="${task.title}">
+          ${task.title}
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+    cell.innerHTML = html;
+    
+    cell.onclick = () => {
+      // open add task modal with preset date
+      populateTaskUserDropdowns();
+      populateTaskProjectAndClientDropdowns();
+      document.getElementById('ops-task-deadline').value = dateStr;
+      openModal('modal-add-ops-task');
+    };
+
+    grid.appendChild(cell);
+  }
+
+  // Next month padding
+  const totalCells = grid.children.length;
+  const remaining = 35 - totalCells;
+  const nextPadding = remaining >= 0 ? remaining : (42 - totalCells);
+  for (let i = 1; i <= nextPadding; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'calendar-cell';
+    cell.style.opacity = '0.3';
+    cell.innerHTML = `<div class="calendar-cell-header">${i}</div>`;
+    grid.appendChild(cell);
+  }
+}
+
+function navigateCalendar(direction) {
+  currentCalendarMonth += direction;
+  if (currentCalendarMonth < 0) {
+    currentCalendarMonth = 11;
+    currentCalendarYear--;
+  } else if (currentCalendarMonth > 11) {
+    currentCalendarMonth = 0;
+    currentCalendarYear++;
+  }
+  renderOpsSingleTasks();
+}
+
+let currentActiveTaskId = null;
+
+window.openOpsTaskDetail = function(taskId) {
+  const task = AppState.single_tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  currentActiveTaskId = taskId;
+
+  document.getElementById('ops-task-detail-title').innerText = task.title;
+  const assignee = AppState.users.find(u => u.id === task.assigneeId);
+  const helper = AppState.users.find(u => u.id === task.helperId);
+  document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}`;
+  
+  document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
+  document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
+
+  // Priority badge
+  const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
+  const priorityColors = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
+  const badge = document.getElementById('ops-task-detail-priority-badge');
+  badge.className = `badge ${priorityColors[task.priority]}`;
+  badge.innerText = priorityLabels[task.priority];
+
+  // Status dropdown populate
+  const statusSelect = document.getElementById('ops-task-detail-status');
+  statusSelect.innerHTML = `
+    <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>Chưa làm</option>
+    <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Đang làm</option>
+    <option value="waiting" ${task.status === 'waiting' ? 'selected' : ''}>Chờ phản hồi</option>
+    <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Hoàn thành</option>
+    <option value="overdue" ${task.status === 'overdue' ? 'selected' : ''}>Quá hạn</option>
+    <option value="canceled" ${task.status === 'canceled' ? 'selected' : ''}>Đã hủy</option>
+  `;
+
+  renderOpsTaskSubchecklist();
+  renderOpsTaskFiles();
+  renderOpsTaskComments();
+
+  openModal('modal-ops-task-detail');
+};
+
+function renderOpsTaskSubchecklist() {
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (!task) return;
+
+  const container = document.getElementById('ops-task-detail-checklist');
+  container.innerHTML = '';
+
+  if (task.checklist && task.checklist.length > 0) {
+    task.checklist.forEach((item, idx) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px;';
+      
+      const label = document.createElement('label');
+      label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12px; cursor:pointer;';
+      label.innerHTML = `
+        <input type="checkbox" ${item.done ? 'checked' : ''}>
+        <span style="${item.done ? 'text-decoration:line-through; opacity:0.6;' : ''}">${item.text}</span>
+      `;
+      label.querySelector('input').onchange = (e) => {
+        item.done = e.target.checked;
+        saveState();
+        renderOpsTaskSubchecklist();
+      };
+
+      const btnDel = document.createElement('button');
+      btnDel.className = 'btn btn-sm btn-outline text-rose';
+      btnDel.style.cssText = 'padding:2px 6px; font-size:10px;';
+      btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      btnDel.onclick = () => {
+        task.checklist.splice(idx, 1);
+        saveState();
+        renderOpsTaskSubchecklist();
+      };
+
+      row.appendChild(label);
+      row.appendChild(btnDel);
+      container.appendChild(row);
+    });
+  } else {
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa tạo checklist con.</span>`;
+  }
+}
+
+function handleAddTaskChecklistItem() {
+  const input = document.getElementById('ops-task-detail-new-chk');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (task) {
+    if (!task.checklist) task.checklist = [];
+    task.checklist.push({ text: val, done: false });
+    input.value = '';
+    saveState();
+    renderOpsTaskSubchecklist();
+  }
+}
+
+function renderOpsTaskFiles() {
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (!task) return;
+
+  const container = document.getElementById('ops-task-detail-files');
+  container.innerHTML = '';
+
+  if (task.attachments && task.attachments.length > 0) {
+    task.attachments.forEach((file, idx) => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; font-size:11px; background:#111827; padding:4px 8px; border-radius:4px;';
+      row.innerHTML = `
+        <a href="${file.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-paperclip"></i> ${file.name}</a>
+        <button class="btn btn-sm btn-outline text-rose" style="padding:2px 6px; font-size:9px;" onclick="handleDeleteTaskFile(${idx})"><i class="fa-solid fa-trash-can"></i></button>
+      `;
+      container.appendChild(row);
+    });
+  } else {
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm.</span>`;
+  }
+}
+
+window.handleDeleteTaskFile = function(idx) {
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (task && task.attachments) {
+    task.attachments.splice(idx, 1);
+    saveState();
+    renderOpsTaskFiles();
+  }
+};
+
+function handleAddTaskFile() {
+  const nameInput = document.getElementById('ops-task-detail-new-file-name');
+  const urlInput = document.getElementById('ops-task-detail-new-file-url');
+  const name = nameInput.value.trim();
+  const url = urlInput.value.trim();
+  if (!name || !url) return;
+
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (task) {
+    if (!task.attachments) task.attachments = [];
+    task.attachments.push({
+      name: name,
+      url: url,
+      uploader: AppState.currentUserId,
+      date: new Date().toISOString().split('T')[0]
+    });
+    nameInput.value = '';
+    urlInput.value = '';
+    saveState();
+    renderOpsTaskFiles();
+  }
+}
+
+function renderOpsTaskComments() {
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (!task) return;
+
+  const container = document.getElementById('ops-task-detail-comments');
+  container.innerHTML = '';
+
+  if (task.comments && task.comments.length > 0) {
+    task.comments.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'chat-msg-row';
+      row.innerHTML = `
+        <div class="chat-msg-header">
+          <strong>${c.user}</strong>
+          <span>${c.date}</span>
+        </div>
+        <div class="chat-msg-body">${c.text}</div>
+      `;
+      container.appendChild(row);
+    });
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+  } else {
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào.</span>`;
+  }
+}
+
+function handleAddTaskComment() {
+  const input = document.getElementById('ops-task-detail-new-comment');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (task) {
+    if (!task.comments) task.comments = [];
+    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân viên' };
+    
+    const now = new Date();
+    const dateStr = `${now.getHours()}:${now.getMinutes()} ${now.getDate()}/${now.getMonth() + 1}`;
+    
+    task.comments.push({
+      user: user.name,
+      text: text,
+      date: dateStr
+    });
+
+    input.value = '';
+    saveState();
+    renderOpsTaskComments();
+  }
+}
+
+function handleSaveTaskDetails() {
+  const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+  if (!task) return;
+
+  task.status = document.getElementById('ops-task-detail-status').value;
+  saveState();
+  closeModal('modal-ops-task-detail');
+  renderOpsSingleTasks();
+  showToast('Đã cập nhật trạng thái công việc!', 'success');
+}
+
+function handleDeleteTask() {
+  if (confirm('Bạn có thực sự muốn xóa công việc này?')) {
+    AppState.single_tasks = AppState.single_tasks.filter(t => t.id !== currentActiveTaskId);
+    saveState();
+    closeModal('modal-ops-task-detail');
+    renderOpsSingleTasks();
+    showToast('Đã xóa công việc.', 'info');
+  }
+}
+
+function handleAddSingleTaskSubmit(e) {
+  e.preventDefault();
+  
+  const title = document.getElementById('ops-task-title').value.trim();
+  const desc = document.getElementById('ops-task-desc').value.trim();
+  const dept = document.getElementById('ops-task-dept').value;
+  const priority = document.getElementById('ops-task-priority').value;
+  const assigneeId = document.getElementById('ops-task-assignee').value;
+  const helperId = document.getElementById('ops-task-helper').value;
+  const deadline = document.getElementById('ops-task-deadline').value;
+  const projectId = document.getElementById('ops-task-project').value;
+  const clientSelectVal = document.getElementById('ops-task-client').value;
+  
+  let clientId = null;
+  let workflowId = null;
+  if (clientSelectVal.startsWith('client-')) clientId = clientSelectVal;
+  else if (clientSelectVal.startsWith('flow-')) {
+    workflowId = clientSelectVal;
+    const flow = AppState.shipment_workflows.find(f => f.id === workflowId);
+    if (flow) clientId = flow.clientId;
+  }
+
+  const tags = document.getElementById('ops-task-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+
+  const newTask = {
+    id: `task-ops-${Date.now()}`,
+    title: title,
+    desc: desc,
+    assigneeId: assigneeId,
+    helperId: helperId || null,
+    dept: dept,
+    priority: priority,
+    deadline: deadline,
+    status: 'todo',
+    projectId: projectId || null,
+    clientId: clientId,
+    workflowId: workflowId,
+    tags: tags,
+    checklist: [],
+    attachments: [],
+    comments: [],
+    history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo công việc đơn lẻ`]
+  };
+
+  AppState.single_tasks.push(newTask);
+  saveState();
+  closeModal('modal-add-ops-task');
+  document.getElementById('form-add-ops-task').reset();
+  renderOpsSingleTasks();
+
+  // If in project views, refresh project tasks
+  if (currentActiveProjectId) {
+    renderProjectTasksTab(currentActiveProjectId);
+  }
+
+  addNotification('Giao Việc 📝', `Đã giao công việc mới: "${title}" cho nhân viên phụ trách.`, 'success');
+}
+
+function populateTaskUserDropdowns() {
+  const users = AppState.users;
+  ['ops-task-assignee', 'ops-task-helper'].forEach(id => {
+    const select = document.getElementById(id);
+    if (!select) return;
+    select.innerHTML = '';
+    
+    if (id === 'ops-task-helper') {
+      select.innerHTML = '<option value="">-- Không có --</option>';
+    }
+
+    users.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.innerText = u.name;
+      select.appendChild(opt);
+    });
+  });
+}
+
+function populateTaskProjectAndClientDropdowns() {
+  const projSelect = document.getElementById('ops-task-project');
+  if (projSelect) {
+    projSelect.innerHTML = '<option value="">-- Không ghim dự án --</option>';
+    AppState.projects.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.innerText = p.name;
+      projSelect.appendChild(opt);
+    });
+  }
+
+  const clientSelect = document.getElementById('ops-task-client');
+  if (clientSelect) {
+    clientSelect.innerHTML = '<option value="">-- Không liên kết --</option>';
+    
+    // Group Clients
+    const groupClients = document.createElement('optgroup');
+    groupClients.label = 'Khách Hàng Cũ';
+    AppState.clients.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.innerText = `${c.name} (${c.code})`;
+      groupClients.appendChild(opt);
+    });
+    clientSelect.appendChild(groupClients);
+
+    // Group Workflows
+    const groupFlows = document.createElement('optgroup');
+    groupFlows.label = 'Quy Trình Lô Hàng';
+    AppState.shipment_workflows.forEach(w => {
+      const opt = document.createElement('option');
+      opt.value = w.id;
+      opt.innerText = w.name;
+      groupFlows.appendChild(opt);
+    });
+    clientSelect.appendChild(groupFlows);
+  }
+}
+
+function populateTasksFiltersOnce() {
+  const select = document.getElementById('tasks-single-filter-assignee');
+  if (!select || select.children.length > 1) return;
+  AppState.users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.innerText = u.name;
+    select.appendChild(opt);
+  });
+}
+
+
+// ==================== DỰ ÁN VẬN HÀNH LOGIC ==================== //
+function renderOpsProjects() {
+  const listContainer = document.getElementById('projects-list-container');
+  if (!listContainer) return;
+  listContainer.innerHTML = '';
+
+  if (AppState.projects.length === 0) {
+    listContainer.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">Chưa có dự án nào.</span>`;
+    return;
+  }
+
+  AppState.projects.forEach(p => {
+    const card = document.createElement('div');
+    card.className = `dashboard-card project-card-item ${currentActiveProjectId === p.id ? 'active' : ''}`;
+    card.style.cssText = `cursor:pointer; border: 1px solid ${currentActiveProjectId === p.id ? 'var(--color-primary)' : 'var(--border-color)'}; padding:12px;`;
+    
+    const manager = AppState.users.find(u => u.id === p.managerId) || { name: 'Chưa giao' };
+
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>${p.name}</strong>
+        <span class="badge bg-blue" style="font-size:9.5px;">${p.type}</span>
+      </div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Quản lý: ${manager.name} | Thành viên: ${p.members ? p.members.length : 0}</div>
+    `;
+
+    card.onclick = () => {
+      currentActiveProjectId = p.id;
+      document.querySelectorAll('.project-card-item').forEach(c => c.style.borderColor = 'var(--border-color)');
+      card.style.borderColor = 'var(--color-primary)';
+      openProjectDetails(p.id);
+    };
+
+    listContainer.appendChild(card);
+  });
+}
+
+function openProjectDetails(projId) {
+  const p = AppState.projects.find(proj => proj.id === projId);
+  if (!p) return;
+
+  document.getElementById('project-details-placeholder').style.display = 'none';
+  const container = document.getElementById('project-details-container');
+  container.style.display = 'block';
+
+  document.getElementById('active-project-name').innerText = p.name;
+  document.getElementById('active-project-type').innerText = `Loại: ${p.type.toUpperCase()}`;
+  
+  const statusLabels = { preparing: 'Đang chuẩn bị', doing: 'Đang thực hiện', paused: 'Tạm dừng', completed: 'Hoàn thành', canceled: 'Đã hủy' };
+  const statusColors = { preparing: 'bg-gray', doing: 'bg-blue', paused: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
+  const statusBadge = document.getElementById('active-project-status');
+  statusBadge.className = `badge ${statusColors[p.status]}`;
+  statusBadge.innerText = statusLabels[p.status] || p.status;
+
+  // Active default tab Overview
+  document.querySelectorAll('.project-tab-btn').forEach(b => {
+    if (b.getAttribute('data-tab') === 'overview') b.classList.add('active');
+    else b.classList.remove('active');
+  });
+
+  switchProjectTab('overview');
+}
+
+function switchProjectTab(tab) {
+  // Hide all tab contents
+  document.querySelectorAll('.project-tab-content').forEach(el => el.style.display = 'none');
+  
+  // Show active tab
+  const activeContent = document.getElementById(`project-tab-${tab}`);
+  if (activeContent) activeContent.style.display = 'block';
+
+  const proj = AppState.projects.find(p => p.id === currentActiveProjectId);
+  if (!proj) return;
+
+  if (tab === 'overview') {
+    document.getElementById('active-project-desc').innerText = proj.desc || 'Không có mô tả chi tiết.';
+    const manager = AppState.users.find(u => u.id === proj.managerId);
+    document.getElementById('active-project-manager').innerText = manager ? manager.name : 'Chưa giao';
+    
+    const membersNames = proj.members ? proj.members.map(mid => {
+      const u = AppState.users.find(usr => usr.id === mid);
+      return u ? u.name : null;
+    }).filter(Boolean).join(', ') : '';
+    document.getElementById('active-project-members').innerText = membersNames || 'Không có thành viên phụ';
+    
+    document.getElementById('active-project-notes').innerText = proj.notes || 'Không có ghi chú quan trọng.';
+  } else if (tab === 'docs') {
+    renderProjectDocsTab(proj);
+  } else if (tab === 'tasks') {
+    renderProjectTasksTab(proj.id);
+  } else if (tab === 'discussion') {
+    renderProjectDiscussionTab(proj);
+  }
+}
+
+function renderProjectDocsTab(proj) {
+  const tbody = document.getElementById('project-docs-list');
+  tbody.innerHTML = '';
+
+  if (!proj.documents || proj.documents.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" style="padding:15px; font-style:italic;">Chưa ghim tài liệu hoặc link Google Drive nào.</td></tr>`;
+    return;
+  }
+
+  proj.documents.forEach((doc, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${doc.name}</strong></td>
+      <td><a href="${doc.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-square-share-nodes"></i> Mở liên kết</a></td>
+      <td>${doc.note || 'Không có'}</td>
+      <td class="text-center">
+        <button class="btn btn-sm btn-outline text-rose" onclick="handleDeleteProjectDoc(${idx})"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+window.handleDeleteProjectDoc = function(idx) {
+  const proj = AppState.projects.find(p => p.id === currentActiveProjectId);
+  if (proj && proj.documents) {
+    proj.documents.splice(idx, 1);
+    saveState();
+    renderProjectDocsTab(proj);
+  }
+};
+
+function handleProjectAddDocSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('proj-doc-name').value.trim();
+  const url = document.getElementById('proj-doc-url').value.trim();
+  const note = document.getElementById('proj-doc-note').value.trim();
+
+  const proj = AppState.projects.find(p => p.id === currentActiveProjectId);
+  if (proj) {
+    if (!proj.documents) proj.documents = [];
+    proj.documents.push({ name: name, url: url, type: 'link', note: note });
+    saveState();
+    closeModal('modal-project-add-doc');
+    document.getElementById('form-project-add-doc').reset();
+    renderProjectDocsTab(proj);
+    showToast('Đã ghim tài liệu thành công!', 'success');
+  }
+}
+
+function renderProjectTasksTab(projId) {
+  const tbody = document.getElementById('project-tasks-list');
+  tbody.innerHTML = '';
+
+  const projectTasks = AppState.single_tasks.filter(t => t.projectId === projId);
+
+  if (projectTasks.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:15px; font-style:italic;">Chưa có công việc nào liên kết với dự án này.</td></tr>`;
+    return;
+  }
+
+  const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
+  const priorityColors = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
+  const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
+  const statusColors = { todo: 'bg-blue', doing: 'bg-orange', waiting: 'bg-purple', completed: 'bg-emerald', overdue: 'bg-rose', canceled: 'bg-gray' };
+
+  projectTasks.forEach(t => {
+    const assignee = AppState.users.find(u => u.id === t.assigneeId);
+    const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
+    tr.innerHTML = `
+      <td><strong>${t.title}</strong></td>
+      <td>${assignee ? assignee.name : 'Chưa giao'}</td>
+      <td><span class="badge ${priorityColors[t.priority]}">${priorityLabels[t.priority]}</span></td>
+      <td>${t.deadline || 'Chưa đặt'}</td>
+      <td><span class="badge ${statusColors[t.status]}">${statusLabels[t.status]}</span></td>
+    `;
+    tr.onclick = () => openOpsTaskDetail(t.id);
+    tbody.appendChild(tr);
+  });
+}
+
+function renderProjectDiscussionTab(proj) {
+  const container = document.getElementById('project-chat-messages');
+  container.innerHTML = '';
+
+  if (proj.discussions && proj.discussions.length > 0) {
+    proj.discussions.forEach(msg => {
+      const div = document.createElement('div');
+      div.className = 'chat-msg-row';
+      div.innerHTML = `
+        <div class="chat-msg-header">
+          <strong>${msg.user}</strong>
+          <span>${msg.date}</span>
+        </div>
+        <div class="chat-msg-body">${msg.text}</div>
+      `;
+      container.appendChild(div);
+    });
+    container.scrollTop = container.scrollHeight;
+  } else {
+    container.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">Bắt đầu cuộc thảo luận chung cho nhóm dự án...</span>`;
+  }
+}
+
+function handleProjectChatSubmit(e) {
+  e.preventDefault();
+  const input = document.getElementById('project-chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const proj = AppState.projects.find(p => p.id === currentActiveProjectId);
+  if (proj) {
+    if (!proj.discussions) proj.discussions = [];
+    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân viên' };
+    
+    const now = new Date();
+    const dateStr = `${now.getHours()}:${now.getMinutes()} ${now.getDate()}/${now.getMonth() + 1}`;
+    
+    proj.discussions.push({
+      user: user.name,
+      text: text,
+      date: dateStr
+    });
+
+    input.value = '';
+    saveState();
+    renderProjectDiscussionTab(proj);
+  }
+}
+
+function handleAddProjectSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('project-name').value.trim();
+  const type = document.getElementById('project-type').value;
+  const managerId = document.getElementById('project-manager').value;
+  const desc = document.getElementById('project-desc').value.trim();
+  const notes = document.getElementById('project-notes').value.trim();
+
+  // Get selected members
+  const members = [];
+  document.querySelectorAll('.project-member-chk:checked').forEach(chk => {
+    members.push(chk.value);
+  });
+
+  const newProject = {
+    id: `project-${Date.now()}`,
+    name: name,
+    type: type,
+    desc: desc,
+    managerId: managerId,
+    members: members,
+    status: 'preparing',
+    notes: notes || 'Không có',
+    documents: [],
+    discussions: [],
+    history: []
+  };
+
+  AppState.projects.push(newProject);
+  saveState();
+  closeModal('modal-add-ops-project');
+  document.getElementById('form-add-ops-project').reset();
+  
+  renderOpsProjects();
+  addNotification('Dự Án Mới 📂', `Đã tạo dự án/phòng ban mới: "${name}" thành công.`, 'success');
+}
+
+function populateProjectManagerDropdown() {
+  const select = document.getElementById('project-manager');
+  if (!select) return;
+  select.innerHTML = '';
+  AppState.users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.innerText = u.name;
+    select.appendChild(opt);
+  });
+}
+
+function populateProjectMembersChecklist() {
+  const container = document.getElementById('project-members-checklist');
+  if (!container) return;
+  container.innerHTML = '';
+  AppState.users.forEach(u => {
+    const div = document.createElement('div');
+    div.innerHTML = `
+      <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12.5px;">
+        <input type="checkbox" class="project-member-chk" value="${u.id}">
+        <span>${u.name}</span>
+      </label>
+    `;
+    container.appendChild(div);
+  });
+}

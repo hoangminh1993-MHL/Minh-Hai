@@ -214,6 +214,13 @@ async function syncLoadState() {
       AppState.sausageLogs = data.sausageLogs;
       AppState.notifications = data.notifications;
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
+      
+      // Seed operational lists (v18)
+      AppState.clients = data.clients || [];
+      AppState.projects = data.projects || [];
+      AppState.shipment_workflows = data.shipment_workflows || [];
+      AppState.single_tasks = data.single_tasks || [];
+
       const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
       AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || loggedUser.id || (data.users && data.users[0]?.id) || 'usr-admin';
       
@@ -224,6 +231,11 @@ async function syncLoadState() {
       localStorage.setItem(CONFIG.LS_KEY_WORKFLOWS, JSON.stringify(AppState.workflows));
       localStorage.setItem(CONFIG.LS_KEY_LOGS, JSON.stringify(AppState.sausageLogs));
       localStorage.setItem(CONFIG.LS_KEY_NOTIFS, JSON.stringify(AppState.notifications));
+
+      localStorage.setItem('votr_clients_db', JSON.stringify(AppState.clients));
+      localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
+      localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
+      localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
       return;
     }
   } catch (err) {
@@ -240,6 +252,11 @@ function loadState() {
   AppState.sausageLogs = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LOGS)) || [];
   AppState.notifications = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_NOTIFS)) || [];
   AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || (AppState.users && AppState.users[0]?.id) || 'usr-1';
+
+  AppState.clients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
+  AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
+  AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
+  AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
 }
 
 async function saveState() {
@@ -251,6 +268,11 @@ async function saveState() {
   localStorage.setItem(CONFIG.LS_KEY_LOGS, JSON.stringify(AppState.sausageLogs));
   localStorage.setItem(CONFIG.LS_KEY_NOTIFS, JSON.stringify(AppState.notifications));
   localStorage.setItem(CONFIG.LS_KEY_CURRENT_USER, AppState.currentUserId);
+
+  localStorage.setItem('votr_clients_db', JSON.stringify(AppState.clients));
+  localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
+  localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
+  localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
   
   // Sync to server API in background
   try {
@@ -369,7 +391,10 @@ function navigateToView(viewId, updateHash = true) {
     'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
     'facebook-config': { main: 'Cấu Hình Liên Kết Fanpage', sub: 'Kết nối Fanpage Facebook thực tế để tự động nhận tin nhắn khách hàng đổ về CRM.' },
     rewards: { main: 'Đua Top Tích Xúc Xích', sub: 'Bảng thi đua xếp hạng thưởng dựa trên điểm hoàn thành công việc.' },
-    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' }
+    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' },
+    'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
+    'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
+    'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' }
   };
 
   if (titles[viewId]) {
@@ -386,6 +411,12 @@ function navigateToView(viewId, updateHash = true) {
     renderTasksList();
   } else if (viewId === 'workflows') {
     renderWorkflowSettings();
+  } else if (viewId === 'crm-clients-workflows') {
+    if (typeof renderOpsWorkflows === 'function') renderOpsWorkflows();
+  } else if (viewId === 'tasks-single') {
+    if (typeof renderOpsSingleTasks === 'function') renderOpsSingleTasks();
+  } else if (viewId === 'tasks-projects') {
+    if (typeof renderOpsProjects === 'function') renderOpsProjects();
   } else if (viewId === 'rewards') {
     renderRewardsView();
   } else if (viewId === 'facebook-config') {
