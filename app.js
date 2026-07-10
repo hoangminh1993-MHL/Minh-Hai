@@ -103,7 +103,11 @@ let AppState = {
   workflows: {},
   sausageLogs: [],
   notifications: [],
-  currentUserId: ''
+  currentUserId: '',
+  clients: [],
+  projects: [],
+  shipment_workflows: [],
+  single_tasks: []
 };
 
 // Charts references
@@ -311,7 +315,24 @@ function startStatePolling() {
         const oldTasksCount = AppState.tasks ? AppState.tasks.length : 0;
         const newTasksCount = data.tasks ? data.tasks.length : 0;
         
-        if (newLeadsCount !== oldLeadsCount || newNotifsCount !== oldNotifsCount || newTasksCount !== oldTasksCount) {
+        const oldFlowsCount = AppState.shipment_workflows ? AppState.shipment_workflows.length : 0;
+        const newFlowsCount = data.shipment_workflows ? data.shipment_workflows.length : 0;
+        const oldClientsCount = AppState.clients ? AppState.clients.length : 0;
+        const newClientsCount = data.clients ? data.clients.length : 0;
+        const oldProjectsCount = AppState.projects ? AppState.projects.length : 0;
+        const newProjectsCount = data.projects ? data.projects.length : 0;
+        const oldSingleCount = AppState.single_tasks ? AppState.single_tasks.length : 0;
+        const newSingleCount = data.single_tasks ? data.single_tasks.length : 0;
+
+        if (
+          newLeadsCount !== oldLeadsCount || 
+          newNotifsCount !== oldNotifsCount || 
+          newTasksCount !== oldTasksCount ||
+          newFlowsCount !== oldFlowsCount ||
+          newClientsCount !== oldClientsCount ||
+          newProjectsCount !== oldProjectsCount ||
+          newSingleCount !== oldSingleCount
+        ) {
           console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
           AppState.users = data.users;
           AppState.leads = data.leads;
@@ -321,6 +342,12 @@ function startStatePolling() {
           AppState.notifications = data.notifications;
           AppState.fbConfig = data.fbConfig || AppState.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
           
+          // Đồng bộ các phân hệ vận hành mới (v18)
+          AppState.clients = data.clients || [];
+          AppState.projects = data.projects || [];
+          AppState.shipment_workflows = data.shipment_workflows || [];
+          AppState.single_tasks = data.single_tasks || [];
+
           // Re-render active view
           const activeTabElement = document.querySelector('.nav-item.active');
           if (activeTabElement) {
