@@ -25,7 +25,8 @@ document.getElementById('login-form').onsubmit = async (e) => {
       errorBox.style.display = 'block';
     }
   } catch (err) {
-    errorBox.innerText = 'Không thể kết nối đến máy chủ!';
+    const apiLink = apiBase ? `<br><a href="${apiBase}/" target="_blank" style="color:var(--color-primary);text-decoration:underline;font-weight:bold;">Nhấp vào đây để Kích hoạt kết nối Máy chủ</a>, sau đó thử đăng nhập lại.` : '';
+    errorBox.innerHTML = `Không thể kết nối đến máy chủ!${apiLink}`;
     errorBox.style.display = 'block';
   }
 };
