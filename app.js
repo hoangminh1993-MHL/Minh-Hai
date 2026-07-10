@@ -5,6 +5,14 @@ function getApiUrl(path) {
     const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
     return `${base}${path}`;
   }
+  // Tự động kết nối cố định tới API Server trên Render nếu chạy trực tuyến (v18)
+  if (window.location.hostname.includes('github.io')) {
+    return `https://minh-hai.onrender.com${path}`;
+  }
+  // Nếu chạy thử nghiệm trên máy tính cá nhân
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `http://127.0.0.1:3000${path}`;
+  }
   return path;
 }
 
