@@ -1868,3 +1868,39 @@ textarea.form-control {
   color: #ef4444;
 }
 
+/* ==================== DEDICATED PROJECT WORKSPACE STYLES ==================== */
+.mini-task-item {
+  transition: var(--transition-fast);
+}
+.mini-task-item:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  transform: translateX(3px);
+}
+
+.chat-msg-row {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+.chat-msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 11.5px;
+}
+.chat-msg-header strong {
+  color: #f59e0b;
+}
+.chat-msg-header span {
+  color: var(--text-muted);
+}
+.chat-msg-body {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+

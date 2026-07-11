@@ -2405,10 +2405,21 @@ window.openProjectDedicatedView = function(projId) {
   document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
   document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
 
+  // Calculate and update progress bar
+  const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
+  const totalTasks = projTasks.length;
+  const completedTasks = projTasks.filter(t => t.status === 'completed').length;
+  const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  
+  const percentEl = document.getElementById('dedicated-project-progress-percent');
+  if (percentEl) percentEl.innerText = `${percent}%`;
+  
+  const barEl = document.getElementById('dedicated-project-progress-bar');
+  if (barEl) barEl.style.width = `${percent}%`;
+
   // Render tasks
   const tasksContainer = document.getElementById('dedicated-project-tasks-list');
   tasksContainer.innerHTML = '';
-  const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
   if (projTasks.length === 0) {
     tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">Chưa có công việc nào liên kết với dự án này.</span>`;
   } else {

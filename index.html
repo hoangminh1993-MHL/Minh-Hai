@@ -1663,6 +1663,89 @@
     </div>
   </div>
 
+  <!-- MODAL: DEDICATED PROJECT WORKSPACE VIEW -->
+  <div class="modal" id="modal-project-dedicated-view">
+    <div class="modal-content" style="width: 1200px; max-width: 95%; height: 85vh; display: flex; flex-direction: column; padding: 0; background: #0f172a; border: 1px solid rgba(234, 179, 8, 0.2);">
+      <!-- Header -->
+      <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: #1e293b;">
+        <div>
+          <h2 id="dedicated-project-name" style="margin: 0; color: #f59e0b; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-folder-open"></i> Tên Dự Án
+          </h2>
+          <div id="dedicated-project-meta" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Quản lý: ... | Thành viên: ...</div>
+        </div>
+        <button class="btn-close-modal" data-modal="modal-project-dedicated-view" style="font-size: 24px; background: none; border: none; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Workspace Body -->
+      <div class="modal-body" style="flex: 1; display: flex; overflow: hidden; padding: 0;">
+        <!-- Left Panel: Info & Progress -->
+        <div class="project-dedicated-left" style="width: 28%; border-right: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; background: #111827;">
+          <div>
+            <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Tiến Độ Dự Án</h4>
+            <div class="project-progress-container" style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+                <span>Hoàn thành công việc</span>
+                <strong id="dedicated-project-progress-percent">0%</strong>
+              </div>
+              <div class="progress-bar-bg" style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                <div id="dedicated-project-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f59e0b, #eab308); transition: width 0.3s ease;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Mô tả & Ghi chú</h4>
+            <div id="dedicated-project-desc" style="font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; white-space: pre-wrap;">Mô tả chi tiết dự án...</div>
+          </div>
+        </div>
+
+        <!-- Middle Panel: Tasks & Documents -->
+        <div class="project-dedicated-middle" style="width: 44%; border-right: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; overflow: hidden;">
+          <!-- Top Section: Tasks -->
+          <div style="flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 16px; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-list-check"></i> Công Việc Dự Án</h3>
+              <button class="btn btn-sm btn-primary" id="btn-dedicated-project-add-task" style="padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-plus"></i> Giao việc</button>
+            </div>
+            <div id="dedicated-project-tasks-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+              <!-- Tasks will be loaded here dynamically -->
+            </div>
+          </div>
+
+          <!-- Bottom Section: Documents -->
+          <div style="flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-shield"></i> Tài Liệu & Link Liên Kết</h3>
+              <button class="btn btn-sm btn-outline" id="btn-dedicated-project-add-doc" style="padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-link"></i> Ghim Link</button>
+            </div>
+            <div id="dedicated-project-docs-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+              <!-- Documents will be loaded here dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Chat & Discussions -->
+        <div class="project-dedicated-right" style="width: 28%; display: flex; flex-direction: column; background: #0b0f19; overflow: hidden;">
+          <div style="padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #111827;">
+            <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-comments"></i> Thảo Luận Nhóm</h3>
+          </div>
+          
+          <!-- Chat messages area -->
+          <div id="dedicated-project-discussion" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+            <!-- Discussions will load here dynamically -->
+          </div>
+
+          <!-- Chat input area -->
+          <form id="form-dedicated-project-add-comment" style="padding: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: #111827; display: flex; gap: 8px;">
+            <input type="text" id="dedicated-project-comment-input" class="form-control" placeholder="Nhập tin nhắn thảo luận..." style="flex: 1; font-size: 12.5px; height: 36px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);" required>
+            <button type="submit" class="btn btn-primary" style="padding: 0 14px; height: 36px;"><i class="fa-solid fa-paper-plane"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: MANDATORY CHECKLIST PROMPT ON STAGE MOVE -->
   <div class="modal" id="modal-step-checklist-confirm">
     <div class="modal-content" style="width: 500px; max-width: 95%;">
