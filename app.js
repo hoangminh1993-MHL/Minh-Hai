@@ -245,6 +245,10 @@ async function syncLoadState() {
       AppState.shipment_workflows = data.shipment_workflows || [];
       AppState.single_tasks = data.single_tasks || [];
 
+      if (window.initLeadSteps && AppState.leads) {
+        AppState.leads.forEach(window.initLeadSteps);
+      }
+
       const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
       AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || loggedUser.id || (data.users && data.users[0]?.id) || 'usr-admin';
       
@@ -282,6 +286,11 @@ function loadState() {
   AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
   AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
   AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
+
+  if (window.initLeadSteps && AppState.leads) {
+    AppState.leads.forEach(window.initLeadSteps);
+  }
+
   updateMyTasksBadge();
 }
 
@@ -362,6 +371,10 @@ function startStatePolling() {
           AppState.projects = data.projects || [];
           AppState.shipment_workflows = data.shipment_workflows || [];
           AppState.single_tasks = data.single_tasks || [];
+
+          if (window.initLeadSteps && AppState.leads) {
+            AppState.leads.forEach(window.initLeadSteps);
+          }
 
           // Re-render active view
           const activeTabElement = document.querySelector('.nav-item.active');
@@ -806,8 +819,8 @@ function renderDashboardCharts() {
   if (failChartInstance) failChartInstance.destroy();
 
   // CRM Funnel Chart Data
-  const stages = ['receive_info', 'get_phone', 'quotation', 'negotiating', 'success', 'failed'];
-  const stageNames = ['Nhận thông tin', 'Lấy SĐT', 'Báo giá', 'Thương lượng', 'Thành công', 'Thất bại'];
+  const stages = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
+  const stageNames = ['Nhận thông tin', 'Lấy SĐT', 'Khai thác thông tin', 'Báo giá', 'Thương lượng', 'Thành công', 'Thất bại'];
   const stageCounts = stages.map(st => AppState.leads.filter(l => l.stage === st).length);
 
   const crmCtx = document.getElementById('crmFunnelChart').getContext('2d');
@@ -821,13 +834,14 @@ function renderDashboardCharts() {
         backgroundColor: [
           'rgba(59, 130, 246, 0.6)',   // Blue (receive_info)
           'rgba(139, 92, 246, 0.6)',   // Purple (get_phone)
+          'rgba(244, 63, 94, 0.6)',    // Pink (explore_info)
           'rgba(245, 158, 11, 0.6)',   // Yellow (quotation)
           'rgba(249, 115, 22, 0.6)',   // Orange (negotiating)
           'rgba(16, 185, 129, 0.6)',   // Emerald (success)
           'rgba(239, 68, 68, 0.6)'     // Rose (failed)
         ],
         borderColor: [
-          '#3b82f6', '#8b5cf6', '#f59e0b', '#f97316', '#10b981', '#ef4444'
+          '#3b82f6', '#8b5cf6', '#f43f5e', '#f59e0b', '#f97316', '#10b981', '#ef4444'
         ],
         borderWidth: 1.5,
         borderRadius: 6

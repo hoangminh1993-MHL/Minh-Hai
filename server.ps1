@@ -441,6 +441,9 @@ if ($HttpServer) {
                 elseif ($ext -eq ".ico") { $contentType = "image/x-icon" }
                 
                 $response.ContentType = $contentType
+                $response.AddHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                $response.AddHeader("Pragma", "no-cache")
+                $response.AddHeader("Expires", "0")
                 $response.ContentLength64 = $bytes.Length
                 $response.OutputStream.Write($bytes, 0, $bytes.Length)
             } else {

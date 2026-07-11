@@ -5,6 +5,14 @@ function getApiUrl(path) {
     const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
     return `${base}${path}`;
   }
+  // Tự động kết nối cố định tới API Server trên Render nếu chạy trực tuyến (v18)
+  if (window.location.hostname.includes('github.io')) {
+    return `https://minh-hai.onrender.com${path}`;
+  }
+  // Nếu chạy thử nghiệm trên máy tính cá nhân
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `http://127.0.0.1:3000${path}`;
+  }
   return path;
 }
 
@@ -95,7 +103,11 @@ let AppState = {
   workflows: {},
   sausageLogs: [],
   notifications: [],
-  currentUserId: ''
+  currentUserId: '',
+  clients: [],
+  projects: [],
+  shipment_workflows: [],
+  single_tasks: []
 };
 
 // Charts references
@@ -117,17 +129,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     navStaff.style.display = sessionUser.role === 'admin' ? 'block' : 'none';
   }
   
-  const btnConfigApi = document.getElementById('btn-config-api');
-  if (btnConfigApi) {
-    btnConfigApi.onclick = (e) => {
+  // Initialize settings API Base URL input value
+  const apiInput = document.getElementById('settings-api-base-input');
+  if (apiInput) {
+    apiInput.value = localStorage.getItem('minhhai_custom_api_base') || '';
+  }
+
+  const formApiConfig = document.getElementById('form-api-config');
+  if (formApiConfig) {
+    formApiConfig.onsubmit = (e) => {
       e.preventDefault();
-      const current = localStorage.getItem('minhhai_custom_api_base') || '';
-      const url = prompt('Nhập địa chỉ API Server (ví dụ: https://xxxx.free.pinggy.net hoặc http://localhost:3000):', current);
-      if (url !== null) {
-        localStorage.setItem('minhhai_custom_api_base', url.trim());
-        alert('Đã lưu cấu hình kết nối API! Trình duyệt sẽ tự động tải lại.');
-        window.location.reload();
-      }
+      const val = document.getElementById('settings-api-base-input').value.trim();
+      localStorage.setItem('minhhai_custom_api_base', val);
+      showToast('Đã lưu địa chỉ API Server mới!', 'success');
+      setTimeout(() => window.location.reload(), 1000);
+    };
+  }
+
+  const btnClearApi = document.getElementById('btn-settings-clear-api');
+  if (btnClearApi) {
+    btnClearApi.onclick = () => {
+      localStorage.removeItem('minhhai_custom_api_base');
+      showToast('Đã xoá địa chỉ API Server tuỳ chỉnh, khôi phục kết nối mặc định.', 'info');
+      setTimeout(() => window.location.reload(), 1000);
     };
   }
 
@@ -214,6 +238,17 @@ async function syncLoadState() {
       AppState.sausageLogs = data.sausageLogs;
       AppState.notifications = data.notifications;
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
+      
+      // Seed operational lists (v18)
+      AppState.clients = data.clients || [];
+      AppState.projects = data.projects || [];
+      AppState.shipment_workflows = data.shipment_workflows || [];
+      AppState.single_tasks = data.single_tasks || [];
+
+      if (window.initLeadSteps && AppState.leads) {
+        AppState.leads.forEach(window.initLeadSteps);
+      }
+
       const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
       AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || loggedUser.id || (data.users && data.users[0]?.id) || 'usr-admin';
       
@@ -224,6 +259,12 @@ async function syncLoadState() {
       localStorage.setItem(CONFIG.LS_KEY_WORKFLOWS, JSON.stringify(AppState.workflows));
       localStorage.setItem(CONFIG.LS_KEY_LOGS, JSON.stringify(AppState.sausageLogs));
       localStorage.setItem(CONFIG.LS_KEY_NOTIFS, JSON.stringify(AppState.notifications));
+
+      localStorage.setItem('votr_clients_db', JSON.stringify(AppState.clients));
+      localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
+      localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
+      localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
+      updateMyTasksBadge();
       return;
     }
   } catch (err) {
@@ -240,6 +281,17 @@ function loadState() {
   AppState.sausageLogs = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LOGS)) || [];
   AppState.notifications = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_NOTIFS)) || [];
   AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || (AppState.users && AppState.users[0]?.id) || 'usr-1';
+
+  AppState.clients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
+  AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
+  AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
+  AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
+
+  if (window.initLeadSteps && AppState.leads) {
+    AppState.leads.forEach(window.initLeadSteps);
+  }
+
+  updateMyTasksBadge();
 }
 
 async function saveState() {
@@ -251,6 +303,11 @@ async function saveState() {
   localStorage.setItem(CONFIG.LS_KEY_LOGS, JSON.stringify(AppState.sausageLogs));
   localStorage.setItem(CONFIG.LS_KEY_NOTIFS, JSON.stringify(AppState.notifications));
   localStorage.setItem(CONFIG.LS_KEY_CURRENT_USER, AppState.currentUserId);
+
+  localStorage.setItem('votr_clients_db', JSON.stringify(AppState.clients));
+  localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
+  localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
+  localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
   
   // Sync to server API in background
   try {
@@ -262,6 +319,7 @@ async function saveState() {
   } catch (err) {
     console.error('Không lưu được lên server API:', err);
   }
+  updateMyTasksBadge();
 }
 
 let pollingInterval = null;
@@ -281,7 +339,24 @@ function startStatePolling() {
         const oldTasksCount = AppState.tasks ? AppState.tasks.length : 0;
         const newTasksCount = data.tasks ? data.tasks.length : 0;
         
-        if (newLeadsCount !== oldLeadsCount || newNotifsCount !== oldNotifsCount || newTasksCount !== oldTasksCount) {
+        const oldFlowsCount = AppState.shipment_workflows ? AppState.shipment_workflows.length : 0;
+        const newFlowsCount = data.shipment_workflows ? data.shipment_workflows.length : 0;
+        const oldClientsCount = AppState.clients ? AppState.clients.length : 0;
+        const newClientsCount = data.clients ? data.clients.length : 0;
+        const oldProjectsCount = AppState.projects ? AppState.projects.length : 0;
+        const newProjectsCount = data.projects ? data.projects.length : 0;
+        const oldSingleCount = AppState.single_tasks ? AppState.single_tasks.length : 0;
+        const newSingleCount = data.single_tasks ? data.single_tasks.length : 0;
+
+        if (
+          newLeadsCount !== oldLeadsCount || 
+          newNotifsCount !== oldNotifsCount || 
+          newTasksCount !== oldTasksCount ||
+          newFlowsCount !== oldFlowsCount ||
+          newClientsCount !== oldClientsCount ||
+          newProjectsCount !== oldProjectsCount ||
+          newSingleCount !== oldSingleCount
+        ) {
           console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
           AppState.users = data.users;
           AppState.leads = data.leads;
@@ -291,6 +366,16 @@ function startStatePolling() {
           AppState.notifications = data.notifications;
           AppState.fbConfig = data.fbConfig || AppState.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
           
+          // Đồng bộ các phân hệ vận hành mới (v18)
+          AppState.clients = data.clients || [];
+          AppState.projects = data.projects || [];
+          AppState.shipment_workflows = data.shipment_workflows || [];
+          AppState.single_tasks = data.single_tasks || [];
+
+          if (window.initLeadSteps && AppState.leads) {
+            AppState.leads.forEach(window.initLeadSteps);
+          }
+
           // Re-render active view
           const activeTabElement = document.querySelector('.nav-item.active');
           if (activeTabElement) {
@@ -301,6 +386,7 @@ function startStatePolling() {
           // Refresh user context and notification dropdown
           renderCurrentUser();
           renderNotifications();
+          updateMyTasksBadge();
         }
       }
     } catch (err) {
@@ -365,11 +451,14 @@ function navigateToView(viewId, updateHash = true) {
     dashboard: { main: 'Báo Cáo Tổng Quan', sub: 'Tổng quan doanh số chuyển đổi và hiệu suất công việc phòng ban.' },
     crm: { main: 'Bảng CRM Khách Hàng', sub: 'Quản lý phễu chuyển đổi khách hàng 7 bước từ nhận thông tin đến chốt.' },
     tasks: { main: 'Quản Lý Công Việc', sub: 'Giao việc, bám sát quy trình từng phòng ban và tích điểm Xúc Xích.' },
-    workflows: { main: 'Cấu Hình Quy Trình Công Việc', sub: 'Tùy chỉnh các bước thực hiện nghiệp vụ cho từng bộ phận.' },
     'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
-    'facebook-config': { main: 'Cấu Hình Liên Kết Fanpage', sub: 'Kết nối Fanpage Facebook thực tế để tự động nhận tin nhắn khách hàng đổ về CRM.' },
+    settings: { main: 'Thiết Lập Hệ Thống', sub: 'Cấu hình liên kết Fanpage Facebook, quản lý kết nối API Server và dữ liệu hệ thống.' },
     rewards: { main: 'Đua Top Tích Xúc Xích', sub: 'Bảng thi đua xếp hạng thưởng dựa trên điểm hoàn thành công việc.' },
-    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' }
+    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' },
+    'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
+    'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
+    'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
+    'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' }
   };
 
   if (titles[viewId]) {
@@ -384,12 +473,23 @@ function navigateToView(viewId, updateHash = true) {
     renderCRMBoard();
   } else if (viewId === 'tasks') {
     renderTasksList();
-  } else if (viewId === 'workflows') {
-    renderWorkflowSettings();
+
+  } else if (viewId === 'crm-clients-workflows') {
+    if (typeof renderOpsWorkflows === 'function') renderOpsWorkflows();
+  } else if (viewId === 'tasks-single') {
+    if (typeof renderOpsSingleTasks === 'function') renderOpsSingleTasks();
+  } else if (viewId === 'tasks-projects') {
+    if (typeof renderOpsProjects === 'function') renderOpsProjects();
+  } else if (viewId === 'my-tasks') {
+    if (typeof renderMyTasks === 'function') renderMyTasks();
   } else if (viewId === 'rewards') {
     renderRewardsView();
-  } else if (viewId === 'facebook-config') {
+  } else if (viewId === 'settings') {
     renderFacebookConfig();
+    const apiInput = document.getElementById('settings-api-base-input');
+    if (apiInput) {
+      apiInput.value = localStorage.getItem('minhhai_custom_api_base') || '';
+    }
   } else if (viewId === 'staff-management') {
     renderStaffManagementTable();
   }
@@ -531,10 +631,58 @@ function renderCurrentUser() {
   // Set user avatar
   const avatarDiv = document.getElementById('current-user-avatar');
   avatarDiv.innerHTML = `<i class="fa-solid ${user.avatar || 'fa-user'}"></i>`;
+  
+  applyRoleBasedNavigation();
+}
+
+function applyRoleBasedNavigation() {
+  const user = getCurrentUser();
+  const isAdmin = user && user.role === 'admin';
+
+  const navSettings = document.getElementById('nav-settings');
+  const navStaffMgmt = document.getElementById('nav-staff-mgmt');
+
+  if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
+  if (navStaffMgmt) navStaffMgmt.style.display = isAdmin ? '' : 'none';
+
+  // Toggle sub-dashboard views inside view-dashboard
+  const adminView = document.getElementById('dashboard-admin-view');
+  const staffView = document.getElementById('dashboard-staff-view');
+  if (adminView && staffView) {
+    if (isAdmin) {
+      adminView.style.display = 'block';
+      staffView.style.display = 'none';
+    } else {
+      adminView.style.display = 'none';
+      staffView.style.display = 'block';
+    }
+  }
+
+  // Hide project creation button for non-admins
+  const btnAddProjectModal = document.getElementById('btn-add-project-modal');
+  if (btnAddProjectModal) {
+    btnAddProjectModal.style.display = isAdmin ? '' : 'none';
+  }
+
+  // Redirect non-admin away from restricted views
+  const activeTabElement = document.querySelector('.nav-item.active');
+  if (activeTabElement) {
+    const currentViewId = activeTabElement.getAttribute('data-view');
+    const restrictedViews = ['settings', 'staff-management'];
+    if (!isAdmin && restrictedViews.includes(currentViewId)) {
+      navigateToView('my-tasks');
+    }
+  }
 }
 
 // ==================== DASHBOARD RENDER & CHARTS ==================== //
 function renderDashboard() {
+  const user = getCurrentUser();
+  if (user && user.role !== 'admin') {
+    renderStaffDashboard(user);
+    return;
+  }
+
   // 1. Compute Stats
   const totalLeads = AppState.leads.length;
   const successLeads = AppState.leads.filter(l => l.stage === 'success').length;
@@ -560,6 +708,109 @@ function renderDashboard() {
 
   // 4. Render Mini Leaderboard
   renderMiniLeaderboard();
+
+  // 5. Render Admin Staff Workload Monitoring
+  renderAdminStaffWorkloadTable();
+}
+
+function renderAdminStaffWorkloadTable() {
+  const tbody = document.getElementById('admin-staff-workload-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const usersList = AppState.users || [];
+
+  usersList.forEach(u => {
+    const userId = u.id;
+
+    let activeTasksCount = 0;
+    let overdueTasksCount = 0;
+    let completedTasksCount = 0;
+
+    // Shipment steps
+    if (AppState.shipment_workflows) {
+      AppState.shipment_workflows.forEach(flow => {
+        const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+        if (stepData && stepData.assigneeId === userId) {
+          if (stepData.status !== 'done') {
+            activeTasksCount++;
+            const isOverdue = flow.deadline && new Date(flow.deadline) < new Date();
+            if (isOverdue) overdueTasksCount++;
+          } else {
+            completedTasksCount++;
+          }
+        }
+      });
+    }
+
+    // Single Tasks
+    if (AppState.single_tasks) {
+      AppState.single_tasks.forEach(t => {
+        if (t.assigneeId === userId) {
+          if (t.status !== 'completed' && t.status !== 'canceled') {
+            activeTasksCount++;
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            if (isOverdue) overdueTasksCount++;
+          } else if (t.status === 'completed') {
+            completedTasksCount++;
+          }
+        }
+      });
+    }
+
+    // CRM Tasks
+    if (AppState.tasks) {
+      AppState.tasks.forEach(t => {
+        if (t.assigneeId === userId) {
+          if (t.status !== 'completed' && t.status !== 'canceled') {
+            activeTasksCount++;
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            if (isOverdue) overdueTasksCount++;
+          } else if (t.status === 'completed') {
+            completedTasksCount++;
+          }
+        }
+      });
+    }
+
+    // Workload status tag
+    let statusText = 'Nhàn rỗi';
+    let statusClass = 'bg-gray';
+    if (activeTasksCount > 0 && activeTasksCount <= 2) {
+      statusText = 'Vừa phải';
+      statusClass = 'bg-emerald';
+    } else if (activeTasksCount > 2 && activeTasksCount <= 5) {
+      statusText = 'Bận rộn';
+      statusClass = 'bg-blue';
+    } else if (activeTasksCount > 5) {
+      statusText = 'Quá tải ⚠️';
+      statusClass = 'bg-rose';
+    }
+
+    if (overdueTasksCount > 0) {
+      statusText += ` (Trễ: ${overdueTasksCount})`;
+    }
+
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border-color)';
+    tr.innerHTML = `
+      <td style="padding: 10px; font-weight: bold; display:flex; align-items:center; gap:8px;">
+        <div style="width:28px; height:28px; font-size:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); border-radius:50%; color: var(--color-primary);">
+          <i class="fa-solid ${u.avatar || 'fa-user'}"></i>
+        </div>
+        <span>${u.name}</span>
+      </td>
+      <td style="padding: 10px; color: var(--text-secondary); text-transform: capitalize;">${u.role}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: #f59e0b;">${u.points} xúc xích</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold;">${activeTasksCount}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: ${overdueTasksCount > 0 ? '#ef4444' : 'var(--text-muted)'};">${overdueTasksCount}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: #10b981;">${completedTasksCount}</td>
+      <td style="padding: 10px; text-align: center;">
+        <span class="badge ${statusClass}" style="font-size: 11px; padding: 4px 8px; border-radius:4px; font-weight: bold;">${statusText}</span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderDashboardCharts() {
@@ -568,8 +819,8 @@ function renderDashboardCharts() {
   if (failChartInstance) failChartInstance.destroy();
 
   // CRM Funnel Chart Data
-  const stages = ['receive_info', 'get_phone', 'quotation', 'negotiating', 'success', 'failed'];
-  const stageNames = ['Nhận thông tin', 'Lấy SĐT', 'Báo giá', 'Thương lượng', 'Thành công', 'Thất bại'];
+  const stages = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
+  const stageNames = ['Nhận thông tin', 'Lấy SĐT', 'Khai thác thông tin', 'Báo giá', 'Thương lượng', 'Thành công', 'Thất bại'];
   const stageCounts = stages.map(st => AppState.leads.filter(l => l.stage === st).length);
 
   const crmCtx = document.getElementById('crmFunnelChart').getContext('2d');
@@ -583,13 +834,14 @@ function renderDashboardCharts() {
         backgroundColor: [
           'rgba(59, 130, 246, 0.6)',   // Blue (receive_info)
           'rgba(139, 92, 246, 0.6)',   // Purple (get_phone)
+          'rgba(244, 63, 94, 0.6)',    // Pink (explore_info)
           'rgba(245, 158, 11, 0.6)',   // Yellow (quotation)
           'rgba(249, 115, 22, 0.6)',   // Orange (negotiating)
           'rgba(16, 185, 129, 0.6)',   // Emerald (success)
           'rgba(239, 68, 68, 0.6)'     // Rose (failed)
         ],
         borderColor: [
-          '#3b82f6', '#8b5cf6', '#f59e0b', '#f97316', '#10b981', '#ef4444'
+          '#3b82f6', '#8b5cf6', '#f43f5e', '#f59e0b', '#f97316', '#10b981', '#ef4444'
         ],
         borderWidth: 1.5,
         borderRadius: 6
@@ -991,6 +1243,20 @@ function closeModal(modalId) {
   }
 }
 
+// Global modal helpers for ESC key and click backdrop to close
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const activeModals = document.querySelectorAll('.modal.active');
+    activeModals.forEach(m => closeModal(m.id));
+  }
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) {
+    closeModal(e.target.id);
+  }
+});
+
 // ==================== FORMAT HELPERS ==================== //
 function formatVnd(val) {
   if (val === null || val === undefined || isNaN(val)) return '0 đ';
@@ -1173,5 +1439,207 @@ function renderStaffManagementTable() {
       }
     };
   });
+}
+
+function updateMyTasksBadge() {
+  const badge = document.getElementById('my-tasks-badge');
+  if (!badge) return;
+
+  const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  const userId = AppState.currentUserId || loggedUser.id || 'usr-admin';
+
+  // 1. Shipment steps owned by the user
+  let flowsCount = 0;
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(flow => {
+      const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+      if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+        flowsCount++;
+      }
+    });
+  }
+
+  // 2. Single tasks and project tasks owned by the user
+  let singleCount = 0;
+  if (AppState.single_tasks) {
+    singleCount = AppState.single_tasks.filter(t => t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled').length;
+  }
+
+  // 3. CRM leads owned by the user
+  let crmLeadsCount = 0;
+  if (AppState.leads) {
+    crmLeadsCount = AppState.leads.filter(l => l.salesId === userId && l.stage !== 'success' && l.stage !== 'failed').length;
+  }
+
+  // 4. CRM tasks owned by the user
+  let crmTasksCount = 0;
+  if (AppState.tasks) {
+    crmTasksCount = AppState.tasks.filter(t => t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled').length;
+  }
+
+  const totalPending = flowsCount + singleCount + crmLeadsCount + crmTasksCount;
+
+  if (totalPending > 0) {
+    badge.innerText = totalPending;
+    badge.style.display = 'inline-block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderStaffDashboard(user) {
+  const userId = user.id;
+
+  // 1. Sausage Points
+  const pointsEl = document.getElementById('staff-stat-points');
+  if (pointsEl) pointsEl.innerText = user.points;
+
+  // 2. Compute Rank
+  const rankEl = document.getElementById('staff-stat-rank');
+  if (rankEl) {
+    const sortedUsers = [...AppState.users].sort((a,b) => b.points - a.points);
+    const myRank = sortedUsers.findIndex(u => u.id === userId) + 1;
+    rankEl.innerHTML = `<i class="fa-solid fa-trophy"></i> Hạng ${myRank} trên ${sortedUsers.length} thành viên`;
+  }
+
+  // 3. Active Shipment Workflows
+  let myFlowsCount = 0;
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(flow => {
+      const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+      if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+        myFlowsCount++;
+      }
+    });
+  }
+  const flowsEl = document.getElementById('staff-stat-flows');
+  if (flowsEl) flowsEl.innerText = myFlowsCount;
+
+  // 4. Single tasks
+  let myActiveTasks = 0;
+  let myCompletedTasks = 0;
+  if (AppState.single_tasks) {
+    const myTasks = AppState.single_tasks.filter(t => t.assigneeId === userId);
+    myActiveTasks = myTasks.filter(t => t.status !== 'completed' && t.status !== 'canceled').length;
+    myCompletedTasks = myTasks.filter(t => t.status === 'completed').length;
+  }
+  if (AppState.tasks) {
+    const myCrmTasks = AppState.tasks.filter(t => t.assigneeId === userId);
+    myActiveTasks += myCrmTasks.filter(t => t.status !== 'completed' && t.status !== 'canceled').length;
+    myCompletedTasks += myCrmTasks.filter(t => t.status === 'completed').length;
+  }
+  const tasksEl = document.getElementById('staff-stat-tasks');
+  if (tasksEl) tasksEl.innerText = myActiveTasks;
+  const compTasksEl = document.getElementById('staff-stat-tasks-completed');
+  if (compTasksEl) compTasksEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Đã hoàn thành ${myCompletedTasks} việc`;
+
+  // 5. Render personal sausage logs
+  const logsContainer = document.getElementById('staff-sausage-logs');
+  if (logsContainer) {
+    logsContainer.innerHTML = '';
+    const myLogs = (AppState.sausageLogs || []).filter(log => {
+      return log.msg && log.msg.toLowerCase().includes(user.name.toLowerCase());
+    }).slice(-10).reverse(); // top 10 recent
+
+    if (myLogs.length === 0) {
+      logsContainer.innerHTML = `<span class="text-muted" style="font-size:11.5px; font-style:italic;">Chưa có lịch sử tích lũy điểm thưởng.</span>`;
+    } else {
+      myLogs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'mini-task-item';
+        item.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px;';
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>${log.msg}</span>
+            <span style="font-size: 10px; color: var(--text-muted);">${log.time || ''}</span>
+          </div>
+        `;
+        logsContainer.appendChild(item);
+      });
+    }
+  }
+
+  // 6. Render urgent & upcoming tasks
+  const urgentContainer = document.getElementById('staff-urgent-tasks');
+  if (urgentContainer) {
+    urgentContainer.innerHTML = '';
+    const urgentList = [];
+
+    if (AppState.shipment_workflows) {
+      AppState.shipment_workflows.forEach(flow => {
+        const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+        if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+          urgentList.push({
+            id: flow.id,
+            title: `Lô hàng: ${flow.name} (Khâu: ${flow.stage})`,
+            deadline: flow.deadline,
+            type: 'flow'
+          });
+        }
+      });
+    }
+
+    if (AppState.single_tasks) {
+      AppState.single_tasks.forEach(t => {
+        if (t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled') {
+          urgentList.push({
+            id: t.id,
+            title: `Việc đơn lẻ: ${t.title}`,
+            deadline: t.deadline,
+            type: 'single'
+          });
+        }
+      });
+    }
+
+    if (AppState.tasks) {
+      AppState.tasks.forEach(t => {
+        if (t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled') {
+          urgentList.push({
+            id: t.id,
+            title: `CRM Task: ${t.title}`,
+            deadline: t.deadline,
+            type: 'crm_task'
+          });
+        }
+      });
+    }
+
+    urgentList.sort((a, b) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
+    });
+
+    const displayList = urgentList.slice(0, 5);
+    if (displayList.length === 0) {
+      urgentContainer.innerHTML = `<span class="text-muted" style="font-size:11.5px; font-style:italic;">Tuyệt vời! Bạn không có việc nào cận hạn hay quá hạn.</span>`;
+    } else {
+      displayList.forEach(item => {
+        const isOverdue = item.deadline && new Date(item.deadline) < new Date();
+        const div = document.createElement('div');
+        div.className = 'mini-task-item';
+        div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
+        div.innerHTML = `
+          <div>
+            <strong style="color: ${item.type === 'flow' ? '#3b82f6' : (item.type === 'single' ? '#f59e0b' : '#a855f7')};">[${item.type.toUpperCase()}]</strong> ${item.title}
+          </div>
+          <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: ${isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)'}; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'};">
+            ${item.deadline || 'Hạn chót: -'}
+          </span>
+        `;
+        div.onclick = () => {
+          if (item.type === 'flow') {
+            if (typeof openFlowDetailModal === 'function') openFlowDetailModal(item.id);
+          } else if (item.type === 'single') {
+            if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(item.id);
+          } else {
+            window.location.hash = 'tasks';
+          }
+        };
+        urgentContainer.appendChild(div);
+      });
+    }
+  }
 }
 

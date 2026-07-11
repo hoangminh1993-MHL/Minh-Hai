@@ -819,7 +819,7 @@ textarea.form-control {
 }
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(6, 300px);
+  grid-template-columns: repeat(7, 300px);
   gap: 16px;
   min-height: calc(100vh - 280px);
 }
@@ -863,7 +863,7 @@ textarea.form-control {
 .dot-purple { background-color: var(--color-secondary); }
 .dot-cyan { background-color: var(--color-info); }
 .dot-yellow { background-color: var(--color-warning); }
-.dot-orange { background-color: var(--bg-orange); }
+.dot-orange { background-color: #f97316; }
 .dot-emerald { background-color: var(--color-success); }
 .dot-rose { background-color: var(--color-danger); }
 

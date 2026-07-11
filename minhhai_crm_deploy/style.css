@@ -819,7 +819,7 @@ textarea.form-control {
 }
 .kanban-board {
   display: grid;
-  grid-template-columns: repeat(6, 300px);
+  grid-template-columns: repeat(7, 300px);
   gap: 16px;
   min-height: calc(100vh - 280px);
 }
@@ -863,7 +863,7 @@ textarea.form-control {
 .dot-purple { background-color: var(--color-secondary); }
 .dot-cyan { background-color: var(--color-info); }
 .dot-yellow { background-color: var(--color-warning); }
-.dot-orange { background-color: var(--bg-orange); }
+.dot-orange { background-color: #f97316; }
 .dot-emerald { background-color: var(--color-success); }
 .dot-rose { background-color: var(--color-danger); }
 
@@ -1691,3 +1691,180 @@ textarea.form-control {
   color: #34d399 !important; /* Emerald green highlight */
   font-weight: 700 !important;
 }
+
+/* ==================== V18 OPERATION PORTAL STYLES ==================== */
+
+/* Calendar Cell Styles */
+.calendar-cell {
+  background-color: rgba(17, 24, 39, 0.4);
+  border-right: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-color);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+}
+.calendar-cell:hover {
+  background-color: rgba(31, 41, 55, 0.6);
+}
+.calendar-cell-header {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--text-muted);
+}
+.calendar-cell.today .calendar-cell-header {
+  color: var(--color-primary);
+  font-weight: 800;
+}
+.calendar-cell-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+.calendar-task-tag {
+  font-size: 9.5px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  color: #ffffff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+/* Project Tabs Styles */
+.project-tab-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 6px 12px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+.project-tab-btn:hover {
+  color: var(--text-primary);
+}
+.project-tab-btn.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.project-tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-primary);
+}
+
+/* Discussion Chat Styles */
+.chat-msg-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 4px;
+}
+.chat-msg-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.chat-msg-body {
+  background-color: rgba(31, 41, 55, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+/* Flow steps bubbles timeline in modal */
+.flow-step-bubble {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s, transform 0.2s;
+  flex: 1;
+  min-width: 50px;
+}
+.flow-step-bubble:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+.flow-step-bubble.active {
+  opacity: 1;
+}
+.flow-step-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #374151;
+  border: 2px solid var(--border-color);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+}
+.flow-step-bubble.done .flow-step-circle {
+  background-color: #10b981;
+  border-color: #047857;
+}
+.flow-step-bubble.doing .flow-step-circle {
+  background-color: #f59e0b;
+  border-color: #b45309;
+  animation: pulse-border 1.5s infinite;
+}
+.flow-step-bubble.active .flow-step-circle {
+  box-shadow: 0 0 8px var(--color-primary);
+}
+.flow-step-lbl {
+  font-size: 9px;
+  text-align: center;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.flow-step-bubble.active .flow-step-lbl {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+/* Checklist Mandatory view items */
+.mandatory-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+}
+.mandatory-item input {
+  width: 16px;
+  height: 16px;
+}
+.mandatory-item.checked {
+  color: #10b981;
+}
+.mandatory-item.unchecked {
+  color: #ef4444;
+}
+

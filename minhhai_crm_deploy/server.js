@@ -7,6 +7,12 @@ const { Client } = require('pg');
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
+app.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+});
 app.use(express.static(path.join(__dirname, '.')));
 
 const PORT = process.env.PORT || 3000;
@@ -27,18 +33,35 @@ async function loadState() {
       if (res.rows.length > 0) {
         const dbState = JSON.parse(res.rows[0].state_json);
         
-        // Auto-sync users list from local db.json if the database users list is different or doesn't have the new users
+        // Auto-sync users list and new operational fields from local db.json if missing in database state
         try {
           const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
           const localState = JSON.parse(localStateRaw);
+          let needsUpdate = false;
+
+          // Check if users need sync
           const hasNewUsers = localState.users && (!dbState.users || dbState.users.length !== localState.users.length || !dbState.users.some(u => u.username === 'hoangminh'));
           if (hasNewUsers) {
             console.log('Syncing updated users list from db.json to Supabase...');
             dbState.users = localState.users;
+            needsUpdate = true;
+          }
+
+          // Check if new operational tables need sync (v18)
+          const opFields = ['clients', 'projects', 'shipment_workflows', 'single_tasks'];
+          opFields.forEach(field => {
+            if (localState[field] && (!dbState[field] || dbState[field].length === 0)) {
+              console.log(`Syncing new operational field: ${field} from db.json to Supabase...`);
+              dbState[field] = localState[field];
+              needsUpdate = true;
+            }
+          });
+
+          if (needsUpdate) {
             await client.query('UPDATE app_state SET state_json = $1 WHERE id = 1', [JSON.stringify(dbState)]);
           }
         } catch (e) {
-          console.error('Failed to sync users list:', e);
+          console.error('Failed to sync database state:', e);
         }
         
         return dbState;
@@ -237,7 +260,7 @@ const https = require('https');
 function getFBProfileName(senderId, accessToken) {
   return new Promise((resolve) => {
     const url = `https://graph.facebook.com/v20.0/${senderId}?fields=first_name,last_name&access_token=${accessToken}`;
-    https.get(url, (res) => {
+    const req = https.get(url, (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
@@ -253,7 +276,15 @@ function getFBProfileName(senderId, accessToken) {
           resolve(null);
         }
       });
-    }).on('error', () => {
+    });
+    
+    req.on('error', () => {
+      resolve(null);
+    });
+    
+    // Set 2-second timeout to prevent hanging the webhook
+    req.setTimeout(2000, () => {
+      req.destroy();
       resolve(null);
     });
   });
@@ -266,15 +297,28 @@ app.post('/webhook', async (req, res) => {
   
   if (body.object === 'page') {
     try {
-      const state = await loadState();
+      let state = await loadState();
+      if (!state) {
+        state = { leads: [], notifications: [], users: [], fbConfig: { accessToken: '', pageUrl: '' } };
+      }
       let leadsUpdated = false;
       
       for (const entry of body.entry || []) {
         for (const event of entry.messaging || []) {
-          if (event.message && !event.message.is_echo) {
+          const isMessage = event.message && !event.message.is_echo;
+          const isPostback = !!event.postback;
+          
+          if (isMessage || isPostback) {
             const senderId = event.sender.id;
-            const messageText = event.message.text;
-            console.log(`Received FB Messenger message from ${senderId} - ${messageText}`);
+            let messageText = '';
+            
+            if (isPostback) {
+              messageText = event.postback.title || event.postback.payload || '[Click nút/Get Started]';
+            } else {
+              messageText = event.message.text || (event.message.attachments ? '[Đính kèm: Ảnh/File/Audio]' : '[Tin nhắn]');
+            }
+            
+            console.log(`Received FB Messenger event from ${senderId} - ${messageText}`);
             
             // Add lead
             const leadId = 'lead-fb-' + Math.random().toString(36).substring(2, 10);
