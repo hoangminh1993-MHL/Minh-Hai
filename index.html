@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
   <script>
@@ -36,7 +36,7 @@
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
           <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
             <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
-            <span style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25);">v19.3</span>
+            <span style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25);">v19.4</span>
           </div>
         </div>
       </div>
@@ -56,10 +56,6 @@
         <a href="#crm" class="nav-item" data-view="crm">
           <i class="fa-solid fa-users-gear"></i>
           <span>CRM Khách Mới Page</span>
-        </a>
-        <a href="#facebook-config" class="nav-item" data-view="facebook-config">
-          <i class="fa-brands fa-facebook"></i>
-          <span>Cấu Hình Fanpage</span>
         </a>
 
         <!-- VẬN HÀNH & CRM KHÁCH CŨ -->
@@ -83,17 +79,13 @@
           <i class="fa-solid fa-award"></i>
           <span>Bảng Xếp Hạng</span>
         </a>
-        <a href="#workflows" class="nav-item" data-view="workflows">
-          <i class="fa-solid fa-gears"></i>
-          <span>Cấu Hình Quy Trình cũ</span>
-        </a>
         <a href="#staff-management" class="nav-item" data-view="staff-management" id="nav-staff-mgmt" style="display:none;">
           <i class="fa-solid fa-users-cog"></i>
           <span>Quản Lý Nhân Sự</span>
         </a>
-        <a href="#" class="nav-item" id="btn-config-api" style="margin-top: auto; color: var(--color-primary);">
-          <i class="fa-solid fa-plug"></i>
-          <span>Kết Nối API Server</span>
+        <a href="#settings" class="nav-item" data-view="settings" id="nav-settings" style="display:none; color: var(--color-primary); margin-top: auto;">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Thiết Lập Hệ Thống</span>
         </a>
         <a href="#" class="nav-item" id="btn-logout" style="color: var(--color-error); margin-bottom: 8px;">
           <i class="fa-solid fa-right-from-bracket"></i>
@@ -503,167 +495,116 @@
             <table class="data-table" id="tasks-table">
               <thead>
                 <tr>
-                  <th>Tên Công Việc</th>
-                  <th>Phòng Ban</th>
-                  <th>Người Thực Hiện</th>
-                  <th>Tiến Trình (Workflow)</th>
-                  <th>Hạn Hoàn Thành</th>
-                  <th>Phần Thưởng</th>
-                  <th>Trạng Thái</th>
-                  <th>Hành Động</th>
-                </tr>
-              </thead>
-              <tbody id="tasks-list-body">
-                <!-- Dynamically populated in tasks.js -->
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-
-        <!-- VIEW: WORKFLOW SETTINGS -->
-        <section id="view-workflows" class="app-view">
+         <!-- VIEW: SETTINGS (Thiết Lập Hệ Thống) -->
+        <section id="view-settings" class="app-view">
           <div class="workflow-desc">
-            <p><i class="fa-solid fa-info-circle text-blue"></i> Tại đây, Quản lý/Admin có thể thiết lập các bước quy trình làm việc chi tiết cho từng phòng ban. Khi nhân viên thực hiện công việc, quy trình tương ứng sẽ được tự động hiển thị để cập nhật tiến độ từng bước.</p>
-          </div>
-
-          <div class="workflow-grid">
-            <!-- Left Side: Select Department -->
-            <div class="workflow-card dept-list-card">
-              <h3>Phòng Ban</h3>
-              <div class="dept-selector-list" id="workflow-dept-selector">
-                <button class="dept-select-item active" data-dept="sales">
-                  <i class="fa-solid fa-headset"></i>
-                  <div class="dept-info">
-                    <h4>Sales & Chăm Sóc Khách Hàng</h4>
-                    <span>Mặc định dựa trên bảng CRM</span>
-                  </div>
-                </button>
-                <button class="dept-select-item" data-dept="sourcing">
-                  <i class="fa-solid fa-cart-shopping"></i>
-                  <div class="dept-info">
-                    <h4>Sourcing & Đặt Hàng</h4>
-                    <span id="steps-count-sourcing">4 bước</span>
-                  </div>
-                </button>
-                <button class="dept-select-item" data-dept="warehouse">
-                  <i class="fa-solid fa-warehouse"></i>
-                  <div class="dept-info">
-                    <h4>Quản Lý Kho Hàng</h4>
-                    <span id="steps-count-warehouse">4 bước</span>
-                  </div>
-                </button>
-                <button class="dept-select-item" data-dept="admin">
-                  <i class="fa-solid fa-user-shield"></i>
-                  <div class="dept-info">
-                    <h4>Bộ Phận Admin & Kế Toán</h4>
-                    <span id="steps-count-admin">3 bước</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            <!-- Right Side: Edit Workflow Steps -->
-            <div class="workflow-card steps-edit-card">
-              <div class="card-header-actions">
-                <h3 id="current-workflow-dept-name">Quy trình: Sourcing & Đặt Hàng</h3>
-                <span class="role-restricted-notice text-orange" id="workflow-restricted-notice" style="display:none;">
-                  <i class="fa-solid fa-lock"></i> Chỉ Admin mới có quyền sửa quy trình này
-                </span>
-              </div>
-              
-              <div class="workflow-steps-builder">
-                <p class="section-hint">Kéo thả để sắp xếp thứ tự các bước hoặc sửa đổi nội dung.</p>
-                <div class="steps-list" id="workflow-steps-list">
-                  <!-- Dynamically populated in tasks.js -->
-                </div>
-                
-                <div class="add-step-control" id="workflow-add-step-area">
-                  <input type="text" id="new-step-name" class="form-control" placeholder="Tên bước quy trình mới (ví dụ: Chờ thanh toán)...">
-                  <button class="btn btn-secondary" id="btn-add-workflow-step"><i class="fa-solid fa-plus"></i> Thêm bước</button>
-                </div>
-              </div>
-
-              <div class="workflow-actions-save" id="workflow-save-area">
-                <button class="btn btn-primary" id="btn-save-workflow">
-                  <i class="fa-solid fa-floppy-disk"></i> Lưu cấu hình quy trình
-                </button>
-                <button class="btn btn-outline" id="btn-reset-workflow">Khôi phục mặc định</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-
-
-
-        <!-- VIEW: FACEBOOK CONFIG -->
-        <section id="view-facebook-config" class="app-view">
-          <div class="workflow-desc">
-            <p><i class="fa-solid fa-gears text-blue"></i> <strong>Liên kết Fanpage Facebook thực tế:</strong> Tại đây bạn có thể cấu hình kết nối ứng dụng với Fanpage <strong>Minh Hải Logistics</strong> để tự động nhận tin nhắn của khách hàng.</p>
+            <p><i class="fa-solid fa-sliders text-blue"></i> <strong>Thiết Lập & Cấu Hình Hệ Thống:</strong> Cấu hình liên kết Fanpage Facebook Webhook, lưu địa chỉ kết nối API Server và quản lý dữ liệu lưu trữ.</p>
           </div>
 
           <div class="dashboard-grid grid-1-3" style="margin-top: 24px;">
-            <!-- Left Side: Config Form -->
-            <div class="dashboard-card">
-              <div class="card-header">
-                <div>
-                  <h3>Thông Tin Cấu Hình Webhook</h3>
-                  <span class="card-subtitle">Cấu hình kết nối với Fanpage</span>
+            <!-- Left Side: Config Forms -->
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              
+              <!-- API Connection Settings -->
+              <div class="dashboard-card" style="border: 1px solid var(--border-color); border-radius: 8px;">
+                <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+                  <div>
+                    <h3 style="font-size: 15px; font-weight: bold; color: var(--color-primary); margin: 0;"><i class="fa-solid fa-plug" style="margin-right: 6px;"></i>Kết Nối API Server</h3>
+                    <span class="card-subtitle">Địa chỉ backend máy chủ đồng bộ dữ liệu</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <form id="form-api-config" style="display: flex; flex-direction: column; gap: 12px; margin: 0;">
+                    <div class="form-group" style="margin: 0;">
+                      <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Địa chỉ API Server URL</label>
+                      <input type="text" id="settings-api-base-input" class="form-control" placeholder="Ví dụ: http://127.0.0.1:3000 hoặc domain ngrok/pinggy" style="font-size: 12.5px;">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                      <button type="submit" class="btn btn-primary" style="flex: 1; font-size: 12.5px; height: 38px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu API Base
+                      </button>
+                      <button type="button" class="btn btn-outline" id="btn-settings-clear-api" style="font-size: 12.5px; height: 38px; color: var(--text-muted);">
+                        Xóa tuỳ chỉnh
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
-              <div class="card-body">
-                <form id="form-fb-config">
-                  <div class="form-group">
-                    <label>Link Fanpage đang liên kết</label>
-                    <input type="text" class="form-control" value="https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet" readonly style="background-color: rgba(255,255,255,0.02); color: var(--text-muted); font-size: 11px;">
+
+              <!-- Facebook Webhook Settings -->
+              <div class="dashboard-card" style="border: 1px solid var(--border-color); border-radius: 8px;">
+                <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+                  <div>
+                    <h3 style="font-size: 15px; font-weight: bold; color: var(--color-primary); margin: 0;"><i class="fa-brands fa-facebook" style="margin-right: 6px;"></i>Thông Tin Cấu Hình Webhook</h3>
+                    <span class="card-subtitle">Webhook nhận tin nhắn khách hàng CRM</span>
                   </div>
-                  
-                  <div class="form-group">
-                    <label>Webhook URL (Callback URL)</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                      <input type="text" id="fb-config-webhook-url" class="form-control" readonly value="https://<ngrok-domain-cua-ban>/webhook" style="background-color: rgba(255,255,255,0.02);">
-                      <button type="button" class="btn btn-outline btn-sm" id="btn-copy-webhook" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
+                </div>
+                <div class="card-body">
+                  <form id="form-fb-config" style="display: flex; flex-direction: column; gap: 12px; margin: 0;">
+                    <div class="form-group" style="margin: 0;">
+                      <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Link Fanpage đang liên kết</label>
+                      <input type="text" class="form-control" value="https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet" readonly style="background-color: rgba(255,255,255,0.02); color: var(--text-muted); font-size: 11px;">
                     </div>
-                    <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">* Cần chạy ngrok hoặc deploy lên VPS để có URL công khai (HTTPS).</span>
-                  </div>
-
-                  <div class="form-group">
-                    <label>Verify Token</label>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                      <input type="text" class="form-control" readonly value="minh_hai_verify_token_123" id="fb-config-verify-token" style="background-color: rgba(255,255,255,0.02);">
-                      <button type="button" class="btn btn-outline btn-sm" id="btn-copy-verify" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
+                    
+                    <div class="form-group" style="margin: 0;">
+                      <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Webhook URL (Callback URL)</label>
+                      <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="fb-config-webhook-url" class="form-control" readonly value="https://<ngrok-domain-cua-ban>/webhook" style="background-color: rgba(255,255,255,0.02); font-size: 12px;">
+                        <button type="button" class="btn btn-outline btn-sm" id="btn-copy-webhook" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
+                      </div>
+                      <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: block;">* Cần chạy ngrok hoặc deploy lên VPS để có URL công khai (HTTPS).</span>
                     </div>
-                  </div>
 
-                  <div class="form-group">
-                    <label for="fb-config-access-token">Page Access Token (Mã truy cập Trang)</label>
-                    <textarea id="fb-config-access-token" class="form-control" rows="4" placeholder="Nhập Page Access Token từ Facebook Developer Portal để lấy tên thật khách hàng..."></textarea>
-                  </div>
+                    <div class="form-group" style="margin: 0;">
+                      <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Verify Token</label>
+                      <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" class="form-control" readonly value="minh_hai_verify_token_123" id="fb-config-verify-token" style="background-color: rgba(255,255,255,0.02); font-size: 12px;">
+                        <button type="button" class="btn btn-outline btn-sm" id="btn-copy-verify" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
+                      </div>
+                    </div>
 
-                  <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình
-                  </button>
-                  <button type="button" class="btn btn-danger" id="btn-reset-db" style="width: 100%; margin-top: 12px;">
+                    <div class="form-group" style="margin: 0;">
+                      <label for="fb-config-access-token" style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Page Access Token (Mã truy cập Trang)</label>
+                      <textarea id="fb-config-access-token" class="form-control" rows="4" placeholder="Nhập Page Access Token từ Facebook Developer Portal..." style="font-size: 12px;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 12.5px; height: 38px;">
+                      <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình Webhook
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Database Settings -->
+              <div class="dashboard-card" style="border: 1px solid var(--border-color); border-radius: 8px;">
+                <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+                  <div>
+                    <h3 style="font-size: 15px; font-weight: bold; color: #ef4444; margin: 0;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>Khôi Phục Hệ Thống</h3>
+                    <span class="card-subtitle">Quản lý dọn dẹp và reset dữ liệu CRM</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <button type="button" class="btn btn-danger" id="btn-reset-db" style="width: 100%; font-size: 12.5px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <i class="fa-solid fa-trash-can"></i> Xóa Dữ Liệu Nháp (Reset CRM)
                   </button>
-                </form>
+                </div>
               </div>
+
             </div>
 
             <!-- Right Side: Step-by-Step Guide -->
-            <div class="dashboard-card">
-              <div class="card-header">
+            <div class="dashboard-card" style="border: 1px solid var(--border-color); border-radius: 8px;">
+              <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
                 <div>
                   <h3><i class="fa-solid fa-circle-info text-blue"></i> Hướng Dẫn Từng Bước Liên Kết</h3>
                   <span class="card-subtitle">Cấu hình kết nối cho trang Developers</span>
                 </div>
               </div>
-              <div class="card-body" style="font-size: 13px; line-height: 1.6; display: flex; flex-direction: column; gap: 14px;">
+              <div class="card-body" style="font-size: 12.5px; line-height: 1.6; display: flex; flex-direction: column; gap: 14px;">
                 <div>
                   <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 1: Mở cổng HTTPS công khai</h4>
                   <p>Vì Facebook chỉ gửi dữ liệu qua HTTPS công khai, bạn cần chạy ngrok tại cổng 3000 ở máy tính:</p>
-                  <code style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: var(--radius-sm); display:block; margin-top:6px; font-family: monospace;">ngrok http 3000</code>
+                  <code style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: var(--radius-sm); display:block; margin-top:6px; font-family: monospace; font-size:11.5px;">ngrok http 3000</code>
                   <p style="margin-top: 6px;">Sau đó sao chép link HTTPS ngrok cấp (ví dụ: <code style="font-family: monospace;">https://abc.ngrok-free.app</code>) điền thêm đuôi <code style="font-family: monospace;">/webhook</code> dán vào ô Webhook URL bên trái.</p>
                 </div>
 
@@ -675,6 +616,21 @@
                 <div>
                   <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 3: Liên kết Fanpage & Lấy Token</h4>
                   <p>Trong cài đặt Messenger, thêm Fanpage <strong>Minh Hải Logistics</strong> của bạn. Tạo Page Access Token và sao chép dán vào ô Page Access Token bên trái rồi bấm <strong>Lưu cấu hình</strong>.</p>
+                </div>
+
+                <div>
+                  <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 4: Cấu hình Webhooks trên Facebook</h4>
+                  <p>Ở mục Webhooks của Messenger, nhấn <strong>Configure</strong> và nhập:</p>
+                  <ul style="margin-left: 16px; margin-top: 4px;">
+                    <li><strong>Callback URL</strong>: Link ngrok của bạn kèm đuôi <code style="font-family: monospace;">/webhook</code></li>
+                    <li><strong>Verify Token</strong>: <code style="font-family: monospace;">minh_hai_verify_token_123</code></li>
+                  </ul>
+                  <p style="margin-top:6px;">Bấm <strong>Verify and Save</strong>. Sau đó Đăng ký (Subscribe) sự kiện <strong>messages</strong>.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>��o Page Access Token và sao chép dán vào ô Page Access Token bên trái rồi bấm <strong>Lưu cấu hình</strong>.</p>
                 </div>
 
                 <div>
@@ -2043,10 +1999,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=19.3"></script>
-  <script src="crm.js?v=19.3"></script>
-  <script src="tasks.js?v=19.3"></script>
-  <script src="ops.js?v=19.3"></script>
-  <script src="inbox-sim.js?v=19.3"></script>
+  <script src="app.js?v=19.4"></script>
+  <script src="crm.js?v=19.4"></script>
+  <script src="tasks.js?v=19.4"></script>
+  <script src="ops.js?v=19.4"></script>
+  <script src="inbox-sim.js?v=19.4"></script>
 </body>
 </html>
+
+

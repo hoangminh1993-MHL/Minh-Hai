@@ -129,17 +129,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     navStaff.style.display = sessionUser.role === 'admin' ? 'block' : 'none';
   }
   
-  const btnConfigApi = document.getElementById('btn-config-api');
-  if (btnConfigApi) {
-    btnConfigApi.onclick = (e) => {
+  // Initialize settings API Base URL input value
+  const apiInput = document.getElementById('settings-api-base-input');
+  if (apiInput) {
+    apiInput.value = localStorage.getItem('minhhai_custom_api_base') || '';
+  }
+
+  const formApiConfig = document.getElementById('form-api-config');
+  if (formApiConfig) {
+    formApiConfig.onsubmit = (e) => {
       e.preventDefault();
-      const current = localStorage.getItem('minhhai_custom_api_base') || '';
-      const url = prompt('Nhập địa chỉ API Server (ví dụ: https://xxxx.free.pinggy.net hoặc http://localhost:3000):', current);
-      if (url !== null) {
-        localStorage.setItem('minhhai_custom_api_base', url.trim());
-        alert('Đã lưu cấu hình kết nối API! Trình duyệt sẽ tự động tải lại.');
-        window.location.reload();
-      }
+      const val = document.getElementById('settings-api-base-input').value.trim();
+      localStorage.setItem('minhhai_custom_api_base', val);
+      showToast('Đã lưu địa chỉ API Server mới!', 'success');
+      setTimeout(() => window.location.reload(), 1000);
+    };
+  }
+
+  const btnClearApi = document.getElementById('btn-settings-clear-api');
+  if (btnClearApi) {
+    btnClearApi.onclick = () => {
+      localStorage.removeItem('minhhai_custom_api_base');
+      showToast('Đã xoá địa chỉ API Server tuỳ chỉnh, khôi phục kết nối mặc định.', 'info');
+      setTimeout(() => window.location.reload(), 1000);
     };
   }
 
@@ -426,9 +438,8 @@ function navigateToView(viewId, updateHash = true) {
     dashboard: { main: 'Báo Cáo Tổng Quan', sub: 'Tổng quan doanh số chuyển đổi và hiệu suất công việc phòng ban.' },
     crm: { main: 'Bảng CRM Khách Hàng', sub: 'Quản lý phễu chuyển đổi khách hàng 7 bước từ nhận thông tin đến chốt.' },
     tasks: { main: 'Quản Lý Công Việc', sub: 'Giao việc, bám sát quy trình từng phòng ban và tích điểm Xúc Xích.' },
-    workflows: { main: 'Cấu Hình Quy Trình Công Việc', sub: 'Tùy chỉnh các bước thực hiện nghiệp vụ cho từng bộ phận.' },
     'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
-    'facebook-config': { main: 'Cấu Hình Liên Kết Fanpage', sub: 'Kết nối Fanpage Facebook thực tế để tự động nhận tin nhắn khách hàng đổ về CRM.' },
+    settings: { main: 'Thiết Lập Hệ Thống', sub: 'Cấu hình liên kết Fanpage Facebook, quản lý kết nối API Server và dữ liệu hệ thống.' },
     rewards: { main: 'Đua Top Tích Xúc Xích', sub: 'Bảng thi đua xếp hạng thưởng dựa trên điểm hoàn thành công việc.' },
     'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' },
     'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
@@ -449,8 +460,7 @@ function navigateToView(viewId, updateHash = true) {
     renderCRMBoard();
   } else if (viewId === 'tasks') {
     renderTasksList();
-  } else if (viewId === 'workflows') {
-    renderWorkflowSettings();
+
   } else if (viewId === 'crm-clients-workflows') {
     if (typeof renderOpsWorkflows === 'function') renderOpsWorkflows();
   } else if (viewId === 'tasks-single') {
@@ -461,8 +471,12 @@ function navigateToView(viewId, updateHash = true) {
     if (typeof renderMyTasks === 'function') renderMyTasks();
   } else if (viewId === 'rewards') {
     renderRewardsView();
-  } else if (viewId === 'facebook-config') {
+  } else if (viewId === 'settings') {
     renderFacebookConfig();
+    const apiInput = document.getElementById('settings-api-base-input');
+    if (apiInput) {
+      apiInput.value = localStorage.getItem('minhhai_custom_api_base') || '';
+    }
   } else if (viewId === 'staff-management') {
     renderStaffManagementTable();
   }
@@ -612,12 +626,10 @@ function applyRoleBasedNavigation() {
   const user = getCurrentUser();
   const isAdmin = user && user.role === 'admin';
 
-  const navFbConfig = document.querySelector('.nav-item[data-view="facebook-config"]');
-  const navWorkflowsConfig = document.querySelector('.nav-item[data-view="workflows"]');
+  const navSettings = document.getElementById('nav-settings');
   const navStaffMgmt = document.getElementById('nav-staff-mgmt');
 
-  if (navFbConfig) navFbConfig.style.display = isAdmin ? '' : 'none';
-  if (navWorkflowsConfig) navWorkflowsConfig.style.display = isAdmin ? '' : 'none';
+  if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
   if (navStaffMgmt) navStaffMgmt.style.display = isAdmin ? '' : 'none';
 
   // Toggle sub-dashboard views inside view-dashboard
@@ -643,7 +655,7 @@ function applyRoleBasedNavigation() {
   const activeTabElement = document.querySelector('.nav-item.active');
   if (activeTabElement) {
     const currentViewId = activeTabElement.getAttribute('data-view');
-    const restrictedViews = ['facebook-config', 'workflows', 'staff-management'];
+    const restrictedViews = ['settings', 'staff-management'];
     if (!isAdmin && restrictedViews.includes(currentViewId)) {
       navigateToView('my-tasks');
     }
