@@ -393,6 +393,45 @@ app.post('/webhook', async (req, res) => {
   }
 });
 
+// GET /privacy: Simple Privacy Policy page for Facebook App Review
+app.get('/privacy', (req, res) => {
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <title>Chính Sách Quyền Riêng Tư - Minh Hải Logistics</title>
+      <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
+        h1 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        h2 { color: #2563eb; margin-top: 30px; }
+      </style>
+    </head>
+    <body>
+      <h1>Chính Sách Quyền Riêng Tư</h1>
+      <p>Chào mừng bạn đến với hệ thống quản lý khách hàng của <strong>Minh Hải Logistics</strong>. Chúng tôi cam kết bảo vệ thông tin cá nhân và quyền riêng tư của khách hàng và người dùng.</p>
+      
+      <h2>1. Thu thập thông tin</h2>
+      <p>Chúng tôi chỉ thu thập thông tin khi bạn liên hệ trực tiếp với chúng tôi qua trang Fanpage Facebook (như tên tài khoản Facebook, ảnh đại diện công khai và nội dung tin nhắn gửi đi) để hỗ trợ phản hồi và chăm sóc khách hàng tốt nhất.</p>
+      
+      <h2>2. Sử dụng thông tin</h2>
+      <p>Thông tin thu thập được sử dụng nội bộ để:</p>
+      <ul>
+        <li>Hỗ trợ tư vấn dịch vụ vận chuyển và logistics.</li>
+        <li>Quản lý và giải quyết các yêu cầu, thắc mắc từ phía khách hàng.</li>
+        <li>Nâng cao chất lượng dịch vụ của Minh Hải Logistics.</li>
+      </ul>
+      
+      <h2>3. Bảo mật thông tin</h2>
+      <p>Chúng tôi áp dụng các biện pháp bảo mật tối ưu để bảo vệ thông tin của bạn khỏi bị truy cập, tiết lộ hoặc phá hủy trái phép. Chúng tôi tuyệt đối không bán hoặc chia sẻ thông tin khách hàng cho bên thứ ba vì bất kỳ mục đích nào.</p>
+      
+      <h2>4. Liên hệ</h2>
+      <p>Nếu bạn có bất kỳ câu hỏi nào về chính sách này, xin vui lòng liên hệ với chúng tôi qua địa chỉ email: <strong>mympro93@gmail.com</strong>.</p>
+    </body>
+    </html>
+  `);
+});
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
