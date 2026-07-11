@@ -604,6 +604,33 @@ function renderCurrentUser() {
   // Set user avatar
   const avatarDiv = document.getElementById('current-user-avatar');
   avatarDiv.innerHTML = `<i class="fa-solid ${user.avatar || 'fa-user'}"></i>`;
+  
+  applyRoleBasedNavigation();
+}
+
+function applyRoleBasedNavigation() {
+  const user = getCurrentUser();
+  const isAdmin = user && user.role === 'admin';
+
+  const navDashboard = document.querySelector('.nav-item[data-view="dashboard"]');
+  const navFbConfig = document.querySelector('.nav-item[data-view="facebook-config"]');
+  const navWorkflowsConfig = document.querySelector('.nav-item[data-view="workflows"]');
+  const navStaffMgmt = document.getElementById('nav-staff-mgmt');
+
+  if (navDashboard) navDashboard.style.display = isAdmin ? '' : 'none';
+  if (navFbConfig) navFbConfig.style.display = isAdmin ? '' : 'none';
+  if (navWorkflowsConfig) navWorkflowsConfig.style.display = isAdmin ? '' : 'none';
+  if (navStaffMgmt) navStaffMgmt.style.display = isAdmin ? '' : 'none';
+
+  // Redirect non-admin away from restricted views
+  const activeTabElement = document.querySelector('.nav-item.active');
+  if (activeTabElement) {
+    const currentViewId = activeTabElement.getAttribute('data-view');
+    const restrictedViews = ['dashboard', 'facebook-config', 'workflows', 'staff-management'];
+    if (!isAdmin && restrictedViews.includes(currentViewId)) {
+      navigateToView('my-tasks');
+    }
+  }
 }
 
 // ==================== DASHBOARD RENDER & CHARTS ==================== //

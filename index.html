@@ -92,10 +92,13 @@
           <i class="fa-solid fa-plug"></i>
           <span>Kết Nối API Server</span>
         </a>
-        <a href="#" class="nav-item" id="btn-logout" style="color: var(--color-error);">
+        <a href="#" class="nav-item" id="btn-logout" style="color: var(--color-error); margin-bottom: 8px;">
           <i class="fa-solid fa-right-from-bracket"></i>
           <span>Đăng Xuất</span>
         </a>
+        <div style="text-align: center; font-size: 10px; opacity: 0.35; padding: 6px 0; border-top: 1px dashed rgba(255,255,255,0.08); margin-top: 4px; color: var(--text-muted);">
+          Phiên bản hệ thống: <strong style="color: var(--color-primary);">v18.0</strong>
+        </div>
       </nav>
 
       <!-- Current User Profile Card inside Sidebar -->
@@ -126,6 +129,11 @@
         </div>
 
         <div class="topbar-actions">
+          <!-- Global Quick Create Button -->
+          <button class="btn btn-sm" id="btn-global-quick-task" style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #eab308; border-color: #eab308; color: #1e1b4b; font-weight: bold; border-radius: 6px; cursor: pointer; transition: transform 0.2s;">
+            <i class="fa-solid fa-circle-plus"></i> Tạo Việc Nhanh
+          </button>
+
           <!-- Notification System -->
           <div class="notification-bell" id="notification-bell">
             <i class="fa-solid fa-bell"></i>
@@ -1349,6 +1357,28 @@
   </div>
 
   <!-- ==================== OPERATION PORTAL MODALS (v18) ==================== -->
+
+  <!-- MODAL: CHỌN LOẠI CÔNG VIỆC NHANH -->
+  <div class="modal" id="modal-global-quick-chooser">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 24px; border-radius: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-circle-plus" style="color: #eab308;"></i> Tạo Việc Nhanh
+        </h3>
+        <button class="btn-close-modal" data-modal="modal-global-quick-chooser" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; text-align: left;">Vui lòng chọn loại công việc bạn muốn khởi tạo:</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsFlowModal();" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3b82f6; border-color: #3b82f6; border-radius: 8px;">
+          <i class="fa-solid fa-truck-ramp-box"></i> 🚚 Khởi Tạo Lô Hàng / Quy Trình mới
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsTaskModal();" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f59e0b; border-color: #f59e0b; border-radius: 8px;">
+          <i class="fa-solid fa-list-check"></i> 📋 Tạo Công Việc Đơn Lẻ (Hàng ngày)
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL: ADD LOGISTICS FLOW -->
   <div class="modal" id="modal-add-ops-flow">

@@ -21,6 +21,14 @@ function initOpsEvents() {
   // Initial check on load
   handleOpsViewRouting();
 
+  // Global Quick Create Task button in top header
+  const btnGlobalQuickTask = document.getElementById('btn-global-quick-task');
+  if (btnGlobalQuickTask) {
+    btnGlobalQuickTask.onclick = () => {
+      openModal('modal-global-quick-chooser');
+    };
+  }
+
   // --- CRM Khách Cũ & Lô Hàng events ---
   const btnAddFlowModal = document.getElementById('btn-add-flow-modal');
   if (btnAddFlowModal) {
@@ -2257,4 +2265,24 @@ window.handleMyCrmTaskApprove = function(taskId) {
       renderMyTasks();
     }, 200);
   }
+};
+
+window.openGlobalAddOpsFlowModal = function() {
+  if (typeof populateFlowUserDropdowns === 'function') populateFlowUserDropdowns();
+  if (typeof populateFlowClientDropdown === 'function') populateFlowClientDropdown();
+  openModal('modal-add-ops-flow');
+};
+
+window.openGlobalAddOpsTaskModal = function() {
+  if (typeof populateOpsTaskUsers === 'function') populateOpsTaskUsers();
+  if (typeof populateOpsTaskProjects === 'function') populateOpsTaskProjects();
+  
+  // Default deadline to 3 days from now
+  const today = new Date();
+  today.setDate(today.getDate() + 3);
+  const deadlineInput = document.getElementById('ops-task-deadline');
+  if (deadlineInput) {
+    deadlineInput.value = today.toISOString().split('T')[0];
+  }
+  openModal('modal-add-ops-task');
 };
