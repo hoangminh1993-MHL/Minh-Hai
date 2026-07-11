@@ -1272,7 +1272,19 @@ function updateMyTasksBadge() {
     singleCount = AppState.single_tasks.filter(t => t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled').length;
   }
 
-  const totalPending = flowsCount + singleCount;
+  // 3. CRM leads owned by the user
+  let crmLeadsCount = 0;
+  if (AppState.leads) {
+    crmLeadsCount = AppState.leads.filter(l => l.salesId === userId && l.stage !== 'success' && l.stage !== 'failed').length;
+  }
+
+  // 4. CRM tasks owned by the user
+  let crmTasksCount = 0;
+  if (AppState.tasks) {
+    crmTasksCount = AppState.tasks.filter(t => t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled').length;
+  }
+
+  const totalPending = flowsCount + singleCount + crmLeadsCount + crmTasksCount;
 
   if (totalPending > 0) {
     badge.innerText = totalPending;

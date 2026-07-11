@@ -2011,8 +2011,9 @@ function renderMyTasks() {
     "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
 
-  // 1. Shipment workflows - steps assigned to user
   let flowsCount = 0;
+
+  // 1. Shipment workflows - steps assigned to user
   if (AppState.shipment_workflows) {
     AppState.shipment_workflows.forEach(flow => {
       const stepData = flow.steps.find(s => s.stepNum === flow.stage);
@@ -2048,12 +2049,52 @@ function renderMyTasks() {
       }
     });
   }
-  document.getElementById('my-flows-count').innerText = flowsCount;
-  if (flowsCount === 0) {
-    myFlowsList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có lô hàng nào chờ bạn xử lý.</span>`;
+
+  // 2. CRM Leads (Khách Hàng Mới) assigned to user
+  if (AppState.leads) {
+    AppState.leads.forEach(lead => {
+      if (lead.salesId === userId && lead.stage !== 'success' && lead.stage !== 'failed') {
+        flowsCount++;
+        
+        const stageLabels = {
+          receive_info: "Nhận thông tin",
+          get_phone: "Lấy SĐT/Wechat",
+          quotation: "Báo giá",
+          negotiating: "Thương lượng"
+        };
+
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.style.cssText = 'cursor: pointer; border-left: 4px solid #8b5cf6; transition: transform 0.2s; margin-bottom: 8px;';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:10px; font-weight:bold; color:#8b5cf6;">CRM KHÁCH MỚI</span>
+            <span class="badge" style="font-size:9px; padding:2px 4px; background:#8b5cf6; color:white;">${stageLabels[lead.stage] || lead.stage}</span>
+          </div>
+          <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${lead.name}</div>
+          <div class="card-desc" style="font-size:11px; opacity:0.8; margin-top:4px;">SĐT: ${lead.phone || 'Chưa có'}</div>
+          <div style="font-size:11px; margin-top:4px; max-height:36px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Nhu cầu: ${lead.note || 'Không có'}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
+            <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> Ngày tạo: ${lead.date || ''}</span>
+            <strong style="font-size:11px; color:#34d399;">${lead.valVnd > 0 ? formatVnd(lead.valVnd) : '0đ'}</strong>
+          </div>
+        `;
+        card.onclick = () => {
+          if (typeof openLeadDetailModal === 'function') {
+            openLeadDetailModal(lead.id);
+          }
+        };
+        myFlowsList.appendChild(card);
+      }
+    });
   }
 
-  // 2. Single Tasks & 3. Project Tasks
+  document.getElementById('my-flows-count').innerText = flowsCount;
+  if (flowsCount === 0) {
+    myFlowsList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có lô hàng hay Lead khách mới nào chờ bạn xử lý.</span>`;
+  }
+
+  // 3. Single Tasks & Project Tasks
   let singleCount = 0;
   let projectCount = 0;
 
@@ -2100,6 +2141,71 @@ function renderMyTasks() {
     });
   }
 
+  // 4. CRM Tasks (Công việc CRM khách hàng mới)
+  if (AppState.tasks) {
+    AppState.tasks.forEach(task => {
+      if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled') {
+        singleCount++;
+
+        const steps = AppState.workflows[task.dept] || [];
+        let currentStepIdx = task.stepsStatus ? task.stepsStatus.lastIndexOf(true) : 0;
+        if (currentStepIdx === -1) currentStepIdx = 0;
+
+        const isOverdue = task.deadline && new Date(task.deadline) < new Date();
+
+        let stepSelectHtml = '';
+        if (steps.length > 0) {
+          stepSelectHtml = `
+            <div style="margin-top: 8px;" onclick="event.stopPropagation();">
+              <label style="font-size: 10px; color: var(--text-muted); font-weight: bold;">Khâu xử lý:</label>
+              <select class="form-control" style="font-size: 11px; height: 26px; padding: 2px 6px; margin-top: 2px;" onchange="handleMyCrmTaskStepChange('${task.id}', this.value)">
+                ${steps.map((st, idx) => `
+                  <option value="${idx}" ${idx === currentStepIdx ? 'selected' : ''}>${idx + 1}. ${st}</option>
+                `).join('')}
+              </select>
+            </div>
+          `;
+        }
+
+        let actionBtnHtml = '';
+        if (task.status === 'checking') {
+          const user = AppState.users.find(u => u.id === userId) || {};
+          if (user.role === 'admin') {
+            actionBtnHtml = `<button class="btn btn-xs btn-primary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); handleMyCrmTaskApprove('${task.id}')"><i class="fa-solid fa-circle-check"></i> Duyệt thưởng</button>`;
+          } else {
+            actionBtnHtml = `<div style="font-size:10px; color:var(--text-muted); margin-top:6px; font-style:italic;"><i class="fa-solid fa-hourglass-start"></i> Đang chờ duyệt...</div>`;
+          }
+        } else {
+          actionBtnHtml = `<button class="btn btn-xs btn-secondary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); handleMyCrmTaskSubmit('${task.id}')"><i class="fa-solid fa-share-from-square"></i> Nộp kết quả</button>`;
+        }
+
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.style.cssText = 'cursor: pointer; border-left: 4px solid #a855f7; transition: transform 0.2s; margin-bottom: 8px;';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:10px; font-weight:bold; color:#a855f7;">CRM KHÁCH MỚI (TASK)</span>
+            <span class="badge" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white;">${task.status === 'checking' ? 'Chờ duyệt' : 'Chưa xong'}</span>
+          </div>
+          <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
+          <div style="font-size:11px; opacity:0.8; margin-top:4px;">Chi tiết: ${task.desc || 'Không có'}</div>
+          ${stepSelectHtml}
+          ${actionBtnHtml}
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
+            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không giới hạn'}</span>
+            <span style="font-size:10px; color:#f59e0b;"><i class="fa-solid fa-cookie"></i> +${task.points} Xúc xích</span>
+          </div>
+        `;
+        
+        card.onclick = () => {
+          window.location.hash = 'tasks';
+        };
+
+        mySingleTasksList.appendChild(card);
+      }
+    });
+  }
+
   document.getElementById('my-single-tasks-count').innerText = singleCount;
   if (singleCount === 0) {
     mySingleTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có nhiệm vụ đơn lẻ nào cần làm.</span>`;
@@ -2110,3 +2216,45 @@ function renderMyTasks() {
     myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có việc dự án VIP nào cần làm.</span>`;
   }
 }
+
+// Global window-scoped functions to bridge CRM Tasks functionality directly in My Tasks view cards
+window.handleMyCrmTaskStepChange = function(taskId, stepIdxVal) {
+  const stepIdx = parseInt(stepIdxVal);
+  const task = AppState.tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const steps = AppState.workflows[task.dept] || [];
+  task.stepsStatus = steps.map((_, idx) => idx <= stepIdx);
+  task.status = 'doing';
+
+  if (stepIdx === steps.length - 1) {
+    if (confirm(`Bạn đã chọn bước cuối cùng: "${steps[stepIdx]}". Bạn có muốn NỘP KẾT QUẢ công việc này lên Quản lý để duyệt nhận ${task.points} Xúc xích không?`)) {
+      task.status = 'checking';
+      const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân sự' };
+      addNotification('Chờ duyệt công việc', `${user.name} đã hoàn thành và nộp công việc: ${task.title}`, 'info');
+    }
+  }
+
+  saveState();
+  if (typeof renderTasksList === 'function') renderTasksList();
+  renderMyTasks();
+  showToast(`Đã cập nhật tiến độ công việc đến bước: ${steps[stepIdx]}`, 'success');
+};
+
+window.handleMyCrmTaskSubmit = function(taskId) {
+  if (typeof submitTaskForApproval === 'function') {
+    submitTaskForApproval(taskId);
+    setTimeout(() => {
+      renderMyTasks();
+    }, 200);
+  }
+};
+
+window.handleMyCrmTaskApprove = function(taskId) {
+  if (typeof approveTask === 'function') {
+    approveTask(taskId);
+    setTimeout(() => {
+      renderMyTasks();
+    }, 200);
+  }
+};
