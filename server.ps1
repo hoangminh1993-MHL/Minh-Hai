@@ -195,6 +195,7 @@ if ($HttpServer) {
                 
                 $response.StatusCode = 200
                 $resBytes = [System.Text.Encoding]::UTF8.GetBytes("OK")
+                $response.ContentLength64 = $resBytes.Length
                 $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
                 $response.OutputStream.Close()
                 continue
@@ -229,6 +230,7 @@ if ($HttpServer) {
                 }
                 $resBytes = [System.Text.Encoding]::UTF8.GetBytes($resJson)
                 $response.ContentType = "application/json; charset=utf-8"
+                $response.ContentLength64 = $resBytes.Length
                 $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
                 $response.OutputStream.Close()
                 continue
@@ -275,6 +277,7 @@ if ($HttpServer) {
                 }
                 $resBytes = [System.Text.Encoding]::UTF8.GetBytes($resJson)
                 $response.ContentType = "application/json; charset=utf-8"
+                $response.ContentLength64 = $resBytes.Length
                 $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
                 $response.OutputStream.Close()
                 continue
@@ -313,6 +316,7 @@ if ($HttpServer) {
                 }
                 $resBytes = [System.Text.Encoding]::UTF8.GetBytes($resJson)
                 $response.ContentType = "application/json; charset=utf-8"
+                $response.ContentLength64 = $resBytes.Length
                 $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
                 $response.OutputStream.Close()
                 continue
@@ -339,6 +343,7 @@ if ($HttpServer) {
                 $resJson = ConvertTo-Json -InputObject $resObj
                 $resBytes = [System.Text.Encoding]::UTF8.GetBytes($resJson)
                 $response.ContentType = "application/json; charset=utf-8"
+                $response.ContentLength64 = $resBytes.Length
                 $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
                 $response.OutputStream.Close()
                 continue
@@ -360,6 +365,7 @@ if ($HttpServer) {
                 } else {
                     $response.StatusCode = 403
                     $errBytes = [System.Text.Encoding]::UTF8.GetBytes("Forbidden")
+                    $response.ContentLength64 = $errBytes.Length
                     $response.OutputStream.Write($errBytes, 0, $errBytes.Length)
                 }
                 $response.OutputStream.Close()
@@ -405,6 +411,7 @@ if ($HttpServer) {
                          }
                          $response.StatusCode = 200
                          $resBytes = [System.Text.Encoding]::UTF8.GetBytes("EVENT_RECEIVED")
+                         $response.ContentLength64 = $resBytes.Length
                          $response.OutputStream.Write($resBytes, 0, $resBytes.Length)
                      } else {
                          $response.StatusCode = 404
@@ -414,6 +421,7 @@ if ($HttpServer) {
                      Write-Output "Error parsing/processing webhook body: $_"
                      $response.StatusCode = 400
                      $errBytes = [System.Text.Encoding]::UTF8.GetBytes("Bad Request")
+                     $response.ContentLength64 = $errBytes.Length
                      $response.OutputStream.Write($errBytes, 0, $errBytes.Length)
                  }
                  $response.OutputStream.Close()
@@ -451,6 +459,7 @@ if ($HttpServer) {
                 $response.ContentType = "text/plain; charset=utf-8"
                 $errMsg = "File Not Found: $urlPath"
                 $errBytes = [System.Text.Encoding]::UTF8.GetBytes($errMsg)
+                $response.ContentLength64 = $errBytes.Length
                 $response.OutputStream.Write($errBytes, 0, $errBytes.Length)
             }
             

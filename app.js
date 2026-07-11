@@ -11,7 +11,7 @@ function getApiUrl(path) {
   }
   // Nếu chạy thử nghiệm trên máy tính cá nhân
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return `http://127.0.0.1:3000${path}`;
+    return path;
   }
   return path;
 }
