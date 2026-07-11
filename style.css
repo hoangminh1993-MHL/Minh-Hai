@@ -333,8 +333,13 @@ select option {
   border-radius: var(--radius-sm);
   padding: 4px 8px;
   font-weight: 600;
+  color: #ffffff;
   outline: none;
   cursor: pointer;
+}
+.test-user-selector select option {
+  background-color: #1f2937;
+  color: #ffffff;
 }
 .test-user-selector select:hover {
   border-color: var(--color-primary);
