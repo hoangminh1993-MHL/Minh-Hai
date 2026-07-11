@@ -1217,6 +1217,20 @@ function closeModal(modalId) {
   }
 }
 
+// Global modal helpers for ESC key and click backdrop to close
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const activeModals = document.querySelectorAll('.modal.active');
+    activeModals.forEach(m => closeModal(m.id));
+  }
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target.classList.contains('modal')) {
+    closeModal(e.target.id);
+  }
+});
+
 // ==================== FORMAT HELPERS ==================== //
 function formatVnd(val) {
   if (val === null || val === undefined || isNaN(val)) return '0 đ';
