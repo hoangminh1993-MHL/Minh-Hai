@@ -1633,7 +1633,7 @@
   </div>
 
   <!-- MODAL: ADD PROJECT DOCUMENT / GOOGLE LINK -->
-  <div class="modal" id="modal-project-add-doc">
+  <div class="modal" id="modal-project-add-doc" style="z-index: 1200;">
     <div class="modal-content" style="width: 450px; max-width: 95%;">
       <div class="modal-header">
         <h3>Ghi Ghim Tài Liệu Dự Án</h3>
@@ -1695,8 +1695,31 @@
           </div>
 
           <div>
-            <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Mô tả & Ghi chú</h4>
-            <div id="dedicated-project-desc" style="font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; white-space: pre-wrap;">Mô tả chi tiết dự án...</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 style="margin: 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Mô tả & Ghi chú</h4>
+              <button id="btn-edit-project-desc" class="btn btn-xs btn-outline" style="padding: 2px 6px; font-size: 10.5px;"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+            </div>
+            
+            <!-- Read-only View -->
+            <div id="project-desc-view-mode">
+              <div id="dedicated-project-desc" style="font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; white-space: pre-wrap;">Mô tả chi tiết dự án...</div>
+            </div>
+            
+            <!-- Edit View -->
+            <div id="project-desc-edit-mode" style="display: none; flex-direction: column; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 8px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Mô tả chi tiết</label>
+                <textarea id="edit-project-desc-input" class="form-control" style="font-size: 12px; height: 100px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: white;" placeholder="Nhập mô tả dự án..."></textarea>
+              </div>
+              <div class="form-group" style="margin-bottom: 8px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Ghi chú đặc biệt / Lưu ý</label>
+                <input type="text" id="edit-project-notes-input" class="form-control" style="font-size: 12px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: white;" placeholder="Nhập ghi chú...">
+              </div>
+              <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                <button id="btn-save-project-desc" class="btn btn-xs btn-primary" style="padding: 4px 10px; font-size: 11px;">Lưu</button>
+                <button id="btn-cancel-project-desc" class="btn btn-xs btn-outline" style="padding: 4px 10px; font-size: 11px;">Hủy</button>
+              </div>
+            </div>
           </div>
         </div>
 

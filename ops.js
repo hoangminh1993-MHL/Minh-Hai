@@ -1312,7 +1312,9 @@ window.openOpsTaskDetail = function(taskId) {
   document.getElementById('ops-task-detail-title').innerText = task.title;
   const assignee = AppState.users.find(u => u.id === task.assigneeId);
   const helper = AppState.users.find(u => u.id === task.helperId);
-  document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}`;
+  const project = task.projectId ? AppState.projects.find(p => p.id === task.projectId) : null;
+  const projectText = project ? ` | Dự án: ${project.name}` : '';
+  document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}${projectText}`;
   
   document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
   document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
@@ -2193,15 +2195,21 @@ function renderMyTasks() {
 
         const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
-        const card = document.createElement('div');
-        card.className = 'kanban-card';
-        card.style.cssText = `cursor: pointer; border-left: 4px solid ${task.projectId ? '#10b981' : '#f59e0b'}; transition: transform 0.2s; margin-bottom: 8px;`;
+        let projectInfoHtml = '';
+        if (task.projectId) {
+          const proj = AppState.projects.find(p => p.id === task.projectId);
+          if (proj) {
+            projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+          }
+        }
+
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
             <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
+          ${projectInfoHtml}
           <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
             <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
@@ -2403,6 +2411,15 @@ window.openProjectDedicatedView = function(projId) {
   }).filter(Boolean).join(', ') : '';
   
   document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
+  
+  // Reset description editing mode views
+  const viewMode = document.getElementById('project-desc-view-mode');
+  const editMode = document.getElementById('project-desc-edit-mode');
+  const btnEditDesc = document.getElementById('btn-edit-project-desc');
+  if (viewMode) viewMode.style.display = 'block';
+  if (editMode) editMode.style.display = 'none';
+  if (btnEditDesc) btnEditDesc.style.display = '';
+
   document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
 
   // Calculate and update progress bar
@@ -2579,6 +2596,47 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         input.value = '';
         renderDedicatedProjectDiscussion(p);
+      }
+    };
+  }
+
+  // Edit project description event listeners binding
+  const btnEditDesc = document.getElementById('btn-edit-project-desc');
+  const btnSaveDesc = document.getElementById('btn-save-project-desc');
+  const btnCancelDesc = document.getElementById('btn-cancel-project-desc');
+  
+  if (btnEditDesc) {
+    btnEditDesc.onclick = () => {
+      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
+      if (p) {
+        document.getElementById('edit-project-desc-input').value = p.desc || '';
+        document.getElementById('edit-project-notes-input').value = p.notes || '';
+        document.getElementById('project-desc-view-mode').style.display = 'none';
+        document.getElementById('project-desc-edit-mode').style.display = 'flex';
+        btnEditDesc.style.display = 'none';
+      }
+    };
+  }
+  
+  if (btnCancelDesc) {
+    btnCancelDesc.onclick = () => {
+      document.getElementById('project-desc-view-mode').style.display = 'block';
+      document.getElementById('project-desc-edit-mode').style.display = 'none';
+      if (btnEditDesc) btnEditDesc.style.display = '';
+    };
+  }
+  
+  if (btnSaveDesc) {
+    btnSaveDesc.onclick = () => {
+      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
+      if (p) {
+        p.desc = document.getElementById('edit-project-desc-input').value.trim();
+        p.notes = document.getElementById('edit-project-notes-input').value.trim();
+        saveState();
+        showToast('Đã lưu thông tin dự án!', 'success');
+        
+        // Refresh view
+        openProjectDedicatedView(p.id);
       }
     };
   }
