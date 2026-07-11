@@ -2502,7 +2502,8 @@ function renderDedicatedProjectDiscussion(p) {
   } else {
     p.comments.forEach(c => {
       const div = document.createElement('div');
-      div.style.cssText = 'padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); font-size:11.5px;';
+      div.className = 'chat-msg-row';
+      div.style.cssText = 'padding: 8px 12px; margin-bottom: 8px; font-size:11.5px;';
       div.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
           <strong style="color:var(--color-primary);">${c.author}</strong>
