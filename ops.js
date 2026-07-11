@@ -1689,6 +1689,7 @@ function renderOpsProjects() {
       document.querySelectorAll('.project-card-item').forEach(c => c.style.borderColor = 'var(--border-color)');
       card.style.borderColor = 'var(--color-primary)';
       openProjectDetails(p.id);
+      openProjectDedicatedView(p.id);
     };
 
     listContainer.appendChild(card);
@@ -1857,6 +1858,13 @@ function handleProjectAddDocSubmit(e) {
     closeModal('modal-project-add-doc');
     document.getElementById('form-project-add-doc').reset();
     renderProjectDocsTab(proj);
+    
+    // If dedicated project view is open, refresh it too
+    const dedModal = document.getElementById('modal-project-dedicated-view');
+    if (dedModal && dedModal.classList.contains('active')) {
+      openProjectDedicatedView(proj.id);
+    }
+
     showToast('Đã ghim tài liệu thành công!', 'success');
   }
 }
@@ -2340,7 +2348,7 @@ window.openGlobalAddOpsFlowModal = function() {
   openModal('modal-add-ops-flow');
 };
 
-window.openGlobalAddOpsTaskModal = function() {
+window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
   if (typeof populateOpsTaskUsers === 'function') populateOpsTaskUsers();
   if (typeof populateOpsTaskProjects === 'function') populateOpsTaskProjects();
   
@@ -2351,5 +2359,200 @@ window.openGlobalAddOpsTaskModal = function() {
   if (deadlineInput) {
     deadlineInput.value = today.toISOString().split('T')[0];
   }
+
+  const titleHeader = document.querySelector('#modal-add-ops-task h3');
+  const projectSelect = document.getElementById('ops-task-project');
+
+  if (isProjectTask) {
+    if (titleHeader) titleHeader.innerText = 'Tạo Công Việc Trong Dự Án';
+    if (projectSelect) {
+      projectSelect.required = true;
+      projectSelect.style.border = '2px solid #f59e0b';
+      // If projectSelect only has placeholder, load values first
+      if (projectSelect.options.length <= 1 && typeof populateOpsTaskProjects === 'function') {
+        populateOpsTaskProjects();
+      }
+      if (projectSelect.options.length > 1) {
+        projectSelect.selectedIndex = 1;
+      }
+    }
+  } else {
+    if (titleHeader) titleHeader.innerText = 'Giao Việc Đơn Lẻ Mới';
+    if (projectSelect) {
+      projectSelect.required = false;
+      projectSelect.style.border = '';
+      projectSelect.selectedIndex = 0;
+    }
+  }
+  
   openModal('modal-add-ops-task');
 };
+
+window.openProjectDedicatedView = function(projId) {
+  const p = AppState.projects.find(proj => proj.id === projId);
+  if (!p) return;
+
+  currentActiveProjectId = projId;
+
+  // Set titles
+  document.getElementById('dedicated-project-name').innerText = p.name;
+  
+  const manager = AppState.users.find(u => u.id === p.managerId);
+  const managerName = manager ? manager.name : 'Chưa giao';
+  
+  const membersNames = p.members ? p.members.map(mid => {
+    const u = AppState.users.find(usr => usr.id === mid);
+    return u ? u.name : null;
+  }).filter(Boolean).join(', ') : '';
+  
+  document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
+  document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
+
+  // Render tasks
+  const tasksContainer = document.getElementById('dedicated-project-tasks-list');
+  tasksContainer.innerHTML = '';
+  const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
+  if (projTasks.length === 0) {
+    tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">Chưa có công việc nào liên kết với dự án này.</span>`;
+  } else {
+    projTasks.forEach(task => {
+      const div = document.createElement('div');
+      div.className = 'mini-task-item';
+      div.style.cssText = 'padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 6px;';
+      
+      const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
+      const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
+      
+      div.innerHTML = `
+        <div>
+          <strong>${task.title}</strong>
+          <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
+          <span style="font-size: 10.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
+        </div>
+      `;
+      div.onclick = (e) => {
+        // Prevent event bubbling so it doesn't try to open the task details while modal switching
+        e.stopPropagation();
+        closeModal('modal-project-dedicated-view');
+        if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
+      };
+      tasksContainer.appendChild(div);
+    });
+  }
+
+  // Render docs
+  const docsContainer = document.getElementById('dedicated-project-docs-list');
+  docsContainer.innerHTML = '';
+  if (!p.documents || p.documents.length === 0) {
+    docsContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">Chưa ghim tài liệu hoặc liên kết nào.</span>`;
+  } else {
+    p.documents.forEach((doc, idx) => {
+      const div = document.createElement('div');
+      div.className = 'mini-task-item';
+      div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 12px; display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 4px;';
+      div.innerHTML = `
+        <div>
+          <i class="fa-solid fa-file-lines text-emerald" style="margin-right:6px;"></i><strong>${doc.name}</strong>
+          ${doc.note ? `<span style="font-size:10.5px; opacity:0.8; margin-left:6px;">(${doc.note})</span>` : ''}
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <a href="${doc.url}" target="_blank" style="font-size:11.5px; color:var(--color-primary); font-weight:bold; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
+            <i class="fa-solid fa-square-share-nodes"></i> Mở link
+          </a>
+          <button class="btn btn-xs btn-link text-rose" onclick="handleDeleteDedicatedProjectDoc(${idx})" style="padding:0; border:none; background:none; font-size: 11px;"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+        </div>
+      `;
+      docsContainer.appendChild(div);
+    });
+  }
+
+  // Render discussion
+  renderDedicatedProjectDiscussion(p);
+
+  openModal('modal-project-dedicated-view');
+};
+
+window.handleDeleteDedicatedProjectDoc = function(idx) {
+  const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
+  if (p && p.documents) {
+    p.documents.splice(idx, 1);
+    saveState();
+    openProjectDedicatedView(currentActiveProjectId);
+  }
+};
+
+function renderDedicatedProjectDiscussion(p) {
+  const container = document.getElementById('dedicated-project-discussion');
+  if (!container) return;
+  container.innerHTML = '';
+  
+  if (!p.comments || p.comments.length === 0) {
+    container.innerHTML = `<span class="text-muted" style="font-size: 11px; font-style: italic;">Chưa có trao đổi nào. Hãy bắt đầu cuộc hội thoại!</span>`;
+  } else {
+    p.comments.forEach(c => {
+      const div = document.createElement('div');
+      div.style.cssText = 'padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); font-size:11.5px;';
+      div.innerHTML = `
+        <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+          <strong style="color:var(--color-primary);">${c.author}</strong>
+          <span style="font-size:10px; color:var(--text-muted);">${c.time}</span>
+        </div>
+        <p style="margin:0; color:var(--text-secondary);">${c.text}</p>
+      `;
+      container.appendChild(div);
+    });
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+// Bind dedicated project action buttons
+document.addEventListener('DOMContentLoaded', () => {
+  const btnAddTask = document.getElementById('btn-dedicated-project-add-task');
+  if (btnAddTask) {
+    btnAddTask.onclick = () => {
+      closeModal('modal-project-dedicated-view');
+      openGlobalAddOpsTaskModal(true);
+      setTimeout(() => {
+        const select = document.getElementById('ops-task-project');
+        if (select) {
+          select.value = currentActiveProjectId;
+        }
+      }, 150);
+    };
+  }
+
+  const btnAddDoc = document.getElementById('btn-dedicated-project-add-doc');
+  if (btnAddDoc) {
+    btnAddDoc.onclick = () => {
+      openModal('modal-project-add-doc');
+    };
+  }
+
+  const formAddComment = document.getElementById('form-dedicated-project-add-comment');
+  if (formAddComment) {
+    formAddComment.onsubmit = (e) => {
+      e.preventDefault();
+      const input = document.getElementById('dedicated-project-comment-input');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
+      if (p) {
+        if (!p.comments) p.comments = [];
+        const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân sự' };
+        p.comments.push({
+          author: user.name,
+          text: text,
+          time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+        });
+        saveState();
+        input.value = '';
+        renderDedicatedProjectDiscussion(p);
+      }
+    };
+  }
+});
+
