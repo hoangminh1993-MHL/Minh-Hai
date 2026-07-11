@@ -2431,12 +2431,20 @@ window.openProjectDedicatedView = function(projId) {
       const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
       const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
       
+      const isCompleted = task.status === 'completed';
+      const completeButton = isCompleted ? '' : `
+        <button class="btn btn-xs btn-primary" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; background: #059669; cursor: pointer; color: white;">
+          <i class="fa-solid fa-check"></i> Xong
+        </button>
+      `;
+
       div.innerHTML = `
         <div>
           <strong>${task.title}</strong>
           <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
+          ${completeButton}
           <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
           <span style="font-size: 10.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
         </div>
@@ -2481,6 +2489,17 @@ window.openProjectDedicatedView = function(projId) {
   renderDedicatedProjectDiscussion(p);
 
   openModal('modal-project-dedicated-view');
+};
+
+window.handleQuickCompleteTask = function(event, taskId) {
+  event.stopPropagation();
+  const task = AppState.single_tasks.find(t => t.id === taskId);
+  if (task) {
+    task.status = 'completed';
+    saveState();
+    showToast('Đã đánh dấu hoàn thành công việc!', 'success');
+    openProjectDedicatedView(currentActiveProjectId);
+  }
 };
 
 window.handleDeleteDedicatedProjectDoc = function(idx) {
