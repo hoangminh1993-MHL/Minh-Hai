@@ -2349,8 +2349,8 @@ window.openGlobalAddOpsFlowModal = function() {
 };
 
 window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
-  if (typeof populateOpsTaskUsers === 'function') populateOpsTaskUsers();
-  if (typeof populateOpsTaskProjects === 'function') populateOpsTaskProjects();
+  if (typeof populateTaskUserDropdowns === 'function') populateTaskUserDropdowns();
+  if (typeof populateTaskProjectAndClientDropdowns === 'function') populateTaskProjectAndClientDropdowns();
   
   // Default deadline to 3 days from now
   const today = new Date();
@@ -2368,10 +2368,6 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
     if (projectSelect) {
       projectSelect.required = true;
       projectSelect.style.border = '2px solid #f59e0b';
-      // If projectSelect only has placeholder, load values first
-      if (projectSelect.options.length <= 1 && typeof populateOpsTaskProjects === 'function') {
-        populateOpsTaskProjects();
-      }
       if (projectSelect.options.length > 1) {
         projectSelect.selectedIndex = 1;
       }

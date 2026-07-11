@@ -97,7 +97,7 @@
           <span>Đăng Xuất</span>
         </a>
         <div style="text-align: center; font-size: 10px; opacity: 0.35; padding: 6px 0; border-top: 1px dashed rgba(255,255,255,0.08); margin-top: 4px; color: var(--text-muted);">
-          Phiên bản hệ thống: <strong style="color: var(--color-primary);">v19.1</strong>
+          Phiên bản hệ thống: <strong style="color: var(--color-primary);">v19.2</strong>
         </div>
       </nav>
 
@@ -268,6 +268,38 @@
               </div>
             </div>
           </div>
+
+          <!-- Staff Workload & Performance Chart / Table (Admin Only) -->
+          <div class="dashboard-card" style="margin-top: 20px; padding: 20px; border: 1px solid var(--border-color); border-radius: 8px;">
+            <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="font-size: 16px; font-weight: bold; color: var(--color-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
+                  <i class="fa-solid fa-users-viewfinder" style="color: var(--color-primary);"></i> Giám Sát Tải Việc & Hiệu Suất Nhân Sự
+                </h3>
+                <span class="card-subtitle" style="font-size:12px; opacity:0.85; margin-top:4px; display:block;">Đánh giá nhân viên nhiều/ít việc, trễ hạn (Overdue) hoặc làm tốt nhiệm vụ dựa trên Xúc Xích thi đua</span>
+              </div>
+            </div>
+            <div class="card-body" style="overflow-x: auto;">
+              <table class="table" style="width:100%; border-collapse: collapse; font-size: 12.5px;">
+                <thead>
+                  <tr style="border-bottom: 2px solid var(--border-color); text-align: left; opacity:0.85;">
+                    <th style="padding: 10px;">Nhân viên</th>
+                    <th style="padding: 10px;">Vai trò</th>
+                    <th style="padding: 10px; text-align: center;">🔥 Điểm Xúc Xích</th>
+                    <th style="padding: 10px; text-align: center;">📥 Việc đang làm</th>
+                    <th style="padding: 10px; text-align: center;">⚠️ Chậm deadline</th>
+                    <th style="padding: 10px; text-align: center;">✅ Đã hoàn thành</th>
+                    <th style="padding: 10px; text-align: center;">📊 Tình trạng tải việc</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-staff-workload-tbody">
+                  <!-- Dynamically populated in app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div> <!-- Closes dashboard-admin-view -->
 
           <!-- Staff View Dashboard -->
           <div id="dashboard-staff-view" style="display: none;">
@@ -2011,10 +2043,10 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=19.1"></script>
-  <script src="crm.js?v=19.1"></script>
-  <script src="tasks.js?v=19.1"></script>
-  <script src="ops.js?v=19.1"></script>
-  <script src="inbox-sim.js?v=19.1"></script>
+  <script src="app.js?v=19.2"></script>
+  <script src="crm.js?v=19.2"></script>
+  <script src="tasks.js?v=19.2"></script>
+  <script src="ops.js?v=19.2"></script>
+  <script src="inbox-sim.js?v=19.2"></script>
 </body>
 </html>

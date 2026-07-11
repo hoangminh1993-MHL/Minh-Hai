@@ -683,6 +683,109 @@ function renderDashboard() {
 
   // 4. Render Mini Leaderboard
   renderMiniLeaderboard();
+
+  // 5. Render Admin Staff Workload Monitoring
+  renderAdminStaffWorkloadTable();
+}
+
+function renderAdminStaffWorkloadTable() {
+  const tbody = document.getElementById('admin-staff-workload-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  const usersList = AppState.users || [];
+
+  usersList.forEach(u => {
+    const userId = u.id;
+
+    let activeTasksCount = 0;
+    let overdueTasksCount = 0;
+    let completedTasksCount = 0;
+
+    // Shipment steps
+    if (AppState.shipment_workflows) {
+      AppState.shipment_workflows.forEach(flow => {
+        const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+        if (stepData && stepData.assigneeId === userId) {
+          if (stepData.status !== 'done') {
+            activeTasksCount++;
+            const isOverdue = flow.deadline && new Date(flow.deadline) < new Date();
+            if (isOverdue) overdueTasksCount++;
+          } else {
+            completedTasksCount++;
+          }
+        }
+      });
+    }
+
+    // Single Tasks
+    if (AppState.single_tasks) {
+      AppState.single_tasks.forEach(t => {
+        if (t.assigneeId === userId) {
+          if (t.status !== 'completed' && t.status !== 'canceled') {
+            activeTasksCount++;
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            if (isOverdue) overdueTasksCount++;
+          } else if (t.status === 'completed') {
+            completedTasksCount++;
+          }
+        }
+      });
+    }
+
+    // CRM Tasks
+    if (AppState.tasks) {
+      AppState.tasks.forEach(t => {
+        if (t.assigneeId === userId) {
+          if (t.status !== 'completed' && t.status !== 'canceled') {
+            activeTasksCount++;
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            if (isOverdue) overdueTasksCount++;
+          } else if (t.status === 'completed') {
+            completedTasksCount++;
+          }
+        }
+      });
+    }
+
+    // Workload status tag
+    let statusText = 'Nhàn rỗi';
+    let statusClass = 'bg-gray';
+    if (activeTasksCount > 0 && activeTasksCount <= 2) {
+      statusText = 'Vừa phải';
+      statusClass = 'bg-emerald';
+    } else if (activeTasksCount > 2 && activeTasksCount <= 5) {
+      statusText = 'Bận rộn';
+      statusClass = 'bg-blue';
+    } else if (activeTasksCount > 5) {
+      statusText = 'Quá tải ⚠️';
+      statusClass = 'bg-rose';
+    }
+
+    if (overdueTasksCount > 0) {
+      statusText += ` (Trễ: ${overdueTasksCount})`;
+    }
+
+    const tr = document.createElement('tr');
+    tr.style.borderBottom = '1px solid var(--border-color)';
+    tr.innerHTML = `
+      <td style="padding: 10px; font-weight: bold; display:flex; align-items:center; gap:8px;">
+        <div style="width:28px; height:28px; font-size:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); border-radius:50%; color: var(--color-primary);">
+          <i class="fa-solid ${u.avatar || 'fa-user'}"></i>
+        </div>
+        <span>${u.name}</span>
+      </td>
+      <td style="padding: 10px; color: var(--text-secondary); text-transform: capitalize;">${u.role}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: #f59e0b;">${u.points} xúc xích</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold;">${activeTasksCount}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: ${overdueTasksCount > 0 ? '#ef4444' : 'var(--text-muted)'};">${overdueTasksCount}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: #10b981;">${completedTasksCount}</td>
+      <td style="padding: 10px; text-align: center;">
+        <span class="badge ${statusClass}" style="font-size: 11px; padding: 4px 8px; border-radius:4px; font-weight: bold;">${statusText}</span>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 function renderDashboardCharts() {
