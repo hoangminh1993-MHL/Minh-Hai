@@ -207,7 +207,7 @@ function renderCRMBoard() {
         <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
         <div style="font-size: 11.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
           <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
-          <div class="${timeClass}"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
+          <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
         </div>
       </div>
     `;

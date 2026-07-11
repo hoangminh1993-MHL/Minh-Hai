@@ -5,15 +5,15 @@ function getApiUrl(path) {
     const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
     return `${base}${path}`;
   }
-  // Tự động kết nối cố định tới API Server trên Render nếu chạy trực tuyến (v18)
-  if (window.location.hostname.includes('github.io')) {
+  // Tự động kết nối cố định tới API Server trên Render nếu chạy trực tuyến hoặc file cục bộ
+  if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') {
     return `https://minh-hai.onrender.com${path}`;
   }
   // Nếu chạy thử nghiệm trên máy tính cá nhân
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return path;
   }
-  return path;
+  return `https://minh-hai.onrender.com${path}`;
 }
 
 const CONFIG = {
@@ -274,7 +274,10 @@ async function syncLoadState() {
 }
 
 function loadState() {
-  AppState.users = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_USERS)) || [];
+  AppState.users = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_USERS)) || INITIAL_USERS;
+  if (!AppState.users || AppState.users.length === 0) {
+    AppState.users = [...INITIAL_USERS];
+  }
   AppState.leads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
   AppState.tasks = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_TASKS)) || [];
   AppState.workflows = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_WORKFLOWS)) || {};
@@ -679,7 +682,11 @@ function initRoleSwitcher() {
 
 function getCurrentUser() {
   const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
-  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0];
+  const defaultUser = (AppState.users && AppState.users[0]) || INITIAL_USERS[0];
+  if (!AppState.users || AppState.users.length === 0) {
+    AppState.users = [...INITIAL_USERS];
+  }
+  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0] || defaultUser;
 }
 
 function renderCurrentUser() {
