@@ -1206,6 +1206,18 @@ function renderSingleTasksBoard(tasks) {
       const task = AppState.single_tasks.find(tk => tk.id === taskId);
       if (task && task.status !== status) {
         task.status = status;
+        
+        if (task.assigneeId === AppState.currentUserId) {
+          if (typeof window.updateStreakOnActivity === 'function') {
+            window.updateStreakOnActivity(AppState.currentUserId);
+          }
+        }
+        if (status === 'completed') {
+          if (typeof window.awardPointsForCompletedTask === 'function') {
+            window.awardPointsForCompletedTask(task);
+          }
+        }
+        
         saveState();
         renderOpsSingleTasks();
         addNotification('Cập nhật Công việc 📝', `Đã chuyển công việc "${task.title}" sang cột ${status.toUpperCase()}`, 'info');
@@ -1512,7 +1524,27 @@ function handleSaveTaskDetails() {
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
   if (!task) return;
 
-  task.status = document.getElementById('ops-task-detail-status').value;
+  const oldStatus = task.status;
+  const newStatus = document.getElementById('ops-task-detail-status').value;
+  
+  if (oldStatus !== newStatus) {
+    task.status = newStatus;
+    
+    // Update streak if current user is assignee
+    if (task.assigneeId === AppState.currentUserId) {
+      if (typeof window.updateStreakOnActivity === 'function') {
+        window.updateStreakOnActivity(AppState.currentUserId);
+      }
+    }
+    
+    // Award points if status is changed to completed
+    if (newStatus === 'completed') {
+      if (typeof window.awardPointsForCompletedTask === 'function') {
+        window.awardPointsForCompletedTask(task);
+      }
+    }
+  }
+
   saveState();
   closeModal('modal-ops-task-detail');
   renderOpsSingleTasks();
@@ -2521,6 +2553,14 @@ window.handleQuickCompleteTask = function(event, taskId) {
   const task = AppState.single_tasks.find(t => t.id === taskId);
   if (task) {
     task.status = 'completed';
+    if (task.assigneeId === AppState.currentUserId) {
+      if (typeof window.updateStreakOnActivity === 'function') {
+        window.updateStreakOnActivity(AppState.currentUserId);
+      }
+    }
+    if (typeof window.awardPointsForCompletedTask === 'function') {
+      window.awardPointsForCompletedTask(task);
+    }
     saveState();
     showToast('Đã đánh dấu hoàn thành công việc!', 'success');
     openProjectDedicatedView(currentActiveProjectId);
