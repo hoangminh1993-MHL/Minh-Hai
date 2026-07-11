@@ -633,6 +633,12 @@ function applyRoleBasedNavigation() {
     }
   }
 
+  // Hide project creation button for non-admins
+  const btnAddProjectModal = document.getElementById('btn-add-project-modal');
+  if (btnAddProjectModal) {
+    btnAddProjectModal.style.display = isAdmin ? '' : 'none';
+  }
+
   // Redirect non-admin away from restricted views
   const activeTabElement = document.querySelector('.nav-item.active');
   if (activeTabElement) {

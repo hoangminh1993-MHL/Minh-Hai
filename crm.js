@@ -152,9 +152,9 @@ function renderCRMBoard() {
   });
 
   // Filter leads by search query and user role permission
-  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  const currentUser = getCurrentUser();
   const filteredLeads = AppState.leads.filter(lead => {
-    if (sessionUser.role === 'staff' && lead.salesId !== sessionUser.id) {
+    if (currentUser.role !== 'admin' && lead.salesId !== currentUser.id) {
       return false;
     }
     const matchesSearch = lead.name.toLowerCase().includes(searchVal) || 
