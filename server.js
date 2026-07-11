@@ -254,7 +254,7 @@ const https = require('https');
 function getFBProfileName(senderId, accessToken) {
   return new Promise((resolve) => {
     const url = `https://graph.facebook.com/v20.0/${senderId}?fields=first_name,last_name&access_token=${accessToken}`;
-    https.get(url, (res) => {
+    const req = https.get(url, (res) => {
       let data = '';
       res.on('data', (chunk) => { data += chunk; });
       res.on('end', () => {
@@ -270,7 +270,15 @@ function getFBProfileName(senderId, accessToken) {
           resolve(null);
         }
       });
-    }).on('error', () => {
+    });
+    
+    req.on('error', () => {
+      resolve(null);
+    });
+    
+    // Set 2-second timeout to prevent hanging the webhook
+    req.setTimeout(2000, () => {
+      req.destroy();
       resolve(null);
     });
   });
@@ -283,15 +291,28 @@ app.post('/webhook', async (req, res) => {
   
   if (body.object === 'page') {
     try {
-      const state = await loadState();
+      let state = await loadState();
+      if (!state) {
+        state = { leads: [], notifications: [], users: [], fbConfig: { accessToken: '', pageUrl: '' } };
+      }
       let leadsUpdated = false;
       
       for (const entry of body.entry || []) {
         for (const event of entry.messaging || []) {
-          if (event.message && !event.message.is_echo) {
+          const isMessage = event.message && !event.message.is_echo;
+          const isPostback = !!event.postback;
+          
+          if (isMessage || isPostback) {
             const senderId = event.sender.id;
-            const messageText = event.message.text;
-            console.log(`Received FB Messenger message from ${senderId} - ${messageText}`);
+            let messageText = '';
+            
+            if (isPostback) {
+              messageText = event.postback.title || event.postback.payload || '[Click nút/Get Started]';
+            } else {
+              messageText = event.message.text || (event.message.attachments ? '[Đính kèm: Ảnh/File/Audio]' : '[Tin nhắn]');
+            }
+            
+            console.log(`Received FB Messenger event from ${senderId} - ${messageText}`);
             
             // Add lead
             const leadId = 'lead-fb-' + Math.random().toString(36).substring(2, 10);

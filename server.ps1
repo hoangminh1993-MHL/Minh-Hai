@@ -379,17 +379,25 @@ if ($HttpServer) {
                      if ($body.object -eq "page") {
                          Write-Output "Has entry property: $($body.entry -ne $null)"
                          foreach ($entry in $body.entry) {
-                             Write-Output "Has messaging property: $($entry.messaging -ne $null)"
                              if ($entry.messaging) {
                                  foreach ($event in $entry.messaging) {
-                                     Write-Output "Event details - Message exists: $($event.message -ne $null)"
-                                     if ($event.message) {
-                                         Write-Output "Is echo: $($event.message.is_echo)"
-                                     }
-                                     if ($event.message -and !$event.message.is_echo) {
+                                     $isMessage = $event.message -and !$event.message.is_echo
+                                     $isPostback = $event.postback -ne $null
+                                     if ($isMessage -or $isPostback) {
                                          $senderId = $event.sender.id
-                                         $messageText = $event.message.text
-                                         Write-Output "Received FB Messenger message from $senderId - $messageText"
+                                         $messageText = ""
+                                         if ($isPostback) {
+                                             $messageText = $event.postback.title
+                                             if (!$messageText) { $messageText = $event.postback.payload }
+                                             if (!$messageText) { $messageText = "[Click nút/Get Started]" }
+                                         } else {
+                                             $messageText = $event.message.text
+                                             if (!$messageText) {
+                                                 if ($event.message.attachments) { $messageText = "[Đính kèm: Ảnh/File/Audio]" }
+                                                 else { $messageText = "[Tin nhắn]" }
+                                             }
+                                         }
+                                         Write-Output "Received FB Messenger event from $senderId - $messageText"
                                          Add-LeadFromWebhook $senderId $messageText
                                      }
                                  }
