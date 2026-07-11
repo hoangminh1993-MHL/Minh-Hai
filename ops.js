@@ -1312,7 +1312,7 @@ window.openOpsTaskDetail = function(taskId) {
   document.getElementById('ops-task-detail-title').innerText = task.title;
   const assignee = AppState.users.find(u => u.id === task.assigneeId);
   const helper = AppState.users.find(u => u.id === task.helperId);
-  const project = task.projectId ? AppState.projects.find(p => p.id === task.projectId) : null;
+  const project = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
   const projectText = project ? ` | Dự án: ${project.name}` : '';
   document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}${projectText}`;
   
@@ -1582,7 +1582,11 @@ function handleAddSingleTaskSubmit(e) {
   // If in project views, refresh project tasks & overview lists
   if (currentActiveProjectId) {
     renderProjectTasksTab(currentActiveProjectId);
-    openProjectDetails(currentActiveProjectId);
+    if (typeof openProjectDedicatedView === 'function') {
+      openProjectDedicatedView(currentActiveProjectId);
+    } else {
+      openProjectDetails(currentActiveProjectId);
+    }
   }
 
   addNotification('Giao Việc 📝', `Đã giao công việc mới: "${title}" cho nhân viên phụ trách.`, 'success');
@@ -2197,7 +2201,7 @@ function renderMyTasks() {
 
         let projectInfoHtml = '';
         if (task.projectId) {
-          const proj = AppState.projects.find(p => p.id === task.projectId);
+          const proj = (AppState.projects || []).find(p => p.id === task.projectId);
           if (proj) {
             projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
           }
@@ -2394,7 +2398,7 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
 };
 
 window.openProjectDedicatedView = function(projId) {
-  const p = AppState.projects.find(proj => proj.id === projId);
+  const p = (AppState.projects || []).find(proj => proj.id === projId);
   if (!p) return;
 
   currentActiveProjectId = projId;

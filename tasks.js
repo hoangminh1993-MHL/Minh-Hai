@@ -239,7 +239,7 @@ function renderTasksList() {
       `;
     }
 
-    const proj = task.projectId ? AppState.projects.find(p => p.id === task.projectId) : null;
+    const proj = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
     const projectBadge = proj ? `<span class="badge" style="font-size:9.5px; margin-left: 6px; font-weight: bold; background-color: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 4px;"><i class="fa-solid fa-folder-open"></i> ${proj.name}</span>` : '';
 
     tr.innerHTML = `
