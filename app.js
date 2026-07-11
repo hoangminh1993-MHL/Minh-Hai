@@ -568,6 +568,72 @@ function renderFacebookConfig() {
       }
     };
   }
+
+  // Export Database
+  const btnExport = document.getElementById('btn-export-db');
+  if (btnExport) {
+    btnExport.onclick = () => {
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppState, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href",     dataStr);
+        downloadAnchor.setAttribute("download", `minhhai_crm_backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast('Đã xuất file sao lưu dữ liệu thành công!', 'success');
+      } catch (err) {
+        showToast('Lỗi khi xuất dữ liệu!', 'error');
+        console.error(err);
+      }
+    };
+  }
+
+  // Import Database
+  const inputImport = document.getElementById('input-import-db');
+  if (inputImport) {
+    inputImport.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (!parsed.users || !parsed.leads) {
+            showToast('Định dạng file sao lưu không hợp lệ!', 'error');
+            return;
+          }
+          if (!confirm('Bạn có chắc chắn muốn khôi phục dữ liệu từ file này? Dữ liệu hiện tại trên hệ thống sẽ bị ghi đè hoàn toàn.')) {
+            inputImport.value = '';
+            return;
+          }
+          
+          // Copy values to AppState
+          AppState.users = parsed.users || AppState.users;
+          AppState.leads = parsed.leads || AppState.leads;
+          AppState.tasks = parsed.tasks || AppState.tasks;
+          AppState.workflows = parsed.workflows || AppState.workflows;
+          AppState.sausageLogs = parsed.sausageLogs || AppState.sausageLogs;
+          AppState.notifications = parsed.notifications || AppState.notifications;
+          AppState.clients = parsed.clients || AppState.clients;
+          AppState.projects = parsed.projects || AppState.projects;
+          AppState.shipment_workflows = parsed.shipment_workflows || AppState.shipment_workflows;
+          AppState.single_tasks = parsed.single_tasks || AppState.single_tasks;
+          if (parsed.currentUserId) AppState.currentUserId = parsed.currentUserId;
+          
+          showToast('Đang đồng bộ dữ liệu lên máy chủ...', 'info');
+          await saveState();
+          showToast('Đồng bộ dữ liệu thành công! Đang tải lại...', 'success');
+          setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+          showToast('Lỗi khi đọc file hoặc ghi đè dữ liệu!', 'error');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    };
+  }
 }
 
 function initRoleSwitcher() {
