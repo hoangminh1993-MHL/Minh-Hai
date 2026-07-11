@@ -164,8 +164,9 @@
 
         <!-- VIEW: DASHBOARD -->
         <section id="view-dashboard" class="app-view active">
-          <!-- Stat Cards -->
-          <div class="stats-grid">
+          <div id="dashboard-admin-view">
+            <!-- Stat Cards -->
+            <div class="stats-grid">
             <div class="stat-card" id="card-stat-leads">
               <div class="stat-icon bg-blue">
                 <i class="fa-solid fa-user-plus"></i>
@@ -263,6 +264,74 @@
               <div class="card-body">
                 <div class="leaderboard-ranking ranking-mini" id="dashboard-leaderboard">
                   <!-- Dynamically populated in app.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Staff View Dashboard -->
+          <div id="dashboard-staff-view" style="display: none;">
+            <!-- Stat Cards -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon bg-gold">
+                  <i class="fa-solid fa-hotdog"></i>
+                </div>
+                <div class="stat-data">
+                  <span class="stat-label">Số dư Xúc Xích của tôi</span>
+                  <h3 id="staff-stat-points">0</h3>
+                  <span class="stat-trend text-gold" id="staff-stat-rank"><i class="fa-solid fa-trophy"></i> Đang tải thứ hạng...</span>
+                </div>
+              </div>
+              
+              <div class="stat-card">
+                <div class="stat-icon bg-blue">
+                  <i class="fa-solid fa-truck-ramp-box"></i>
+                </div>
+                <div class="stat-data">
+                  <span class="stat-label">Lô hàng đang theo dõi</span>
+                  <h3 id="staff-stat-flows">0</h3>
+                  <span class="stat-trend text-blue"><i class="fa-solid fa-circle-info"></i> Quy trình 11 bước vận hành</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon bg-orange">
+                  <i class="fa-solid fa-list-check"></i>
+                </div>
+                <div class="stat-data">
+                  <span class="stat-label">Nhiệm vụ đang thực hiện</span>
+                  <h3 id="staff-stat-tasks">0</h3>
+                  <span class="stat-trend text-orange" id="staff-stat-tasks-completed"><i class="fa-solid fa-circle-check"></i> Đã hoàn thành 0 việc</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Charts & Leaderboards Section -->
+            <div class="dashboard-grid">
+              <!-- Left: Lịch sử tích lũy xúc xích -->
+              <div class="dashboard-card" style="padding: 16px;">
+                <div class="card-header">
+                  <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Nhận Xúc Xích Của Tôi</h3>
+                  <span class="card-subtitle">Nhật ký điểm thưởng thi đua cá nhân</span>
+                </div>
+                <div class="card-body" style="max-height: 320px; overflow-y: auto;">
+                  <div class="mini-task-list" id="staff-sausage-logs" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- JS Rendered -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Công việc quá hạn hoặc cần làm gấp -->
+              <div class="dashboard-card" style="padding: 16px;">
+                <div class="card-header">
+                  <h3><i class="fa-solid fa-triangle-exclamation text-rose"></i> Việc Khẩn Cấp & Cận Hạn</h3>
+                  <button class="btn btn-sm btn-outline nav-shortcut" data-target="my-tasks">Xử lý ngay</button>
+                </div>
+                <div class="card-body" style="max-height: 320px; overflow-y: auto;">
+                  <div class="mini-task-list" id="staff-urgent-tasks" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- JS Rendered -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -987,9 +1056,29 @@
                     <div><strong>Thành viên:</strong> <span id="active-project-members">Binh, Lan</span></div>
                   </div>
 
-                  <div class="dashboard-card" style="background: rgba(31, 41, 55, 0.4); padding:12px;">
+                  <div class="dashboard-card" style="background: rgba(31, 41, 55, 0.4); padding:12px; margin-bottom: 20px;">
                     <strong>Ghi chú quan trọng:</strong>
                     <p id="active-project-notes" style="font-size:13px; color:var(--color-primary); margin-top:6px; font-style:italic;">Không có ghi chú đặc biệt.</p>
+                  </div>
+
+                  <!-- Quick View: Associated Tasks list -->
+                  <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <h4 style="font-size: 14px; font-weight: bold; color: #f59e0b; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                      <i class="fa-solid fa-list-check"></i> Công Việc Liên Kết
+                    </h4>
+                    <div id="project-overview-tasks-list" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 200px;">
+                      <!-- JS Rendered -->
+                    </div>
+                  </div>
+
+                  <!-- Quick View: Documents list -->
+                  <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <h4 style="font-size: 14px; font-weight: bold; color: #10b981; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                      <i class="fa-solid fa-file-lines"></i> Tài Liệu & Links Liên Quan
+                    </h4>
+                    <div id="project-overview-docs-list" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 200px;">
+                      <!-- JS Rendered -->
+                    </div>
                   </div>
                 </div>
 

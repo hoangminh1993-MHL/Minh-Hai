@@ -612,21 +612,32 @@ function applyRoleBasedNavigation() {
   const user = getCurrentUser();
   const isAdmin = user && user.role === 'admin';
 
-  const navDashboard = document.querySelector('.nav-item[data-view="dashboard"]');
   const navFbConfig = document.querySelector('.nav-item[data-view="facebook-config"]');
   const navWorkflowsConfig = document.querySelector('.nav-item[data-view="workflows"]');
   const navStaffMgmt = document.getElementById('nav-staff-mgmt');
 
-  if (navDashboard) navDashboard.style.display = isAdmin ? '' : 'none';
   if (navFbConfig) navFbConfig.style.display = isAdmin ? '' : 'none';
   if (navWorkflowsConfig) navWorkflowsConfig.style.display = isAdmin ? '' : 'none';
   if (navStaffMgmt) navStaffMgmt.style.display = isAdmin ? '' : 'none';
+
+  // Toggle sub-dashboard views inside view-dashboard
+  const adminView = document.getElementById('dashboard-admin-view');
+  const staffView = document.getElementById('dashboard-staff-view');
+  if (adminView && staffView) {
+    if (isAdmin) {
+      adminView.style.display = 'block';
+      staffView.style.display = 'none';
+    } else {
+      adminView.style.display = 'none';
+      staffView.style.display = 'block';
+    }
+  }
 
   // Redirect non-admin away from restricted views
   const activeTabElement = document.querySelector('.nav-item.active');
   if (activeTabElement) {
     const currentViewId = activeTabElement.getAttribute('data-view');
-    const restrictedViews = ['dashboard', 'facebook-config', 'workflows', 'staff-management'];
+    const restrictedViews = ['facebook-config', 'workflows', 'staff-management'];
     if (!isAdmin && restrictedViews.includes(currentViewId)) {
       navigateToView('my-tasks');
     }
@@ -635,6 +646,12 @@ function applyRoleBasedNavigation() {
 
 // ==================== DASHBOARD RENDER & CHARTS ==================== //
 function renderDashboard() {
+  const user = getCurrentUser();
+  if (user && user.role !== 'admin') {
+    renderStaffDashboard(user);
+    return;
+  }
+
   // 1. Compute Stats
   const totalLeads = AppState.leads.length;
   const successLeads = AppState.leads.filter(l => l.stage === 'success').length;
@@ -1318,6 +1335,162 @@ function updateMyTasksBadge() {
     badge.style.display = 'inline-block';
   } else {
     badge.style.display = 'none';
+  }
+}
+
+function renderStaffDashboard(user) {
+  const userId = user.id;
+
+  // 1. Sausage Points
+  const pointsEl = document.getElementById('staff-stat-points');
+  if (pointsEl) pointsEl.innerText = user.points;
+
+  // 2. Compute Rank
+  const rankEl = document.getElementById('staff-stat-rank');
+  if (rankEl) {
+    const sortedUsers = [...AppState.users].sort((a,b) => b.points - a.points);
+    const myRank = sortedUsers.findIndex(u => u.id === userId) + 1;
+    rankEl.innerHTML = `<i class="fa-solid fa-trophy"></i> Hạng ${myRank} trên ${sortedUsers.length} thành viên`;
+  }
+
+  // 3. Active Shipment Workflows
+  let myFlowsCount = 0;
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(flow => {
+      const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+      if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+        myFlowsCount++;
+      }
+    });
+  }
+  const flowsEl = document.getElementById('staff-stat-flows');
+  if (flowsEl) flowsEl.innerText = myFlowsCount;
+
+  // 4. Single tasks
+  let myActiveTasks = 0;
+  let myCompletedTasks = 0;
+  if (AppState.single_tasks) {
+    const myTasks = AppState.single_tasks.filter(t => t.assigneeId === userId);
+    myActiveTasks = myTasks.filter(t => t.status !== 'completed' && t.status !== 'canceled').length;
+    myCompletedTasks = myTasks.filter(t => t.status === 'completed').length;
+  }
+  if (AppState.tasks) {
+    const myCrmTasks = AppState.tasks.filter(t => t.assigneeId === userId);
+    myActiveTasks += myCrmTasks.filter(t => t.status !== 'completed' && t.status !== 'canceled').length;
+    myCompletedTasks += myCrmTasks.filter(t => t.status === 'completed').length;
+  }
+  const tasksEl = document.getElementById('staff-stat-tasks');
+  if (tasksEl) tasksEl.innerText = myActiveTasks;
+  const compTasksEl = document.getElementById('staff-stat-tasks-completed');
+  if (compTasksEl) compTasksEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> Đã hoàn thành ${myCompletedTasks} việc`;
+
+  // 5. Render personal sausage logs
+  const logsContainer = document.getElementById('staff-sausage-logs');
+  if (logsContainer) {
+    logsContainer.innerHTML = '';
+    const myLogs = (AppState.sausageLogs || []).filter(log => {
+      return log.msg && log.msg.toLowerCase().includes(user.name.toLowerCase());
+    }).slice(-10).reverse(); // top 10 recent
+
+    if (myLogs.length === 0) {
+      logsContainer.innerHTML = `<span class="text-muted" style="font-size:11.5px; font-style:italic;">Chưa có lịch sử tích lũy điểm thưởng.</span>`;
+    } else {
+      myLogs.forEach(log => {
+        const item = document.createElement('div');
+        item.className = 'mini-task-item';
+        item.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px;';
+        item.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>${log.msg}</span>
+            <span style="font-size: 10px; color: var(--text-muted);">${log.time || ''}</span>
+          </div>
+        `;
+        logsContainer.appendChild(item);
+      });
+    }
+  }
+
+  // 6. Render urgent & upcoming tasks
+  const urgentContainer = document.getElementById('staff-urgent-tasks');
+  if (urgentContainer) {
+    urgentContainer.innerHTML = '';
+    const urgentList = [];
+
+    if (AppState.shipment_workflows) {
+      AppState.shipment_workflows.forEach(flow => {
+        const stepData = flow.steps.find(s => s.stepNum === flow.stage);
+        if (stepData && stepData.assigneeId === userId && stepData.status !== 'done') {
+          urgentList.push({
+            id: flow.id,
+            title: `Lô hàng: ${flow.name} (Khâu: ${flow.stage})`,
+            deadline: flow.deadline,
+            type: 'flow'
+          });
+        }
+      });
+    }
+
+    if (AppState.single_tasks) {
+      AppState.single_tasks.forEach(t => {
+        if (t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled') {
+          urgentList.push({
+            id: t.id,
+            title: `Việc đơn lẻ: ${t.title}`,
+            deadline: t.deadline,
+            type: 'single'
+          });
+        }
+      });
+    }
+
+    if (AppState.tasks) {
+      AppState.tasks.forEach(t => {
+        if (t.assigneeId === userId && t.status !== 'completed' && t.status !== 'canceled') {
+          urgentList.push({
+            id: t.id,
+            title: `CRM Task: ${t.title}`,
+            deadline: t.deadline,
+            type: 'crm_task'
+          });
+        }
+      });
+    }
+
+    urgentList.sort((a, b) => {
+      if (!a.deadline) return 1;
+      if (!b.deadline) return -1;
+      return new Date(a.deadline) - new Date(b.deadline);
+    });
+
+    const displayList = urgentList.slice(0, 5);
+    if (displayList.length === 0) {
+      urgentContainer.innerHTML = `<span class="text-muted" style="font-size:11.5px; font-style:italic;">Tuyệt vời! Bạn không có việc nào cận hạn hay quá hạn.</span>`;
+    } else {
+      displayList.forEach(item => {
+        const isOverdue = item.deadline && new Date(item.deadline) < new Date();
+        const div = document.createElement('div');
+        div.className = 'mini-task-item';
+        div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
+        div.innerHTML = `
+          <div>
+            <strong style="color: ${item.type === 'flow' ? '#3b82f6' : (item.type === 'single' ? '#f59e0b' : '#a855f7')};">[${item.type.toUpperCase()}]</strong> ${item.title}
+          </div>
+          <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: ${isOverdue ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.05)'}; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'};">
+            ${item.deadline || 'Hạn chót: -'}
+          </span>
+        `;
+        div.onclick = () => {
+          if (item.type === 'flow') {
+            if (typeof openFlowDetailModal === 'function') openFlowDetailModal(item.id);
+          } else if (item.type === 'single') {
+            if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(item.id);
+          } else {
+            window.location.hash = 'tasks';
+          }
+        };
+        urgentContainer.appendChild(div);
+      });
+    }
   }
 }
 

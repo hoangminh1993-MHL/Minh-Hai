@@ -1569,9 +1569,10 @@ function handleAddSingleTaskSubmit(e) {
   document.getElementById('form-add-ops-task').reset();
   renderOpsSingleTasks();
 
-  // If in project views, refresh project tasks
+  // If in project views, refresh project tasks & overview lists
   if (currentActiveProjectId) {
     renderProjectTasksTab(currentActiveProjectId);
+    openProjectDetails(currentActiveProjectId);
   }
 
   addNotification('Giao Việc 📝', `Đã giao công việc mới: "${title}" cho nhân viên phụ trách.`, 'success');
@@ -1735,6 +1736,64 @@ function switchProjectTab(tab) {
     document.getElementById('active-project-members').innerText = membersNames || 'Không có thành viên phụ';
     
     document.getElementById('active-project-notes').innerText = proj.notes || 'Không có ghi chú quan trọng.';
+
+    // Populate quick view tasks inside overview tab
+    const overviewTasksList = document.getElementById('project-overview-tasks-list');
+    if (overviewTasksList) {
+      overviewTasksList.innerHTML = '';
+      const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === proj.id);
+      if (projTasks.length === 0) {
+        overviewTasksList.innerHTML = `<span class="text-muted" style="font-size: 11.5px; font-style: italic;">Chưa có công việc nào liên kết với dự án này.</span>`;
+      } else {
+        projTasks.forEach(task => {
+          const div = document.createElement('div');
+          div.className = 'mini-task-item';
+          div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
+          
+          const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
+          const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
+          
+          div.innerHTML = `
+            <div>
+              <strong>${task.title}</strong>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="badge ${statusColors[task.status] || ''}" style="font-size:9px;">${statusLabels[task.status] || task.status}</span>
+              <span style="font-size: 9.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
+            </div>
+          `;
+          div.onclick = () => {
+            if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
+          };
+          overviewTasksList.appendChild(div);
+        });
+      }
+    }
+
+    // Populate quick view docs inside overview tab
+    const overviewDocsList = document.getElementById('project-overview-docs-list');
+    if (overviewDocsList) {
+      overviewDocsList.innerHTML = '';
+      if (!proj.documents || proj.documents.length === 0) {
+        overviewDocsList.innerHTML = `<span class="text-muted" style="font-size: 11.5px; font-style: italic;">Chưa ghim tài liệu hoặc liên kết nào.</span>`;
+      } else {
+        proj.documents.forEach(doc => {
+          const div = document.createElement('div');
+          div.className = 'mini-task-item';
+          div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center;';
+          div.innerHTML = `
+            <div>
+              <i class="fa-solid fa-file-lines text-emerald" style="margin-right:6px;"></i><strong>${doc.name}</strong>
+              ${doc.note ? `<span style="font-size:10.5px; opacity:0.8; margin-left:6px;">(${doc.note})</span>` : ''}
+            </div>
+            <a href="${doc.url}" target="_blank" style="font-size:11px; color:var(--color-primary); font-weight:bold; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
+              <i class="fa-solid fa-square-share-nodes"></i> Mở link
+            </a>
+          `;
+          overviewDocsList.appendChild(div);
+        });
+      }
+    }
   } else if (tab === 'docs') {
     renderProjectDocsTab(proj);
   } else if (tab === 'tasks') {
