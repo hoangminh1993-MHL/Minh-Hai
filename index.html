@@ -495,7 +495,26 @@
             <table class="data-table" id="tasks-table">
               <thead>
                 <tr>
-         <!-- VIEW: SETTINGS (Thiết Lập Hệ Thống) -->
+                  <th>Tên Công Việc</th>
+                  <th>Phòng Ban</th>
+                  <th>Người Thực Hiện</th>
+                  <th>Tiến Trình (Workflow)</th>
+                  <th>Hạn Hoàn Thành</th>
+                  <th>Phần Thưởng</th>
+                  <th>Trạng Thái</th>
+                  <th>Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="tasks-list-body">
+                <!-- Dynamically populated in tasks.js -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+
+        <!-- VIEW: WORKFLOW SETTINGS -->
+        <!-- VIEW: SETTINGS (Thiết Lập Hệ Thống) -->
         <section id="view-settings" class="app-view">
           <div class="workflow-desc">
             <p><i class="fa-solid fa-sliders text-blue"></i> <strong>Thiết Lập & Cấu Hình Hệ Thống:</strong> Cấu hình liên kết Fanpage Facebook Webhook, lưu địa chỉ kết nối API Server và quản lý dữ liệu lưu trữ.</p>
@@ -569,7 +588,7 @@
                     </div>
 
                     <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 12.5px; height: 38px;">
-                      <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hình Webhook
+                      <i class="fa-solid fa-floppy-disk"></i> Lưu Cấu Hướng Webhook
                     </button>
                   </form>
                 </div>
@@ -616,21 +635,6 @@
                 <div>
                   <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 3: Liên kết Fanpage & Lấy Token</h4>
                   <p>Trong cài đặt Messenger, thêm Fanpage <strong>Minh Hải Logistics</strong> của bạn. Tạo Page Access Token và sao chép dán vào ô Page Access Token bên trái rồi bấm <strong>Lưu cấu hình</strong>.</p>
-                </div>
-
-                <div>
-                  <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 4: Cấu hình Webhooks trên Facebook</h4>
-                  <p>Ở mục Webhooks của Messenger, nhấn <strong>Configure</strong> và nhập:</p>
-                  <ul style="margin-left: 16px; margin-top: 4px;">
-                    <li><strong>Callback URL</strong>: Link ngrok của bạn kèm đuôi <code style="font-family: monospace;">/webhook</code></li>
-                    <li><strong>Verify Token</strong>: <code style="font-family: monospace;">minh_hai_verify_token_123</code></li>
-                  </ul>
-                  <p style="margin-top:6px;">Bấm <strong>Verify and Save</strong>. Sau đó Đăng ký (Subscribe) sự kiện <strong>messages</strong>.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>��o Page Access Token và sao chép dán vào ô Page Access Token bên trái rồi bấm <strong>Lưu cấu hình</strong>.</p>
                 </div>
 
                 <div>
@@ -2006,5 +2010,3 @@
   <script src="inbox-sim.js?v=19.4"></script>
 </body>
 </html>
-
-
