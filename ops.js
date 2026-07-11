@@ -2199,6 +2199,10 @@ function renderMyTasks() {
 
         const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        card.style.cssText = `cursor: pointer; border-left: 4px solid ${task.projectId ? '#10b981' : '#f59e0b'}; transition: transform 0.2s; margin-bottom: 8px;`;
+
         let projectInfoHtml = '';
         if (task.projectId) {
           const proj = (AppState.projects || []).find(p => p.id === task.projectId);
