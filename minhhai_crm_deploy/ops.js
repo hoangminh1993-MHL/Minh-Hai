@@ -887,9 +887,16 @@ function handleFlowAddStepFile() {
   const nameInput = document.getElementById('flow-step-new-file-name');
   const urlInput = document.getElementById('flow-step-new-file-url');
   
-  const name = nameInput.value.trim();
+  let name = nameInput.value.trim();
   const url = urlInput.value.trim();
-  if (!name || !url) return;
+  
+  if (!url) {
+    alert("Vui lòng nhập đường dẫn liên kết URL!");
+    return;
+  }
+  if (!name) {
+    name = "Tài liệu đính kèm";
+  }
 
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
   if (!flow) return;
