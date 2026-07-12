@@ -537,10 +537,6 @@ function handleFlowMoveAttempt(flowId, targetStage) {
   // Validate files when transitioning to Báo giá (Step 2)
   if (targetStage === 2) {
     const files = flow.files || [];
-    if (files.length < 2) {
-      alert(`Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn đủ 2 mục tài liệu: 1 Link báo giá và 1 Hình ảnh báo giá!\n(Hiện tại bạn mới đính kèm ${files.length} tài liệu)`);
-      return;
-    }
     const hasImage = files.some(f => 
       /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
       f.name.toLowerCase().includes('ảnh') || 
@@ -549,7 +545,7 @@ function handleFlowMoveAttempt(flowId, targetStage) {
       f.name.toLowerCase().includes('img')
     );
     if (!hasImage) {
-      alert("Hệ thống chưa tìm thấy Hình ảnh báo giá của bạn!\nVui lòng sửa tên hoặc đính kèm tài liệu có tên chứa chữ 'ảnh' hoặc 'hình' (ví dụ: 'Ảnh báo giá') để hệ thống nhận diện ảnh báo giá.");
+      alert("Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!");
       return;
     }
   }
@@ -730,6 +726,10 @@ function openFlowDetailModal(flowId) {
   document.getElementById('btn-flow-step-add-chk').onclick = handleFlowAddStepChecklistItem;
   document.getElementById('btn-flow-step-add-file').onclick = handleFlowAddStepFile;
   document.getElementById('btn-flow-step-add-comment').onclick = handleFlowAddStepComment;
+
+  // Pre-fill file name input
+  const fileNameInput = document.getElementById('flow-step-new-file-name');
+  if (fileNameInput) fileNameInput.value = 'Ảnh báo giá';
 
   openModal('modal-flow-detail');
 }
@@ -919,7 +919,7 @@ function handleFlowAddStepFile() {
     date: new Date().toISOString().split('T')[0]
   });
 
-  nameInput.value = '';
+  nameInput.value = 'Ảnh báo giá';
   urlInput.value = '';
   renderActiveStepPanel();
 }
