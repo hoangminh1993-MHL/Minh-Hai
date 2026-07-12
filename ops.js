@@ -457,8 +457,9 @@ function renderOpsWorkflows() {
     // Populate columns cards
     stepLists[i].forEach(flow => {
       const client = AppState.clients.find(c => c.id === flow.clientId) || {};
+      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
       const card = document.createElement('div');
-      card.className = 'kanban-card';
+      card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
       card.setAttribute('draggable', 'true');
       card.setAttribute('data-id', flow.id);
       
@@ -467,7 +468,6 @@ function renderOpsWorkflows() {
       const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
       const assigneeName = assigneeUser ? assigneeUser.name.split(' ').pop() : 'Chưa giao';
 
-      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
       const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="Quá hạn chót lô hàng!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` : '';
 
       // Highlight if updated today
@@ -486,6 +486,9 @@ function renderOpsWorkflows() {
         <div class="card-client-name" style="margin-top:6px; font-size:13.5px;">${flow.name}</div>
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
         ${overdueBadge}
+        <div style="font-size: 10.2px; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 4px;">
+          <i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Chưa thiết lập'}
+        </div>
         <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; flex-direction:column; gap:2px; font-size:10px; color:var(--text-muted);">
             <span><i class="fa-solid fa-user-gear"></i> Phụ trách: ${assigneeName}</span>
@@ -531,6 +534,16 @@ function handleFlowMoveAttempt(flowId, targetStage) {
   const currentStage = flow.stage;
   if (currentStage === targetStage) return;
 
+  // Validate files when transitioning to Báo giá (Step 2)
+  if (targetStage === 2) {
+    const hasImage = flow.files && flow.files.some(f => /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || f.name.toLowerCase().includes('ảnh') || f.name.toLowerCase().includes('image') || f.name.toLowerCase().includes('hình'));
+    const hasLink = flow.files && flow.files.some(f => f.url.startsWith('http') && !/\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url));
+    if (!hasImage || !hasLink) {
+      alert("Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn Link báo giá và Hình ảnh báo giá trong mục tài liệu đính kèm của lô hàng!");
+      return;
+    }
+  }
+
   // Verify transition checklists of the current step
   const currentStepData = flow.steps.find(s => s.stepNum === currentStage);
   if (currentStepData && currentStepData.checklist && currentStepData.checklist.length > 0) {
@@ -556,6 +569,14 @@ function handleFlowMoveAttempt(flowId, targetStage) {
         
         // Listen to change
         itemDiv.querySelector('input').onchange = (e) => {
+          if (item.text === "cập nhật tình trạng sau báo giá" && e.target.checked) {
+            const step2 = flow.steps.find(s => s.stepNum === 2);
+            if (!step2 || !step2.note || step2.note.trim().length < 5) {
+              alert("Bạn cần ghi rõ tình trạng khách hàng vào ô Ghi chú/Cập nhật của Bước 2 trước khi tích chọn hoàn thành việc này!");
+              e.target.checked = false;
+              return;
+            }
+          }
           item.done = e.target.checked;
           itemDiv.className = `mandatory-item ${item.done ? 'checked' : 'unchecked'}`;
           document.getElementById('ops-checklist-warning-text').style.display = 'none';
@@ -750,6 +771,14 @@ function renderActiveStepPanel() {
       `;
       
       label.querySelector('input').onchange = (e) => {
+        if (item.text === "cập nhật tình trạng sau báo giá" && e.target.checked) {
+          const noteVal = document.getElementById('flow-step-note') ? document.getElementById('flow-step-note').value.trim() : '';
+          if (!noteVal || noteVal.length < 5) {
+            alert("Bạn cần ghi rõ tình trạng khách hàng vào ô Ghi chú/Cập nhật của Bước 2 trước khi tích chọn hoàn thành việc này!");
+            e.target.checked = false;
+            return;
+          }
+        }
         item.done = e.target.checked;
         renderActiveStepPanel();
       };

@@ -1691,6 +1691,11 @@ textarea.form-control {
   color: #34d399 !important; /* Emerald green highlight */
   font-weight: 700 !important;
 }
+.overdue-card {
+  border: 1px solid #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.08) !important;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2) !important;
+}
 
 /* ==================== V18 OPERATION PORTAL STYLES ==================== */
 
