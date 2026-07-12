@@ -116,7 +116,7 @@ function downloadFile(url) {
   const https = require('https');
   return new Promise((resolve, reject) => {
     https.get(url, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
+      if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 303 || res.statusCode === 307 || res.statusCode === 308) {
         downloadFile(res.headers.location).then(resolve).catch(reject);
         return;
       }
