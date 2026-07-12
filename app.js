@@ -2514,6 +2514,8 @@ let healthPieChartInstance = null;
 let filtersInitialized = false;
 
 window.renderCustomerHealthView = function() {
+  initCustomerHealthFilters();
+  
   if (!AppState.customerHealthData) {
     window.syncCustomerHealthData();
     return;
@@ -2525,7 +2527,6 @@ window.renderCustomerHealthView = function() {
     timeEl.innerText = `Cập nhật: ${formatDateTime(syncTime)}`;
   }
   
-  initCustomerHealthFilters();
   displayCustomerHealthMetrics();
 };
 
@@ -2574,10 +2575,10 @@ function initCustomerHealthFilters() {
   if (cskhFilter && !cskhFilter.onchange) cskhFilter.onchange = () => filterCustomerHealthTable();
   
   if (filtersInitialized) return;
-  filtersInitialized = true;
   
   const cskhSelect = document.getElementById('health-filter-cskh');
   if (cskhSelect && AppState.customerHealthData) {
+    filtersInitialized = true;
     cskhSelect.innerHTML = '<option value="">Tất cả CSKH</option>';
     const uniqueCSKH = [...new Set((AppState.customerHealthData.customers || []).map(c => c.cskh).filter(Boolean))];
     uniqueCSKH.forEach(name => {
