@@ -747,7 +747,7 @@ function openFlowDetailModal(flowId) {
 
   // Pre-fill file name inputs
   const fileNameInput = document.getElementById('flow-step-new-file-name');
-  if (fileNameInput) fileNameInput.value = 'Ảnh báo giá';
+  if (fileNameInput) fileNameInput.value = '';
 
   openModal('modal-flow-detail');
 }
@@ -955,7 +955,7 @@ function handleFlowAddStepFile() {
     date: new Date().toISOString().split('T')[0]
   });
 
-  nameInput.value = 'Ảnh báo giá';
+  nameInput.value = '';
   urlInput.value = '';
   renderActiveStepPanel();
 }
