@@ -470,6 +470,14 @@ function renderOpsWorkflows() {
       const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
       const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="Quá hạn chót lô hàng!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` : '';
 
+      // Highlight if updated today
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      const lastHistoryTime = flow.history && flow.history.length > 0 ? flow.history[flow.history.length - 1].split(': ')[0] : '';
+      const isUpdatedToday = lastHistoryTime.startsWith(todayStr);
+      const timeColor = isUpdatedToday ? '#34d399' : '#38bdf8';
+      const timeFontWeight = isUpdatedToday ? '700' : '600';
+
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.code || 'KH CŨ'}</span>
@@ -484,6 +492,9 @@ function renderOpsWorkflows() {
             <span><i class="fa-solid fa-headset"></i> CSKH: ${salesName}</span>
           </div>
           <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
+        </div>
+        <div style="font-size: 10px; color: ${timeColor}; font-weight: ${timeFontWeight}; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;">
+          <i class="fa-solid fa-rotate"></i> Cập nhật: ${lastHistoryTime}
         </div>
       `;
 
@@ -601,6 +612,22 @@ function executeFlowMove(flow, targetStage) {
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  
+  if (targetStage === 2) {
+    const step2 = flow.steps.find(s => s.stepNum === 2);
+    if (step2) {
+      const deadlineDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      const step2Deadline = `${deadlineDate.getFullYear()}-${String(deadlineDate.getMonth()+1).padStart(2,'0')}-${String(deadlineDate.getDate()).padStart(2,'0')} ${String(deadlineDate.getHours()).padStart(2,'0')}:${String(deadlineDate.getMinutes()).padStart(2,'0')}`;
+      step2.deadline = step2Deadline;
+      flow.deadline = step2Deadline;
+    }
+  } else {
+    const activeStep = flow.steps.find(s => s.stepNum === targetStage);
+    if (activeStep && activeStep.deadline) {
+      flow.deadline = activeStep.deadline;
+    }
+  }
+
   flow.history.push(`${dateStr}: Di chuyển từ bước ${oldStage} sang ${targetStage} (${stepNames[targetStage - 1]})`);
 
   saveState();
@@ -936,6 +963,7 @@ function handleAddFlowSubmit(e) {
       stepChecklist = [
         { text: "Tìm nguồn/shop/xưởng", done: false, required: true },
         { text: "Gửi báo giá cho khách", done: false, required: true },
+        { text: "cập nhật tình trạng sau báo giá", done: false, required: true },
         { text: "Lưu file báo giá", done: false, required: false }
       ];
     } else if (i === 5) {
@@ -950,11 +978,18 @@ function handleAddFlowSubmit(e) {
       ];
     }
 
+    let stepDeadline = '';
+    if (isFirst) {
+      const now = new Date();
+      const deadlineDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      stepDeadline = `${deadlineDate.getFullYear()}-${String(deadlineDate.getMonth()+1).padStart(2,'0')}-${String(deadlineDate.getDate()).padStart(2,'0')} ${String(deadlineDate.getHours()).padStart(2,'0')}:${String(deadlineDate.getMinutes()).padStart(2,'0')}`;
+    }
+
     flowSteps.push({
       stepNum: i,
       name: stepNames[i - 1],
       assigneeId: document.getElementById('flow-assignee').value,
-      deadline: document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : '',
+      deadline: stepDeadline || (document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : ''),
       status: isFirst ? 'doing' : 'todo',
       checklist: stepChecklist,
       note: '',
@@ -978,7 +1013,7 @@ function handleAddFlowSubmit(e) {
     revenue: parseInt(document.getElementById('flow-revenue').value) || 0,
     profit: parseInt(document.getElementById('flow-profit').value) || 0,
     debt: parseInt(document.getElementById('flow-revenue').value) || 0, // Default debt = revenue
-    deadline: document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : '',
+    deadline: flowSteps[0].deadline,
     files: [],
     riskNote: document.getElementById('flow-risk').value.trim(),
     history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo quy trình lô hàng`],
