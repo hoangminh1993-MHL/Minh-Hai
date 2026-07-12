@@ -622,7 +622,7 @@ function getCurrentUser() {
 function renderCurrentUser() {
   const user = getCurrentUser();
   document.getElementById('current-user-name').innerText = user.name;
-  document.getElementById('current-user-points').innerText = user.points;
+  document.getElementById('current-user-points').innerText = user.role === 'admin' ? 'Vô hạn' : user.points;
   
   // Set role badge classes
   const badge = document.getElementById('current-user-role-badge');

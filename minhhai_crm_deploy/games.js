@@ -148,7 +148,7 @@ function startCaroGame() {
     return;
   }
 
-  if (user.points < caroBet) {
+  if (user.role !== 'admin' && user.points < caroBet) {
     showToast("Bạn không đủ điểm Xúc xích để cược!", "warning");
     return;
   }
@@ -170,8 +170,12 @@ function startCaroGame() {
   }
 
   // Deduct points
-  user.points -= caroBet;
-  pushSausageLog(user.id, -caroBet, `Bắt đầu cược đấu Caro (${caroMode === 'vs-ai' ? 'đấu với Máy' : 'đấu PvP'})`);
+  if (user.role !== 'admin') {
+    user.points -= caroBet;
+    pushSausageLog(user.id, -caroBet, `Bắt đầu cược đấu Caro (${caroMode === 'vs-ai' ? 'đấu với Máy' : 'đấu PvP'})`);
+  } else {
+    pushSausageLog(user.id, 0, `Bắt đầu cược đấu Caro (Admin miễn phí)`);
+  }
   
   if (caroMode === 'vs-pvp') {
     const opponent = AppState.users.find(u => u.id === caroOpponentId);
@@ -202,8 +206,10 @@ function resetCaroGame() {
   // Cancel active game and refund (if not finished)
   if (caroGameActive) {
     const user = getCurrentUser();
-    user.points += caroBet;
-    pushSausageLog(user.id, caroBet, `Hoàn trả cược Caro (Huỷ trận đấu)`);
+    if (user.role !== 'admin') {
+      user.points += caroBet;
+      pushSausageLog(user.id, caroBet, `Hoàn trả cược Caro (Huỷ trận đấu)`);
+    }
 
     if (caroMode === 'vs-pvp') {
       const opponent = AppState.users.find(u => u.id === caroOpponentId);
@@ -457,8 +463,12 @@ function endCaroGame(winner) {
   if (winner === 'draw') {
     status.innerHTML = '<span style="color:#eab308;">Hoà ván! Đã hoàn trả cược.</span>';
     // Refund
-    user.points += caroBet;
-    pushSausageLog(user.id, caroBet, `Hoà cờ Caro: Hoàn trả cược`);
+    if (user.role !== 'admin') {
+      user.points += caroBet;
+      pushSausageLog(user.id, caroBet, `Hoà cờ Caro: Hoàn trả cược`);
+    } else {
+      pushSausageLog(user.id, 0, `Hoà cờ Caro (Admin)`);
+    }
 
     if (caroMode === 'vs-pvp') {
       const opponent = AppState.users.find(u => u.id === caroOpponentId);
@@ -470,8 +480,12 @@ function endCaroGame(winner) {
   } else if (caroMode === 'vs-ai') {
     if (winner === 'X') {
       status.innerHTML = `<span style="color:#22c55e;">CHIẾN THẮNG! Nhận +${caroBet * 2} xúc xích</span>`;
-      user.points += caroBet * 2;
-      pushSausageLog(user.id, caroBet * 2, `Thắng máy Caro: +${caroBet * 2} xúc xích`);
+      if (user.role !== 'admin') {
+        user.points += caroBet * 2;
+        pushSausageLog(user.id, caroBet * 2, `Thắng máy Caro: +${caroBet * 2} xúc xích`);
+      } else {
+        pushSausageLog(user.id, 0, `Thắng máy Caro (Admin)`);
+      }
     } else {
       status.innerHTML = `<span style="color:#ef4444;">THẤT BẠI! Mất cược -${caroBet} xúc xích</span>`;
     }
@@ -482,12 +496,20 @@ function endCaroGame(winner) {
 
     if (winner === 'X') {
       status.innerHTML = `<span style="color:#22c55e;">${p1.name} CHIẾN THẮNG! Nhận +${caroBet * 2} xúc xích</span>`;
-      p1.points += caroBet * 2;
-      pushSausageLog(p1.id, caroBet * 2, `Thắng đấu Caro PvP với ${p2.name}: +${caroBet * 2} xúc xích`);
+      if (p1.role !== 'admin') {
+        p1.points += caroBet * 2;
+        pushSausageLog(p1.id, caroBet * 2, `Thắng đấu Caro PvP với ${p2.name}: +${caroBet * 2} xúc xích`);
+      } else {
+        pushSausageLog(p1.id, 0, `Thắng đấu Caro PvP với ${p2.name} (Admin)`);
+      }
     } else {
       status.innerHTML = `<span style="color:#22c55e;">${p2.name} CHIẾN THẮNG! Nhận +${caroBet * 2} xúc xích</span>`;
-      p2.points += caroBet * 2;
-      pushSausageLog(p2.id, caroBet * 2, `Thắng đấu Caro PvP với ${p1.name}: +${caroBet * 2} xúc xích`);
+      if (p2.role !== 'admin') {
+        p2.points += caroBet * 2;
+        pushSausageLog(p2.id, caroBet * 2, `Thắng đấu Caro PvP với ${p1.name}: +${caroBet * 2} xúc xích`);
+      } else {
+        pushSausageLog(p2.id, 0, `Thắng đấu Caro PvP với ${p1.name} (Admin)`);
+      }
     }
   }
 
@@ -582,14 +604,18 @@ function submitLotteryTicket() {
 
   const cost = type === 'de' ? points : points * 23;
 
-  if (user.points < cost) {
+  if (user.role !== 'admin' && user.points < cost) {
     showToast("Bạn không đủ điểm Xúc xích để ghi số!", "warning");
     return;
   }
 
   // Deduct points
-  user.points -= cost;
-  pushSausageLog(user.id, -cost, `Ghi vé số ${type === 'de' ? 'Đề' : 'Bao Lô'} con [${String(numberVal).padStart(2,'0')}]: cược ${points}đ (cost -${cost})`);
+  if (user.role !== 'admin') {
+    user.points -= cost;
+    pushSausageLog(user.id, -cost, `Ghi vé số ${type === 'de' ? 'Đề' : 'Bao Lô'} con [${String(numberVal).padStart(2,'0')}]: cược ${points}đ (cost -${cost})`);
+  } else {
+    pushSausageLog(user.id, 0, `Ghi vé số ${type === 'de' ? 'Đề' : 'Bao Lô'} con [${String(numberVal).padStart(2,'0')}]: cược ${points}đ (Admin miễn phí)`);
+  }
 
   // Today's date string
   const todayStr = new Date().toISOString().split('T')[0];
@@ -1062,14 +1088,18 @@ function placeCustomBet(lobbyId) {
     return;
   }
 
-  if (user.points < amount) {
+  if (user.role !== 'admin' && user.points < amount) {
     showToast("Bạn không đủ điểm Xúc xích để cược!", "warning");
     return;
   }
 
   // Deduct points
-  user.points -= amount;
-  pushSausageLog(user.id, -amount, `Cược kèo: "${b.title}" vào cửa [${opt === 'A' ? b.optionA : b.optionB}]`);
+  if (user.role !== 'admin') {
+    user.points -= amount;
+    pushSausageLog(user.id, -amount, `Cược kèo: "${b.title}" vào cửa [${opt === 'A' ? b.optionA : b.optionB}]`);
+  } else {
+    pushSausageLog(user.id, 0, `Cược kèo: "${b.title}" vào cửa [${opt === 'A' ? b.optionA : b.optionB}] (Admin miễn phí)`);
+  }
 
   b.bets.push({
     userId: user.id,
