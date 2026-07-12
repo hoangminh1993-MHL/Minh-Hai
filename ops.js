@@ -2485,8 +2485,26 @@ window.openProjectDedicatedView = function(projId) {
       div.className = 'mini-task-item';
       div.style.cssText = 'padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 6px;';
       
-      const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
-      const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
+      const statusLabels = { 
+        todo: 'Chưa làm', 
+        pending: 'Chưa làm',
+        doing: 'Đang làm', 
+        waiting: 'Chờ phản hồi',
+        checking: 'Chờ duyệt',
+        completed: 'Hoàn thành', 
+        overdue: 'Quá hạn', 
+        canceled: 'Đã hủy' 
+      };
+      const statusColors = { 
+        todo: 'bg-blue',
+        pending: 'bg-gray', 
+        doing: 'bg-orange', 
+        waiting: 'bg-purple',
+        checking: 'bg-purple', 
+        completed: 'bg-emerald', 
+        overdue: 'bg-rose',
+        canceled: 'bg-gray' 
+      };
       
       const isCompleted = task.status === 'completed';
       const completeButton = isCompleted ? '' : `
@@ -2495,15 +2513,19 @@ window.openProjectDedicatedView = function(projId) {
         </button>
       `;
 
+      const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
+      const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
+
       div.innerHTML = `
         <div>
           <strong>${task.title}</strong>
           <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
+          <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           ${completeButton}
           <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
-          <span style="font-size: 10.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
+          <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
         </div>
       `;
       div.onclick = (e) => {
