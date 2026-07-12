@@ -357,6 +357,24 @@ function renderFounderDashboard() {
 
 // ==================== CRM KHÁCH CŨ & LÔ HÀNG (11 BƯỚC) ==================== //
 function renderOpsWorkflows() {
+  // Sanitize checklists: only allow 'cập nhật tình trạng sau báo giá' in Step 2, clear all others
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(flow => {
+      if (flow.steps) {
+        flow.steps.forEach(s => {
+          if (s.stepNum === 2) {
+            s.checklist = s.checklist ? s.checklist.filter(c => c.text === "cập nhật tình trạng sau báo giá") : [];
+            if (s.checklist.length === 0) {
+              s.checklist.push({ text: "cập nhật tình trạng sau báo giá", done: false, required: true });
+            }
+          } else {
+            s.checklist = [];
+          }
+        });
+      }
+    });
+  }
+
   const container = document.getElementById('ops-workflows-kanban');
   if (!container) return;
   container.innerHTML = '';
@@ -725,14 +743,11 @@ function openFlowDetailModal(flowId) {
   // Handle Add files / checklist inline
   document.getElementById('btn-flow-step-add-chk').onclick = handleFlowAddStepChecklistItem;
   document.getElementById('btn-flow-step-add-file').onclick = handleFlowAddStepFile;
-  document.getElementById('btn-flow-global-add-file').onclick = handleFlowAddGlobalFile;
   document.getElementById('btn-flow-step-add-comment').onclick = handleFlowAddStepComment;
 
   // Pre-fill file name inputs
   const fileNameInput = document.getElementById('flow-step-new-file-name');
   if (fileNameInput) fileNameInput.value = 'Ảnh báo giá';
-  const fileGlobalNameInput = document.getElementById('flow-global-new-file-name');
-  if (fileGlobalNameInput) fileGlobalNameInput.value = 'Tài liệu liên quan';
 
   openModal('modal-flow-detail');
 }
@@ -818,8 +833,8 @@ function renderActiveStepPanel() {
   const filesContainer = document.getElementById('flow-step-files-list');
   filesContainer.innerHTML = '';
   
-  // Also collect files associated with this step (stage files)
-  const stepFiles = flow.files ? flow.files.filter(f => f.stepNum === currentActiveStepNum) : [];
+  // Collect files associated with this shipment (global)
+  const stepFiles = flow.files || [];
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
       const row = document.createElement('div');
@@ -847,43 +862,7 @@ function renderActiveStepPanel() {
       filesContainer.appendChild(row);
     });
   } else {
-    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm bước.</span>`;
-  }
-
-  // Render global shipment files (shared)
-  const globalFilesContainer = document.getElementById('flow-global-files-list');
-  if (globalFilesContainer) {
-    globalFilesContainer.innerHTML = '';
-    const globalFiles = flow.files ? flow.files.filter(f => !f.stepNum || f.stepNum === 0) : [];
-    if (globalFiles.length > 0) {
-      globalFiles.forEach((file, idx) => {
-        const row = document.createElement('div');
-        row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
-        
-        const nameLower = file.name.toLowerCase();
-        const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
-                        file.url.toLowerCase().includes('drive.google.com/thumbnail') || 
-                        file.url.toLowerCase().includes('googleusercontent.com') ||
-                        nameLower.includes('ảnh') || 
-                        nameLower.includes('anh') || 
-                        nameLower.includes('image') || 
-                        nameLower.includes('png') || 
-                        nameLower.includes('jpg') || 
-                        nameLower.includes('jpeg');
-        const imgPreview = isImage ? `<img src="${file.url}" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
-
-        row.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-            <a href="${file.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-paperclip"></i> ${file.name}</a>
-            <button class="btn btn-sm btn-outline text-rose" style="padding:2px 6px; font-size:10px;" onclick="handleDeleteGlobalFile(${idx})"><i class="fa-solid fa-trash-can"></i></button>
-          </div>
-          ${imgPreview}
-        `;
-        globalFilesContainer.appendChild(row);
-      });
-    } else {
-      globalFilesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu dùng chung.</span>`;
-    }
+    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
   }
 
   // Render comments for this step (v18)
@@ -954,7 +933,6 @@ function handleFlowAddStepFile() {
   flow.files.push({
     name: name,
     url: url,
-    stepNum: currentActiveStepNum,
     date: new Date().toISOString().split('T')[0]
   });
 
@@ -967,68 +945,9 @@ window.handleDeleteFlowFile = function(idx) {
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
   if (!flow) return;
 
-  // Filter step files and delete the matching index
-  let fileCounter = 0;
-  flow.files = flow.files.filter((file) => {
-    if (file.stepNum === currentActiveStepNum) {
-      if (fileCounter === idx) {
-        fileCounter++;
-        return false;
-      }
-      fileCounter++;
-    }
-    return true;
-  });
-
-  renderActiveStepPanel();
-};
-
-function handleFlowAddGlobalFile() {
-  const nameInput = document.getElementById('flow-global-new-file-name');
-  const urlInput = document.getElementById('flow-global-new-file-url');
-  
-  let name = nameInput.value.trim();
-  const url = urlInput.value.trim();
-  
-  if (!url) {
-    alert("Vui lòng nhập đường dẫn liên kết URL!");
-    return;
+  if (flow.files) {
+    flow.files.splice(idx, 1);
   }
-  if (!name) {
-    name = "Tài liệu liên quan";
-  }
-
-  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
-  if (!flow) return;
-
-  if (!flow.files) flow.files = [];
-  flow.files.push({
-    name: name,
-    url: url,
-    stepNum: 0,
-    date: new Date().toISOString().split('T')[0]
-  });
-
-  nameInput.value = 'Tài liệu liên quan';
-  urlInput.value = '';
-  renderActiveStepPanel();
-}
-
-window.handleDeleteGlobalFile = function(idx) {
-  const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
-  if (!flow) return;
-
-  let fileCounter = 0;
-  flow.files = flow.files.filter((file) => {
-    if (!file.stepNum || file.stepNum === 0) {
-      if (fileCounter === idx) {
-        fileCounter++;
-        return false;
-      }
-      fileCounter++;
-    }
-    return true;
-  });
 
   renderActiveStepPanel();
 };

@@ -2260,12 +2260,12 @@
           <!-- Right: Comments, documents, files -->
           <div style="display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
-              <label>Ghi chú bước & Tài liệu/Ảnh hàng:</label>
+              <label>Ghi chú bước:</label>
               <textarea id="flow-step-note" class="form-control" rows="3" placeholder="Nhập ghi chú kết quả xử lý bước này..."></textarea>
             </div>
 
             <div class="form-group">
-              <label>Ảnh báo giá & Tài liệu của bước hiện tại:</label>
+              <label>Tài liệu & Hình ảnh của lô hàng (Dùng chung):</label>
               <div id="flow-step-files-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
                 <!-- Step files list -->
               </div>
@@ -2273,18 +2273,6 @@
                 <input type="text" id="flow-step-new-file-name" class="form-control" style="font-size:12px; height:32px; width:120px; flex-shrink:0;" placeholder="Tên file/Link...">
                 <input type="text" id="flow-step-new-file-url" class="form-control" style="font-size:12px; height:32px; flex-grow:1;" placeholder="https://...">
                 <button type="button" class="btn btn-sm btn-primary" id="btn-flow-step-add-file" style="flex-shrink:0;">Ghim</button>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label>Tài liệu liên quan của lô hàng (Dùng chung):</label>
-              <div id="flow-global-files-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
-                <!-- Global files list -->
-              </div>
-              <div style="display:flex; gap:6px; width:100%;">
-                <input type="text" id="flow-global-new-file-name" class="form-control" style="font-size:12px; height:32px; width:120px; flex-shrink:0;" placeholder="Tên tài liệu ghim chung...">
-                <input type="text" id="flow-global-new-file-url" class="form-control" style="font-size:12px; height:32px; flex-grow:1;" placeholder="https://...">
-                <button type="button" class="btn btn-sm btn-primary" id="btn-flow-global-add-file" style="flex-shrink:0;">Ghim</button>
               </div>
             </div>
 
