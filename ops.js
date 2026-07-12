@@ -380,8 +380,12 @@ function renderOpsWorkflows() {
     const client = AppState.clients.find(c => c.id === flow.clientId) || {};
     
     // Role-based permission filter: Non-admin only sees flows they are assigned to
-    if (currentUser && currentUser.role !== 'admin') {
+    const isSpecialAccess = currentUser.role === 'admin' || 
+                            currentUser.username === 'phuongthao' || 
+                            currentUser.username === 'nhuquynh';
+    if (currentUser && !isSpecialAccess) {
       const isAssigned = flow.assigneeId === currentUser.id || 
+                         flow.cskhId === currentUser.id ||
                          (flow.steps && flow.steps.some(s => s.assigneeId === currentUser.id));
       if (!isAssigned) return;
     }
@@ -459,6 +463,7 @@ function renderOpsWorkflows() {
       card.setAttribute('data-id', flow.id);
       
       const salesUser = AppState.users.find(u => u.id === flow.cskhId);
+      const salesName = salesUser ? salesUser.name.split(' ').pop() : 'Chưa giao';
       const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
       const assigneeName = assigneeUser ? assigneeUser.name.split(' ').pop() : 'Chưa giao';
 
@@ -474,7 +479,10 @@ function renderOpsWorkflows() {
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
         ${overdueBadge}
         <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> Phụ trách: ${assigneeName}</span>
+          <div style="display:flex; flex-direction:column; gap:2px; font-size:10px; color:var(--text-muted);">
+            <span><i class="fa-solid fa-user-gear"></i> Phụ trách: ${assigneeName}</span>
+            <span><i class="fa-solid fa-headset"></i> CSKH: ${salesName}</span>
+          </div>
           <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
         </div>
       `;

@@ -159,7 +159,8 @@ function renderCRMBoard() {
   // Filter leads by search query and user role permission
   const currentUser = getCurrentUser();
   const filteredLeads = AppState.leads.filter(lead => {
-    if (currentUser.role !== 'admin' && lead.salesId !== currentUser.id) {
+    const isSpecialAccess = currentUser.role === 'admin' || currentUser.username === 'minhphuong';
+    if (currentUser && !isSpecialAccess && lead.salesId !== currentUser.id) {
       return false;
     }
     const matchesSearch = lead.name.toLowerCase().includes(searchVal) || 
