@@ -6435,10 +6435,10 @@
     "fbConfig":  null,
     "currentUserId":  null,
     "customerHealthData":  {
-                               "lastSyncTime":  "2026-07-12T16:26:53Z",
+                               "lastSyncTime":  "2026-07-12T23:32:14Z",
                                "monthlyTotals":  {
                                                      "T4":  4811949963,
-                                                     "T7":  1616093451,
+                                                     "T7":  1658692168,
                                                      "T5":  4827187114,
                                                      "T6":  4083565188
                                                  },
@@ -7094,7 +7094,7 @@
                                                  },
                                                  {
                                                      "volumeT6":  9478819.2,
-                                                     "volumeT7":  0,
+                                                     "volumeT7":  1423756.8,
                                                      "cskh":  "FILE",
                                                      "volumeT4":  14832328.400000002,
                                                      "name":  "MH10-Tuanh207",
@@ -7963,13 +7963,13 @@
                                                  },
                                                  {
                                                      "volumeT6":  11808000,
-                                                     "volumeT7":  0,
+                                                     "volumeT7":  40848560,
                                                      "cskh":  "FILE",
                                                      "volumeT4":  55695556,
                                                      "name":  "MH36-thuy000",
                                                      "volumeT5":  40783635.30543,
                                                      "brand":  "MHL",
-                                                     "status":  "warning",
+                                                     "status":  "healthy",
                                                      "lastShipmentDate":  "2026-05-04"
                                                  },
                                                  {
@@ -8128,7 +8128,7 @@
                                                  },
                                                  {
                                                      "volumeT6":  18308388,
-                                                     "volumeT7":  14949120,
+                                                     "volumeT7":  15275520,
                                                      "cskh":  "FILE",
                                                      "volumeT4":  5748347.6,
                                                      "name":  "MH333 - Hoa Äá»—",

@@ -2541,15 +2541,27 @@ window.syncCustomerHealthData = function() {
   }
   
   fetch(getApiUrl('/api/customer-health/sync'))
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(errData => {
+          throw new Error(errData.error || `HTTP error ${res.status}`);
+        }).catch(() => {
+          throw new Error(`HTTP error ${res.status}`);
+        });
+      }
+      return res.json();
+    })
     .then(data => {
+      if (!data || data.error || !data.customers) {
+        throw new Error(data?.error || 'Dữ liệu không đúng cấu trúc');
+      }
       AppState.customerHealthData = data;
       showToast('Đồng bộ dữ liệu sức khỏe thành công!', 'success');
       renderCustomerHealthView();
     })
     .catch(err => {
       console.error(err);
-      showToast('Lỗi đồng bộ dữ liệu sức khỏe!', 'error');
+      showToast(`Lỗi đồng bộ: ${err.message || 'Không kết nối được server'}`, 'error');
     })
     .finally(() => {
       isSyncingHealth = false;
