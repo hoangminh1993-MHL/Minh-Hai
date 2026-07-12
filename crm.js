@@ -144,6 +144,17 @@ function populateSalesDropdown(selectId, selectedId = '') {
 
 // ==================== RENDERING KANBAN ==================== //
 function renderCRMBoard() {
+  // Sanitize checklists for all leads: remove all default checklist items
+  if (AppState.leads) {
+    AppState.leads.forEach(lead => {
+      if (lead.steps) {
+        lead.steps.forEach(s => {
+          s.checklist = [];
+        });
+      }
+    });
+  }
+
   const user = getCurrentUser();
   const searchVal = document.getElementById('crm-search').value.toLowerCase().trim();
   
@@ -416,10 +427,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Nhận thông tin",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "receive_info" ? "doing" : "todo",
-      checklist: [
-        { text: "Xác định nhu cầu của khách", done: false, required: true },
-        { text: "Tạo ghi chú ban đầu về hàng hóa", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "receive_info" ? (lead.note || "") : ""
     },
@@ -428,10 +436,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Lấy SĐT",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "get_phone" ? "doing" : "todo",
-      checklist: [
-        { text: "Xin số điện thoại/Zalo liên hệ", done: !!lead.phone, required: true },
-        { text: "Xác nhận phương thức liên lạc chính", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "get_phone" ? (lead.note || "") : ""
     },
@@ -440,11 +445,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Khai thác thông tin",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "explore_info" ? "doing" : "todo",
-      checklist: [
-        { text: "Tìm hiểu loại mặt hàng & số lượng dự kiến", done: false, required: true },
-        { text: "Tìm hiểu địa chỉ nhận hàng tại Việt Nam", done: false, required: true },
-        { text: "Hỏi về tần suất nhập hàng (lẻ hay lô)", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "explore_info" ? (lead.note || "") : ""
     },
@@ -453,11 +454,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Báo giá",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "quotation" ? "doing" : "todo",
-      checklist: [
-        { text: "Tìm nguồn hàng / Liên hệ xưởng", done: false, required: false },
-        { text: "Tính toán thuế phí & cước vận chuyển", done: false, required: true },
-        { text: "Gửi báo giá chi tiết cho khách", done: false, required: true }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "quotation" ? (lead.note || "") : ""
     },
@@ -466,10 +463,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Thương lượng",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "negotiating" ? "doing" : "todo",
-      checklist: [
-        { text: "Thảo luận về giá và chính sách cọc", done: false, required: true },
-        { text: "Giải đáp thắc mắc của khách", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "negotiating" ? (lead.note || "") : ""
     },
@@ -478,10 +472,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Thành công",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "success" ? "doing" : "todo",
-      checklist: [
-        { text: "Xác nhận khách đã đồng ý và cọc (hoặc lên đơn)", done: lead.stage === "success", required: true },
-        { text: "Chuyển khách sang danh sách Khách cũ / Tạo lô hàng mới", done: lead.stage === "success", required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "success" ? (lead.note || "") : ""
     },
@@ -490,10 +481,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Thất bại",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "failed" ? "doing" : "todo",
-      checklist: [
-        { text: "Chọn lý do thất bại", done: lead.stage === "failed", required: true },
-        { text: "Lưu lịch sử phản hồi để chăm sóc lại sau", done: lead.stage === "failed", required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "failed" ? (lead.note || "") : ""
     }
@@ -682,12 +670,43 @@ function renderActiveLeadStepPanel() {
 
   const filesContainer = document.getElementById('lead-step-files-list');
   filesContainer.innerHTML = '';
-  const stepFiles = lead.files ? lead.files.filter(f => f.stepNum === currentActiveLeadStepNum) : [];
+  const stepFiles = lead.files || [];
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
       
+      const nameLower = file.name.toLowerCase();
+      const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
+                      file.url.toLowerCase().includes('drive.google.com') || 
+                      file.url.toLowerCase().includes('googleusercontent.com') ||
+                      nameLower.includes('ảnh') || 
+                      nameLower.includes('anh') || 
+                      nameLower.includes('image') || 
+                      nameLower.includes('png') || 
+                      nameLower.includes('jpg') || 
+                      nameLower.includes('jpeg');
+
+      // Resolve Google Drive direct preview link if applicable
+      let displayUrl = file.url;
+      if (file.url.toLowerCase().includes('drive.google.com')) {
+        let fileId = '';
+        const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (dMatch && dMatch[1]) {
+          fileId = dMatch[1];
+        } else {
+          const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+          if (idMatch && idMatch[1]) {
+            fileId = idMatch[1];
+          }
+        }
+        if (fileId) {
+          displayUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
+        }
+      }
+
+      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+
       const fileInfo = document.createElement('div');
       fileInfo.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
       fileInfo.innerHTML = `
@@ -696,17 +715,20 @@ function renderActiveLeadStepPanel() {
       `;
       
       fileInfo.querySelector('button').onclick = () => {
-        const leadFileIdx = lead.files.findIndex(f => f.name === file.name && f.url === file.url && f.stepNum === currentActiveLeadStepNum);
-        if (leadFileIdx !== -1) {
-          lead.files.splice(leadFileIdx, 1);
-        }
+        lead.files.splice(idx, 1);
         renderActiveLeadStepPanel();
       };
+      
       row.appendChild(fileInfo);
+      if (imgPreview) {
+        const previewDiv = document.createElement('div');
+        previewDiv.innerHTML = imgPreview;
+        row.appendChild(previewDiv.firstChild);
+      }
       filesContainer.appendChild(row);
     });
   } else {
-    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm bước.</span>`;
+    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
   }
 
   const commentsContainer = document.getElementById('lead-step-comments');
@@ -854,16 +876,16 @@ function handleLeadAddStepFile() {
   const name = nameInput.value.trim();
   const url = urlInput.value.trim();
 
-  if (!name || !url) {
-    showToast('Vui lòng nhập tên tài liệu và đường dẫn link!', 'warning');
+  if (!url) {
+    alert("Vui lòng nhập đường dẫn liên kết URL!");
     return;
   }
+  const finalName = name || "Tài liệu đính kèm";
 
   lead.files = lead.files || [];
   lead.files.push({
-    name: name,
+    name: finalName,
     url: url,
-    stepNum: currentActiveLeadStepNum,
     date: formatDateTime(new Date()).substring(0, 10)
   });
 

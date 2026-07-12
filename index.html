@@ -1666,19 +1666,19 @@
           <!-- Right: Comments, documents, files -->
           <div style="display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
-              <label>Ghi chú bước này:</label>
+              <label>Ghi chú bước:</label>
               <textarea id="lead-step-note" class="form-control" rows="3" placeholder="Nhập ghi chú kết quả xử lý bước này..."></textarea>
             </div>
 
             <div class="form-group">
-              <label>Đính kèm tài liệu/Hình ảnh:</label>
+              <label>Tài liệu & Hình ảnh của khách hàng:</label>
               <div id="lead-step-files-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
                 <!-- Step files list -->
               </div>
-              <div style="display:flex; gap:6px;">
-                <input type="text" id="lead-step-new-file-name" class="form-control" style="font-size:12px; height:32px;" placeholder="Tên file/Link...">
-                <input type="text" id="lead-step-new-file-url" class="form-control" style="font-size:12px; height:32px;" placeholder="https://...">
-                <button type="button" class="btn btn-sm btn-primary" id="btn-lead-step-add-file">Ghim</button>
+              <div style="display:flex; gap:6px; width:100%;">
+                <input type="text" id="lead-step-new-file-name" class="form-control" style="font-size:12px; height:32px; width:120px; flex-shrink:0;" placeholder="Tên file/Link...">
+                <input type="text" id="lead-step-new-file-url" class="form-control" style="font-size:12px; height:32px; flex-grow:1;" placeholder="https://...">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-lead-step-add-file" style="flex-shrink:0;">Ghim</button>
               </div>
             </div>
 
