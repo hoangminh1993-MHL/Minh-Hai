@@ -7,6 +7,11 @@ let draggingLeadId = null; // Backup reference for touch devices or simple drag 
 let failPromptCallback = null; // Callback for confirm button on fail modal
 
 function formatDateTime(date) {
+  if (!date) return '';
+  if (typeof date === 'string' || typeof date === 'number') {
+    date = new Date(date);
+  }
+  if (isNaN(date.getTime())) return '';
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
