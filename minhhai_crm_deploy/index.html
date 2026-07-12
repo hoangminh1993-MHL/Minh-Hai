@@ -79,6 +79,10 @@
           <i class="fa-solid fa-award"></i>
           <span>Bảng Xếp Hạng</span>
         </a>
+        <a href="#mini-games" class="nav-item" data-view="mini-games">
+          <i class="fa-solid fa-gamepad"></i>
+          <span>Mini Game & Giải Trí</span>
+        </a>
         <a href="#staff-management" class="nav-item" data-view="staff-management" id="nav-staff-mgmt" style="display:none;">
           <i class="fa-solid fa-users-cog"></i>
           <span>Quản Lý Nhân Sự</span>
@@ -1151,6 +1155,212 @@
           </div>
         </section>
 
+        <!-- ==================== VIEW: MINI GAMES & ENTERTAINMENT ==================== -->
+        <section id="view-mini-games" class="app-view" style="display: none;">
+          <div class="workflow-desc">
+            <p><i class="fa-solid fa-gamepad text-primary"></i> <strong>Khu Vui Chơi & Mini Game:</strong> Nơi nhân sự thư giãn giải trí, thi tài đấu trí cờ caro, thử vận may xổ số đề/bao lô 18h hàng ngày, hoặc tham gia bet kèo nội bộ bằng điểm tích lũy (Xúc xích)!</p>
+          </div>
+
+          <!-- User Sausage Points Banner -->
+          <div class="dashboard-card" style="background: linear-gradient(135deg, #1e1b4b, #311042); padding: 16px 20px; border-radius: 12px; border: 1px solid #4338ca; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="background: rgba(245, 158, 11, 0.15); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(245, 158, 11, 0.3);">
+                <i class="fa-solid fa-user-astronaut" style="font-size: 24px; color: #f59e0b;"></i>
+              </div>
+              <div>
+                <h4 style="margin: 0; font-size: 15px; font-weight: bold; color: #fff;" id="game-username-label">Tên tài khoản: Đang tải...</h4>
+                <p style="margin: 2px 0 0 0; font-size: 12px; color: var(--text-muted);">Hãy dùng điểm Xúc xích thưởng để tham gia minigames tạo niềm vui!</p>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Điểm tích lũy hiện có</span>
+              <span class="user-sausage-points" style="font-size: 22px; color: #f59e0b; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.3); padding: 4px 14px; border-radius: 20px; border: 1px solid rgba(245,158,11,0.25);">
+                <i class="fa-solid fa-hotdog"></i>
+                <span id="game-points-val">0</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Mini Game Tab Bar -->
+          <div class="mini-games-tab-bar" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+            <button class="game-tab-btn active" data-game-tab="caro" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--color-primary); cursor: pointer; border-bottom: 3px solid var(--color-primary); display: flex; align-items: center; gap: 8px; font-size: 14px;"><i class="fa-solid fa-chess-board"></i> Cờ Caro Đấu Điểm</button>
+            <button class="game-tab-btn" data-game-tab="lottery" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px;"><i class="fa-solid fa-ticket"></i> Xổ Số Kiến Thiết 18h</button>
+            <button class="game-tab-btn" data-game-tab="bet-pool" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px;"><i class="fa-solid fa-dice"></i> Bet Kèo Nội Bộ</button>
+          </div>
+
+          <!-- TAB CONTENT: CARO GAME -->
+          <div id="game-tab-content-caro" class="game-tab-content" style="display: block;">
+            <div class="dashboard-grid grid-1-3" style="gap: 20px;">
+              <!-- Left Side: Config & Betting -->
+              <div class="dashboard-card" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <h3 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0;"><i class="fa-solid fa-sliders"></i> Thiết lập ván đấu</h3>
+                
+                <div class="form-group">
+                  <label for="caro-mode-select">Chế độ chơi</label>
+                  <select id="caro-mode-select" class="form-control">
+                    <option value="vs-ai">Đấu với Máy (AI)</option>
+                    <option value="vs-pvp">Đấu PvP (Cùng màn hình)</option>
+                  </select>
+                </div>
+
+                <div class="form-group" id="caro-opponent-group" style="display: none;">
+                  <label for="caro-opponent-select">Chọn đối thủ (Người cược)</label>
+                  <select id="caro-opponent-select" class="form-control"></select>
+                </div>
+
+                <div class="form-group" id="caro-ai-diff-group">
+                  <label for="caro-ai-diff">Độ khó của Máy</label>
+                  <select id="caro-ai-diff" class="form-control">
+                    <option value="easy">Dễ (Kiếm điểm nhẹ nhàng)</option>
+                    <option value="medium">Trung Bình (Đòi hỏi suy nghĩ)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="caro-bet-amount">Mức cược (Xúc xích)</label>
+                  <input type="number" id="caro-bet-amount" class="form-control" min="1" max="1000" value="10">
+                  <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Đấu với AI: Thắng nhận 2x cược, Thua mất cược. PvP: Người thắng ăn sạch tiền cược của đối phương!</span>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="btn-start-caro-game" style="height: 40px; font-weight: bold;"><i class="fa-solid fa-play"></i> BẮT ĐẦU VÁN ĐẤU</button>
+                <button class="btn btn-outline btn-block text-rose" id="btn-reset-caro-game" style="height: 36px; display: none;"><i class="fa-solid fa-arrow-rotate-left"></i> Chơi lại / Hủy cược</button>
+
+                <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 12.5px;">
+                  <h4 style="margin: 0 0 6px 0; font-weight: bold; color: var(--color-primary);">Luật chơi:</h4>
+                  <p style="margin: 0; line-height: 1.5;">Đạt hàng dọc, ngang hoặc chéo đủ <strong>5 quân cờ liên tiếp</strong> trước đối phương để giành chiến thắng. Lưu ý: Không chặn 2 đầu vẫn thắng bình thường.</p>
+                </div>
+              </div>
+
+              <!-- Right Side: The Grid Board -->
+              <div class="dashboard-card" style="padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <div style="margin-bottom: 12px; font-weight: bold; font-size: 15px; color: #fff; text-align: center;" id="caro-game-status">
+                  Nhấn "BẮT ĐẦU VÁN ĐẤU" để khai cuộc
+                </div>
+                
+                <!-- Board grid wrapper -->
+                <div id="caro-grid-container" style="background: #111827; border: 2px solid var(--border-color); border-radius: 8px; display: grid; grid-template-columns: repeat(10, 36px); grid-template-rows: repeat(10, 36px); gap: 1px; pointer-events: none; opacity: 0.5; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                  <!-- 100 cells generated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT: LOTTERY GAME -->
+          <div id="game-tab-content-lottery" class="game-tab-content" style="display: none;">
+            <div class="dashboard-grid grid-1-3" style="gap: 20px;">
+              <!-- Left Side: Place Bet Form -->
+              <div class="dashboard-card" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <h3 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0;"><i class="fa-solid fa-receipt"></i> Ghi Số May Mắn</h3>
+
+                <div class="form-group">
+                  <label for="lottery-num-input">Chọn 2 con số (00 - 99)</label>
+                  <input type="number" id="lottery-num-input" class="form-control" min="0" max="99" placeholder="Ví dụ: 68" required style="font-size: 20px; font-weight: bold; text-align: center; height: 46px; border: 1px solid var(--color-primary); color: var(--color-primary);">
+                </div>
+
+                <div class="form-group">
+                  <label for="lottery-type-select">Hình thức đánh</label>
+                  <select id="lottery-type-select" class="form-control">
+                    <option value="de">Đánh Đề (Ăn 1 ăn 70 - So 2 số cuối giải Đặc Biệt)</option>
+                    <option value="bao">Bao Lô (23 điểm ăn 80 - So 2 số cuối của cả 27 giải)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="lottery-points-input">Điểm cược (Xúc xích)</label>
+                  <input type="number" id="lottery-points-input" class="form-control" min="1" value="10">
+                  <span id="lottery-cost-warning" style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Chi phí: 10 xúc xích. Số tiền thắng nếu trúng: 700 xúc xích!</span>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="btn-submit-lottery-ticket" style="height: 42px; font-weight: bold;"><i class="fa-solid fa-paper-plane"></i> GHI VÉ SỐ</button>
+
+                <div style="background: rgba(0,0,0,0.25); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 12px;">
+                  <h4 style="margin: 0 0 6px 0; font-weight: bold; color: var(--color-primary); display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-bell"></i> Lịch quay thưởng:</h4>
+                  <p style="margin: 0; line-height: 1.5; color: var(--text-muted);">
+                    Hệ thống tự động quay số vào lúc <strong>18:00 hàng ngày</strong>. Các vé mua sau 18:00 sẽ được tính vào kết quả của ngày hôm sau. Kết quả hoàn toàn công bằng dựa trên seed ngày!
+                  </p>
+                </div>
+              </div>
+
+              <!-- Right Side: Ticket List & Daily Results -->
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Section 1: My tickets -->
+                <div class="dashboard-card" style="padding: 20px; flex: 1;">
+                  <h3 style="font-size: 15px; font-weight: bold; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="fa-solid fa-scroll"></i> Vé Số Đã Mua Hôm Ngay</span>
+                    <button class="btn btn-sm btn-outline" id="btn-quick-draw-lottery" style="font-size: 11px; padding: 2px 6px;">Quay Thử / Xem Nhanh</button>
+                  </h3>
+                  <div id="lottery-my-tickets-container" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                    <!-- My tickets list -->
+                  </div>
+                </div>
+
+                <!-- Section 2: Drawing Board Results -->
+                <div class="dashboard-card" style="padding: 20px; flex: 1.2;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 12px;">
+                    <h3 style="font-size: 15px; font-weight: bold; margin: 0;"><i class="fa-solid fa-bullhorn"></i> Kết Quả Xổ Số Minh Hải</h3>
+                    <select id="lottery-result-date-select" style="font-size: 12px; background: #111827; border: 1px solid var(--border-color); color: #fff; padding: 2px 6px; border-radius: 4px;"></select>
+                  </div>
+                  
+                  <div id="lottery-results-display" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Dynamic rendering of the lottery table -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB CONTENT: BET POOL -->
+          <div id="game-tab-content-bet-pool" class="game-tab-content" style="display: none;">
+            <div class="dashboard-grid grid-1-3" style="gap: 20px;">
+              <!-- Left Side: Create Bet Form -->
+              <div class="dashboard-card" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+                <h3 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0;"><i class="fa-solid fa-plus-circle"></i> Tổ Chức Kèo Cá Cược</h3>
+                
+                <div class="form-group">
+                  <label for="bet-title-input">Tên kèo / Nội dung cá cược</label>
+                  <textarea id="bet-title-input" class="form-control" rows="2" placeholder="Ví dụ: Lô hàng MH409 có thông quan xong trước 5h chiều nay không?" required></textarea>
+                </div>
+
+                <div class="form-row" style="margin-top: 0;">
+                  <div class="form-group col-6">
+                    <label for="bet-optA-input">Lựa chọn A</label>
+                    <input type="text" id="bet-optA-input" class="form-control" value="Có / Đúng" required>
+                  </div>
+                  <div class="form-group col-6">
+                    <label for="bet-optB-input">Lựa chọn B</label>
+                    <input type="text" id="bet-optB-input" class="form-control" value="Không / Sai" required>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="bet-deadline-input">Hạn chót đặt cược (Date/Time)</label>
+                  <input type="datetime-local" id="bet-deadline-input" class="form-control" required>
+                </div>
+
+                <button class="btn btn-primary btn-block" id="btn-create-bet-lobby" style="height: 40px; font-weight: bold;"><i class="fa-solid fa-bullhorn"></i> PHÁT ĐỘNG KÈO</button>
+              </div>
+
+              <!-- Right Side: Active Bets & Resolution -->
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <!-- Active lobbies -->
+                <div class="dashboard-card" style="padding: 20px; min-height: 250px;">
+                  <h3 style="font-size: 15px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i class="fa-solid fa-fire" style="color: #ef4444;"></i> Các Kèo Cá Cược Đang Hoạt Động</h3>
+                  <div id="bet-active-lobbies-container" style="display: flex; flex-direction: column; gap: 16px;">
+                    <!-- Active lobbies list -->
+                  </div>
+                </div>
+
+                <!-- Finished/Resolved lobbies -->
+                <div class="dashboard-card" style="padding: 20px;">
+                  <h3 style="font-size: 15px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; color: var(--text-muted);"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Kèo Đã Đóng</h3>
+                  <div id="bet-history-container" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Past lobbies list -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
@@ -1677,5 +1887,6 @@
   <script src="tasks.js?v=19.7"></script>
   <script src="ops.js?v=19.7"></script>
   <script src="inbox-sim.js?v=19.7"></script>
+  <script src="games.js?v=19.7"></script>
 </body>
 </html>
