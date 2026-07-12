@@ -842,7 +842,7 @@ function renderActiveStepPanel() {
       
       const nameLower = file.name.toLowerCase();
       const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
-                      file.url.toLowerCase().includes('drive.google.com/thumbnail') || 
+                      file.url.toLowerCase().includes('drive.google.com') || 
                       file.url.toLowerCase().includes('googleusercontent.com') ||
                       nameLower.includes('ảnh') || 
                       nameLower.includes('anh') || 
@@ -850,7 +850,26 @@ function renderActiveStepPanel() {
                       nameLower.includes('png') || 
                       nameLower.includes('jpg') || 
                       nameLower.includes('jpeg');
-      const imgPreview = isImage ? `<img src="${file.url}" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+
+      // Resolve Google Drive direct preview link if applicable
+      let displayUrl = file.url;
+      if (file.url.toLowerCase().includes('drive.google.com')) {
+        let fileId = '';
+        const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (dMatch && dMatch[1]) {
+          fileId = dMatch[1];
+        } else {
+          const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+          if (idMatch && idMatch[1]) {
+            fileId = idMatch[1];
+          }
+        }
+        if (fileId) {
+          displayUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
+        }
+      }
+
+      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
 
       row.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
