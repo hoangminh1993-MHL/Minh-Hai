@@ -2540,7 +2540,7 @@ window.syncCustomerHealthData = function() {
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang đồng bộ...`;
   }
   
-  fetch('/api/customer-health/sync')
+  fetch(getApiUrl('/api/customer-health/sync'))
     .then(res => res.json())
     .then(data => {
       AppState.customerHealthData = data;
