@@ -168,6 +168,281 @@ if ($HttpServer) {
                 continue
             }
             
+            # 0.9 API Endpoint: GET /api/customer-health/sync
+            if ($urlPath -eq "/api/customer-health/sync" -and $method -eq "GET") {
+                function Get-CustomerHealthData {
+                    $url = "https://docs.google.com/spreadsheets/d/1CRbubTwnm4zSrX17d7pmZIUZshvXnKjnnX6dg9fC2sg/export?format=xlsx"
+                    $scratchDir = Join-Path $PSScriptRoot "scratch"
+                    if (-not (Test-Path $scratchDir)) { New-Item -ItemType Directory -Path $scratchDir | Out-Null }
+                    
+                    $xlsxPath = Join-Path $scratchDir "temp_sheet.xlsx"
+                    $extractPath = Join-Path $scratchDir "temp_sheet_extracted"
+                    
+                    # Download
+                    Invoke-WebRequest -Uri $url -OutFile $xlsxPath
+                    
+                    # Extract
+                    $zipPath = Join-Path $scratchDir "temp_sheet.zip"
+                    if (Test-Path $zipPath) { Remove-Item -Force $zipPath }
+                    Copy-Item $xlsxPath $zipPath
+                    if (Test-Path $extractPath) { Remove-Item -Recurse -Force $extractPath }
+                    Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+                    Remove-Item -Force $zipPath
+                    
+                    # Load shared strings
+                    $sharedStrings = @()
+                    $sharedStringsPath = Join-Path $extractPath "xl/sharedStrings.xml"
+                    if (Test-Path $sharedStringsPath) {
+                        $ssXml = [xml](Get-Content $sharedStringsPath)
+                        if ($ssXml.sst -and $ssXml.sst.si) {
+                            foreach ($si in $ssXml.sst.si) {
+                                $sharedStrings += $si.t
+                            }
+                        }
+                    }
+                    
+                    # Map sheets
+                    $relsMap = @{}
+                    $relsXmlPath = Join-Path $extractPath "xl/_rels/workbook.xml.rels"
+                    if (Test-Path $relsXmlPath) {
+                        $relsXml = [xml](Get-Content $relsXmlPath)
+                        foreach ($rel in $relsXml.Relationships.Relationship) {
+                            $relsMap[$rel.Id] = $rel.Target
+                        }
+                    }
+                    
+                    $sheets = @()
+                    $workbookXmlPath = Join-Path $extractPath "xl/workbook.xml"
+                    if (Test-Path $workbookXmlPath) {
+                        $wbXml = [xml](Get-Content $workbookXmlPath)
+                        foreach ($sheet in $wbXml.workbook.sheets.sheet) {
+                            $relId = $sheet.id
+                            $target = $relsMap[$relId]
+                            $xmlPath = Join-Path (Join-Path $extractPath "xl") $target
+                            $sheets += [PSCustomObject]@{
+                                Name = $sheet.name
+                                XmlPath = $xmlPath
+                            }
+                        }
+                    }
+                    
+                    # Helper to get cell value
+                    function Get-XmlCellValue($cellNode, $ssList) {
+                        if (-not $cellNode) { return "" }
+                        $v = $cellNode.v
+                        if ($cellNode.t -eq "s") {
+                            return $ssList[[int]$v]
+                        }
+                        return $v
+                    }
+                    
+                    # Helper to parse sheet
+                    function Parse-XmlSheet($sXmlPath, $ssList) {
+                        if (-not (Test-Path $sXmlPath)) { return @() }
+                        $sheetXml = [xml](Get-Content $sXmlPath)
+                        $rows = $sheetXml.worksheet.sheetData.row
+                        if (-not $rows) { return @() }
+                        
+                        $headerRowIdx = -1
+                        $khCol = -1
+                        $cskhCol = -1
+                        $brandCol = -1
+                        $amountCol = -1
+                        $dateCol = -1
+                        
+                        for ($r = 0; $r -lt [Math]::Min($rows.Count, 10); $r++) {
+                            $cells = $rows[$r].c
+                            $hasKH = $false
+                            $hasAmount = $false
+                            
+                            foreach ($cell in $cells) {
+                                $cellVal = Get-XmlCellValue $cell $ssList
+                                $valLower = "$cellVal".ToLower().Trim()
+                                if ($valLower -eq "kh" -or $valLower -eq "khách hàng" -or $valLower -eq "khách") { $hasKH = $true }
+                                if ($valLower -match "thu tiền" -or $valLower -eq "doanh thu") { $hasAmount = $true }
+                            }
+                            
+                            if ($hasKH) {
+                                $headerRowIdx = $r
+                                foreach ($cell in $cells) {
+                                    $cellVal = Get-XmlCellValue $cell $ssList
+                                    $valLower = "$cellVal".ToLower().Trim()
+                                    $ref = $cell.r
+                                    
+                                    # Safe column index computation
+                                    $colIdx = [int]([char]$ref[0]) - [int][char]'A'
+                                    if ($ref.Length -gt 2 -and $ref[1] -match '[A-Z]') {
+                                        $colIdx = ([int]([char]$ref[0]) - [int][char]'A' + 1) * 26 + ([int]([char]$ref[1]) - [int][char]'A')
+                                    }
+                                    
+                                    if ($valLower -eq "kh" -or $valLower -eq "khách hàng" -or $valLower -eq "khách") { $khCol = $colIdx }
+                                    elseif ($valLower -eq "t" -or $valLower -eq "cskh" -or $valLower -eq "ctv" -or $valLower -eq "nhân viên") { $cskhCol = $colIdx }
+                                    elseif ($valLower -eq "brand" -or $valLower -eq "hệ thống") { $brandCol = $colIdx }
+                                    elseif ($valLower -match "thu tiền" -or $valLower -eq "doanh thu") { $amountCol = $colIdx }
+                                    elseif ($valLower -eq "ngày" -or $valLower -eq "ngay") { $dateCol = $colIdx }
+                                }
+                                break
+                            }
+                        }
+                        
+                        if ($headerRowIdx -eq -1 -or $khCol -eq -1) { return @() }
+                        
+                        $parsed = @()
+                        for ($r = $headerRowIdx + 1; $r -lt $rows.Count; $r++) {
+                            $cells = $rows[$r].c
+                            $khVal = ""
+                            $cskhVal = ""
+                            $brandVal = ""
+                            $amountVal = 0.0
+                            $dateVal = ""
+                            
+                            foreach ($cell in $cells) {
+                                $ref = $cell.r
+                                $colIdx = [int]([char]$ref[0]) - [int][char]'A'
+                                if ($ref.Length -gt 2 -and $ref[1] -match '[A-Z]') {
+                                    $colIdx = ([int]([char]$ref[0]) - [int][char]'A' + 1) * 26 + ([int]([char]$ref[1]) - [int][char]'A')
+                                }
+                                
+                                $val = Get-XmlCellValue $cell $ssList
+                                if ($colIdx -eq $khCol) { $khVal = "$val" }
+                                elseif ($colIdx -eq $cskhCol) { $cskhVal = "$val" }
+                                elseif ($colIdx -eq $brandCol) { $brandVal = "$val" }
+                                elseif ($colIdx -eq $amountCol) {
+                                    $cleanAmt = "$val" -replace '[^\d.-]', ''
+                                    if ($cleanAmt) { $amountVal = [double]$cleanAmt }
+                                }
+                                elseif ($colIdx -eq $dateCol) {
+                                    if ($val -as [double]) {
+                                        $dateVal = [datetime]::FromOADate($val).ToString("yyyy-MM-dd")
+                                    } else {
+                                        $dateVal = "$val"
+                                    }
+                                }
+                            }
+                            
+                            if ($khVal -and $khVal -ne "0" -and $khVal.ToLower() -ne "chuyển từ" -and $khVal -notmatch "tổng cộng") {
+                                $parsed += @{
+                                    kh = $khVal.Trim()
+                                    cskh = $cskhVal.Trim()
+                                    brand = $brandVal.Trim()
+                                    amount = $amountVal
+                                    date = $dateVal
+                                }
+                            }
+                        }
+                        return $parsed
+                    }
+                    
+                    $customers = @{}
+                    $totalT4 = 0.0; $totalT5 = 0.0; $totalT6 = 0.0; $totalT7 = 0.0;
+                    
+                    $targetSheets = @(
+                        @{ name = "T42026"; key = "T4" }
+                        @{ name = "T52026"; key = "T5" }
+                        @{ name = "T62026"; key = "T6" }
+                        @{ name = "T72026"; key = "T7" }
+                    )
+                    
+                    foreach ($ts in $targetSheets) {
+                        $sheetObj = $sheets | Where-Object { $_.Name -eq $ts.name }
+                        if (-not $sheetObj) { continue }
+                        
+                        $rows = Parse-XmlSheet $sheetObj.XmlPath $sharedStrings
+                        foreach ($row in $rows) {
+                            $name = $row.kh
+                            if (-not $customers.Contains($name)) {
+                                $customers[$name] = @{
+                                    name = $name
+                                    cskh = if ($row.cskh) { $row.cskh } else { "Chưa giao" }
+                                    brand = if ($row.brand) { $row.brand } else { "Khác" }
+                                    volumeT4 = 0.0
+                                    volumeT5 = 0.0
+                                    volumeT6 = 0.0
+                                    volumeT7 = 0.0
+                                    lastShipmentDate = ""
+                                    status = "healthy"
+                                }
+                            }
+                            
+                            $c = $customers[$name]
+                            if ($ts.key -eq "T4") { $c.volumeT4 += $row.amount; $totalT4 += $row.amount }
+                            elseif ($ts.key -eq "T5") { $c.volumeT5 += $row.amount; $totalT5 += $row.amount }
+                            elseif ($ts.key -eq "T6") { $c.volumeT6 += $row.amount; $totalT6 += $row.amount }
+                            elseif ($ts.key -eq "T7") { $c.volumeT7 += $row.amount; $totalT7 += $row.amount }
+                            
+                            if ($row.date -and ($c.lastShipmentDate -eq "" -or $row.date -gt $c.lastShipmentDate)) {
+                                $c.lastShipmentDate = $row.date
+                            }
+                            if ($row.cskh) { $c.cskh = $row.cskh }
+                            if ($row.brand) { $c.brand = $row.brand }
+                        }
+                    }
+                    
+                    $customerList = @()
+                    foreach ($k in $customers.Keys) {
+                        $c = $customers[$k]
+                        $volT7 = $c.volumeT7
+                        $volT6 = $c.volumeT6
+                        $volT5 = $c.volumeT5
+                        $avgPrev = ($volT6 + $volT5) / 2
+                        
+                        if ($volT7 -gt 0) {
+                            if ($avgPrev -gt 0 -and $volT7 -lt $avgPrev * 0.7) {
+                                $c.status = "warning"
+                            } else {
+                                $c.status = "healthy"
+                            }
+                        } elseif ($volT6 -gt 0) {
+                            $c.status = "warning"
+                        } elseif ($volT5 -gt 0) {
+                            $c.status = "danger"
+                        } else {
+                            $c.status = "lost"
+                        }
+                        $customerList += $c
+                    }
+                    
+                    return @{
+                        lastSyncTime = (Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ")
+                        monthlyTotals = @{
+                            T4 = [Math]::Round($totalT4)
+                            T5 = [Math]::Round($totalT5)
+                            T6 = [Math]::Round($totalT6)
+                            T7 = [Math]::Round($totalT7)
+                        }
+                        customers = $customerList
+                    }
+                }
+                
+                $dbPath = Join-Path $PSScriptRoot "db.json"
+                if (-not (Test-Path $dbPath)) { Initialize-Database }
+                $state = Get-Content $dbPath -Raw -Encoding UTF8 | ConvertFrom-Json
+                
+                try {
+                    $healthData = Get-CustomerHealthData
+                    if ($state.PSObject.Properties['customerHealthData']) {
+                        $state.customerHealthData = $healthData
+                    } else {
+                        $state | Add-Member -MemberType NoteProperty -Name "customerHealthData" -Value $healthData -Force
+                    }
+                    Set-Content -Path $dbPath -Value (ConvertTo-Json -InputObject $state -Depth 10) -Encoding UTF8
+                    
+                    $jsonOut = ConvertTo-Json -InputObject $healthData -Depth 10
+                    $bytes = [System.Text.Encoding]::UTF8.GetBytes($jsonOut)
+                    $response.ContentType = "application/json; charset=utf-8"
+                    $response.ContentLength64 = $bytes.Length
+                    $response.OutputStream.Write($bytes, 0, $bytes.Length)
+                } catch {
+                    $response.StatusCode = 500
+                    $errBytes = [System.Text.Encoding]::UTF8.GetBytes($_.Exception.Message)
+                    $response.ContentLength64 = $errBytes.Length
+                    $response.OutputStream.Write($errBytes, 0, $errBytes.Length)
+                }
+                
+                $response.OutputStream.Close()
+                continue
+            }
+
             # 1. API Endpoint: GET /api/state
             if ($urlPath -eq "/api/state" -and $method -eq "GET") {
                 $dbPath = Join-Path $PSScriptRoot "db.json"

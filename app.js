@@ -480,7 +480,8 @@ function navigateToView(viewId, updateHash = true) {
     'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
     'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
     'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
-    'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' }
+    'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' },
+    'customer-health': { main: 'Sức Khỏe Khách Hàng', sub: 'Phân tích dữ liệu vận chuyển các tháng và cảnh báo nguy cơ sụt giảm sản lượng hoặc mất khách.' }
   };
 
   if (titles[viewId]) {
@@ -506,6 +507,8 @@ function navigateToView(viewId, updateHash = true) {
     if (typeof renderMyTasks === 'function') renderMyTasks();
   } else if (viewId === 'rewards') {
     renderRewardsView();
+  } else if (viewId === 'customer-health') {
+    renderCustomerHealthView();
   } else if (viewId === 'settings') {
     renderFacebookConfig();
     const apiInput = document.getElementById('settings-api-base-input');
@@ -2501,4 +2504,279 @@ window.awardPointsForCompletedTask = function(task) {
   
   showToast(`Đã duyệt hoàn thành! Cộng +${pts} điểm cho ${assignee.name}.`, 'success');
 };
+
+
+// ==================== CUSTOMER HEALTH REPORT SYSTEM ==================== //
+
+let isSyncingHealth = false;
+let healthChartInstance = null;
+let healthPieChartInstance = null;
+let filtersInitialized = false;
+
+window.renderCustomerHealthView = function() {
+  if (!AppState.customerHealthData) {
+    window.syncCustomerHealthData();
+    return;
+  }
+  
+  const timeEl = document.getElementById('health-last-sync-time');
+  if (timeEl) {
+    const syncTime = AppState.customerHealthData.lastSyncTime;
+    timeEl.innerText = `Cập nhật: ${formatDateTime(syncTime)}`;
+  }
+  
+  initCustomerHealthFilters();
+  displayCustomerHealthMetrics();
+};
+
+window.syncCustomerHealthData = function() {
+  if (isSyncingHealth) return;
+  isSyncingHealth = true;
+  
+  const btn = document.getElementById('btn-sync-health');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang đồng bộ...`;
+  }
+  
+  fetch('/api/customer-health/sync')
+    .then(res => res.json())
+    .then(data => {
+      AppState.customerHealthData = data;
+      showToast('Đồng bộ dữ liệu sức khỏe thành công!', 'success');
+      renderCustomerHealthView();
+    })
+    .catch(err => {
+      console.error(err);
+      showToast('Lỗi đồng bộ dữ liệu sức khỏe!', 'error');
+    })
+    .finally(() => {
+      isSyncingHealth = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Đồng bộ ngay`;
+      }
+    });
+};
+
+function initCustomerHealthFilters() {
+  const syncBtn = document.getElementById('btn-sync-health');
+  if (syncBtn) {
+    syncBtn.onclick = () => window.syncCustomerHealthData();
+  }
+  
+  const searchInput = document.getElementById('health-search-input');
+  const statusFilter = document.getElementById('health-filter-status');
+  const cskhFilter = document.getElementById('health-filter-cskh');
+  
+  if (searchInput && !searchInput.oninput) searchInput.oninput = () => filterCustomerHealthTable();
+  if (statusFilter && !statusFilter.onchange) statusFilter.onchange = () => filterCustomerHealthTable();
+  if (cskhFilter && !cskhFilter.onchange) cskhFilter.onchange = () => filterCustomerHealthTable();
+  
+  if (filtersInitialized) return;
+  filtersInitialized = true;
+  
+  const cskhSelect = document.getElementById('health-filter-cskh');
+  if (cskhSelect && AppState.customerHealthData) {
+    cskhSelect.innerHTML = '<option value="">Tất cả CSKH</option>';
+    const uniqueCSKH = [...new Set((AppState.customerHealthData.customers || []).map(c => c.cskh).filter(Boolean))];
+    uniqueCSKH.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.innerText = name;
+      opt.style.background = 'var(--card-bg)';
+      cskhSelect.appendChild(opt);
+    });
+  }
+}
+
+function displayCustomerHealthMetrics() {
+  const data = AppState.customerHealthData;
+  const customers = data.customers || [];
+  
+  let countHealthy = 0;
+  let countWarning = 0;
+  let countAttention = 0;
+  let countDanger = 0;
+  let countLost = 0;
+  
+  customers.forEach(c => {
+    if (c.status === 'healthy') countHealthy++;
+    else if (c.status === 'warning') {
+      if (c.volumeT7 > 0) countWarning++;
+      else countAttention++;
+    }
+    else if (c.status === 'danger') countDanger++;
+    else if (c.status === 'lost') countLost++;
+  });
+  
+  document.getElementById('health-count-healthy').innerText = countHealthy;
+  document.getElementById('health-count-warning').innerText = countWarning;
+  document.getElementById('health-count-attention').innerText = countAttention;
+  document.getElementById('health-count-danger').innerText = countDanger;
+  document.getElementById('health-count-lost').innerText = countLost;
+  
+  filterCustomerHealthTable();
+  renderCustomerHealthCharts();
+}
+
+function filterCustomerHealthTable() {
+  const data = AppState.customerHealthData;
+  const customers = data.customers || [];
+  
+  const query = (document.getElementById('health-search-input')?.value || '').trim().toLowerCase();
+  const statusVal = document.getElementById('health-filter-status')?.value || '';
+  const cskhVal = document.getElementById('health-filter-cskh')?.value || '';
+  
+  const tbody = document.getElementById('health-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  const filtered = customers.filter(c => {
+    const matchSearch = !query || c.name.toLowerCase().indexOf(query) >= 0;
+    
+    let matchStatus = true;
+    if (statusVal === 'healthy') matchStatus = c.status === 'healthy';
+    else if (statusVal === 'warning') matchStatus = c.status === 'warning';
+    else if (statusVal === 'danger') matchStatus = c.status === 'danger';
+    else if (statusVal === 'lost') matchStatus = c.status === 'lost';
+    
+    const matchCSKH = !cskhVal || c.cskh === cskhVal;
+    
+    return matchSearch && matchStatus && matchCSKH;
+  });
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; font-style:italic; color:var(--text-muted);">Không tìm thấy khách hàng phù hợp.</td></tr>`;
+    return;
+  }
+  
+  const statusLabelMap = {
+    healthy: '<span class="badge bg-emerald" style="font-size:9.5px;">🟢 Khỏe mạnh</span>',
+    warning: '<span class="badge bg-orange" style="font-size:9.5px;">🟡 Cảnh báo</span>',
+    danger: '<span class="badge bg-rose" style="font-size:9.5px;">🔴 Nguy cơ mất</span>',
+    lost: '<span class="badge bg-gray" style="font-size:9.5px;">⚫ Đã mất</span>'
+  };
+  
+  filtered.forEach(c => {
+    let statusHtml = statusLabelMap[c.status] || c.status;
+    if (c.status === 'warning' && c.volumeT7 === 0) {
+      statusHtml = '<span class="badge bg-purple" style="font-size:9.5px;">🟣 Cần chú ý</span>';
+    }
+    
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'border-bottom: 1px solid var(--border-color);';
+    tr.innerHTML = `
+      <td style="padding: 10px 5px; font-weight: bold;">${c.name}</td>
+      <td style="padding: 10px 5px;">${c.cskh}</td>
+      <td style="padding: 10px 5px;"><span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.05);">${c.brand}</span></td>
+      <td style="padding: 10px 5px; text-align:right; font-weight:500;">${formatVND(c.volumeT5)}</td>
+      <td style="padding: 10px 5px; text-align:right; font-weight:500;">${formatVND(c.volumeT6)}</td>
+      <td style="padding: 10px 5px; text-align:right; font-weight:500; color:var(--color-primary);">${formatVND(c.volumeT7)}</td>
+      <td style="padding: 10px 5px; color:var(--text-muted);">${c.lastShipmentDate || '-'}</td>
+      <td style="padding: 10px 5px; text-align:center;">${statusHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function formatVND(val) {
+  if (!val) return '0 đ';
+  return Math.round(val).toLocaleString('vi-VN') + ' đ';
+}
+
+function renderCustomerHealthCharts() {
+  const data = AppState.customerHealthData;
+  const totals = data.monthlyTotals || {};
+  
+  const ctx = document.getElementById('health-chart');
+  if (ctx) {
+    if (healthChartInstance) healthChartInstance.destroy();
+    healthChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['T4/2026', 'T5/2026', 'T6/2026', 'T7/2026'],
+        datasets: [{
+          label: 'Doanh thu (VND)',
+          data: [totals.T4 || 0, totals.T5 || 0, totals.T6 || 0, totals.T7 || 0],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: {
+              color: '#9ca3af',
+              callback: function(value) {
+                return (value / 1e6) + 'M';
+              }
+            }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#9ca3af' }
+          }
+        }
+      }
+    });
+  }
+  
+  const ctxPie = document.getElementById('health-pie-chart');
+  if (ctxPie) {
+    if (healthPieChartInstance) healthPieChartInstance.destroy();
+    
+    let countHealthy = 0;
+    let countWarning = 0;
+    let countAttention = 0;
+    let countDanger = 0;
+    let countLost = 0;
+    
+    (data.customers || []).forEach(c => {
+      if (c.status === 'healthy') countHealthy++;
+      else if (c.status === 'warning') {
+        if (c.volumeT7 > 0) countWarning++;
+        else countAttention++;
+      }
+      else if (c.status === 'danger') countDanger++;
+      else if (c.status === 'lost') countLost++;
+    });
+    
+    healthPieChartInstance = new Chart(ctxPie, {
+      type: 'doughnut',
+      data: {
+        labels: ['Khỏe mạnh', 'Suy giảm', 'Cần chú ý', 'Nguy cơ mất', 'Đã mất'],
+        datasets: [{
+          data: [countHealthy, countWarning, countAttention, countDanger, countLost],
+          backgroundColor: ['#10b981', '#f59e0b', '#a855f7', '#ef4444', '#6b7280'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: '#9ca3af',
+              font: { size: 10 }
+            }
+          }
+        }
+      }
+    });
+  }
+}
+
 
