@@ -999,28 +999,9 @@ function handleAddFlowSubmit(e) {
     
     // Add default required checklists for step 1, 5, 10
     let stepChecklist = [];
-    if (i === 1) {
+    if (i === 2) {
       stepChecklist = [
-        { text: "Nhập thông tin khách hàng", done: true, required: true },
-        { text: "Nhập mặt hàng & link", done: true, required: true },
-        { text: "Xác định loại dịch vụ", done: true, required: true }
-      ];
-    } else if (i === 2) {
-      stepChecklist = [
-        { text: "Tìm nguồn/shop/xưởng", done: false, required: true },
-        { text: "Gửi báo giá cho khách", done: false, required: true },
-        { text: "cập nhật tình trạng sau báo giá", done: false, required: true },
-        { text: "Lưu file báo giá", done: false, required: false }
-      ];
-    } else if (i === 5) {
-      stepChecklist = [
-        { text: "Thanh toán shop/xưởng", done: false, required: true },
-        { text: "Lưu bill/thông tin thanh toán", done: false, required: true }
-      ];
-    } else if (i === 10) {
-      stepChecklist = [
-        { text: "Tổng kết công nợ", done: false, required: true },
-        { text: "Xác nhận khách thanh toán", done: false, required: true }
+        { text: "cập nhật tình trạng sau báo giá", done: false, required: true }
       ];
     }
 
