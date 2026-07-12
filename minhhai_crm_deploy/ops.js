@@ -536,10 +536,20 @@ function handleFlowMoveAttempt(flowId, targetStage) {
 
   // Validate files when transitioning to Báo giá (Step 2)
   if (targetStage === 2) {
-    const hasImage = flow.files && flow.files.some(f => /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || f.name.toLowerCase().includes('ảnh') || f.name.toLowerCase().includes('image') || f.name.toLowerCase().includes('hình'));
-    const hasLink = flow.files && flow.files.some(f => f.url.startsWith('http') && !/\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url));
-    if (!hasImage || !hasLink) {
-      alert("Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn Link báo giá và Hình ảnh báo giá trong mục tài liệu đính kèm của lô hàng!");
+    const files = flow.files || [];
+    if (files.length < 2) {
+      alert(`Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn đủ 2 mục tài liệu: 1 Link báo giá và 1 Hình ảnh báo giá!\n(Hiện tại bạn mới đính kèm ${files.length} tài liệu)`);
+      return;
+    }
+    const hasImage = files.some(f => 
+      /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+      f.name.toLowerCase().includes('ảnh') || 
+      f.name.toLowerCase().includes('hình') ||
+      f.name.toLowerCase().includes('image') ||
+      f.name.toLowerCase().includes('img')
+    );
+    if (!hasImage) {
+      alert("Hệ thống chưa tìm thấy Hình ảnh báo giá của bạn!\nVui lòng sửa tên hoặc đính kèm tài liệu có tên chứa chữ 'ảnh' hoặc 'hình' (ví dụ: 'Ảnh báo giá') để hệ thống nhận diện ảnh báo giá.");
       return;
     }
   }
