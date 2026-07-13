@@ -3174,6 +3174,14 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  const appVersionTag = document.getElementById('app-version-tag');
+  if (appVersionTag) {
+    appVersionTag.onclick = (e) => {
+      e.preventDefault();
+      openModal('modal-changelog');
+    };
+  }
+
   // Bind Workload sorting headers
   document.querySelectorAll('.sort-header').forEach(th => {
     th.onclick = (e) => {
