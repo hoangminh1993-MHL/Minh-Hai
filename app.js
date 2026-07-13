@@ -727,6 +727,52 @@ window.getUserAvatarInnerHtml = function(avatar) {
   return `<i class="fa-solid ${avatar}"></i>`;
 };
 
+window.initDragToScroll = function(slider) {
+  if (!slider) return;
+  let isDown = false;
+  let startX;
+  let scrollLeft;
+  let hasDragged = false;
+
+  slider.addEventListener('mousedown', (e) => {
+    const tag = e.target.tagName.toLowerCase();
+    if (tag === 'input' || tag === 'select' || tag === 'textarea' || tag === 'button' || tag === 'a' || e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    isDown = true;
+    hasDragged = false;
+    startX = e.pageX - slider.offsetLeft;
+    scrollLeft = slider.scrollLeft;
+    document.body.style.userSelect = 'none';
+  });
+
+  const stopDragging = () => {
+    isDown = false;
+    document.body.style.userSelect = '';
+  };
+
+  slider.addEventListener('mouseleave', stopDragging);
+  slider.addEventListener('mouseup', stopDragging);
+
+  slider.addEventListener('mousemove', (e) => {
+    if (!isDown) return;
+    const x = e.pageX - slider.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    if (Math.abs(x - startX) > 5) {
+      hasDragged = true;
+    }
+    slider.scrollLeft = scrollLeft - walk;
+  });
+
+  slider.addEventListener('click', (e) => {
+    if (hasDragged) {
+      e.stopPropagation();
+      e.preventDefault();
+      hasDragged = false;
+    }
+  }, true);
+};
+
 function renderCurrentUser() {
   const user = getCurrentUser();
   document.getElementById('current-user-name').innerText = user.name;
@@ -2880,6 +2926,11 @@ window.toggleNavGroup = function(groupId, forceState) {
 
 // Bind Edit Profile events when page loads
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize drag-to-scroll on kanban boards
+  document.querySelectorAll('.kanban-board-wrapper').forEach(wrapper => {
+    window.initDragToScroll(wrapper);
+  });
+
   // Restore collapsed state
   const isCollapsed = localStorage.getItem('nav_group_settings_collapsed') === 'true';
   if (isCollapsed) {

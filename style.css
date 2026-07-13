@@ -838,6 +838,10 @@ textarea.form-control {
   width: 100%;
   overflow-x: auto;
   padding-bottom: 12px;
+  cursor: grab;
+}
+.kanban-board-wrapper:active {
+  cursor: grabbing;
 }
 .kanban-board {
   display: grid;
