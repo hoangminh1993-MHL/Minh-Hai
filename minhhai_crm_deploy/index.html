@@ -83,6 +83,10 @@
           <i class="fa-solid fa-gamepad"></i>
           <span>Mini Game & Giải Trí</span>
         </a>
+        <a href="#suggestions" class="nav-item" data-view="suggestions">
+          <i class="fa-solid fa-lightbulb"></i>
+          <span>Ý Tưởng & Đề Xuất</span>
+        </a>
         <a href="#staff-management" class="nav-item" data-view="staff-management" id="nav-staff-mgmt" style="display:none;">
           <i class="fa-solid fa-users-cog"></i>
           <span>Quản Lý Nhân Sự</span>
@@ -1361,6 +1365,54 @@
             </div>
           </div>
         </section>
+
+        <!-- ==================== VIEW: SUGGESTIONS ==================== -->
+        <section id="view-suggestions" class="app-view" style="display: none;">
+          <div class="workflow-desc">
+            <p><i class="fa-solid fa-lightbulb text-gold"></i> <strong>Ý Tưởng & Đề Xuất Tối Ưu:</strong> Đóng góp ý tưởng tối ưu quy trình hoặc báo cáo lỗi phần mềm. Gửi ý tưởng nhận ngay 5 xúc xích, ý tưởng được duyệt nhận thêm 20 xúc xích!</p>
+          </div>
+
+          <div class="dashboard-grid grid-1-3" id="suggestions-staff-layout" style="display: none; gap: 20px;">
+            <!-- Left: Form to submit suggestion -->
+            <div class="dashboard-card" style="padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+              <h3 style="font-size: 16px; font-weight: bold; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0;"><i class="fa-solid fa-pen-to-square"></i> Gửi Đề Xuất Mới</h3>
+              <form id="form-add-suggestion" style="display: flex; flex-direction: column; gap: 12px;">
+                <div class="form-group">
+                  <label for="sugg-title">Tiêu đề đề xuất</label>
+                  <input type="text" id="sugg-title" class="form-control" placeholder="Ví dụ: Lỗi hiển thị bước 4 hoặc Ý tưởng rút ngắn..." required>
+                </div>
+                <div class="form-group">
+                  <label for="sugg-type">Phân loại</label>
+                  <select id="sugg-type" class="form-control">
+                    <option value="bug">Báo lỗi phần mềm</option>
+                    <option value="idea">Ý tưởng tối ưu quy trình</option>
+                    <option value="other">Đóng góp khác</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="sugg-desc">Chi tiết ý tưởng / mô tả lỗi</label>
+                  <textarea id="sugg-desc" class="form-control" rows="5" placeholder="Mô tả cụ thể vấn đề hoặc giải pháp tối ưu..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="height: 40px; font-weight: bold;"><i class="fa-solid fa-paper-plane"></i> GỬI ĐỀ XUẤT (+5đ)</button>
+              </form>
+            </div>
+
+            <!-- Right: My suggestions history -->
+            <div class="dashboard-card" style="padding: 20px;">
+              <h3 style="font-size: 15px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i class="fa-solid fa-history"></i> Lịch Sử Đề Xuất Của Tôi</h3>
+              <div id="suggestions-my-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 550px; overflow-y: auto;">
+                <!-- My suggestions load here -->
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-card" id="suggestions-admin-layout" style="display: none; padding: 20px;">
+            <h3 style="font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i class="fa-solid fa-list-check"></i> Danh Sách Đề Xuất Đóng Góp Từ Nhân Sự</h3>
+            <div id="suggestions-admin-list" style="display: flex; flex-direction: column; gap: 14px; max-height: 600px; overflow-y: auto;">
+              <!-- All suggestions for admin load here -->
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   </div>
@@ -1888,5 +1940,6 @@
   <script src="ops.js?v=19.7"></script>
   <script src="inbox-sim.js?v=19.7"></script>
   <script src="games.js?v=19.7"></script>
+  <script src="suggestions.js?v=19.7"></script>
 </body>
 </html>

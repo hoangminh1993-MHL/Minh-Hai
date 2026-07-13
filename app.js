@@ -482,7 +482,8 @@ function navigateToView(viewId, updateHash = true) {
     'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
     'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' },
     'customer-health': { main: 'Sức Khỏe Khách Hàng', sub: 'Phân tích dữ liệu vận chuyển các tháng và cảnh báo nguy cơ sụt giảm sản lượng hoặc mất khách.' },
-    'mini-games': { main: 'Khu Vui Chơi & Giải Trí', sub: 'Đấu trí cờ caro cược điểm, chơi xổ số bao/đề 18h hàng ngày, và tổ chức bet kèo nội bộ.' }
+    'mini-games': { main: 'Khu Vui Chơi & Giải Trí', sub: 'Đấu trí cờ caro cược điểm, chơi xổ số bao/đề 18h hàng ngày, và tổ chức bet kèo nội bộ.' },
+    'suggestions': { main: 'Ý Tưởng & Đề Xuất Quy Trình', sub: 'Nhận đóng góp ý kiến tối ưu quy trình và báo cáo lỗi phần mềm từ nhân sự.' }
   };
 
   if (titles[viewId]) {
@@ -520,6 +521,8 @@ function navigateToView(viewId, updateHash = true) {
     renderStaffManagementTable();
   } else if (viewId === 'mini-games') {
     if (typeof renderMiniGames === 'function') renderMiniGames();
+  } else if (viewId === 'suggestions') {
+    if (typeof renderSuggestions === 'function') renderSuggestions();
   }
 }
 
