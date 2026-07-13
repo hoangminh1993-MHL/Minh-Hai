@@ -567,7 +567,14 @@ function handleFlowMoveAttempt(flowId, targetStage) {
       return;
     }
   }
-
+  // Validate quote feedback when transitioning from Báo giá (Step 2) to Step 3 (Thương lượng) or higher
+  if (currentStage === 2 && targetStage >= 3) {
+    const feedback = (flow.quoteFeedback || '').trim();
+    if (feedback.length < 3) {
+      alert("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 2!");
+      return;
+    }
+  }
   // Verify transition checklists of the current step
   const currentStepData = flow.steps.find(s => s.stepNum === currentStage);
   if (currentStepData && currentStepData.checklist && currentStepData.checklist.length > 0) {
@@ -594,9 +601,9 @@ function handleFlowMoveAttempt(flowId, targetStage) {
         // Listen to change
         itemDiv.querySelector('input').onchange = (e) => {
           if (item.text === "cập nhật tình trạng sau báo giá" && e.target.checked) {
-            const step2 = flow.steps.find(s => s.stepNum === 2);
-            if (!step2 || !step2.note || step2.note.trim().length < 5) {
-              alert("Bạn cần ghi rõ tình trạng khách hàng vào ô Ghi chú/Cập nhật của Bước 2 trước khi tích chọn hoàn thành việc này!");
+            const feedback = (flow.quoteFeedback || '').trim();
+            if (feedback.length < 3) {
+              alert("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 2!");
               e.target.checked = false;
               return;
             }
@@ -788,6 +795,9 @@ function renderActiveStepPanel() {
   chkContainer.innerHTML = '';
   if (stepData.checklist && stepData.checklist.length > 0) {
     stepData.checklist.forEach((item, idx) => {
+      // Hide the checkbox if it's the system-linked quote feedback text
+      if (item.text === "cập nhật tình trạng sau báo giá") return;
+      
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px;';
       
@@ -799,14 +809,6 @@ function renderActiveStepPanel() {
       `;
       
       label.querySelector('input').onchange = (e) => {
-        if (item.text === "cập nhật tình trạng sau báo giá" && e.target.checked) {
-          const noteVal = document.getElementById('flow-step-note') ? document.getElementById('flow-step-note').value.trim() : '';
-          if (!noteVal || noteVal.length < 5) {
-            alert("Bạn cần ghi rõ tình trạng khách hàng vào ô Ghi chú/Cập nhật của Bước 2 trước khi tích chọn hoàn thành việc này!");
-            e.target.checked = false;
-            return;
-          }
-        }
         item.done = e.target.checked;
         renderActiveStepPanel();
       };
@@ -825,7 +827,39 @@ function renderActiveStepPanel() {
       row.appendChild(btnDel);
       chkContainer.appendChild(row);
     });
-  } else {
+  }
+
+  // Inject system task textarea dynamically for Step 2 (Báo giá)
+  if (currentActiveStepNum === 2) {
+    const row = document.createElement('div');
+    row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px; width: 100%; box-sizing: border-box;';
+    row.innerHTML = `
+      <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
+        [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
+      </div>
+      <textarea id="flow-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${flow.quoteFeedback || ''}</textarea>
+    `;
+    
+    const textarea = row.querySelector('textarea');
+    textarea.oninput = (e) => {
+      const val = e.target.value;
+      flow.quoteFeedback = val;
+      
+      const step2 = flow.steps.find(s => s.stepNum === 2);
+      if (step2) {
+        const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+        if (item) {
+          item.done = val.trim().length >= 3;
+        }
+      }
+      saveState();
+    };
+    
+    chkContainer.appendChild(row);
+  }
+
+  // Handle empty state
+  if (chkContainer.innerHTML === '') {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
