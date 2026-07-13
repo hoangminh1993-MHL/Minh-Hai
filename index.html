@@ -1266,13 +1266,13 @@
               <table class="leaderboard-table">
                 <thead>
                   <tr>
-                    <th>Công việc</th>
-                    <th>Phòng ban</th>
-                    <th>Phụ trách</th>
-                    <th>Hỗ trợ</th>
-                    <th>Độ ưu tiên</th>
-                    <th>Hạn chót</th>
-                    <th>Trạng thái</th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('title')">Công việc <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('dept')">Phòng ban <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('assignee')">Phụ trách <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('helper')">Hỗ trợ <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('priority')">Độ ưu tiên <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('deadline')">Hạn chót <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
+                    <th style="cursor:pointer;" onclick="toggleTaskSort('status')">Trạng thái <i class="fa-solid fa-sort" style="margin-left: 4px; opacity: 0.4;"></i></th>
                     <th class="text-center">Thao tác</th>
                   </tr>
                 </thead>

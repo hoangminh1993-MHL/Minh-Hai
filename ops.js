@@ -1321,13 +1321,55 @@ function renderOpsSingleTasks() {
     return true;
   });
 
-  // Sort tasks: doing/checking first, then todo, then waiting, then completed/canceled
-  const statusOrder = { doing: 1, checking: 1, todo: 2, waiting: 3, completed: 4, canceled: 5 };
-  filtered.sort((a, b) => {
-    const orderA = statusOrder[a.status] || 99;
-    const orderB = statusOrder[b.status] || 99;
-    return orderA - orderB;
-  });
+  // Dynamic column sorting
+  if (currentSortField) {
+    filtered.sort((a, b) => {
+      let valA, valB;
+      if (currentSortField === 'title') {
+        valA = a.title || '';
+        valB = b.title || '';
+      } else if (currentSortField === 'dept') {
+        const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
+        valA = deptLabels[a.dept] || '';
+        valB = deptLabels[b.dept] || '';
+      } else if (currentSortField === 'assignee') {
+        const userA = AppState.users.find(u => u.id === a.assigneeId);
+        const userB = AppState.users.find(u => u.id === b.assigneeId);
+        valA = userA ? userA.name : '';
+        valB = userB ? userB.name : '';
+      } else if (currentSortField === 'helper') {
+        const userA = AppState.users.find(u => u.id === a.helperId);
+        const userB = AppState.users.find(u => u.id === b.helperId);
+        valA = userA ? userA.name : 'Không';
+        valB = userB ? userB.name : 'Không';
+      } else if (currentSortField === 'priority') {
+        const priorityOrder = { low: 1, normal: 2, high: 3, urgent: 4 };
+        valA = priorityOrder[a.priority] || 0;
+        valB = priorityOrder[b.priority] || 0;
+      } else if (currentSortField === 'deadline') {
+        valA = a.deadline ? new Date(a.deadline).getTime() : 0;
+        valB = b.deadline ? new Date(b.deadline).getTime() : 0;
+      } else if (currentSortField === 'status') {
+        const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
+        valA = statusLabels[a.status] || '';
+        valB = statusLabels[b.status] || '';
+      }
+      
+      if (typeof valA === 'string') {
+        return currentSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      } else {
+        return currentSortAsc ? valA - valB : valB - valA;
+      }
+    });
+  } else {
+    // Sort tasks: doing/checking first, then todo, then waiting, then completed/canceled
+    const statusOrder = { doing: 1, checking: 1, todo: 2, waiting: 3, completed: 4, canceled: 5 };
+    filtered.sort((a, b) => {
+      const orderA = statusOrder[a.status] || 99;
+      const orderB = statusOrder[b.status] || 99;
+      return orderA - orderB;
+    });
+  }
 
   // Render based on current layout
   if (currentSingleTaskLayout === 'list') {
@@ -2995,5 +3037,39 @@ window.quickCompleteTask = function(taskId) {
   
   showToast('Đã hoàn thành công việc!', 'success');
 };
+
+let currentSortField = null;
+let currentSortAsc = true;
+
+window.toggleTaskSort = function(field) {
+  if (currentSortField === field) {
+    currentSortAsc = !currentSortAsc;
+  } else {
+    currentSortField = field;
+    currentSortAsc = true;
+  }
+  renderOpsSingleTasks();
+  updateSortHeadersUI();
+};
+
+function updateSortHeadersUI() {
+  const headers = document.querySelectorAll('.leaderboard-table th');
+  if (headers.length < 7) return;
+  const fields = ['title', 'dept', 'assignee', 'helper', 'priority', 'deadline', 'status'];
+  fields.forEach((field, index) => {
+    const icon = headers[index].querySelector('i');
+    if (!icon) return;
+    if (currentSortField === field) {
+      icon.className = currentSortAsc ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+      icon.style.opacity = '1';
+      icon.style.color = '#fbbf24';
+    } else {
+      icon.className = 'fa-solid fa-sort';
+      icon.style.opacity = '0.4';
+      icon.style.color = '';
+    }
+  });
+}
+
 
 
