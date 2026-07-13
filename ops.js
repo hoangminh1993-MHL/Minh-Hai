@@ -1888,6 +1888,7 @@ function handleDeleteTask() {
 function handleAddSingleTaskSubmit(e) {
   e.preventDefault();
   
+  const user = getCurrentUser();
   const title = document.getElementById('ops-task-title').value.trim();
   const desc = document.getElementById('ops-task-desc').value.trim();
   const dept = document.getElementById('ops-task-dept').value;
@@ -1915,6 +1916,7 @@ function handleAddSingleTaskSubmit(e) {
     desc: desc,
     assigneeId: assigneeId,
     helperId: helperId || null,
+    creatorId: user.id,
     dept: dept,
     priority: priority,
     deadline: deadline,
@@ -2675,6 +2677,71 @@ function renderMyTasks() {
   document.getElementById('my-project-tasks-count').innerText = projectCount;
   if (projectCount === 0) {
     myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có việc dự án VIP nào cần làm.</span>`;
+  }
+
+  // 5. Tasks I assigned to others (Việc Tôi Đã Giao)
+  const myAssignedTasksList = document.getElementById('my-assigned-tasks-list');
+  let assignedCount = 0;
+  if (myAssignedTasksList) {
+    myAssignedTasksList.innerHTML = '';
+    
+    if (AppState.single_tasks) {
+      AppState.single_tasks.forEach(task => {
+        // Show tasks where current user is the creator but NOT the assignee
+        if (task.creatorId === userId && task.assigneeId !== userId) {
+          assignedCount++;
+          const assignee = AppState.users.find(u => u.id === task.assigneeId);
+          const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
+
+          const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
+
+          const card = document.createElement('div');
+          card.className = 'kanban-card';
+          const borderLeftColor = task.status === 'completed' ? '#10b981' : '#a855f7';
+          card.style.cssText = `cursor: pointer; border-left: 4px solid ${borderLeftColor}; transition: transform 0.2s; margin-bottom: 8px; opacity: ${task.status === 'completed' ? 0.75 : 1};`;
+
+          let projectInfoHtml = '';
+          if (task.projectId) {
+            const proj = (AppState.projects || []).find(p => p.id === task.projectId);
+            if (proj) {
+              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+            }
+          }
+
+          const statusLabel = task.status === 'completed' ? '<span class="badge bg-emerald" style="font-size:9px; padding:2px 4px;">Đã xong</span>' : '<span class="badge bg-purple" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white;">Đang làm</span>';
+
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              ${statusLabel}
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:9.5px; color:var(--text-muted); font-weight:bold;">${task.dept.toUpperCase()}</span>
+              </div>
+            </div>
+            <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; ${task.status === 'completed' ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${task.title}</div>
+            ${projectInfoHtml}
+            <div style="font-size:11px; margin-top:4px; color: var(--text-muted);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
+              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
+            </div>
+          `;
+          
+          card.onclick = () => {
+            if (typeof openOpsTaskDetail === 'function') {
+              openOpsTaskDetail(task.id);
+            }
+          };
+          myAssignedTasksList.appendChild(card);
+        }
+      });
+    }
+
+    const assignedCountLabel = document.getElementById('my-assigned-tasks-count');
+    if (assignedCountLabel) {
+      assignedCountLabel.innerText = assignedCount;
+    }
+    if (assignedCount === 0) {
+      myAssignedTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Bạn chưa giao công việc nào cho người khác.</span>`;
+    }
   }
 }
 
