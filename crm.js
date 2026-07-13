@@ -155,6 +155,24 @@ function renderCRMBoard() {
     });
   }
 
+  // Auto-heal tasks for any lead currently in quotation stage
+  let stateChanged = false;
+  if (AppState.leads) {
+    AppState.leads.forEach(lead => {
+      if (lead.stage === 'quotation') {
+        if (!AppState.single_tasks) AppState.single_tasks = [];
+        const hasTask = AppState.single_tasks.some(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+        if (!hasTask) {
+          createNegotiatingTaskIfNeeded(lead);
+          stateChanged = true;
+        }
+      }
+    });
+    if (stateChanged) {
+      saveState();
+    }
+  }
+
   const user = getCurrentUser();
   const searchVal = document.getElementById('crm-search').value.toLowerCase().trim();
   
@@ -728,7 +746,44 @@ function renderActiveLeadStepPanel() {
       row.appendChild(btnDel);
       chkContainer.appendChild(row);
     });
-  } else {
+  }
+
+  // Inject system task checkbox dynamically for Step 4 (Báo giá)
+  if (currentActiveLeadStepNum === 4) {
+    let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+    const isDone = task && task.status === 'completed';
+    
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#1e1b4b; padding:6px 8px; border-radius:4px; margin-bottom: 4px; border: 1px dashed #6366f1;';
+    
+    const label = document.createElement('label');
+    label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer; margin: 0; width:100%;';
+    label.innerHTML = `
+      <input type="checkbox" ${isDone ? 'checked' : ''}>
+      <span style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''} color:#a5b4fc;">
+        <strong>[Hệ thống]</strong> Hoàn thành việc: Tình trạng KH sau báo giá <span style="color:#ef4444;">*</span>
+      </span>
+    `;
+    
+    label.querySelector('input').onchange = (e) => {
+      if (task) {
+        task.status = e.target.checked ? 'completed' : 'todo';
+      } else {
+        createNegotiatingTaskIfNeeded(lead);
+        const newTask = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+        if (newTask) newTask.status = e.target.checked ? 'completed' : 'todo';
+      }
+      saveState();
+      showToast(e.target.checked ? "Đã hoàn thành công việc 'Tình trạng KH sau báo giá'!" : "Đã đặt lại công việc về chưa hoàn thành.", "info");
+      renderActiveLeadStepPanel();
+    };
+    
+    row.appendChild(label);
+    chkContainer.appendChild(row);
+  }
+
+  // Handle empty state
+  if (chkContainer.innerHTML === '') {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
