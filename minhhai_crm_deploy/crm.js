@@ -333,7 +333,7 @@ function handleLeadMove(leadId, targetStage) {
   }
 
   // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
-  if (targetStepNum >= 4 && currentStepNum <= 3) {
+  if (currentStepNum === 3 && targetStepNum === 4) {
     const files = lead.files || [];
     if (files.length === 0) {
       showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
@@ -854,7 +854,7 @@ function handleSaveActiveLeadStepData() {
     }
 
     // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
-    if (currentActiveLeadStepNum >= 4 && currentStepNum <= 3) {
+    if (currentStepNum === 3 && currentActiveLeadStepNum === 4) {
       const files = lead.files || [];
       if (files.length === 0) {
         showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
