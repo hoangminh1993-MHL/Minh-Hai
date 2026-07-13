@@ -346,25 +346,6 @@ function handleLeadMove(leadId, targetStage) {
     }
   }
 
-  // Validate files when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
-  if (targetStepNum >= 5 && currentStepNum <= 4) {
-    const files = lead.files || [];
-    const hasImage = files.some(f => 
-      /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
-      f.name.toLowerCase().includes('ảnh') || 
-      f.name.toLowerCase().includes('hình') ||
-      f.name.toLowerCase().includes('image') ||
-      f.name.toLowerCase().includes('img') ||
-      f.name.toLowerCase().includes('báo giá') ||
-      f.name.toLowerCase().includes('bao gia')
-    );
-    if (!hasImage) {
-      showToast("Để chuyển sang bước Thương lượng/Thành công, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
-      renderCRMBoard(); // Reset visual drag status
-      return;
-    }
-  }
-
   // If moving to FAILED, ask for reason
   if (targetStage === 'failed') {
     document.getElementById('fail-prompt-client-name').innerText = lead.name;
@@ -866,23 +847,7 @@ function handleSaveActiveLeadStepData() {
       }
     }
 
-    // Validate files when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
-    if (currentActiveLeadStepNum >= 5 && currentStepNum <= 4) {
-      const files = lead.files || [];
-      const hasImage = files.some(f => 
-        /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
-        f.name.toLowerCase().includes('ảnh') || 
-        f.name.toLowerCase().includes('hình') ||
-        f.name.toLowerCase().includes('image') ||
-        f.name.toLowerCase().includes('img') ||
-        f.name.toLowerCase().includes('báo giá') ||
-        f.name.toLowerCase().includes('bao gia')
-      );
-      if (!hasImage) {
-        showToast("Để chuyển sang bước Thương lượng/Thành công, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
-        return;
-      }
-    }
+
 
     const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
     currentStepData.status = 'done';
