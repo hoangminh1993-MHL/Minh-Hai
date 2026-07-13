@@ -1615,9 +1615,11 @@ window.openOpsTaskDetail = function(taskId) {
   document.getElementById('ops-task-detail-title').innerText = task.title;
   const assignee = AppState.users.find(u => u.id === task.assigneeId);
   const helper = AppState.users.find(u => u.id === task.helperId);
-  const project = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
-  const projectText = project ? ` | Dự án: ${project.name}` : '';
-  document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}${projectText}`;
+  const projectTextEl = document.getElementById('ops-task-detail-project-text');
+  if (projectTextEl) {
+    const project = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
+    projectTextEl.innerText = project ? ` | Dự án: ${project.name}` : '';
+  }
 
   // Populate assignee select dropdown
   const assigneeSelect = document.getElementById('ops-task-detail-assignee');
