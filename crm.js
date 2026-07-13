@@ -332,6 +332,16 @@ function handleLeadMove(leadId, targetStage) {
     }
   }
 
+  // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
+  if (targetStepNum >= 4 && currentStepNum <= 3) {
+    const files = lead.files || [];
+    if (files.length === 0) {
+      showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+  }
+
   // Validate files when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
   if (targetStepNum >= 5 && currentStepNum <= 4) {
     const files = lead.files || [];
@@ -839,6 +849,15 @@ function handleSaveActiveLeadStepData() {
       const requiredPending = currentStepData.checklist.filter(c => c.required && !c.done);
       if (requiredPending.length > 0) {
         showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${currentStepData.name}) trước khi chuyển sang bước tiếp theo!`, 'warning');
+        return;
+      }
+    }
+
+    // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
+    if (currentActiveLeadStepNum >= 4 && currentStepNum <= 3) {
+      const files = lead.files || [];
+      if (files.length === 0) {
+        showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
         return;
       }
     }
