@@ -251,13 +251,37 @@ function renderCRMBoard() {
           <div class="${timeClass}"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
         </div>
       </div>
+      <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
+        <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+        <select class="card-stage-select" style="font-size: 10px; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+          <option value="" disabled selected>Chọn...</option>
+          <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
+          <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
+          <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác thông tin</option>
+          <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
+          <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
+          <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
+          <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
+        </select>
+      </div>
     `;
 
     // Click card to open detail
     card.addEventListener('click', (e) => {
+      if (e.target.closest('.card-stage-select')) return;
       if (card.classList.contains('dragging')) return;
       openLeadDetailModal(lead.id);
     });
+
+    const select = card.querySelector('.card-stage-select');
+    if (select) {
+      select.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val) {
+          handleLeadMove(lead.id, val);
+        }
+      });
+    }
 
     // Drag and Drop events
     if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {

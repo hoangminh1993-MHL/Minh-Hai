@@ -119,6 +119,61 @@ function initOpsEvents() {
   document.getElementById('btn-ops-task-add-file').onclick = handleAddTaskFile;
   document.getElementById('btn-ops-task-add-comment').onclick = handleAddTaskComment;
 
+  // Task description edit handlers
+  const btnEditDesc = document.getElementById('btn-ops-task-detail-edit-desc');
+  if (btnEditDesc) {
+    btnEditDesc.onclick = () => {
+      const descText = document.getElementById('ops-task-detail-desc').innerText;
+      document.getElementById('ops-task-detail-desc').style.display = 'none';
+      btnEditDesc.style.display = 'none';
+      document.getElementById('ops-task-detail-edit-desc-group').style.display = 'flex';
+      document.getElementById('ops-task-detail-desc-input').value = descText === 'Không có mô tả chi tiết.' ? '' : descText;
+    };
+  }
+
+  const btnCancelDesc = document.getElementById('btn-ops-task-detail-cancel-desc');
+  if (btnCancelDesc) {
+    btnCancelDesc.onclick = () => {
+      document.getElementById('ops-task-detail-desc').style.display = 'block';
+      if (btnEditDesc) btnEditDesc.style.display = 'inline-block';
+      document.getElementById('ops-task-detail-edit-desc-group').style.display = 'none';
+    };
+  }
+
+  const btnSaveDesc = document.getElementById('btn-ops-task-detail-save-desc');
+  if (btnSaveDesc) {
+    btnSaveDesc.onclick = () => {
+      const newVal = document.getElementById('ops-task-detail-desc-input').value.trim();
+      const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
+      if (task) {
+        task.desc = newVal;
+        saveState();
+        
+        document.getElementById('ops-task-detail-desc').innerText = newVal || 'Không có mô tả chi tiết.';
+        document.getElementById('ops-task-detail-desc').style.display = 'block';
+        if (btnEditDesc) btnEditDesc.style.display = 'inline-block';
+        document.getElementById('ops-task-detail-edit-desc-group').style.display = 'none';
+        
+        renderOpsSingleTasks();
+        
+        // Also update CRM board if the task belongs to a CRM Khách Mới lead
+        if (task.clientId && task.clientId.startsWith('lead-')) {
+          const lead = AppState.leads && AppState.leads.find(l => l.id === task.clientId);
+          if (lead) {
+            if (task.title.includes('Tình trạng KH sau báo giá')) {
+              const cleanFeedback = newVal.replace('Tình trạng khách hàng sau báo giá: ', '').replace('Tình trạng khách hàng: ', '');
+              lead.quoteFeedback = cleanFeedback;
+              saveState();
+              if (typeof renderCRMBoard === 'function') renderCRMBoard();
+            }
+          }
+        }
+        
+        showToast('Đã cập nhật mô tả công việc!', 'success');
+      }
+    };
+  }
+
   // --- Projects events ---
   const btnAddProjectModal = document.getElementById('btn-add-project-modal');
   if (btnAddProjectModal) {
@@ -517,6 +572,23 @@ function renderOpsWorkflows() {
         <div style="font-size: 10px; color: ${timeColor}; font-weight: ${timeFontWeight}; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;">
           <i class="fa-solid fa-rotate"></i> Cập nhật: ${lastHistoryTime}
         </div>
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
+          <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển:</span>
+          <select class="card-stage-select" style="font-size: 10px; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+            <option value="" disabled selected>Chọn...</option>
+            <option value="1" ${flow.stage === 1 ? 'disabled' : ''}>1. Nhận thông tin</option>
+            <option value="2" ${flow.stage === 2 ? 'disabled' : ''}>2. Báo giá</option>
+            <option value="3" ${flow.stage === 3 ? 'disabled' : ''}>3. Thương lượng</option>
+            <option value="4" ${flow.stage === 4 ? 'disabled' : ''}>4. Thành công</option>
+            <option value="5" ${flow.stage === 5 ? 'disabled' : ''}>5. Mua hàng</option>
+            <option value="6" ${flow.stage === 6 ? 'disabled' : ''}>6. Shop gửi</option>
+            <option value="7" ${flow.stage === 7 ? 'disabled' : ''}>7. Về TQ</option>
+            <option value="8" ${flow.stage === 8 ? 'disabled' : ''}>8. Về VN</option>
+            <option value="9" ${flow.stage === 9 ? 'disabled' : ''}>9. Giao hàng</option>
+            <option value="10" ${flow.stage === 10 ? 'disabled' : ''}>10. Thu nợ</option>
+            <option value="11" ${flow.stage === 11 ? 'disabled' : ''}>11. Hoàn tất</option>
+          </select>
+        </div>
       `;
 
       card.addEventListener('dragstart', (e) => {
@@ -530,9 +602,20 @@ function renderOpsWorkflows() {
         draggingFlowId = null;
       });
 
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.card-stage-select')) return;
         openFlowDetailModal(flow.id);
       });
+
+      const select = card.querySelector('.card-stage-select');
+      if (select) {
+        select.addEventListener('change', (e) => {
+          const val = parseInt(e.target.value);
+          if (val) {
+            handleFlowMoveAttempt(flow.id, val);
+          }
+        });
+      }
 
       cardsContainer.appendChild(card);
     });
@@ -1447,6 +1530,12 @@ window.openOpsTaskDetail = function(taskId) {
   
   document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
   document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
+
+  document.getElementById('ops-task-detail-desc').style.display = 'block';
+  const editBtn = document.getElementById('btn-ops-task-detail-edit-desc');
+  if (editBtn) editBtn.style.display = 'inline-block';
+  const editGroup = document.getElementById('ops-task-detail-edit-desc-group');
+  if (editGroup) editGroup.style.display = 'none';
 
   // Priority badge
   const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };

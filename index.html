@@ -2094,8 +2094,18 @@
           <!-- Right side feedback -->
           <div style="display:flex; flex-direction:column; gap:12px;">
             <div>
-              <strong>Mô tả chi tiết:</strong>
-              <p id="ops-task-detail-desc" style="color:var(--text-secondary); font-size:13px; line-height:1.4; margin-top:4px; background:#111827; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color);">Mô tả...</p>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>Mô tả chi tiết:</strong>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-edit-desc" style="padding:2px 6px; font-size:11px;"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+              </div>
+              <p id="ops-task-detail-desc" style="color:var(--text-secondary); font-size:13px; line-height:1.4; margin-top:4px; background:#111827; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); white-space:pre-wrap;">Mô tả...</p>
+              <div id="ops-task-detail-edit-desc-group" style="display:none; margin-top:4px; flex-direction:column; gap:6px;">
+                <textarea id="ops-task-detail-desc-input" class="form-control" rows="3" style="font-size:12.5px; background:#111827; color:white; border:1px solid var(--border-color);"></textarea>
+                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-cancel-desc" style="padding:4px 8px; font-size:11px;">Hủy</button>
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-detail-save-desc" style="padding:4px 8px; font-size:11px;">Lưu</button>
+                </div>
+              </div>
             </div>
 
             <div>
