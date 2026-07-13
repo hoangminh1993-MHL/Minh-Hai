@@ -2196,11 +2196,28 @@ function renderStaffManagementTable() {
       ? `<span class="text-muted" style="font-size:11px;">Mặc định</span>`
       : `<button class="btn btn-outline btn-xs btn-delete-user" data-id="${u.id}" style="color:var(--color-error); border-color:var(--color-error);"><i class="fa-solid fa-trash-can"></i> Xóa</button>`;
 
+    const contactHtml = (u.phone || u.email)
+      ? `<div style="font-size:10.5px; color:var(--text-muted); margin-top:2px; display:flex; gap:8px;">
+          ${u.phone ? `<span><i class="fa-solid fa-phone" style="font-size:9.5px;"></i> ${u.phone}</span>` : ''}
+          ${u.email ? `<span><i class="fa-solid fa-envelope" style="font-size:9.5px;"></i> ${u.email}</span>` : ''}
+         </div>`
+      : '';
+
+    const bankHtml = u.bankAccount
+      ? `<div style="font-size:10.5px; color:var(--color-primary); margin-top:2px;">
+          <i class="fa-solid fa-credit-card" style="font-size:9.5px;"></i> ${u.bankName || 'NH'}: <strong>${u.bankAccount}</strong> ${u.bankAccountName ? `(${u.bankAccountName})` : ''}
+         </div>`
+      : '';
+
     tr.innerHTML = `
       <td>
         <div style="display:flex; align-items:center; gap:8px;">
           <div class="user-avatar" style="width:28px; height:28px; font-size:11px;"><i class="fa-solid ${u.avatar || 'fa-user'}"></i></div>
-          <div><strong>${u.name}</strong></div>
+          <div>
+            <strong>${u.name}</strong>
+            ${contactHtml}
+            ${bankHtml}
+          </div>
         </div>
       </td>
       <td><code>${u.username || ''}</code></td>
@@ -2797,22 +2814,37 @@ function renderCustomerHealthCharts() {
     });
   }
 }
-window.toggleNavGroup = function(groupId) {
+window.toggleNavGroup = function(groupId, forceState) {
   const items = document.getElementById(`nav-group-${groupId}-items`);
   const chevron = document.getElementById(`nav-group-${groupId}-chevron`);
   if (!items) return;
   
-  if (items.style.display === 'none') {
-    items.style.display = 'flex';
-    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  let collapse;
+  if (forceState !== undefined) {
+    collapse = forceState;
   } else {
+    collapse = items.style.display !== 'none';
+  }
+  
+  if (collapse) {
     items.style.display = 'none';
     if (chevron) chevron.style.transform = 'rotate(-90deg)';
+    localStorage.setItem(`nav_group_${groupId}_collapsed`, 'true');
+  } else {
+    items.style.display = 'flex';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+    localStorage.removeItem(`nav_group_${groupId}_collapsed`);
   }
 };
 
 // Bind Edit Profile events when page loads
 document.addEventListener('DOMContentLoaded', () => {
+  // Restore collapsed state
+  const isCollapsed = localStorage.getItem('nav_group_settings_collapsed') === 'true';
+  if (isCollapsed) {
+    window.toggleNavGroup('settings', true);
+  }
+
   const editProfileMenu = document.getElementById('btn-edit-profile-menu');
   if (editProfileMenu) {
     editProfileMenu.onclick = (e) => {
@@ -2822,6 +2854,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!user) return;
       
       document.getElementById('edit-profile-name').value = user.name || '';
+      document.getElementById('edit-profile-phone').value = user.phone || '';
+      document.getElementById('edit-profile-email').value = user.email || '';
+      document.getElementById('edit-profile-bank-name').value = user.bankName || '';
+      document.getElementById('edit-profile-bank-account').value = user.bankAccount || '';
+      document.getElementById('edit-profile-bank-account-name').value = user.bankAccountName || '';
       document.getElementById('edit-profile-password').value = user.password || '';
       document.getElementById('edit-profile-avatar').value = user.avatar || 'fa-user-ninja';
       
@@ -2838,6 +2875,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!user) return;
       
       const newName = document.getElementById('edit-profile-name').value.trim();
+      const newPhone = document.getElementById('edit-profile-phone').value.trim();
+      const newEmail = document.getElementById('edit-profile-email').value.trim();
+      const newBankName = document.getElementById('edit-profile-bank-name').value.trim();
+      const newBankAccount = document.getElementById('edit-profile-bank-account').value.trim();
+      const newBankAccountName = document.getElementById('edit-profile-bank-account-name').value.trim();
       const newPassword = document.getElementById('edit-profile-password').value;
       const newAvatar = document.getElementById('edit-profile-avatar').value;
       
@@ -2847,6 +2889,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       user.name = newName;
+      user.phone = newPhone;
+      user.email = newEmail;
+      user.bankName = newBankName;
+      user.bankAccount = newBankAccount;
+      user.bankAccountName = newBankAccountName;
       user.password = newPassword;
       user.avatar = newAvatar;
       
@@ -2871,7 +2918,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Đã cập nhật thông tin cá nhân!', 'success');
       
       // Refresh views
-      if (typeof renderStaffList === 'function') renderStaffList();
+      if (typeof renderStaffManagementTable === 'function') renderStaffManagementTable();
     };
   }
 });

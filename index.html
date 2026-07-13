@@ -2711,33 +2711,68 @@
 
   <!-- ==================== modal-edit-profile ==================== -->
   <div class="modal" id="modal-edit-profile">
-    <div class="modal-content modal-sm" style="width: 400px; max-width: 95%;">
+    <div class="modal-content modal-md" style="width: 500px; max-width: 95%;">
       <div class="modal-header">
         <h3><i class="fa-solid fa-user-pen"></i> Chỉnh Sửa Profile</h3>
         <button class="btn-close-modal" data-modal="modal-edit-profile">&times;</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="max-height: 80vh; overflow-y: auto; padding-right: 6px;">
         <form id="form-edit-profile">
           <div class="form-group">
             <label for="edit-profile-name">Họ và tên <span class="text-rose">*</span></label>
             <input type="text" id="edit-profile-name" class="form-control" required style="margin-top:6px;">
           </div>
-          <div class="form-group mt-3">
-            <label for="edit-profile-password">Mật khẩu mới <span class="text-rose">*</span></label>
-            <input type="password" id="edit-profile-password" class="form-control" required style="margin-top:6px;">
+          
+          <div class="dashboard-grid grid-2" style="gap:12px; margin-top:12px;">
+            <div class="form-group">
+              <label for="edit-profile-phone">Số điện thoại</label>
+              <input type="text" id="edit-profile-phone" class="form-control" style="margin-top:6px;">
+            </div>
+            <div class="form-group">
+              <label for="edit-profile-email">Email</label>
+              <input type="email" id="edit-profile-email" class="form-control" style="margin-top:6px;">
+            </div>
           </div>
-          <div class="form-group mt-3">
-            <label for="edit-profile-avatar">Hình đại diện <span class="text-rose">*</span></label>
-            <select id="edit-profile-avatar" class="form-control" required style="margin-top:6px;">
-              <option value="fa-user-ninja">User Ninja</option>
-              <option value="fa-user-tie">User Tie</option>
-              <option value="fa-user-nurse">User Nurse</option>
-              <option value="fa-user-astronaut">User Astronaut</option>
-              <option value="fa-user-shield">User Shield</option>
-              <option value="fa-user-secret">User Secret</option>
-              <option value="fa-user-graduate">User Graduate</option>
-            </select>
+
+          <div class="menu-section-header" style="margin-top: 16px; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">Thông tin tài khoản ngân hàng (STK)</div>
+
+          <div class="form-group">
+            <label for="edit-profile-bank-name">Tên ngân hàng</label>
+            <input type="text" id="edit-profile-bank-name" class="form-control" placeholder="Ví dụ: Vietcombank, Techcombank..." style="margin-top:6px;">
           </div>
+
+          <div class="dashboard-grid grid-2" style="gap:12px; margin-top:12px;">
+            <div class="form-group">
+              <label for="edit-profile-bank-account">Số tài khoản (STK)</label>
+              <input type="text" id="edit-profile-bank-account" class="form-control" style="margin-top:6px;">
+            </div>
+            <div class="form-group">
+              <label for="edit-profile-bank-account-name">Tên chủ tài khoản</label>
+              <input type="text" id="edit-profile-bank-account-name" class="form-control" style="margin-top:6px;">
+            </div>
+          </div>
+
+          <div class="menu-section-header" style="margin-top: 16px; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">Bảo mật & Nhận diện</div>
+
+          <div class="dashboard-grid grid-2" style="gap:12px;">
+            <div class="form-group">
+              <label for="edit-profile-password">Mật khẩu mới <span class="text-rose">*</span></label>
+              <input type="password" id="edit-profile-password" class="form-control" required style="margin-top:6px;">
+            </div>
+            <div class="form-group">
+              <label for="edit-profile-avatar">Hình đại diện <span class="text-rose">*</span></label>
+              <select id="edit-profile-avatar" class="form-control" required style="margin-top:6px;">
+                <option value="fa-user-ninja">User Ninja</option>
+                <option value="fa-user-tie">User Tie</option>
+                <option value="fa-user-nurse">User Nurse</option>
+                <option value="fa-user-astronaut">User Astronaut</option>
+                <option value="fa-user-shield">User Shield</option>
+                <option value="fa-user-secret">User Secret</option>
+                <option value="fa-user-graduate">User Graduate</option>
+              </select>
+            </div>
+          </div>
+
           <div class="modal-footer mt-4" style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-edit-profile">Hủy</button>
             <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
@@ -2751,12 +2786,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.5"></script>
-  <script src="crm.js?v=20.5"></script>
-  <script src="tasks.js?v=20.5"></script>
-  <script src="ops.js?v=20.5"></script>
-  <script src="inbox-sim.js?v=20.5"></script>
-  <script src="games.js?v=20.5"></script>
-  <script src="suggestions.js?v=20.5"></script>
+  <script src="app.js?v=20.6"></script>
+  <script src="crm.js?v=20.6"></script>
+  <script src="tasks.js?v=20.6"></script>
+  <script src="ops.js?v=20.6"></script>
+  <script src="inbox-sim.js?v=20.6"></script>
+  <script src="games.js?v=20.6"></script>
+  <script src="suggestions.js?v=20.6"></script>
 </body>
 </html>
