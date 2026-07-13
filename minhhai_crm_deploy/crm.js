@@ -269,27 +269,23 @@ function renderCRMBoard() {
     countSpan.innerText = count;
 
     if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
-      if (!col.dataset.dragAttached) {
-        col.dataset.dragAttached = 'true';
-        
-        col.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          col.classList.add('drag-over');
-        });
+      col.ondragover = (e) => {
+        e.preventDefault();
+        col.classList.add('drag-over');
+      };
 
-        col.addEventListener('dragleave', () => {
-          col.classList.remove('drag-over');
-        });
+      col.ondragleave = () => {
+        col.classList.remove('drag-over');
+      };
 
-        col.addEventListener('drop', (e) => {
-          e.preventDefault();
-          col.classList.remove('drag-over');
-          const id = e.dataTransfer.getData('text/plain') || draggingLeadId;
-          if (id) {
-            handleLeadMove(id, st);
-          }
-        });
-      }
+      col.ondrop = (e) => {
+        e.preventDefault();
+        col.classList.remove('drag-over');
+        const id = e.dataTransfer.getData('text/plain') || draggingLeadId;
+        if (id) {
+          handleLeadMove(id, st);
+        }
+      };
     }
   });
 }
@@ -341,6 +337,32 @@ function handleLeadMove(leadId, targetStage) {
     const files = lead.files || [];
     if (files.length === 0) {
       showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+  }
+
+  // Validate files and tasks when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
+  if (currentStepNum === 4 && (targetStepNum === 5 || targetStepNum === 6)) {
+    const files = lead.files || [];
+    const hasImage = files.some(f => 
+      /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+      f.name.toLowerCase().includes('ảnh') || 
+      f.name.toLowerCase().includes('hình') ||
+      f.name.toLowerCase().includes('image') ||
+      f.name.toLowerCase().includes('img') ||
+      f.name.toLowerCase().includes('báo giá') ||
+      f.name.toLowerCase().includes('bao gia')
+    );
+    if (!hasImage) {
+      showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+
+    const task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+    if (task && task.status !== 'completed') {
+      showToast("Bạn cần hoàn thành công việc 'Tình trạng KH sau báo giá' trong danh sách công việc trước khi chuyển sang bước Thương lượng!", "warning");
       renderCRMBoard(); // Reset visual drag status
       return;
     }
@@ -843,6 +865,30 @@ function handleSaveActiveLeadStepData() {
       const files = lead.files || [];
       if (files.length === 0) {
         showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+        return;
+      }
+    }
+
+    // Validate files and tasks when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
+    if (currentStepNum === 4 && (currentActiveLeadStepNum === 5 || currentActiveLeadStepNum === 6)) {
+      const files = lead.files || [];
+      const hasImage = files.some(f => 
+        /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+        f.name.toLowerCase().includes('ảnh') || 
+        f.name.toLowerCase().includes('hình') ||
+        f.name.toLowerCase().includes('image') ||
+        f.name.toLowerCase().includes('img') ||
+        f.name.toLowerCase().includes('báo giá') ||
+        f.name.toLowerCase().includes('bao gia')
+      );
+      if (!hasImage) {
+        showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+        return;
+      }
+
+      const task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+      if (task && task.status !== 'completed') {
+        showToast("Bạn cần hoàn thành công việc 'Tình trạng KH sau báo giá' trong danh sách công việc trước khi chuyển sang bước Thương lượng!", "warning");
         return;
       }
     }
