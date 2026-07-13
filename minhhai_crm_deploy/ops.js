@@ -1604,6 +1604,20 @@ window.openOpsTaskDetail = function(taskId) {
   const assignee = AppState.users.find(u => u.id === task.assigneeId);
   const helper = AppState.users.find(u => u.id === task.helperId);
   document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}`;
+
+  // Populate assignee select dropdown
+  const assigneeSelect = document.getElementById('ops-task-detail-assignee');
+  if (assigneeSelect) {
+    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+    assigneeSelect.value = task.assigneeId || '';
+  }
+
+  // Populate helper select dropdown
+  const helperSelect = document.getElementById('ops-task-detail-helper');
+  if (helperSelect) {
+    helperSelect.innerHTML = `<option value="">Không có hỗ trợ</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+    helperSelect.value = task.helperId || '';
+  }
   
   document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
   document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
@@ -1807,11 +1821,42 @@ function handleSaveTaskDetails() {
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
   if (!task) return;
 
-  task.status = document.getElementById('ops-task-detail-status').value;
+  const oldStatus = task.status;
+  const newStatus = document.getElementById('ops-task-detail-status').value;
+  
+  if (oldStatus !== newStatus) {
+    task.status = newStatus;
+    
+    // Update streak if current user is assignee
+    if (task.assigneeId === AppState.currentUserId) {
+      if (typeof window.updateStreakOnActivity === 'function') {
+        window.updateStreakOnActivity(AppState.currentUserId);
+      }
+    }
+    
+    // Award points if status is changed to completed
+    if (newStatus === 'completed') {
+      if (typeof window.awardPointsForCompletedTask === 'function') {
+        window.awardPointsForCompletedTask(task);
+      }
+    }
+  }
+
+  // Save assignee and helper updates
+  const assigneeEl = document.getElementById('ops-task-detail-assignee');
+  const helperEl = document.getElementById('ops-task-detail-helper');
+  if (assigneeEl) {
+    task.assigneeId = assigneeEl.value;
+  }
+  if (helperEl) {
+    task.helperId = helperEl.value || null;
+  }
+
   saveState();
   closeModal('modal-ops-task-detail');
   renderOpsSingleTasks();
-  showToast('Đã cập nhật trạng thái công việc!', 'success');
+  if (typeof renderMyTasks === 'function') renderMyTasks();
+  showToast('Đã cập nhật thông tin công việc!', 'success');
 }
 
 function handleDeleteTask() {

@@ -1618,6 +1618,20 @@ window.openOpsTaskDetail = function(taskId) {
   const project = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
   const projectText = project ? ` | Dự án: ${project.name}` : '';
   document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}${projectText}`;
+
+  // Populate assignee select dropdown
+  const assigneeSelect = document.getElementById('ops-task-detail-assignee');
+  if (assigneeSelect) {
+    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+    assigneeSelect.value = task.assigneeId || '';
+  }
+
+  // Populate helper select dropdown
+  const helperSelect = document.getElementById('ops-task-detail-helper');
+  if (helperSelect) {
+    helperSelect.innerHTML = `<option value="">Không có hỗ trợ</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+    helperSelect.value = task.helperId || '';
+  }
   
   document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
   document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
@@ -1842,10 +1856,21 @@ function handleSaveTaskDetails() {
     }
   }
 
+  // Save assignee and helper updates
+  const assigneeEl = document.getElementById('ops-task-detail-assignee');
+  const helperEl = document.getElementById('ops-task-detail-helper');
+  if (assigneeEl) {
+    task.assigneeId = assigneeEl.value;
+  }
+  if (helperEl) {
+    task.helperId = helperEl.value || null;
+  }
+
   saveState();
   closeModal('modal-ops-task-detail');
   renderOpsSingleTasks();
-  showToast('Đã cập nhật trạng thái công việc!', 'success');
+  if (typeof renderMyTasks === 'function') renderMyTasks();
+  showToast('Đã cập nhật thông tin công việc!', 'success');
 }
 
 function handleDeleteTask() {
