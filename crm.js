@@ -378,16 +378,22 @@ function handleLeadMove(leadId, targetStage) {
       return;
     }
 
+    const quoteFeedback = (lead.quoteFeedback || '').trim();
+    if (quoteFeedback.length < 3) {
+      showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+
     let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
     if (!task) {
       createNegotiatingTaskIfNeeded(lead);
-      saveState();
       task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
     }
-    if (task && task.status !== 'completed') {
-      showToast("Bạn cần hoàn thành công việc 'Tình trạng KH sau báo giá' trong danh sách công việc trước khi chuyển sang bước Thương lượng!", "warning");
-      renderCRMBoard(); // Reset visual drag status
-      return;
+    if (task) {
+      task.status = 'completed';
+      task.desc = `Tình trạng khách hàng sau báo giá: ${quoteFeedback}`;
+      saveState();
     }
   }
 
@@ -748,37 +754,39 @@ function renderActiveLeadStepPanel() {
     });
   }
 
-  // Inject system task checkbox dynamically for Step 4 (Báo giá)
+  // Inject system task textarea dynamically for Step 4 (Báo giá)
   if (currentActiveLeadStepNum === 4) {
-    let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-    const isDone = task && task.status === 'completed';
-    
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#1e1b4b; padding:6px 8px; border-radius:4px; margin-bottom: 4px; border: 1px dashed #6366f1;';
-    
-    const label = document.createElement('label');
-    label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer; margin: 0; width:100%;';
-    label.innerHTML = `
-      <input type="checkbox" ${isDone ? 'checked' : ''}>
-      <span style="${isDone ? 'text-decoration:line-through; opacity:0.6;' : ''} color:#a5b4fc;">
-        <strong>[Hệ thống]</strong> Hoàn thành việc: Tình trạng KH sau báo giá <span style="color:#ef4444;">*</span>
-      </span>
+    row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px;';
+    row.innerHTML = `
+      <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
+        [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
+      </div>
+      <textarea id="lead-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${lead.quoteFeedback || ''}</textarea>
     `;
     
-    label.querySelector('input').onchange = (e) => {
-      if (task) {
-        task.status = e.target.checked ? 'completed' : 'todo';
-      } else {
+    const textarea = row.querySelector('textarea');
+    textarea.oninput = (e) => {
+      const val = e.target.value;
+      lead.quoteFeedback = val;
+      
+      let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+      if (!task) {
         createNegotiatingTaskIfNeeded(lead);
-        const newTask = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-        if (newTask) newTask.status = e.target.checked ? 'completed' : 'todo';
+        task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+      }
+      if (task) {
+        if (val.trim().length >= 3) {
+          task.status = 'completed';
+          task.desc = `Tình trạng khách hàng sau báo giá: ${val.trim()}`;
+        } else {
+          task.status = 'todo';
+          task.desc = `Cập nhật tình trạng khách hàng ${lead.name} sau báo giá`;
+        }
       }
       saveState();
-      showToast(e.target.checked ? "Đã hoàn thành công việc 'Tình trạng KH sau báo giá'!" : "Đã đặt lại công việc về chưa hoàn thành.", "info");
-      renderActiveLeadStepPanel();
     };
     
-    row.appendChild(label);
     chkContainer.appendChild(row);
   }
 
@@ -946,15 +954,21 @@ function handleSaveActiveLeadStepData() {
         return;
       }
 
+      const quoteFeedback = (lead.quoteFeedback || '').trim();
+      if (quoteFeedback.length < 3) {
+        showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+        return;
+      }
+
       let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
       if (!task) {
         createNegotiatingTaskIfNeeded(lead);
-        saveState();
         task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
       }
-      if (task && task.status !== 'completed') {
-        showToast("Bạn cần hoàn thành công việc 'Tình trạng KH sau báo giá' trong danh sách công việc trước khi chuyển sang bước Thương lượng!", "warning");
-        return;
+      if (task) {
+        task.status = 'completed';
+        task.desc = `Tình trạng khách hàng sau báo giá: ${quoteFeedback}`;
+        saveState();
       }
     }
 
