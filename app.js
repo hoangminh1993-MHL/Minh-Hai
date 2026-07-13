@@ -370,6 +370,10 @@ function startStatePolling() {
         const oldSingleCount = AppState.single_tasks ? AppState.single_tasks.length : 0;
         const newSingleCount = data.single_tasks ? data.single_tasks.length : 0;
 
+        const caroChanged = JSON.stringify(AppState.active_caro_games || []) !== JSON.stringify(data.active_caro_games || []);
+        const lotteryChanged = JSON.stringify(AppState.daily_lottery_tickets || []) !== JSON.stringify(data.daily_lottery_tickets || []);
+        const betPoolsChanged = JSON.stringify(AppState.bet_pools || []) !== JSON.stringify(data.bet_pools || []);
+        
         if (
           newLeadsCount !== oldLeadsCount || 
           newNotifsCount !== oldNotifsCount || 
@@ -377,7 +381,10 @@ function startStatePolling() {
           newFlowsCount !== oldFlowsCount ||
           newClientsCount !== oldClientsCount ||
           newProjectsCount !== oldProjectsCount ||
-          newSingleCount !== oldSingleCount
+          newSingleCount !== oldSingleCount ||
+          caroChanged ||
+          lotteryChanged ||
+          betPoolsChanged
         ) {
           console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
           AppState.users = data.users;
@@ -388,12 +395,17 @@ function startStatePolling() {
           AppState.notifications = data.notifications;
           AppState.fbConfig = data.fbConfig || AppState.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
           
-          // Đồng bộ các phân hệ vận hành mới (v18)
+          // Đồng bộ các phân hệ vận hành mới
           AppState.clients = data.clients || [];
           AppState.projects = data.projects || [];
           AppState.shipment_workflows = data.shipment_workflows || [];
           AppState.single_tasks = data.single_tasks || [];
 
+          // Đồng bộ dữ liệu trò chơi online
+          AppState.active_caro_games = data.active_caro_games || [];
+          AppState.daily_lottery_tickets = data.daily_lottery_tickets || [];
+          AppState.bet_pools = data.bet_pools || [];
+          
           if (window.initLeadSteps && AppState.leads) {
             AppState.leads.forEach(window.initLeadSteps);
           }
@@ -409,6 +421,11 @@ function startStatePolling() {
           renderCurrentUser();
           renderNotifications();
           updateMyTasksBadge();
+
+          // Refresh mini games UI dynamically if changed
+          if (typeof renderMiniGames === 'function') {
+            renderMiniGames();
+          }
         }
       }
     } catch (err) {
