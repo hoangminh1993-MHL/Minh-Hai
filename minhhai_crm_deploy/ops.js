@@ -2532,7 +2532,7 @@ function renderMyTasks() {
 
   if (AppState.single_tasks) {
     AppState.single_tasks.forEach(task => {
-      if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled') {
+      if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
         const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
         const chkTotal = task.checklist ? task.checklist.length : 0;
         
@@ -2661,8 +2661,8 @@ function renderMyTasks() {
     
     if (AppState.single_tasks) {
       AppState.single_tasks.forEach(task => {
-        // Show tasks where current user is the creator but NOT the assignee
-        if (task.creatorId === userId && task.assigneeId !== userId) {
+        // Show tasks where current user is the creator but NOT the assignee, and not archived
+        if (task.creatorId === userId && task.assigneeId !== userId && task.status !== 'archived') {
           assignedCount++;
           const assignee = AppState.users.find(u => u.id === task.assigneeId);
           const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
@@ -2671,8 +2671,11 @@ function renderMyTasks() {
 
           const card = document.createElement('div');
           card.className = 'kanban-card';
-          const borderLeftColor = task.status === 'completed' ? '#10b981' : '#a855f7';
-          card.style.cssText = `cursor: pointer; border-left: 4px solid ${borderLeftColor}; transition: transform 0.2s; margin-bottom: 8px; opacity: ${task.status === 'completed' ? 0.75 : 1};`;
+          
+          const isCompleted = task.status === 'completed';
+          const borderLeftColor = isCompleted ? '#10b981' : '#a855f7';
+          // Completed cards have a soft green glow background and normal opacity for high readability
+          card.style.cssText = `cursor: pointer; border-left: 4px solid ${borderLeftColor}; transition: transform 0.2s; margin-bottom: 8px; ${isCompleted ? 'background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-left: 4px solid #10b981;' : ''}`;
 
           let projectInfoHtml = '';
           if (task.projectId) {
@@ -2682,7 +2685,21 @@ function renderMyTasks() {
             }
           }
 
-          const statusLabel = task.status === 'completed' ? '<span class="badge bg-emerald" style="font-size:9px; padding:2px 4px;">Đã xong</span>' : '<span class="badge bg-purple" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white;">Đang làm</span>';
+          const statusLabel = isCompleted ? '<span class="badge bg-emerald" style="font-size:9px; padding:2px 4px; font-weight:bold;">Đã hoàn thành</span>' : '<span class="badge bg-purple" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white; font-weight:bold;">Đang làm</span>';
+
+          // Completed tasks show a green check icon next to title and have a button to "Acknowledge & Close" (Đã xem & Đóng)
+          let titleHtml = '';
+          let archiveBtnHtml = '';
+          if (isCompleted) {
+            titleHtml = `<div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; color:#10b981; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check text-success"></i> ${task.title}</div>`;
+            archiveBtnHtml = `
+              <button class="btn btn-xs btn-outline" style="margin-top: 10px; width: 100%; border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); font-weight: bold; height: 28px; font-size:11px;" onclick="event.stopPropagation(); window.archiveAssignedTask('${task.id}')">
+                <i class="fa-solid fa-eye"></i> Đã xem & Đóng việc
+              </button>
+            `;
+          } else {
+            titleHtml = `<div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; color:#fff;">${task.title}</div>`;
+          }
 
           card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -2691,12 +2708,13 @@ function renderMyTasks() {
                 <span style="font-size:9.5px; color:var(--text-muted); font-weight:bold;">${task.dept.toUpperCase()}</span>
               </div>
             </div>
-            <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; ${task.status === 'completed' ? 'text-decoration: line-through; color: var(--text-muted);' : ''}">${task.title}</div>
+            ${titleHtml}
             ${projectInfoHtml}
-            <div style="font-size:11px; margin-top:4px; color: var(--text-muted);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+            <div style="font-size:11px; margin-top:6px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
               <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
             </div>
+            ${archiveBtnHtml}
           `;
           
           card.onclick = () => {
@@ -3027,6 +3045,16 @@ function updateSortHeadersUI() {
     }
   });
 }
+
+window.archiveAssignedTask = function(taskId) {
+  const task = AppState.single_tasks && AppState.single_tasks.find(t => t.id === taskId);
+  if (task) {
+    task.status = 'archived';
+    saveState();
+    if (typeof renderMyTasks === 'function') renderMyTasks();
+    showToast('Đã đóng công việc và lưu trữ thành công.', 'success');
+  }
+};
 
 
 
