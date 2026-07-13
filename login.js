@@ -1,6 +1,5 @@
 const INITIAL_USERS = [
   { id: 'usr-1', name: 'Nguyễn Hoàng Minh', username: 'hoangminh', role: 'admin' },
-  { id: 'usr-admin', name: 'Quản trị viên Minh Hải', username: 'admin', role: 'admin' },
   { id: 'usr-2', name: 'Trần Tú Anh', username: 'tuanh', role: 'sales' },
   { id: 'usr-3', name: 'M.Phương (CSKH)', username: 'minhphuong', role: 'sales' },
   { id: 'usr-6', name: 'Trang (CSKH)', username: 'trang', role: 'sales' },

@@ -91,15 +91,29 @@
           <i class="fa-solid fa-heart-pulse"></i>
           <span>Sức Khỏe Khách</span>
         </a>
-        <a href="#staff-management" class="nav-item" data-view="staff-management" id="nav-staff-mgmt" style="display:none;">
-          <i class="fa-solid fa-users-cog"></i>
-          <span>Quản Lý Nhân Sự</span>
-        </a>
-        <a href="#settings" class="nav-item" data-view="settings" id="nav-settings" style="display:none; color: var(--color-primary); margin-top: auto;">
-          <i class="fa-solid fa-sliders"></i>
-          <span>Thiết Lập Hệ Thống</span>
-        </a>
-        <a href="#" class="nav-item" id="btn-logout" style="color: var(--color-error); margin-bottom: 8px;">
+        <!-- Parent menu Thiết lập -->
+        <div class="nav-group" id="nav-group-settings" style="margin-top: 10px;">
+          <div class="nav-group-header" onclick="toggleNavGroup('settings')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; color: var(--text-muted); font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; border-radius: var(--radius-md); transition: background 0.2s, color 0.2s;">
+            <span><i class="fa-solid fa-gear" style="margin-right: 8px;"></i>Thiết Lập</span>
+            <i class="fa-solid fa-chevron-down" id="nav-group-settings-chevron" style="font-size: 10px; transition: transform 0.2s;"></i>
+          </div>
+          <div class="nav-group-items" id="nav-group-settings-items" style="display: flex; flex-direction: column; gap: 2px; padding-left: 12px; border-left: 1px solid rgba(255, 255, 255, 0.05); margin-left: 16px;">
+            <a href="#settings" class="nav-item" data-view="settings" id="nav-settings" style="display:none; color: var(--color-primary); padding: 8px 12px; font-size: 12.5px;">
+              <i class="fa-solid fa-sliders"></i>
+              <span>Thiết Lập Hệ Thống</span>
+            </a>
+            <a href="#staff-management" class="nav-item" data-view="staff-management" id="nav-staff-mgmt" style="display:none; padding: 8px 12px; font-size: 12.5px;">
+              <i class="fa-solid fa-users-cog"></i>
+              <span>Quản Lý Nhân Sự</span>
+            </a>
+            <a href="#" class="nav-item" id="btn-edit-profile-menu" style="padding: 8px 12px; font-size: 12.5px;">
+              <i class="fa-solid fa-user-pen"></i>
+              <span>Chỉnh Sửa Profile</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="#" class="nav-item" id="btn-logout" style="color: var(--color-error); margin-bottom: 8px; margin-top: auto;">
           <i class="fa-solid fa-right-from-bracket"></i>
           <span>Đăng Xuất</span>
         </a>
@@ -2695,16 +2709,54 @@
     </div>
   </div>
 
+  <!-- ==================== modal-edit-profile ==================== -->
+  <div class="modal" id="modal-edit-profile">
+    <div class="modal-content modal-sm" style="width: 400px; max-width: 95%;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-pen"></i> Chỉnh Sửa Profile</h3>
+        <button class="btn-close-modal" data-modal="modal-edit-profile">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-edit-profile">
+          <div class="form-group">
+            <label for="edit-profile-name">Họ và tên <span class="text-rose">*</span></label>
+            <input type="text" id="edit-profile-name" class="form-control" required style="margin-top:6px;">
+          </div>
+          <div class="form-group mt-3">
+            <label for="edit-profile-password">Mật khẩu mới <span class="text-rose">*</span></label>
+            <input type="password" id="edit-profile-password" class="form-control" required style="margin-top:6px;">
+          </div>
+          <div class="form-group mt-3">
+            <label for="edit-profile-avatar">Hình đại diện <span class="text-rose">*</span></label>
+            <select id="edit-profile-avatar" class="form-control" required style="margin-top:6px;">
+              <option value="fa-user-ninja">User Ninja</option>
+              <option value="fa-user-tie">User Tie</option>
+              <option value="fa-user-nurse">User Nurse</option>
+              <option value="fa-user-astronaut">User Astronaut</option>
+              <option value="fa-user-shield">User Shield</option>
+              <option value="fa-user-secret">User Secret</option>
+              <option value="fa-user-graduate">User Graduate</option>
+            </select>
+          </div>
+          <div class="modal-footer mt-4" style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-edit-profile">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.4"></script>
-  <script src="crm.js?v=20.4"></script>
-  <script src="tasks.js?v=20.4"></script>
-  <script src="ops.js?v=20.4"></script>
-  <script src="inbox-sim.js?v=20.4"></script>
-  <script src="games.js?v=20.4"></script>
-  <script src="suggestions.js?v=20.4"></script>
+  <script src="app.js?v=20.5"></script>
+  <script src="crm.js?v=20.5"></script>
+  <script src="tasks.js?v=20.5"></script>
+  <script src="ops.js?v=20.5"></script>
+  <script src="inbox-sim.js?v=20.5"></script>
+  <script src="games.js?v=20.5"></script>
+  <script src="suggestions.js?v=20.5"></script>
 </body>
 </html>

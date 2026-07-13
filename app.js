@@ -2191,7 +2191,7 @@ function renderStaffManagementTable() {
     const tr = document.createElement('tr');
     
     const isSelf = u.id === sessionUser.id;
-    const isSupremeAdmin = u.id === 'usr-admin';
+    const isSupremeAdmin = u.id === 'usr-1';
     const deleteBtnHtml = (isSelf || isSupremeAdmin)
       ? `<span class="text-muted" style="font-size:11px;">Mặc định</span>`
       : `<button class="btn btn-outline btn-xs btn-delete-user" data-id="${u.id}" style="color:var(--color-error); border-color:var(--color-error);"><i class="fa-solid fa-trash-can"></i> Xóa</button>`;
@@ -2797,5 +2797,81 @@ function renderCustomerHealthCharts() {
     });
   }
 }
+window.toggleNavGroup = function(groupId) {
+  const items = document.getElementById(`nav-group-${groupId}-items`);
+  const chevron = document.getElementById(`nav-group-${groupId}-chevron`);
+  if (!items) return;
+  
+  if (items.style.display === 'none') {
+    items.style.display = 'flex';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+  } else {
+    items.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(-90deg)';
+  }
+};
 
-
+// Bind Edit Profile events when page loads
+document.addEventListener('DOMContentLoaded', () => {
+  const editProfileMenu = document.getElementById('btn-edit-profile-menu');
+  if (editProfileMenu) {
+    editProfileMenu.onclick = (e) => {
+      e.preventDefault();
+      
+      const user = getCurrentUser();
+      if (!user) return;
+      
+      document.getElementById('edit-profile-name').value = user.name || '';
+      document.getElementById('edit-profile-password').value = user.password || '';
+      document.getElementById('edit-profile-avatar').value = user.avatar || 'fa-user-ninja';
+      
+      openModal('modal-edit-profile');
+    };
+  }
+  
+  const editProfileForm = document.getElementById('form-edit-profile');
+  if (editProfileForm) {
+    editProfileForm.onsubmit = (e) => {
+      e.preventDefault();
+      
+      const user = AppState.users.find(u => u.id === AppState.currentUserId);
+      if (!user) return;
+      
+      const newName = document.getElementById('edit-profile-name').value.trim();
+      const newPassword = document.getElementById('edit-profile-password').value;
+      const newAvatar = document.getElementById('edit-profile-avatar').value;
+      
+      if (!newName || !newPassword) {
+        showToast('Vui lòng nhập đầy đủ thông tin!', 'warning');
+        return;
+      }
+      
+      user.name = newName;
+      user.password = newPassword;
+      user.avatar = newAvatar;
+      
+      // Update session storage
+      localStorage.setItem('minhhai_user', JSON.stringify(user));
+      
+      // Save state to database
+      saveState();
+      
+      // Close modal
+      closeModal('modal-edit-profile');
+      
+      // Update sidebar visual elements
+      const userCardName = document.getElementById('current-user-name');
+      if (userCardName) userCardName.innerText = newName;
+      
+      const userCardAvatar = document.getElementById('current-user-avatar');
+      if (userCardAvatar) {
+        userCardAvatar.innerHTML = `<i class="fa-solid ${newAvatar}"></i>`;
+      }
+      
+      showToast('Đã cập nhật thông tin cá nhân!', 'success');
+      
+      // Refresh views
+      if (typeof renderStaffList === 'function') renderStaffList();
+    };
+  }
+});
