@@ -2205,9 +2205,17 @@ function renderStaffManagementTable() {
     
     const isSelf = u.id === sessionUser.id;
     const isSupremeAdmin = u.id === 'usr-1';
+    
+    // Only admins can delete, and they cannot delete themselves or the supreme admin
     const deleteBtnHtml = (isSelf || isSupremeAdmin)
       ? `<span class="text-muted" style="font-size:11px;">Mặc định</span>`
       : `<button class="btn btn-outline btn-xs btn-delete-user" data-id="${u.id}" style="color:var(--color-error); border-color:var(--color-error);"><i class="fa-solid fa-trash-can"></i> Xóa</button>`;
+
+    // Only admin role (specifically hoangminh and other admins) can edit other accounts
+    const isAdminUser = sessionUser.role === 'admin';
+    const editBtnHtml = isAdminUser
+      ? `<button class="btn btn-outline btn-xs btn-edit-user-details" data-id="${u.id}" style="color:var(--color-primary); border-color:var(--color-primary); margin-right:6px;"><i class="fa-solid fa-user-pen"></i> Sửa</button>`
+      : '';
 
     const contactHtml = (u.phone || u.email)
       ? `<div style="font-size:10.5px; color:var(--text-muted); margin-top:2px; display:flex; gap:8px;">
@@ -2224,8 +2232,8 @@ function renderStaffManagementTable() {
 
     tr.innerHTML = `
       <td>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <div class="user-avatar" style="width:28px; height:28px; font-size:11px; overflow:hidden;">${window.getUserAvatarInnerHtml(u.avatar)}</div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="user-avatar" style="width:42px; height:42px; font-size:16px; overflow:hidden; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${window.getUserAvatarInnerHtml(u.avatar)}</div>
           <div>
             <strong>${u.name}</strong>
             ${contactHtml}
@@ -2236,7 +2244,7 @@ function renderStaffManagementTable() {
       <td><code>${u.username || ''}</code></td>
       <td><span class="role-badge badge-${u.role}">${roleLabels[u.role] || u.role}</span></td>
       <td class="text-center"><strong>${u.points}</strong> <i class="fa-solid fa-hotdog" style="color:var(--color-primary); font-size:11px;"></i></td>
-      <td class="text-center">${deleteBtnHtml}</td>
+      <td class="text-center" style="white-space:nowrap;">${editBtnHtml}${deleteBtnHtml}</td>
     `;
     
     tbody.appendChild(tr);
@@ -2262,6 +2270,26 @@ function renderStaffManagementTable() {
       } catch (err) {
         showToast('Không thể kết nối đến máy chủ!', 'error');
       }
+    };
+  });
+
+  tbody.querySelectorAll('.btn-edit-user-details').forEach(btn => {
+    btn.onclick = (e) => {
+      const userId = e.currentTarget.getAttribute('data-id');
+      const targetUser = AppState.users.find(u => u.id === userId);
+      if (!targetUser) return;
+
+      document.getElementById('admin-edit-user-id').value = targetUser.id;
+      document.getElementById('admin-edit-user-name').value = targetUser.name || '';
+      document.getElementById('admin-edit-user-role').value = targetUser.role || 'staff';
+      document.getElementById('admin-edit-user-password').value = targetUser.password || '';
+      document.getElementById('admin-edit-user-phone').value = targetUser.phone || '';
+      document.getElementById('admin-edit-user-email').value = targetUser.email || '';
+      document.getElementById('admin-edit-user-bank-name').value = targetUser.bankName || '';
+      document.getElementById('admin-edit-user-bank-account').value = targetUser.bankAccount || '';
+      document.getElementById('admin-edit-user-bank-account-name').value = targetUser.bankAccountName || '';
+
+      openModal('modal-admin-edit-user');
     };
   });
 }
@@ -2951,6 +2979,59 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         proceedSave(newAvatar);
       }
+    };
+  }
+
+  const adminEditUserForm = document.getElementById('form-admin-edit-user');
+  if (adminEditUserForm) {
+    adminEditUserForm.onsubmit = (e) => {
+      e.preventDefault();
+      
+      const targetUserId = document.getElementById('admin-edit-user-id').value;
+      const targetUser = AppState.users.find(u => u.id === targetUserId);
+      if (!targetUser) return;
+
+      const newName = document.getElementById('admin-edit-user-name').value.trim();
+      const newRole = document.getElementById('admin-edit-user-role').value;
+      const newPassword = document.getElementById('admin-edit-user-password').value;
+      const newPhone = document.getElementById('admin-edit-user-phone').value.trim();
+      const newEmail = document.getElementById('admin-edit-user-email').value.trim();
+      const newBankName = document.getElementById('admin-edit-user-bank-name').value.trim();
+      const newBankAccount = document.getElementById('admin-edit-user-bank-account').value.trim();
+      const newBankAccountName = document.getElementById('admin-edit-user-bank-account-name').value.trim();
+
+      if (!newName || !newPassword) {
+        showToast('Vui lòng điền họ tên và mật khẩu!', 'warning');
+        return;
+      }
+
+      // Update fields
+      targetUser.name = newName;
+      targetUser.role = newRole;
+      targetUser.password = newPassword;
+      targetUser.phone = newPhone;
+      targetUser.email = newEmail;
+      targetUser.bankName = newBankName;
+      targetUser.bankAccount = newBankAccount;
+      targetUser.bankAccountName = newBankAccountName;
+
+      // If the edited user is the current logged-in user, update session as well
+      const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+      if (loggedUser.id === targetUserId) {
+        Object.assign(loggedUser, targetUser);
+        localStorage.setItem('minhhai_user', JSON.stringify(loggedUser));
+        renderCurrentUser();
+      }
+
+      // Save state to database
+      saveState();
+
+      closeModal('modal-admin-edit-user');
+      showToast('Đã cập nhật thông tin tài khoản nhân viên!', 'success');
+
+      // Refresh views
+      if (typeof renderStaffManagementTable === 'function') renderStaffManagementTable();
+      if (typeof initRoleSwitcher === 'function') initRoleSwitcher();
     };
   }
 });

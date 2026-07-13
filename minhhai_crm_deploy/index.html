@@ -2071,16 +2071,85 @@
     </div>
   </div>
 
+  <!-- ==================== modal-admin-edit-user ==================== -->
+  <div class="modal" id="modal-admin-edit-user">
+    <div class="modal-content modal-md" style="width: 500px; max-width: 95%;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-gear"></i> Quản Lý Tài Khoản Nhân Viên</h3>
+        <button class="btn-close-modal" data-modal="modal-admin-edit-user">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 80vh; overflow-y: auto; padding-right: 6px;">
+        <form id="form-admin-edit-user">
+          <input type="hidden" id="admin-edit-user-id">
+          
+          <div class="form-group">
+            <label for="admin-edit-user-name">Họ và tên <span class="text-rose">*</span></label>
+            <input type="text" id="admin-edit-user-name" class="form-control" required style="margin-top:6px;">
+          </div>
+          
+          <div class="dashboard-grid grid-2" style="gap:12px; margin-top:12px;">
+            <div class="form-group">
+              <label for="admin-edit-user-role">Vai trò / Cấp quyền <span class="text-rose">*</span></label>
+              <select id="admin-edit-user-role" class="form-control" required style="margin-top:6px;">
+                <option value="staff">Nhân viên (Staff)</option>
+                <option value="manager">Quản lý (Manager)</option>
+                <option value="admin">Quản trị viên (Admin)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="admin-edit-user-password">Mật khẩu mới <span class="text-rose">*</span></label>
+              <input type="password" id="admin-edit-user-password" class="form-control" required style="margin-top:6px;">
+            </div>
+          </div>
+
+          <div class="dashboard-grid grid-2" style="gap:12px; margin-top:12px;">
+            <div class="form-group">
+              <label for="admin-edit-user-phone">Số điện thoại</label>
+              <input type="text" id="admin-edit-user-phone" class="form-control" style="margin-top:6px;">
+            </div>
+            <div class="form-group">
+              <label for="admin-edit-user-email">Email</label>
+              <input type="email" id="admin-edit-user-email" class="form-control" style="margin-top:6px;">
+            </div>
+          </div>
+
+          <div class="menu-section-header" style="margin-top: 16px; margin-bottom: 8px; font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: bold; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">Thông tin tài khoản ngân hàng (STK)</div>
+
+          <div class="form-group">
+            <label for="admin-edit-user-bank-name">Tên ngân hàng</label>
+            <input type="text" id="admin-edit-user-bank-name" class="form-control" placeholder="Ví dụ: Vietcombank, Techcombank..." style="margin-top:6px;">
+          </div>
+
+          <div class="dashboard-grid grid-2" style="gap:12px; margin-top:12px;">
+            <div class="form-group">
+              <label for="admin-edit-user-bank-account">Số tài khoản (STK)</label>
+              <input type="text" id="admin-edit-user-bank-account" class="form-control" style="margin-top:6px;">
+            </div>
+            <div class="form-group">
+              <label for="admin-edit-user-bank-account-name">Tên chủ tài khoản</label>
+              <input type="text" id="admin-edit-user-bank-account-name" class="form-control" style="margin-top:6px;">
+            </div>
+          </div>
+
+          <div class="modal-footer mt-4" style="display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-admin-edit-user">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.3"></script>
-  <script src="crm.js?v=20.3"></script>
-  <script src="tasks.js?v=20.3"></script>
-  <script src="ops.js?v=20.3"></script>
-  <script src="inbox-sim.js?v=20.3"></script>
-  <script src="games.js?v=20.3"></script>
-  <script src="suggestions.js?v=20.3"></script>
+  <script src="app.js?v=20.4"></script>
+  <script src="crm.js?v=20.4"></script>
+  <script src="tasks.js?v=20.4"></script>
+  <script src="ops.js?v=20.4"></script>
+  <script src="inbox-sim.js?v=20.4"></script>
+  <script src="games.js?v=20.4"></script>
+  <script src="suggestions.js?v=20.4"></script>
 </body>
 </html>
