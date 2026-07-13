@@ -622,6 +622,16 @@ function getCurrentUser() {
   return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0];
 }
 
+window.getUserAvatarInnerHtml = function(avatar) {
+  if (!avatar) {
+    return `<i class="fa-solid fa-user"></i>`;
+  }
+  if (avatar.startsWith('http://') || avatar.startsWith('https://') || avatar.startsWith('data:image/')) {
+    return `<img src="${avatar}" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:50%;">`;
+  }
+  return `<i class="fa-solid ${avatar}"></i>`;
+};
+
 function renderCurrentUser() {
   const user = getCurrentUser();
   document.getElementById('current-user-name').innerText = user.name;
@@ -636,7 +646,10 @@ function renderCurrentUser() {
   
   // Set user avatar
   const avatarDiv = document.getElementById('current-user-avatar');
-  avatarDiv.innerHTML = `<i class="fa-solid ${user.avatar || 'fa-user'}"></i>`;
+  if (avatarDiv) {
+    avatarDiv.style.overflow = 'hidden';
+    avatarDiv.innerHTML = window.getUserAvatarInnerHtml(user.avatar);
+  }
   
   applyRoleBasedNavigation();
 }
@@ -1423,7 +1436,7 @@ function renderStaffManagementTable() {
     tr.innerHTML = `
       <td>
         <div style="display:flex; align-items:center; gap:8px;">
-          <div class="user-avatar" style="width:28px; height:28px; font-size:11px;"><i class="fa-solid ${u.avatar || 'fa-user'}"></i></div>
+          <div class="user-avatar" style="width:28px; height:28px; font-size:11px; overflow:hidden;">${window.getUserAvatarInnerHtml(u.avatar)}</div>
           <div>
             <strong>${u.name}</strong>
             ${contactHtml}
@@ -1738,37 +1751,56 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
-      user.name = newName;
-      user.phone = newPhone;
-      user.email = newEmail;
-      user.bankName = newBankName;
-      user.bankAccount = newBankAccount;
-      user.bankAccountName = newBankAccountName;
-      user.password = newPassword;
-      user.avatar = newAvatar;
-      
-      // Update session storage
-      localStorage.setItem('minhhai_user', JSON.stringify(user));
-      
-      // Save state to database
-      saveState();
-      
-      // Close modal
-      closeModal('modal-edit-profile');
-      
-      // Update sidebar visual elements
-      const userCardName = document.getElementById('current-user-name');
-      if (userCardName) userCardName.innerText = newName;
-      
-      const userCardAvatar = document.getElementById('current-user-avatar');
-      if (userCardAvatar) {
-        userCardAvatar.innerHTML = `<i class="fa-solid ${newAvatar}"></i>`;
+      const fileInput = document.getElementById('edit-profile-avatar-file');
+      const file = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+      const proceedSave = (avatarVal) => {
+        user.name = newName;
+        user.phone = newPhone;
+        user.email = newEmail;
+        user.bankName = newBankName;
+        user.bankAccount = newBankAccount;
+        user.bankAccountName = newBankAccountName;
+        user.password = newPassword;
+        user.avatar = avatarVal;
+        
+        // Update session storage
+        localStorage.setItem('minhhai_user', JSON.stringify(user));
+        
+        // Save state to database
+        saveState();
+        
+        // Close modal
+        closeModal('modal-edit-profile');
+        
+        // Update sidebar visual elements
+        const userCardName = document.getElementById('current-user-name');
+        if (userCardName) userCardName.innerText = newName;
+        
+        const userCardAvatar = document.getElementById('current-user-avatar');
+        if (userCardAvatar) {
+          userCardAvatar.style.overflow = 'hidden';
+          userCardAvatar.innerHTML = window.getUserAvatarInnerHtml(avatarVal);
+        }
+
+        // Reset file input
+        if (fileInput) fileInput.value = '';
+        
+        showToast('Đã cập nhật thông tin cá nhân!', 'success');
+        
+        // Refresh views
+        if (typeof renderStaffManagementTable === 'function') renderStaffManagementTable();
+      };
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          proceedSave(event.target.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        proceedSave(newAvatar);
       }
-      
-      showToast('Đã cập nhật thông tin cá nhân!', 'success');
-      
-      // Refresh views
-      if (typeof renderStaffManagementTable === 'function') renderStaffManagementTable();
     };
   }
 });
