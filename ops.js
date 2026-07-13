@@ -1388,8 +1388,15 @@ function renderSingleTasksBoard(tasks) {
     card.setAttribute('data-id', t.id);
 
     card.innerHTML = `
-      <div class="card-client-name">${t.title}</div>
-      <div class="card-desc">${t.desc || 'Không có mô tả.'}</div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+        <div class="card-client-name" style="font-weight:bold; flex-grow:1; margin-right:8px;">${t.title}</div>
+        ${t.status !== 'completed' ? `
+          <button class="btn btn-xs btn-success" style="padding:1px 4px; font-size:9px; flex-shrink:0; border: none; border-radius: 4px; color: white; background: #10b981; cursor: pointer;" onclick="event.stopPropagation(); window.quickCompleteTask('${t.id}')">
+            <i class="fa-solid fa-check"></i> Xong
+          </button>
+        ` : ''}
+      </div>
+      <div class="card-desc" style="margin-top:4px;">${t.desc || 'Không có mô tả.'}</div>
       <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> ${assignee ? assignee.name.split(' ').pop() : 'Chưa giao'}</span>
         <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> ${t.deadline}</span>
@@ -2481,7 +2488,12 @@ function renderMyTasks() {
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
-            <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
+              <button class="btn btn-xs btn-success" style="padding: 1px 4px; font-size: 9px; line-height: 1; border: none; border-radius: 4px; color: white; background: #10b981; cursor: pointer;" onclick="event.stopPropagation(); window.quickCompleteTask('${task.id}')">
+                <i class="fa-solid fa-check"></i> Xong
+              </button>
+            </div>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
           ${projectInfoHtml}
@@ -2946,4 +2958,29 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 });
+
+window.quickCompleteTask = function(taskId) {
+  let task = AppState.single_tasks && AppState.single_tasks.find(t => t.id === taskId);
+  if (!task && AppState.tasks) {
+    task = AppState.tasks.find(t => t.id === taskId);
+  }
+  if (!task) return;
+  
+  task.status = 'completed';
+  if (task.checklist) {
+    task.checklist.forEach(item => item.done = true);
+  }
+  
+  if (typeof window.awardPointsForCompletedTask === 'function') {
+    window.awardPointsForCompletedTask(task);
+  }
+  
+  saveState();
+  
+  if (typeof renderMyTasks === 'function') renderMyTasks();
+  if (typeof renderOpsBoard === 'function') renderOpsBoard();
+  
+  showToast('Đã hoàn thành công việc!', 'success');
+};
+
 
