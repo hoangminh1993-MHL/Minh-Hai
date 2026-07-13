@@ -85,6 +85,8 @@ let caroMode = 'vs-ai'; // 'vs-ai' or 'vs-pvp'
 let caroBet = 10;
 let caroOpponentId = null;
 
+let onlineCaroGameId = null;
+
 function initCaroGame() {
   const modeSelect = document.getElementById('caro-mode-select');
   if (modeSelect) {
@@ -92,15 +94,33 @@ function initCaroGame() {
       caroMode = e.target.value;
       const opponentGroup = document.getElementById('caro-opponent-group');
       const aiDiffGroup = document.getElementById('caro-ai-diff-group');
+      const onlineGroup = document.getElementById('caro-online-lobbies-group');
+      const startBtn = document.getElementById('btn-start-caro-game');
+
       if (caroMode === 'vs-pvp') {
         opponentGroup.style.display = 'block';
         aiDiffGroup.style.display = 'none';
+        onlineGroup.style.display = 'none';
+        startBtn.style.display = 'block';
         populateCaroOpponents();
+      } else if (caroMode === 'vs-online') {
+        opponentGroup.style.display = 'none';
+        aiDiffGroup.style.display = 'none';
+        onlineGroup.style.display = 'block';
+        startBtn.style.display = 'none';
+        renderOnlineCaroLobbies();
       } else {
         opponentGroup.style.display = 'none';
         aiDiffGroup.style.display = 'block';
+        onlineGroup.style.display = 'none';
+        startBtn.style.display = 'block';
       }
     });
+  }
+
+  const createLobbyBtn = document.getElementById('btn-create-caro-online-lobby');
+  if (createLobbyBtn) {
+    createLobbyBtn.addEventListener('click', createCaroOnlineLobby);
   }
 
   const startBtn = document.getElementById('btn-start-caro-game');
@@ -136,6 +156,8 @@ function populateCaroOpponents() {
 function renderCaroSetup() {
   if (caroMode === 'vs-pvp') {
     populateCaroOpponents();
+  } else if (caroMode === 'vs-online') {
+    renderOnlineCaroLobbies();
   }
 }
 
@@ -262,6 +284,88 @@ function drawCaroBoard() {
 function handleCaroCellClick(r, c) {
   if (!caroGameActive || caroBoard[r][c] !== null) return;
 
+  if (caroMode === 'vs-online') {
+    const user = getCurrentUser();
+    if (!AppState.active_caro_games) AppState.active_caro_games = [];
+    const game = AppState.active_caro_games.find(g => g.id === onlineCaroGameId);
+    if (!game) return;
+
+    const isPlayer1 = game.player1Id === user.id;
+    const isPlayer2 = game.player2Id === user.id;
+
+    if (isPlayer1 && caroTurn !== 'X') {
+      showToast("Chờ đối thủ đi nước tiếp theo!", "warning");
+      return;
+    }
+    if (isPlayer2 && caroTurn !== 'O') {
+      showToast("Chờ đối thủ đi nước tiếp theo!", "warning");
+      return;
+    }
+    if (!isPlayer1 && !isPlayer2) {
+      showToast("Bạn chỉ là người xem!", "warning");
+      return;
+    }
+
+    // Place move
+    game.board[r][c] = caroTurn;
+
+    if (checkCaroWin(r, c, caroTurn)) {
+      game.status = 'completed';
+      game.winner = caroTurn;
+
+      if (game.winner === 'X') {
+        const p1 = AppState.users.find(u => u.id === game.player1Id);
+        if (p1 && p1.role !== 'admin') {
+          p1.points += game.bet * 2;
+          pushSausageLog(p1.id, game.bet * 2, `Thắng đấu Caro Online với ${game.player2Name}: +${game.bet * 2}đ`);
+        }
+      } else {
+        const p2 = AppState.users.find(u => u.id === game.player2Id);
+        if (p2 && p2.role !== 'admin') {
+          p2.points += game.bet * 2;
+          pushSausageLog(p2.id, game.bet * 2, `Thắng đấu Caro Online với ${game.player1Name}: +${game.bet * 2}đ`);
+        }
+      }
+
+      saveState();
+
+      caroBoard = game.board;
+      drawCaroBoard();
+      endOnlineGameLocal(game);
+      onlineCaroGameId = null;
+      if (onlineCaroInterval) clearInterval(onlineCaroInterval);
+      return;
+    }
+
+    if (isCaroBoardFull()) {
+      game.status = 'completed';
+      game.winner = 'draw';
+
+      const p1 = AppState.users.find(u => u.id === game.player1Id);
+      if (p1 && p1.role !== 'admin') p1.points += game.bet;
+      const p2 = AppState.users.find(u => u.id === game.player2Id);
+      if (p2 && p2.role !== 'admin') p2.points += game.bet;
+
+      saveState();
+
+      caroBoard = game.board;
+      drawCaroBoard();
+      endOnlineGameLocal(game);
+      onlineCaroGameId = null;
+      if (onlineCaroInterval) clearInterval(onlineCaroInterval);
+      return;
+    }
+
+    game.turn = game.turn === 'X' ? 'O' : 'X';
+    saveState();
+
+    caroBoard = game.board;
+    caroTurn = game.turn;
+    drawCaroBoard();
+    updateCaroStatusText();
+    return;
+  }
+
   // Make move
   caroBoard[r][c] = caroTurn;
   drawCaroBoard();
@@ -295,6 +399,20 @@ function updateCaroStatusText() {
 
   if (caroMode === 'vs-ai') {
     status.innerText = caroTurn === 'X' ? 'Đến lượt bạn (X)' : 'Máy đang suy nghĩ... (O)';
+  } else if (caroMode === 'vs-online') {
+    if (!AppState.active_caro_games) AppState.active_caro_games = [];
+    const game = AppState.active_caro_games.find(g => g.id === onlineCaroGameId);
+    if (!game) {
+      status.innerText = 'Nhấn "TẠO BÀN ĐẤU MỚI" hoặc vào chơi bàn đấu đang chờ';
+      return;
+    }
+
+    if (game.status === 'waiting') {
+      status.innerHTML = `<span style="color:#f59e0b;"><i class="fa-solid fa-spinner fa-spin"></i> Đang chờ đối thủ vào bàn...</span>`;
+    } else {
+      const turnName = game.turn === 'X' ? game.player1Name : game.player2Name;
+      status.innerText = `Đang chơi: ${game.player1Name} (X) vs ${game.player2Name} (O) | Lượt: ${turnName} (${game.turn})`;
+    }
   } else {
     const p1 = getCurrentUser().name;
     const oppName = AppState.users.find(u => u.id === caroOpponentId)?.name || 'Đối thủ';
@@ -1178,6 +1296,254 @@ function cancelCustomBetLobby(lobbyId) {
   saveState();
 
   showToast("Đã hủy kèo và hoàn trả điểm thành công!", "success");
+  renderMiniGames();
+}
+
+
+// ==================== ONLINE CARO FUNCTIONS ==================== //
+function renderOnlineCaroLobbies() {
+  const container = document.getElementById('caro-online-lobbies-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  if (!AppState.active_caro_games) AppState.active_caro_games = [];
+  const waitingGames = AppState.active_caro_games.filter(g => g.status === 'waiting');
+
+  const currentUser = getCurrentUser();
+
+  if (waitingGames.length === 0) {
+    container.innerHTML = `<span style="font-size: 12px; color: var(--text-muted); font-style: italic;">Chưa có bàn đấu nào đang chờ...</span>`;
+  } else {
+    waitingGames.forEach(g => {
+      const isMyLobby = g.player1Id === currentUser.id;
+      const card = document.createElement('div');
+      card.style.cssText = 'background: rgba(0,0,0,0.15); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin-bottom: 6px;';
+      
+      const hostName = isMyLobby ? 'Bạn' : g.player1Name;
+      
+      let actionBtn = '';
+      if (isMyLobby) {
+        actionBtn = `<button type="button" class="btn btn-sm btn-outline text-rose" style="padding: 4px 8px; font-size: 11px;" onclick="cancelOnlineCaroGame('${g.id}')">Hủy bàn</button>`;
+      } else {
+        actionBtn = `<button type="button" class="btn btn-sm btn-primary" style="padding: 4px 8px; font-size: 11px;" onclick="joinOnlineCaroGame('${g.id}')">Vào chơi</button>`;
+      }
+
+      card.innerHTML = `
+        <div>
+          <strong>Chủ bàn: ${hostName}</strong>
+          <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Cược: ${g.bet} xúc xích</div>
+        </div>
+        ${actionBtn}
+      `;
+      container.appendChild(card);
+    });
+  }
+}
+
+window.createCaroOnlineLobby = function() {
+  const user = getCurrentUser();
+  caroBet = parseInt(document.getElementById('caro-bet-amount').value) || 10;
+
+  if (caroBet <= 0) {
+    showToast("Số tiền cược phải lớn hơn 0!", "warning");
+    return;
+  }
+
+  if (user.role !== 'admin' && user.points < caroBet) {
+    showToast("Bạn không đủ điểm Xúc xích để cược!", "warning");
+    return;
+  }
+
+  // Deduct points
+  if (user.role !== 'admin') {
+    user.points -= caroBet;
+    pushSausageLog(user.id, -caroBet, `Tạo bàn đấu Caro Online: cược ${caroBet}đ`);
+  } else {
+    pushSausageLog(user.id, 0, `Tạo bàn đấu Caro Online (Admin miễn phí)`);
+  }
+
+  if (!AppState.active_caro_games) AppState.active_caro_games = [];
+  
+  const newGame = {
+    id: `caro-online-${Date.now()}`,
+    player1Id: user.id,
+    player1Name: user.name,
+    player2Id: null,
+    player2Name: null,
+    board: Array(10).fill(null).map(() => Array(10).fill(null)),
+    turn: 'X',
+    bet: caroBet,
+    status: 'waiting',
+    winner: null
+  };
+
+  AppState.active_caro_games.push(newGame);
+  saveState();
+
+  onlineCaroGameId = newGame.id;
+  caroBoard = newGame.board;
+  caroTurn = newGame.turn;
+  caroGameActive = true;
+
+  const gridContainer = document.getElementById('caro-grid-container');
+  if (gridContainer) {
+    gridContainer.style.pointerEvents = 'auto';
+    gridContainer.style.opacity = '1';
+  }
+  document.getElementById('btn-start-caro-game').style.display = 'none';
+  document.getElementById('btn-reset-caro-game').style.display = 'block';
+
+  drawCaroBoard();
+  updateCaroStatusText();
+  renderMiniGames();
+
+  // Start fast polling
+  startOnlineCaroPolling();
+};
+
+window.joinOnlineCaroGame = function(gameId) {
+  const user = getCurrentUser();
+  if (!AppState.active_caro_games) AppState.active_caro_games = [];
+  const g = AppState.active_caro_games.find(x => x.id === gameId);
+  if (!g) {
+    showToast("Không tìm thấy bàn đấu này!", "warning");
+    return;
+  }
+
+  if (user.role !== 'admin' && user.points < g.bet) {
+    showToast("Bạn không đủ điểm Xúc xích để cược vào bàn này!", "warning");
+    return;
+  }
+
+  // Deduct points
+  if (user.role !== 'admin') {
+    user.points -= g.bet;
+    pushSausageLog(user.id, -g.bet, `Vào bàn đấu Caro Online của ${g.player1Name}: cược ${g.bet}đ`);
+  } else {
+    pushSausageLog(user.id, 0, `Vào bàn đấu Caro Online của ${g.player1Name} (Admin miễn phí)`);
+  }
+
+  g.player2Id = user.id;
+  g.player2Name = user.name;
+  g.status = 'playing';
+
+  saveState();
+
+  onlineCaroGameId = g.id;
+  caroBoard = g.board;
+  caroTurn = g.turn;
+  caroGameActive = true;
+
+  const gridContainer = document.getElementById('caro-grid-container');
+  if (gridContainer) {
+    gridContainer.style.pointerEvents = 'auto';
+    gridContainer.style.opacity = '1';
+  }
+  document.getElementById('btn-start-caro-game').style.display = 'none';
+  document.getElementById('btn-reset-caro-game').style.display = 'block';
+
+  drawCaroBoard();
+  updateCaroStatusText();
+  renderMiniGames();
+
+  // Start fast polling
+  startOnlineCaroPolling();
+};
+
+window.cancelOnlineCaroGame = function(gameId) {
+  if (!AppState.active_caro_games) AppState.active_caro_games = [];
+  const g = AppState.active_caro_games.find(x => x.id === gameId);
+  if (!g) return;
+
+  // Refund Player 1
+  const user = AppState.users.find(u => u.id === g.player1Id);
+  if (user && user.role !== 'admin') {
+    user.points += g.bet;
+    pushSausageLog(user.id, g.bet, `Hủy bàn đấu Caro Online: hoàn lại cược`);
+  }
+
+  // Remove lobby
+  AppState.active_caro_games = AppState.active_caro_games.filter(x => x.id !== gameId);
+  saveState();
+
+  onlineCaroGameId = null;
+  caroGameActive = false;
+  
+  const gridContainer = document.getElementById('caro-grid-container');
+  if (gridContainer) {
+    gridContainer.style.pointerEvents = 'none';
+    gridContainer.style.opacity = '0.5';
+  }
+  document.getElementById('btn-start-caro-game').style.display = 'none';
+  document.getElementById('btn-reset-caro-game').style.display = 'none';
+  document.getElementById('caro-game-status').innerText = 'Đã hủy bàn đấu.';
+
+  drawCaroBoard();
+  renderMiniGames();
+};
+
+let onlineCaroInterval = null;
+function startOnlineCaroPolling() {
+  if (onlineCaroInterval) clearInterval(onlineCaroInterval);
+  onlineCaroInterval = setInterval(async () => {
+    if (!onlineCaroGameId || caroMode !== 'vs-online') {
+      clearInterval(onlineCaroInterval);
+      return;
+    }
+
+    try {
+      const res = await fetch(getApiUrl('/api/state'));
+      if (res.ok) {
+        const data = await res.json();
+        AppState.active_caro_games = data.active_caro_games || [];
+        
+        const activeGame = AppState.active_caro_games.find(g => g.id === onlineCaroGameId);
+        if (activeGame) {
+          // Update local state
+          caroBoard = activeGame.board;
+          caroTurn = activeGame.turn;
+          
+          drawCaroBoard();
+          updateCaroStatusText();
+
+          if (activeGame.status === 'completed') {
+            endOnlineGameLocal(activeGame);
+            onlineCaroGameId = null;
+            clearInterval(onlineCaroInterval);
+          }
+        }
+      }
+    } catch(e) {}
+  }, 1500);
+}
+
+function endOnlineGameLocal(game) {
+  caroGameActive = false;
+  const gridContainer = document.getElementById('caro-grid-container');
+  if (gridContainer) gridContainer.style.pointerEvents = 'none';
+
+  const status = document.getElementById('caro-game-status');
+  document.getElementById('btn-start-caro-game').style.display = 'none';
+  document.getElementById('btn-reset-caro-game').style.display = 'none';
+
+  const user = getCurrentUser();
+
+  if (game.winner === 'draw') {
+    status.innerHTML = `<span style="color:#eab308;">Hoà ván! Đã hoàn trả cược cho cả 2 bên.</span>`;
+  } else {
+    const winnerName = game.winner === 'X' ? game.player1Name : game.player2Name;
+    const isIWon = (game.winner === 'X' && game.player1Id === user.id) || (game.winner === 'O' && game.player2Id === user.id);
+    
+    if (isIWon) {
+      status.innerHTML = `<span style="color:#22c55e; font-weight:bold;">CHIẾN THẮNG! Nhận +${game.bet * 2} xúc xích</span>`;
+    } else {
+      status.innerHTML = `<span style="color:#ef4444; font-weight:bold;">THẤT BẠI! ${winnerName} chiến thắng.</span>`;
+    }
+  }
+
+  // Clear list entry locally
+  AppState.active_caro_games = (AppState.active_caro_games || []).filter(x => x.id !== game.id);
+  saveState();
   renderMiniGames();
 }
 

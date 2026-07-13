@@ -1204,6 +1204,7 @@
                   <select id="caro-mode-select" class="form-control">
                     <option value="vs-ai">Đấu với Máy (AI)</option>
                     <option value="vs-pvp">Đấu PvP (Cùng màn hình)</option>
+                    <option value="vs-online">Đấu Online (Qua mạng)</option>
                   </select>
                 </div>
 
@@ -1220,10 +1221,18 @@
                   </select>
                 </div>
 
+                <div class="form-group" id="caro-online-lobbies-group" style="display: none; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                  <h4 style="font-size: 13px; font-weight: bold; margin: 0 0 10px 0; color: #fff;"><i class="fa-solid fa-globe text-primary"></i> Bàn Đấu Online Đang Chờ</h4>
+                  <div id="caro-online-lobbies-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; margin-bottom: 10px;">
+                    <!-- Lobbies load here -->
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline btn-block" id="btn-create-caro-online-lobby" style="font-weight: bold; height: 32px;"><i class="fa-solid fa-plus"></i> Tạo Bàn Đấu Mới</button>
+                </div>
+
                 <div class="form-group">
                   <label for="caro-bet-amount">Mức cược (Xúc xích)</label>
                   <input type="number" id="caro-bet-amount" class="form-control" min="1" max="1000" value="10">
-                  <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Đấu với AI: Thắng nhận 2x cược, Thua mất cược. PvP: Người thắng ăn sạch tiền cược của đối phương!</span>
+                  <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">Đấu với AI: Thắng nhận 2x cược, Thua mất cược. PvP & Online: Người thắng ăn sạch tiền cược của đối phương!</span>
                 </div>
 
                 <button class="btn btn-primary btn-block" id="btn-start-caro-game" style="height: 40px; font-weight: bold;"><i class="fa-solid fa-play"></i> BẮT ĐẦU VÁN ĐẤU</button>
