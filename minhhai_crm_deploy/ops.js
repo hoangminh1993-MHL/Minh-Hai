@@ -111,6 +111,8 @@ function initOpsEvents() {
   document.getElementById('tasks-single-filter-dept').onchange = renderOpsSingleTasks;
   document.getElementById('tasks-single-filter-assignee').onchange = renderOpsSingleTasks;
   document.getElementById('tasks-single-filter-priority').onchange = renderOpsSingleTasks;
+  const statusFilterEl = document.getElementById('tasks-single-filter-status');
+  if (statusFilterEl) statusFilterEl.onchange = renderOpsSingleTasks;
 
   // Save/Delete Task Detail Handlers
   document.getElementById('btn-ops-task-save').onclick = handleSaveTaskDetails;
@@ -1304,16 +1306,27 @@ function renderOpsSingleTasks() {
   const deptVal = document.getElementById('tasks-single-filter-dept').value;
   const assigneeVal = document.getElementById('tasks-single-filter-assignee').value;
   const priorityVal = document.getElementById('tasks-single-filter-priority').value;
+  const statusEl = document.getElementById('tasks-single-filter-status');
+  const statusVal = statusEl ? statusEl.value : 'all';
 
-  const filtered = AppState.single_tasks.filter(t => {
+  let filtered = AppState.single_tasks.filter(t => {
     const matchesSearch = t.title.toLowerCase().includes(searchVal) || (t.desc && t.desc.toLowerCase().includes(searchVal));
     if (!matchesSearch) return false;
 
     if (deptVal !== 'all' && t.dept !== deptVal) return false;
     if (assigneeVal !== 'all' && t.assigneeId !== assigneeVal) return false;
     if (priorityVal !== 'all' && t.priority !== priorityVal) return false;
+    if (statusVal !== 'all' && t.status !== statusVal) return false;
 
     return true;
+  });
+
+  // Sort tasks: doing/checking first, then todo, then waiting, then completed/canceled
+  const statusOrder = { doing: 1, checking: 1, todo: 2, waiting: 3, completed: 4, canceled: 5 };
+  filtered.sort((a, b) => {
+    const orderA = statusOrder[a.status] || 99;
+    const orderB = statusOrder[b.status] || 99;
+    return orderA - orderB;
   });
 
   // Render based on current layout
