@@ -435,7 +435,7 @@ function handleLeadMove(leadId, targetStage) {
     const nextStep = lead.steps.find(s => s.stepNum === targetStepNum);
     if (nextStep) nextStep.status = 'doing';
 
-    if (targetStage === 'negotiating') {
+    if (targetStage === 'quotation') {
       if (typeof createNegotiatingTaskIfNeeded === 'function') {
         createNegotiatingTaskIfNeeded(lead);
       }
@@ -868,7 +868,7 @@ function handleSaveActiveLeadStepData() {
     lead.stageEntryTimes = lead.stageEntryTimes || {};
     lead.stageEntryTimes[targetStage] = Date.now();
 
-    if (targetStage === 'negotiating') {
+    if (targetStage === 'quotation') {
       if (typeof createNegotiatingTaskIfNeeded === 'function') {
         createNegotiatingTaskIfNeeded(lead);
       }
