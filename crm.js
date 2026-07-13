@@ -186,7 +186,8 @@ function renderCRMBoard() {
     if (!container) return;
 
     const card = document.createElement('div');
-    card.className = `kanban-card ${lead.stage === 'failed' ? 'failed-card' : ''}`;
+    const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
+    card.className = `kanban-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
     card.setAttribute('draggable', (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') ? 'true' : 'false');
     card.setAttribute('data-id', lead.id);
 
@@ -210,10 +211,15 @@ function renderCRMBoard() {
     const isUpdatedToday = (lead.updatedTime && lead.updatedTime.startsWith(todayStr)) || (lead.date && lead.date.startsWith(todayStr));
     const timeClass = isUpdatedToday ? 'time-updated-today' : '';
 
+    const overdueBadge = isOverdue 
+      ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
+      : '';
+
     card.innerHTML = `
       <div class="card-client-name">${lead.name}</div>
       <div class="card-desc">${lead.note || 'Không có ghi chú thêm.'}</div>
       ${failReasonHtml}
+      ${overdueBadge}
       <div class="card-meta">
         <div class="card-phone">
           <i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}
@@ -326,6 +332,25 @@ function handleLeadMove(leadId, targetStage) {
     }
   }
 
+  // Validate files when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
+  if (targetStepNum >= 5 && currentStepNum <= 4) {
+    const files = lead.files || [];
+    const hasImage = files.some(f => 
+      /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+      f.name.toLowerCase().includes('ảnh') || 
+      f.name.toLowerCase().includes('hình') ||
+      f.name.toLowerCase().includes('image') ||
+      f.name.toLowerCase().includes('img') ||
+      f.name.toLowerCase().includes('báo giá') ||
+      f.name.toLowerCase().includes('bao gia')
+    );
+    if (!hasImage) {
+      showToast("Để chuyển sang bước Thương lượng/Thành công, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+  }
+
   // If moving to FAILED, ask for reason
   if (targetStage === 'failed') {
     document.getElementById('fail-prompt-client-name').innerText = lead.name;
@@ -338,6 +363,8 @@ function handleLeadMove(leadId, targetStage) {
     failPromptCallback = (reason) => {
       const oldStage = lead.stage;
       lead.stage = 'failed';
+      lead.stageEntryTimes = lead.stageEntryTimes || {};
+      lead.stageEntryTimes['failed'] = Date.now();
       lead.failReason = reason;
       lead.updatedTime = formatDateTime(new Date());
       
@@ -356,6 +383,8 @@ function handleLeadMove(leadId, targetStage) {
   else if (targetStage === 'success') {
     const oldStage = lead.stage;
     lead.stage = 'success';
+    lead.stageEntryTimes = lead.stageEntryTimes || {};
+    lead.stageEntryTimes['success'] = Date.now();
     lead.failReason = null;
     lead.updatedTime = formatDateTime(new Date());
     
@@ -395,6 +424,8 @@ function handleLeadMove(leadId, targetStage) {
   else {
     const oldStage = lead.stage;
     lead.stage = targetStage;
+    lead.stageEntryTimes = lead.stageEntryTimes || {};
+    lead.stageEntryTimes[targetStage] = Date.now();
     lead.failReason = null;
     lead.updatedTime = formatDateTime(new Date());
     
@@ -403,6 +434,12 @@ function handleLeadMove(leadId, targetStage) {
     if (currentStepData) currentStepData.status = 'done';
     const nextStep = lead.steps.find(s => s.stepNum === targetStepNum);
     if (nextStep) nextStep.status = 'doing';
+
+    if (targetStage === 'negotiating') {
+      if (typeof createNegotiatingTaskIfNeeded === 'function') {
+        createNegotiatingTaskIfNeeded(lead);
+      }
+    }
 
     saveState();
     renderCRMBoard();
@@ -506,6 +543,11 @@ window.initLeadSteps = function initLeadSteps(lead) {
   
   lead.steps = defaultSteps;
   lead.files = lead.files || [];
+  lead.stageEntryTimes = lead.stageEntryTimes || {};
+  if (!lead.stageEntryTimes[lead.stage]) {
+    const fallbackTime = lead.createdTime ? new Date(lead.createdTime).getTime() : (lead.date ? new Date(lead.date).getTime() : Date.now());
+    lead.stageEntryTimes[lead.stage] = fallbackTime;
+  }
 };
 
 function openLeadDetailModal(leadId) {
@@ -801,10 +843,36 @@ function handleSaveActiveLeadStepData() {
       }
     }
 
+    // Validate files when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
+    if (currentActiveLeadStepNum >= 5 && currentStepNum <= 4) {
+      const files = lead.files || [];
+      const hasImage = files.some(f => 
+        /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+        f.name.toLowerCase().includes('ảnh') || 
+        f.name.toLowerCase().includes('hình') ||
+        f.name.toLowerCase().includes('image') ||
+        f.name.toLowerCase().includes('img') ||
+        f.name.toLowerCase().includes('báo giá') ||
+        f.name.toLowerCase().includes('bao gia')
+      );
+      if (!hasImage) {
+        showToast("Để chuyển sang bước Thương lượng/Thành công, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+        return;
+      }
+    }
+
     const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
     currentStepData.status = 'done';
 
     const targetStage = stepNumToStage[currentActiveLeadStepNum];
+    lead.stageEntryTimes = lead.stageEntryTimes || {};
+    lead.stageEntryTimes[targetStage] = Date.now();
+
+    if (targetStage === 'negotiating') {
+      if (typeof createNegotiatingTaskIfNeeded === 'function') {
+        createNegotiatingTaskIfNeeded(lead);
+      }
+    }
     
     if (targetStage === 'success') {
       if (lead.stage !== 'success') {
@@ -991,6 +1059,7 @@ function handleAddLeadSubmit(e) {
     note,
     salesId,
     stage: 'receive_info',
+    stageEntryTimes: { receive_info: Date.now() },
     failReason: null,
     date: dateStr,
     createdTime: nowStr,
@@ -1006,4 +1075,53 @@ function handleAddLeadSubmit(e) {
   renderCRMBoard();
   
   addNotification('Khách hàng mới', `Đã thêm khách hàng ${name} vào bước Nhận thông tin.`, 'success');
+}
+
+function checkLeadOverdue(lead) {
+  if (!lead.stageEntryTimes) {
+    lead.stageEntryTimes = {};
+  }
+  const now = Date.now();
+  const created = lead.createdTime ? new Date(lead.createdTime).getTime() : now;
+
+  if (lead.stage === 'get_phone') {
+    const entered = lead.stageEntryTimes.get_phone || created;
+    const elapsed = now - entered;
+    return elapsed > 2 * 60 * 60 * 1000; // 2 hours
+  }
+  if (lead.stage === 'explore_info') {
+    const entered = lead.stageEntryTimes.explore_info || created;
+    const elapsed = now - entered;
+    return elapsed > 12 * 60 * 60 * 1000; // 12 hours
+  }
+  return false;
+}
+
+function createNegotiatingTaskIfNeeded(lead) {
+  if (!AppState.single_tasks) AppState.single_tasks = [];
+  const hasTask = AppState.single_tasks.some(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá') && t.status !== 'completed');
+  if (!hasTask) {
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const deadlineStr = tomorrow.toISOString().split('T')[0];
+    const newTask = {
+      id: `task-ops-${Date.now()}`,
+      title: `Tình trạng KH sau báo giá`,
+      desc: `Cập nhật tình trạng khách hàng ${lead.name} sau báo giá`,
+      assigneeId: lead.salesId || 'usr-admin',
+      helperId: null,
+      dept: 'sales',
+      priority: 'high',
+      deadline: deadlineStr,
+      status: 'todo',
+      projectId: null,
+      clientId: lead.id,
+      workflowId: null,
+      tags: ['CRM', 'Báo giá'],
+      checklist: [],
+      attachments: [],
+      comments: [],
+      history: [`${new Date().toISOString().split('T')[0]}: Tự động tạo việc từ CRM`]
+    };
+    AppState.single_tasks.push(newTask);
+  }
 }
