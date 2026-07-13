@@ -878,11 +878,16 @@ function renderAdminStaffWorkloadTable() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
+  if (window.workloadSortKey === undefined) {
+    window.workloadSortKey = 'active';
+    window.workloadSortAsc = false; // Descending default
+  }
+
   const usersList = AppState.users || [];
 
-  usersList.forEach(u => {
+  // 1. Calculate stats for each user
+  const usersData = usersList.map(u => {
     const userId = u.id;
-
     let activeTasksCount = 0;
     let overdueTasksCount = 0;
     let completedTasksCount = 0;
@@ -933,40 +938,114 @@ function renderAdminStaffWorkloadTable() {
       });
     }
 
-    // Workload status tag
-    let statusText = 'Nhàn rỗi';
-    let statusClass = 'bg-gray';
-    if (activeTasksCount > 0 && activeTasksCount <= 2) {
-      statusText = 'Vừa phải';
-      statusClass = 'bg-emerald';
-    } else if (activeTasksCount > 2 && activeTasksCount <= 5) {
-      statusText = 'Bận rộn';
-      statusClass = 'bg-blue';
-    } else if (activeTasksCount > 5) {
-      statusText = 'Quá tải ⚠️';
-      statusClass = 'bg-rose';
+    return {
+      user: u,
+      active: activeTasksCount,
+      overdue: overdueTasksCount,
+      completed: completedTasksCount
+    };
+  });
+
+  // 2. Compute overall department KPIs
+  let overloadedStaff = 0;
+  let busyStaff = 0;
+  let balancedStaff = 0;
+  let totalOverdueTasks = 0;
+
+  usersData.forEach(ud => {
+    totalOverdueTasks += ud.overdue;
+    if (ud.active > 5) {
+      overloadedStaff++;
+    } else if (ud.active >= 3) {
+      busyStaff++;
+    } else {
+      balancedStaff++;
+    }
+  });
+
+  const kpiOverloaded = document.getElementById('workload-kpi-overloaded');
+  const kpiBusy = document.getElementById('workload-kpi-busy');
+  const kpiBalanced = document.getElementById('workload-kpi-balanced');
+  const kpiOverdue = document.getElementById('workload-kpi-overdue');
+
+  if (kpiOverloaded) kpiOverloaded.innerText = overloadedStaff;
+  if (kpiBusy) kpiBusy.innerText = busyStaff;
+  if (kpiBalanced) kpiBalanced.innerText = balancedStaff;
+  if (kpiOverdue) kpiOverdue.innerText = totalOverdueTasks;
+
+  // 3. Sort users list
+  usersData.sort((a, b) => {
+    let valA, valB;
+    if (window.workloadSortKey === 'name') {
+      valA = a.user.name.toLowerCase();
+      valB = b.user.name.toLowerCase();
+    } else if (window.workloadSortKey === 'points') {
+      valA = a.user.points || 0;
+      valB = b.user.points || 0;
+    } else if (window.workloadSortKey === 'active') {
+      valA = a.active;
+      valB = b.active;
+    } else if (window.workloadSortKey === 'overdue') {
+      valA = a.overdue;
+      valB = b.overdue;
+    } else if (window.workloadSortKey === 'completed') {
+      valA = a.completed;
+      valB = b.completed;
+    } else if (window.workloadSortKey === 'status') {
+      valA = a.active;
+      valB = b.active;
     }
 
-    if (overdueTasksCount > 0) {
-      statusText += ` (Trễ: ${overdueTasksCount})`;
+    if (valA < valB) return window.workloadSortAsc ? -1 : 1;
+    if (valA > valB) return window.workloadSortAsc ? 1 : -1;
+    return 0;
+  });
+
+  // 4. Render Table rows
+  usersData.forEach(ud => {
+    // Calculate visual metrics
+    const pct = Math.min((ud.active / 8) * 100, 100);
+    let barColor = '#10b981'; // Balanced / Idle
+    if (ud.active > 5) {
+      barColor = '#ef4444'; // Overloaded
+    } else if (ud.active >= 3) {
+      barColor = '#f59e0b'; // Busy
+    } else if (ud.active > 0) {
+      barColor = '#3b82f6'; // Light active
+    }
+
+    let statusText = 'Nhàn rỗi';
+    if (ud.active > 5) {
+      statusText = 'Quá tải ⚠️';
+    } else if (ud.active >= 3) {
+      statusText = 'Bận rộn';
+    } else if (ud.active > 0) {
+      statusText = 'Vừa phải';
+    }
+
+    if (ud.overdue > 0) {
+      statusText += ` (Trễ: ${ud.overdue})`;
     }
 
     const tr = document.createElement('tr');
     tr.style.borderBottom = '1px solid var(--border-color)';
     tr.innerHTML = `
       <td style="padding: 10px; font-weight: bold; display:flex; align-items:center; gap:8px;">
-        <div style="width:28px; height:28px; font-size:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.05); border-radius:50%; color: var(--color-primary);">
-          <i class="fa-solid ${u.avatar || 'fa-user'}"></i>
+        <div style="width:28px; height:28px; font-size:12px; display:flex; align-items:center; justify-content:center; border-radius:50%; overflow:hidden; background:rgba(255,255,255,0.05);">
+          ${window.getUserAvatarInnerHtml(ud.user.avatar)}
         </div>
-        <span>${u.name}</span>
+        <span>${ud.user.name}</span>
       </td>
-      <td style="padding: 10px; color: var(--text-secondary); text-transform: capitalize;">${u.role}</td>
-      <td style="padding: 10px; text-align: center; font-weight: bold; color: #f59e0b;">${u.points} xúc xích</td>
-      <td style="padding: 10px; text-align: center; font-weight: bold;">${activeTasksCount}</td>
-      <td style="padding: 10px; text-align: center; font-weight: bold; color: ${overdueTasksCount > 0 ? '#ef4444' : 'var(--text-muted)'};">${overdueTasksCount}</td>
-      <td style="padding: 10px; text-align: center; font-weight: bold; color: #10b981;">${completedTasksCount}</td>
-      <td style="padding: 10px; text-align: center;">
-        <span class="badge ${statusClass}" style="font-size: 11px; padding: 4px 8px; border-radius:4px; font-weight: bold;">${statusText}</span>
+      <td style="padding: 10px; color: var(--text-secondary); text-transform: capitalize;">${ud.user.role}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: #f59e0b;">${ud.user.points} xúc xích</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold;">${ud.active}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: ${ud.overdue > 0 ? '#ef4444' : 'var(--text-muted)'};">${ud.overdue}</td>
+      <td style="padding: 10px; text-align: center; font-weight: bold; color: #10b981;">${ud.completed}</td>
+      <td style="padding: 10px; text-align: center; vertical-align: middle;">
+        <div class="workload-bar-bg" style="margin-right: 8px;">
+          <div class="workload-bar-fill" style="width: ${pct}%; background-color: ${barColor};"></div>
+        </div>
+        <span style="font-weight: bold; color: ${barColor}; font-size: 11px;">${statusText}</span>
       </td>
     `;
     tbody.appendChild(tr);
@@ -3085,4 +3164,36 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof initRoleSwitcher === 'function') initRoleSwitcher();
     };
   }
+
+  // Bind Changelog modal
+  const btnViewChangelog = document.getElementById('btn-view-changelog');
+  if (btnViewChangelog) {
+    btnViewChangelog.onclick = (e) => {
+      e.preventDefault();
+      openModal('modal-changelog');
+    };
+  }
+
+  // Bind Workload sorting headers
+  document.querySelectorAll('.sort-header').forEach(th => {
+    th.onclick = (e) => {
+      const newKey = e.currentTarget.getAttribute('data-sort');
+      if (window.workloadSortKey === newKey) {
+        window.workloadSortAsc = !window.workloadSortAsc;
+      } else {
+        window.workloadSortKey = newKey;
+        window.workloadSortAsc = false;
+      }
+      
+      document.querySelectorAll('.sort-header i').forEach(icon => {
+        icon.className = 'fa-solid fa-sort';
+      });
+      const icon = e.currentTarget.querySelector('i');
+      if (icon) {
+        icon.className = window.workloadSortAsc ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
+      }
+      
+      renderAdminStaffWorkloadTable();
+    };
+  });
 });

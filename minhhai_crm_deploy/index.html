@@ -106,6 +106,10 @@
               <i class="fa-solid fa-user-pen"></i>
               <span>Chỉnh Sửa Profile</span>
             </a>
+            <a href="#" class="nav-item" id="btn-view-changelog" style="padding: 8px 12px; font-size: 12.5px;">
+              <i class="fa-solid fa-clock-rotate-left"></i>
+              <span>Lịch Sử Cập Nhật</span>
+            </a>
           </div>
         </div>
 
@@ -293,23 +297,65 @@
                 <span class="card-subtitle" style="font-size:12px; opacity:0.85; margin-top:4px; display:block;">Đánh giá nhân viên nhiều/ít việc, trễ hạn (Overdue) hoặc làm tốt nhiệm vụ dựa trên Xúc Xích thi đua</span>
               </div>
             </div>
-            <div class="card-body" style="overflow-x: auto;">
-              <table class="table" style="width:100%; border-collapse: collapse; font-size: 12.5px;">
-                <thead>
-                  <tr style="border-bottom: 2px solid var(--border-color); text-align: left; opacity:0.85;">
-                    <th style="padding: 10px;">Nhân viên</th>
-                    <th style="padding: 10px;">Vai trò</th>
-                    <th style="padding: 10px; text-align: center;">🔥 Điểm Xúc Xích</th>
-                    <th style="padding: 10px; text-align: center;">📥 Việc đang làm</th>
-                    <th style="padding: 10px; text-align: center;">⚠️ Chậm deadline</th>
-                    <th style="padding: 10px; text-align: center;">✅ Đã hoàn thành</th>
-                    <th style="padding: 10px; text-align: center;">📊 Tình trạng tải việc</th>
-                  </tr>
-                </thead>
-                <tbody id="admin-staff-workload-tbody">
-                  <!-- Dynamically populated in app.js -->
-                </tbody>
-              </table>
+            <div class="card-body">
+              <!-- KPI cards row -->
+              <div class="workload-kpi-grid">
+                <div class="workload-kpi-card" style="border-left: 3px solid #ef4444;">
+                  <div class="workload-kpi-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                  </div>
+                  <div class="workload-kpi-data">
+                    <span class="kpi-val" id="workload-kpi-overloaded">0</span>
+                    <span class="kpi-lbl">Nhân sự quá tải (>5 việc)</span>
+                  </div>
+                </div>
+                <div class="workload-kpi-card" style="border-left: 3px solid #f59e0b;">
+                  <div class="workload-kpi-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                    <i class="fa-solid fa-business-time"></i>
+                  </div>
+                  <div class="workload-kpi-data">
+                    <span class="kpi-val" id="workload-kpi-busy">0</span>
+                    <span class="kpi-lbl">Nhân sự bận rộn (3-5 việc)</span>
+                  </div>
+                </div>
+                <div class="workload-kpi-card" style="border-left: 3px solid #10b981;">
+                  <div class="workload-kpi-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                    <i class="fa-solid fa-circle-check"></i>
+                  </div>
+                  <div class="workload-kpi-data">
+                    <span class="kpi-val" id="workload-kpi-balanced">0</span>
+                    <span class="kpi-lbl">Nhân sự nhàn rỗi (≤2 việc)</span>
+                  </div>
+                </div>
+                <div class="workload-kpi-card" style="border-left: 3px solid #ef4444;">
+                  <div class="workload-kpi-icon" style="background: rgba(239, 68, 68, 0.1); color: #ef4444;">
+                    <i class="fa-solid fa-clock"></i>
+                  </div>
+                  <div class="workload-kpi-data">
+                    <span class="kpi-val" id="workload-kpi-overdue">0</span>
+                    <span class="kpi-lbl">Tổng đầu việc trễ hạn</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="overflow-x: auto; margin-top: 15px;">
+                <table class="table" style="width:100%; border-collapse: collapse; font-size: 12.5px;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left; opacity:0.85;">
+                      <th class="sort-header" data-sort="name" style="padding: 10px;">Nhân viên <i class="fa-solid fa-sort"></i></th>
+                      <th style="padding: 10px;">Vai trò</th>
+                      <th class="sort-header" data-sort="points" style="padding: 10px; text-align: center;">🔥 Điểm Xúc Xích <i class="fa-solid fa-sort"></i></th>
+                      <th class="sort-header" data-sort="active" style="padding: 10px; text-align: center;">📥 Việc đang làm <i class="fa-solid fa-sort"></i></th>
+                      <th class="sort-header" data-sort="overdue" style="padding: 10px; text-align: center;">⚠️ Chậm deadline <i class="fa-solid fa-sort"></i></th>
+                      <th class="sort-header" data-sort="completed" style="padding: 10px; text-align: center;">✅ Đã hoàn thành <i class="fa-solid fa-sort"></i></th>
+                      <th class="sort-header" data-sort="status" style="padding: 10px; text-align: center;">📊 Tình trạng tải việc <i class="fa-solid fa-sort"></i></th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-staff-workload-tbody">
+                    <!-- Dynamically populated in app.js -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
@@ -2136,6 +2182,80 @@
             <button type="submit" class="btn btn-primary">Lưu Thay Đổi</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== modal-changelog ==================== -->
+  <div class="modal" id="modal-changelog">
+    <div class="modal-content modal-md" style="width: 550px; max-width: 95%;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Nhật Ký Cập Nhật Phiên Bản</h3>
+        <button class="btn-close-modal" data-modal="modal-changelog">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 6px;">
+        <div class="changelog-list">
+          <!-- Phiên bản mới nhất -->
+          <div class="changelog-version-group">
+            <div class="changelog-version-header">
+              <h4>Phiên bản v44.5</h4>
+              <span class="version-date">(14/07/2026)</span>
+              <span class="badge bg-emerald" style="font-size:10px; padding: 2px 6px;">Mới nhất</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Giám sát khối lượng công việc:</strong> Tích hợp 4 thẻ KPI chỉ số tải việc nhanh (Nhân sự quá tải, bận rộn, nhàn rỗi, tổng số việc trễ hạn).</li>
+              <li><strong>Sắp xếp thông minh:</strong> Cho phép click tiêu đề để sort bảng tải việc theo Tên, Số việc đang làm, Việc trễ hạn, Việc hoàn thành.</li>
+              <li><strong>Đồ họa tải việc:</strong> Thêm cột thanh tiến trình (Workload progress bar) trực quan chuyển màu theo mức độ bận rộn.</li>
+              <li><strong>Nhật ký cập nhật:</strong> Tích hợp giao diện popup Lịch sử cập nhật phiên bản hệ thống.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-version-group" style="opacity: 0.85;">
+            <div class="changelog-version-header">
+              <h4>Phiên bản v44.4</h4>
+              <span class="version-date">(13/07/2026)</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Kéo rê cuộn chuột (Drag-to-Scroll):</strong> Hỗ trợ cuộn ngang tất cả bảng Kanban (CRM, Ops, Công việc) bằng cách bấm giữ và di chuột cực kỳ mượt mà.</li>
+              <li>Tự động thay đổi con trỏ chuột sang dạng Bàn tay mở (Grab) và Bàn tay nắm (Grabbing) chuyên nghiệp.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-version-group" style="opacity: 0.75;">
+            <div class="changelog-version-header">
+              <h4>Phiên bản v44.3</h4>
+              <span class="version-date">(13/07/2026)</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Cấp quyền & Quản lý:</strong> Cho phép tài khoản Admin (`hoangminh`) trực tiếp Sửa đổi họ tên, phân quyền, đổi mật khẩu, cập nhật STK ngân hàng cho các tài khoản nhân sự khác ngay trong bảng Quản lý nhân sự.</li>
+              <li>Nâng kích thước hiển thị avatar trong danh sách nhân sự lên 42px.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-version-group" style="opacity: 0.7;">
+            <div class="changelog-version-header">
+              <h4>Phiên bản v44.2</h4>
+              <span class="version-date">(13/07/2026)</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Tải ảnh đại diện:</strong> Hỗ trợ tải tệp ảnh từ máy tính (PNG, JPG) lên để đặt làm avatar cá nhân (mã hóa Base64 lưu trực tiếp vào cơ sở dữ liệu).</li>
+            </ul>
+          </div>
+
+          <div class="changelog-version-group" style="opacity: 0.65;">
+            <div class="changelog-version-header">
+              <h4>Phiên bản v44.1</h4>
+              <span class="version-date">(13/07/2026)</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Thu gọn Thiết lập:</strong> Thiết lập nhóm danh mục Thiết lập ở sidebar dạng đóng mở có mũi tên, ghi nhớ trạng thái đóng/mở qua LocalStorage.</li>
+              <li>Thêm các trường thông tin Profile chi tiết: SĐT, Email, Tên ngân hàng, Số tài khoản (STK), Tên chủ tài khoản.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; padding-top:10px; border-top:1px solid var(--border-color); margin-top:12px;">
+        <button class="btn btn-primary btn-close-modal" data-modal="modal-changelog">Đóng</button>
       </div>
     </div>
   </div>
