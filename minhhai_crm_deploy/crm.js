@@ -269,23 +269,27 @@ function renderCRMBoard() {
     countSpan.innerText = count;
 
     if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
-      col.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        col.classList.add('drag-over');
-      });
+      if (!col.dataset.dragAttached) {
+        col.dataset.dragAttached = 'true';
+        
+        col.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          col.classList.add('drag-over');
+        });
 
-      col.addEventListener('dragleave', () => {
-        col.classList.remove('drag-over');
-      });
+        col.addEventListener('dragleave', () => {
+          col.classList.remove('drag-over');
+        });
 
-      col.addEventListener('drop', (e) => {
-        e.preventDefault();
-        col.classList.remove('drag-over');
-        const id = e.dataTransfer.getData('text/plain') || draggingLeadId;
-        if (id) {
-          handleLeadMove(id, st);
-        }
-      });
+        col.addEventListener('drop', (e) => {
+          e.preventDefault();
+          col.classList.remove('drag-over');
+          const id = e.dataTransfer.getData('text/plain') || draggingLeadId;
+          if (id) {
+            handleLeadMove(id, st);
+          }
+        });
+      }
     }
   });
 }
