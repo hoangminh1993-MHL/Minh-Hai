@@ -1857,7 +1857,20 @@
           <h3 id="lead-detail-title">Khách hàng mới</h3>
           <span class="card-subtitle" id="lead-detail-subtitle">Nguồn - SĐT</span>
         </div>
-        <button class="btn-close-modal" data-modal="modal-lead-detail">&times;</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+          <select id="modal-lead-stage-select" class="form-control" style="font-size:12px; height:30px; width:150px; background:#111827; color:white; border:1px solid #4b5563;">
+            <option value="" disabled selected>Chọn bước...</option>
+            <option value="receive_info">1. Nhận thông tin</option>
+            <option value="get_phone">2. Lấy SĐT</option>
+            <option value="explore_info">3. Khai thác thông tin</option>
+            <option value="quotation">4. Báo giá</option>
+            <option value="negotiating">5. Thương lượng</option>
+            <option value="success">6. Thành công</option>
+            <option value="failed">7. Thất bại</option>
+          </select>
+          <button class="btn-close-modal" data-modal="modal-lead-detail" style="margin-left: 8px;">&times;</button>
+        </div>
       </div>
       <div class="modal-body" style="padding-top: 10px;">
         <!-- Timeline Steps view -->
@@ -2503,7 +2516,24 @@
           <h3 id="flow-detail-title">Lô Hàng Nam Thuận</h3>
           <span class="card-subtitle" id="flow-detail-subtitle">Chính ngạch - MH401</span>
         </div>
-        <button class="btn-close-modal" data-modal="modal-flow-detail">&times;</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+          <select id="modal-flow-stage-select" class="form-control" style="font-size:12px; height:30px; width:150px; background:#111827; color:white; border:1px solid #4b5563;">
+            <option value="" disabled selected>Chọn bước...</option>
+            <option value="1">1. Nhận thông tin</option>
+            <option value="2">2. Báo giá</option>
+            <option value="3">3. Thương lượng</option>
+            <option value="4">4. Thành công</option>
+            <option value="5">5. Mua hàng</option>
+            <option value="6">6. Shop gửi</option>
+            <option value="7">7. Về TQ</option>
+            <option value="8">8. Về VN</option>
+            <option value="9">9. Giao hàng</option>
+            <option value="10">10. Thu nợ</option>
+            <option value="11">11. Hoàn tất</option>
+          </select>
+          <button class="btn-close-modal" data-modal="modal-flow-detail" style="margin-left: 8px;">&times;</button>
+        </div>
       </div>
       <div class="modal-body" style="padding-top: 10px;">
         <!-- Timeline Steps view -->

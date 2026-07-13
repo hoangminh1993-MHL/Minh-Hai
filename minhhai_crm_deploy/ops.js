@@ -785,6 +785,21 @@ function openFlowDetailModal(flowId) {
   const client = AppState.clients.find(c => c.id === flow.clientId) || {};
   document.getElementById('flow-detail-subtitle').innerText = `${flow.serviceType.toUpperCase()} - Khách: ${client.name || 'Không rõ'} (${client.code || 'KH CŨ'})`;
 
+  const stageSelect = document.getElementById('modal-flow-stage-select');
+  if (stageSelect) {
+    stageSelect.value = flow.stage;
+    stageSelect.onchange = (e) => {
+      const val = parseInt(e.target.value);
+      if (val && val !== flow.stage) {
+        handleFlowMoveAttempt(flow.id, val);
+        const updatedFlow = AppState.shipment_workflows.find(f => f.id === flow.id);
+        if (updatedFlow) {
+          openFlowDetailModal(updatedFlow.id);
+        }
+      }
+    };
+  }
+
   // Render 11 steps timeline bubbles
   const timeline = document.querySelector('.flow-steps-timeline');
   timeline.innerHTML = '';

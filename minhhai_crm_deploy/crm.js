@@ -643,6 +643,21 @@ function openLeadDetailModal(leadId) {
   document.getElementById('lead-detail-title').innerText = lead.name;
   document.getElementById('lead-detail-subtitle').innerText = `Nguồn: ${lead.source} - SĐT: ${lead.phone || 'Chưa có'}`;
 
+  const stageSelect = document.getElementById('modal-lead-stage-select');
+  if (stageSelect) {
+    stageSelect.value = lead.stage;
+    stageSelect.onchange = (e) => {
+      const val = e.target.value;
+      if (val && val !== lead.stage) {
+        handleLeadMove(lead.id, val);
+        const updatedLead = AppState.leads.find(l => l.id === lead.id);
+        if (updatedLead) {
+          openLeadDetailModal(updatedLead.id);
+        }
+      }
+    };
+  }
+
   // Render 7 steps timeline bubbles
   const timeline = document.querySelector('.lead-steps-timeline');
   timeline.innerHTML = '';
