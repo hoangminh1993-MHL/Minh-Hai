@@ -360,7 +360,12 @@ function handleLeadMove(leadId, targetStage) {
       return;
     }
 
-    const task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+    let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+    if (!task) {
+      createNegotiatingTaskIfNeeded(lead);
+      saveState();
+      task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+    }
     if (task && task.status !== 'completed') {
       showToast("Bạn cần hoàn thành công việc 'Tình trạng KH sau báo giá' trong danh sách công việc trước khi chuyển sang bước Thương lượng!", "warning");
       renderCRMBoard(); // Reset visual drag status
@@ -886,7 +891,12 @@ function handleSaveActiveLeadStepData() {
         return;
       }
 
-      const task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+      let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+      if (!task) {
+        createNegotiatingTaskIfNeeded(lead);
+        saveState();
+        task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
+      }
       if (task && task.status !== 'completed') {
         showToast("Bạn cần hoàn thành công việc 'Tình trạng KH sau báo giá' trong danh sách công việc trước khi chuyển sang bước Thương lượng!", "warning");
         return;
@@ -982,7 +992,7 @@ function handleLeadAddStepFile() {
     alert("Vui lòng nhập đường dẫn liên kết URL!");
     return;
   }
-  const finalName = name || "Tài liệu đính kèm";
+  const finalName = name || (lead.stage === 'quotation' ? "Ảnh báo giá" : "Tài liệu đính kèm");
 
   lead.files = lead.files || [];
   lead.files.push({
