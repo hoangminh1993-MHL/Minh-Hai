@@ -5,15 +5,12 @@ function getApiUrl(path) {
     const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
     return `${base}${path}`;
   }
-  // Tự động kết nối cố định tới API Server trên Render nếu chạy trực tuyến (v18)
-  if (window.location.hostname.includes('github.io')) {
+  // Nếu là file:// hoặc github.io thì mới trỏ về Render
+  if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') {
     return `https://minh-hai.onrender.com${path}`;
   }
-  // Nếu chạy thử nghiệm trên máy tính cá nhân
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return `http://127.0.0.1:3000${path}`;
-  }
-  return path;
+  // Còn lại khi truy cập qua HTTP/HTTPS thì tự động dùng origin hiện tại
+  return `${window.location.origin}${path}`;
 }
 
 const CONFIG = {
