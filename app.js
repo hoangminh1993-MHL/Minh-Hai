@@ -241,6 +241,7 @@ async function syncLoadState() {
       AppState.projects = data.projects || [];
       AppState.shipment_workflows = data.shipment_workflows || [];
       AppState.single_tasks = data.single_tasks || [];
+      AppState.suggestions = data.suggestions || [];
 
       if (window.initLeadSteps && AppState.leads) {
         AppState.leads.forEach(window.initLeadSteps);
@@ -262,6 +263,7 @@ async function syncLoadState() {
       localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
       localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
       localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
+      localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions));
       updateMyTasksBadge();
       return;
     }
@@ -287,6 +289,7 @@ function loadState() {
   AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
   AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
   AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
+  AppState.suggestions = JSON.parse(localStorage.getItem('votr_suggestions_db')) || [];
 
   if (window.initLeadSteps && AppState.leads) {
     AppState.leads.forEach(window.initLeadSteps);
@@ -327,6 +330,7 @@ async function saveState() {
   localStorage.setItem('votr_projects_db', JSON.stringify(AppState.projects));
   localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
   localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
+  localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions || []));
   
   // Sync to server API in background
   try {
@@ -367,6 +371,10 @@ function startStatePolling() {
         const oldSingleCount = AppState.single_tasks ? AppState.single_tasks.length : 0;
         const newSingleCount = data.single_tasks ? data.single_tasks.length : 0;
 
+        const usersPointsChanged = JSON.stringify((AppState.users || []).map(u => ({ id: u.id, points: u.points }))) !== JSON.stringify((data.users || []).map(u => ({ id: u.id, points: u.points })));
+        const suggestionsChanged = JSON.stringify(AppState.suggestions || []) !== JSON.stringify(data.suggestions || []);
+        const sausageLogsChanged = (AppState.sausageLogs || []).length !== (data.sausageLogs || []).length;
+
         const caroChanged = JSON.stringify(AppState.active_caro_games || []) !== JSON.stringify(data.active_caro_games || []);
         const lotteryChanged = JSON.stringify(AppState.daily_lottery_tickets || []) !== JSON.stringify(data.daily_lottery_tickets || []);
         const betPoolsChanged = JSON.stringify(AppState.bet_pools || []) !== JSON.stringify(data.bet_pools || []);
@@ -381,7 +389,10 @@ function startStatePolling() {
           newSingleCount !== oldSingleCount ||
           caroChanged ||
           lotteryChanged ||
-          betPoolsChanged
+          betPoolsChanged ||
+          usersPointsChanged ||
+          suggestionsChanged ||
+          sausageLogsChanged
         ) {
           console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
           AppState.users = data.users;
@@ -390,6 +401,7 @@ function startStatePolling() {
           AppState.workflows = data.workflows;
           AppState.sausageLogs = data.sausageLogs;
           AppState.notifications = data.notifications;
+          AppState.suggestions = data.suggestions || [];
           AppState.fbConfig = data.fbConfig || AppState.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
           
           // Đồng bộ các phân hệ vận hành mới

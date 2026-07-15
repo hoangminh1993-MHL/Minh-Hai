@@ -43,7 +43,19 @@ async function loadState() {
           const hasNewUsers = localState.users && (!dbState.users || dbState.users.length !== localState.users.length || !dbState.users.some(u => u.username === 'hoangminh'));
           if (hasNewUsers) {
             console.log('Syncing updated users list from db.json to Supabase...');
-            dbState.users = localState.users;
+            if (!dbState.users) dbState.users = [];
+            localState.users.forEach(localUser => {
+              const existingUser = dbState.users.find(u => u.id === localUser.id || u.username === localUser.username);
+              if (existingUser) {
+                existingUser.name = localUser.name;
+                existingUser.role = localUser.role;
+                existingUser.dept = localUser.dept;
+                existingUser.avatar = localUser.avatar || existingUser.avatar;
+                if (localUser.password) existingUser.password = localUser.password;
+              } else {
+                dbState.users.push(localUser);
+              }
+            });
             needsUpdate = true;
           }
 

@@ -1015,51 +1015,10 @@ function renderActiveStepPanel() {
         }
       }
 
-      // Evidence URL preview logic
+      // Evidence URL logic (No preview container as requested)
       const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-      const previewContainer = document.getElementById('flow-step-evidence-preview');
-      if (evidenceUrlInput && previewContainer) {
+      if (evidenceUrlInput) {
         evidenceUrlInput.value = flow.evidenceUrl || '';
-        
-        const updateEvidencePreview = (url) => {
-          if (!url) {
-            previewContainer.innerHTML = `<span class="text-muted" style="font-size: 9.5px; text-align: center; padding: 4px;">Chưa có ảnh</span>`;
-            return;
-          }
-          
-          const urlLower = url.toLowerCase();
-          const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(url) || 
-                          urlLower.includes('drive.google.com') || 
-                          urlLower.includes('googleusercontent.com');
-                          
-          let displayUrl = url;
-          if (urlLower.includes('drive.google.com')) {
-            let fileId = '';
-            const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-            if (dMatch && dMatch[1]) {
-              fileId = dMatch[1];
-            } else {
-              const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-              if (idMatch && idMatch[1]) {
-                fileId = idMatch[1];
-              }
-            }
-            if (fileId) {
-              displayUrl = `https://lh3.googleusercontent.com/u/0/d/${fileId}`;
-            }
-          }
-          
-          previewContainer.innerHTML = `
-            <a href="${url}" target="_blank" style="display:block; width:100%; height:100%;">
-              <img src="${displayUrl}" onerror="this.src=''; this.parentElement.innerHTML='<span style=\'font-size:9.5px; color:#38bdf8; text-align:center; padding:4px; word-break:break-all;\'><i class=\'fa-solid fa-link\'></i> Xem liên kết</span>';" style="width:100%; height:100%; object-fit:cover;" alt="Bằng chứng" />
-            </a>
-          `;
-        };
-        
-        updateEvidencePreview(flow.evidenceUrl);
-        evidenceUrlInput.oninput = (e) => {
-          updateEvidencePreview(e.target.value.trim());
-        };
       }
 
       updateAuditMessage();
