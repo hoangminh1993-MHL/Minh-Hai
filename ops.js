@@ -612,15 +612,24 @@ function renderOpsWorkflows() {
               const icon = isOk ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
               const labelText = isOk ? `Phản hồi đạt: ${timeText}` : `Phản hồi trễ: ${timeText} (>2h)`;
               
+              const evidenceLink = flow.evidenceUrl ? `
+                <a href="${flow.evidenceUrl}" target="_blank" style="color: #38bdf8; font-size: 9.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;" onclick="event.stopPropagation();">
+                  <i class="fa-solid fa-image"></i> Bằng chứng
+                </a>
+              ` : '';
+              
               return `
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px;">
                   <div style="font-size: 10px; color: ${color}; font-weight: bold; display: flex; align-items: center; gap: 4px;">
                     <i class="${icon}"></i> ${labelText}
                   </div>
-                  <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; user-select: none;" onclick="event.stopPropagation();" ${!isAdminOrManager ? 'title="Chỉ Quản lý mới có quyền duyệt"' : ''}>
-                    <input type="checkbox" onchange="window.toggleManagerVerify('${flow.id}', this.checked)" ${flow.managerVerified ? 'checked' : ''} ${!isAdminOrManager ? 'disabled' : ''} style="cursor: pointer; width: 11px; height: 11px; margin: 0;">
-                    <span style="font-size: 9.5px; color: ${flow.managerVerified ? '#34d399' : '#9ca3af'}; font-weight: bold;">Duyệt</span>
-                  </label>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    ${evidenceLink}
+                    <label style="display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; user-select: none;" onclick="event.stopPropagation();" ${!isAdminOrManager ? 'title="Chỉ Quản lý mới có quyền duyệt"' : ''}>
+                      <input type="checkbox" onchange="window.toggleManagerVerify('${flow.id}', this.checked)" ${flow.managerVerified ? 'checked' : ''} ${!isAdminOrManager ? 'disabled' : ''} style="cursor: pointer; width: 11px; height: 11px; margin: 0;">
+                      <span style="font-size: 9.5px; color: ${flow.managerVerified ? '#34d399' : '#9ca3af'}; font-weight: bold;">Duyệt</span>
+                    </label>
+                  </div>
                 </div>
               `;
             }
@@ -1006,6 +1015,53 @@ function renderActiveStepPanel() {
         }
       }
 
+      // Evidence URL preview logic
+      const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
+      const previewContainer = document.getElementById('flow-step-evidence-preview');
+      if (evidenceUrlInput && previewContainer) {
+        evidenceUrlInput.value = flow.evidenceUrl || '';
+        
+        const updateEvidencePreview = (url) => {
+          if (!url) {
+            previewContainer.innerHTML = `<span class="text-muted" style="font-size: 9.5px; text-align: center; padding: 4px;">Chưa có ảnh</span>`;
+            return;
+          }
+          
+          const urlLower = url.toLowerCase();
+          const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(url) || 
+                          urlLower.includes('drive.google.com') || 
+                          urlLower.includes('googleusercontent.com');
+                          
+          let displayUrl = url;
+          if (urlLower.includes('drive.google.com')) {
+            let fileId = '';
+            const dMatch = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (dMatch && dMatch[1]) {
+              fileId = dMatch[1];
+            } else {
+              const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+              if (idMatch && idMatch[1]) {
+                fileId = idMatch[1];
+              }
+            }
+            if (fileId) {
+              displayUrl = `https://lh3.googleusercontent.com/u/0/d/${fileId}`;
+            }
+          }
+          
+          previewContainer.innerHTML = `
+            <a href="${url}" target="_blank" style="display:block; width:100%; height:100%;">
+              <img src="${displayUrl}" onerror="this.src=''; this.parentElement.innerHTML='<span style=\'font-size:9.5px; color:#38bdf8; text-align:center; padding:4px; word-break:break-all;\'><i class=\'fa-solid fa-link\'></i> Xem liên kết</span>';" style="width:100%; height:100%; object-fit:cover;" alt="Bằng chứng" />
+            </a>
+          `;
+        };
+        
+        updateEvidencePreview(flow.evidenceUrl);
+        evidenceUrlInput.oninput = (e) => {
+          updateEvidencePreview(e.target.value.trim());
+        };
+      }
+
       updateAuditMessage();
       msgTimeInput.oninput = updateAuditMessage;
       entryTimeInput.oninput = updateAuditMessage;
@@ -1161,6 +1217,10 @@ function handleSaveActiveStepData() {
   if (currentActiveStepNum === 1) {
     flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
     flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
+    const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
+    if (evidenceUrlInput) {
+      flow.evidenceUrl = evidenceUrlInput.value.trim();
+    }
     const verifyChk = document.getElementById('flow-step-manager-verify');
     if (verifyChk) {
       flow.managerVerified = verifyChk.checked;
@@ -1249,6 +1309,7 @@ function handleAddFlowSubmit(e) {
   let clientId = clientSelectVal;
   let customerMsgTime = document.getElementById('flow-customer-msg-time').value;
   let infoEntryTime = document.getElementById('flow-info-entry-time').value;
+  let evidenceUrl = document.getElementById('flow-evidence-url') ? document.getElementById('flow-evidence-url').value.trim() : '';
 
   // Handle lead select conversion
   if (clientSelectVal.startsWith('lead-')) {
@@ -1365,6 +1426,7 @@ function handleAddFlowSubmit(e) {
     deadline: flowSteps[0].deadline,
     customerMsgTime: customerMsgTime,
     infoEntryTime: infoEntryTime,
+    evidenceUrl: evidenceUrl,
     files: [],
     riskNote: document.getElementById('flow-risk').value.trim(),
     history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo quy trình lô hàng`],

@@ -2536,13 +2536,17 @@
           </div>
 
           <div class="form-row" id="flow-time-audit-fields">
-            <div class="form-group col-6">
-              <label for="flow-customer-msg-time">Thời gian khách nhắn tin <span class="text-rose">*</span></label>
+            <div class="form-group col-4">
+              <label for="flow-customer-msg-time">Thời gian khách nhắn <span class="text-rose">*</span></label>
               <input type="datetime-local" id="flow-customer-msg-time" class="form-control" required>
             </div>
-            <div class="form-group col-6">
-              <label for="flow-info-entry-time">Thời gian nhập thông tin <span class="text-rose">*</span></label>
+            <div class="form-group col-4">
+              <label for="flow-info-entry-time">Thời gian nhập <span class="text-rose">*</span></label>
               <input type="datetime-local" id="flow-info-entry-time" class="form-control" required>
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-evidence-url">Link ảnh bằng chứng</label>
+              <input type="text" id="flow-evidence-url" class="form-control" placeholder="Dán link ảnh/Drive...">
             </div>
           </div>
 
@@ -2651,21 +2655,38 @@
 
             <div id="flow-step-time-audit-group" style="display:none; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
               <h5 style="font-size:12.5px; font-weight:bold; color:var(--color-primary); margin-bottom:8px;"><i class="fa-solid fa-clock-rotate-left"></i> Kiểm Tra Thời Gian Phản Hồi</h5>
-              <div class="form-group">
-                <label for="flow-step-customer-msg-time">Thời gian khách nhắn tin</label>
-                <input type="datetime-local" id="flow-step-customer-msg-time" class="form-control">
-              </div>
-              <div class="form-group">
-                <label for="flow-step-info-entry-time">Thời gian nhập thông tin</label>
-                <input type="datetime-local" id="flow-step-info-entry-time" class="form-control">
-              </div>
-              <div id="flow-step-time-audit-result" style="margin-top: 8px;"></div>
               
-              <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px;">
-                <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; margin: 0;">
-                  <input type="checkbox" id="flow-step-manager-verify" style="cursor: pointer; width: 14px; height: 14px; margin: 0;">
-                  <span style="font-size: 12.5px; font-weight: bold; color: var(--text-secondary);">Quản lý xác nhận đã kiểm tra</span>
-                </label>
+              <div style="display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 12px;">
+                <!-- Left: inputs and status -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div class="form-group" style="margin: 0;">
+                    <label for="flow-step-customer-msg-time" style="font-size: 11px; margin-bottom: 2px;">Thời gian khách nhắn tin</label>
+                    <input type="datetime-local" id="flow-step-customer-msg-time" class="form-control" style="height: 30px; font-size: 11.5px; padding: 2px 6px;">
+                  </div>
+                  <div class="form-group" style="margin: 0;">
+                    <label for="flow-step-info-entry-time" style="font-size: 11px; margin-bottom: 2px;">Thời gian nhập thông tin</label>
+                    <input type="datetime-local" id="flow-step-info-entry-time" class="form-control" style="height: 30px; font-size: 11.5px; padding: 2px 6px;">
+                  </div>
+                  <div id="flow-step-time-audit-result" style="margin-top: 4px;"></div>
+                  
+                  <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                    <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; margin: 0; user-select: none;">
+                      <input type="checkbox" id="flow-step-manager-verify" style="cursor: pointer; width: 13px; height: 13px; margin: 0;">
+                      <span style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">Quản lý đã kiểm tra</span>
+                    </label>
+                  </div>
+                </div>
+                
+                <!-- Right: Evidence image link and preview -->
+                <div style="display: flex; flex-direction: column; gap: 6px; border-left: 1px dashed rgba(255,255,255,0.1); padding-left: 10px;">
+                  <div class="form-group" style="margin: 0;">
+                    <label for="flow-step-evidence-url" style="font-size: 11px; margin-bottom: 2px;">Ảnh bằng chứng</label>
+                    <input type="text" id="flow-step-evidence-url" class="form-control" style="height: 30px; font-size: 11px; padding: 2px 6px;" placeholder="Link ảnh/Drive...">
+                  </div>
+                  <div id="flow-step-evidence-preview" style="width: 100%; height: 85px; background: #111827; border: 1px dashed rgba(255,255,255,0.15); border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <span class="text-muted" style="font-size: 9.5px; text-align: center; padding: 4px;">Chưa có ảnh</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -3072,12 +3093,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.15"></script>
-  <script src="crm.js?v=20.15"></script>
-  <script src="tasks.js?v=20.15"></script>
-  <script src="ops.js?v=20.15"></script>
-  <script src="inbox-sim.js?v=20.15"></script>
-  <script src="games.js?v=20.15"></script>
-  <script src="suggestions.js?v=20.15"></script>
+  <script src="app.js?v=20.16"></script>
+  <script src="crm.js?v=20.16"></script>
+  <script src="tasks.js?v=20.16"></script>
+  <script src="ops.js?v=20.16"></script>
+  <script src="inbox-sim.js?v=20.16"></script>
+  <script src="games.js?v=20.16"></script>
+  <script src="suggestions.js?v=20.16"></script>
 </body>
 </html>
