@@ -35,8 +35,21 @@ function initOpsEvents() {
     btnAddFlowModal.onclick = () => {
       populateFlowUserDropdowns();
       populateFlowClientDropdown();
+      initFlowAddModalTimes();
       openModal('modal-add-ops-flow');
     };
+  }
+
+  function initFlowAddModalTimes() {
+    const formatDateTimeLocal = (date) => {
+      const tzOffset = date.getTimezoneOffset() * 60000;
+      return (new Date(date - tzOffset)).toISOString().slice(0, 16);
+    };
+    const now = new Date();
+    const entryInput = document.getElementById('flow-info-entry-time');
+    const msgTimeInput = document.getElementById('flow-customer-msg-time');
+    if (entryInput) entryInput.value = formatDateTimeLocal(now);
+    if (msgTimeInput) msgTimeInput.value = formatDateTimeLocal(new Date(now.getTime() - 30 * 60 * 1000)); // Default 30 mins ago
   }
 
   const formAddOpsFlow = document.getElementById('form-add-ops-flow');
@@ -49,12 +62,34 @@ function initOpsEvents() {
     clientSelect.onchange = (e) => {
       const newFields = document.getElementById('flow-new-client-fields');
       const extraFields = document.getElementById('flow-new-client-extra');
-      if (e.target.value === 'new') {
+      const val = e.target.value;
+      if (val === 'new') {
         newFields.style.display = 'block';
         extraFields.style.display = 'block';
+        
+        const now = new Date();
+        const msgTimeInput = document.getElementById('flow-customer-msg-time');
+        if (msgTimeInput) {
+          const tzOffset = now.getTimezoneOffset() * 60000;
+          msgTimeInput.value = (new Date(now - tzOffset - 30 * 60 * 1000)).toISOString().slice(0, 16);
+        }
       } else {
         newFields.style.display = 'none';
         extraFields.style.display = 'none';
+        
+        if (val.startsWith('lead-')) {
+          const leadId = val.replace('lead-', '');
+          const lead = AppState.leads && AppState.leads.find(l => l.id === leadId);
+          if (lead && lead.createdTime) {
+            document.getElementById('flow-customer-msg-time').value = lead.createdTime.replace(' ', 'T');
+          } else if (lead && lead.date) {
+            document.getElementById('flow-customer-msg-time').value = `${lead.date}T12:00`;
+          }
+        } else {
+          const now = new Date();
+          const tzOffset = now.getTimezoneOffset() * 60000;
+          document.getElementById('flow-customer-msg-time').value = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+        }
       }
     };
   }
@@ -560,6 +595,24 @@ function renderOpsWorkflows() {
         </div>
         <div class="card-client-name" style="margin-top:6px; font-size:13.5px;">${flow.name}</div>
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
+        ${(() => {
+          if (flow.customerMsgTime && flow.infoEntryTime) {
+            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
+            const diffMin = Math.round(diffMs / (1000 * 60));
+            if (diffMin >= 0) {
+              const hrs = Math.floor(diffMin / 60);
+              const mins = diffMin % 60;
+              const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+              const isOk = diffMin <= 120;
+              if (isOk) {
+                return `<div style="font-size: 10px; color: #34d399; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Phản hồi đạt: ${timeText}</div>`;
+              } else {
+                return `<div style="font-size: 10px; color: #ef4444; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-triangle-exclamation"></i> Phản hồi trễ: ${timeText} (>2h)</div>`;
+              }
+            }
+          }
+          return '';
+        })()}
         ${overdueBadge}
         <div style="font-size: 10.2px; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 4px;">
           <i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Chưa thiết lập'}
@@ -890,6 +943,50 @@ function renderActiveStepPanel() {
   // Set notes
   document.getElementById('flow-step-note').value = stepData.note || '';
 
+  // Response time audit section for Step 1
+  const auditGroup = document.getElementById('flow-step-time-audit-group');
+  if (auditGroup) {
+    if (currentActiveStepNum === 1) {
+      auditGroup.style.display = 'block';
+      const msgTimeInput = document.getElementById('flow-step-customer-msg-time');
+      const entryTimeInput = document.getElementById('flow-step-info-entry-time');
+      const auditResult = document.getElementById('flow-step-time-audit-result');
+      
+      msgTimeInput.value = flow.customerMsgTime || '';
+      entryTimeInput.value = flow.infoEntryTime || '';
+      
+      const updateAuditMessage = () => {
+        const msgTime = msgTimeInput.value;
+        const entryTime = entryTimeInput.value;
+        if (msgTime && entryTime) {
+          const diffMs = new Date(entryTime) - new Date(msgTime);
+          const diffMin = Math.round(diffMs / (1000 * 60));
+          if (diffMin >= 0) {
+            const hrs = Math.floor(diffMin / 60);
+            const mins = diffMin % 60;
+            const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+            const isOk = diffMin <= 120;
+            if (isOk) {
+              auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
+            } else {
+              auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
+            }
+          } else {
+            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
+          }
+        } else {
+          auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
+        }
+      };
+      
+      updateAuditMessage();
+      msgTimeInput.oninput = updateAuditMessage;
+      entryTimeInput.oninput = updateAuditMessage;
+    } else {
+      auditGroup.style.display = 'none';
+    }
+  }
+
   // Checklist render
   const chkContainer = document.getElementById('flow-step-checklist-container');
   chkContainer.innerHTML = '';
@@ -1033,6 +1130,12 @@ function handleSaveActiveStepData() {
   stepData.deadline = document.getElementById('flow-step-deadline').value;
   stepData.note = document.getElementById('flow-step-note').value.trim();
 
+  // Save audit times if on step 1
+  if (currentActiveStepNum === 1) {
+    flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
+    flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
+  }
+
   // If status is not complete, we can keep it as is, or set to completed if all checklists are ticked!
   const hasPending = stepData.checklist.some(c => !c.done);
   if (!hasPending && stepData.status !== 'done') {
@@ -1113,9 +1216,36 @@ function handleAddFlowSubmit(e) {
   const clientSelectVal = document.getElementById('flow-client-select').value;
   
   let clientId = clientSelectVal;
+  let customerMsgTime = document.getElementById('flow-customer-msg-time').value;
+  let infoEntryTime = document.getElementById('flow-info-entry-time').value;
 
+  // Handle lead select conversion
+  if (clientSelectVal.startsWith('lead-')) {
+    const leadId = clientSelectVal.replace('lead-', '');
+    const lead = AppState.leads && AppState.leads.find(l => l.id === leadId);
+    if (lead) {
+      const newClientId = `client-${Date.now()}`;
+      const newClientCode = `MH${400 + AppState.clients.length + 1}`;
+      const newClient = {
+        id: newClientId,
+        code: newClientCode,
+        name: lead.name,
+        phone: lead.phone || '',
+        social: lead.source === 'Fanpage' ? 'Facebook' : '',
+        type: serviceType,
+        tier: 'VIP 5',
+        source: lead.source,
+        cskhId: lead.salesId || 'usr-admin',
+        managerId: 'usr-admin',
+        note: 'Khách hàng tạo từ Lead qua Lô hàng',
+        createdTime: lead.createdTime ? lead.createdTime.split(' ')[0] : (lead.date || new Date().toISOString().split('T')[0])
+      };
+      AppState.clients.push(newClient);
+      clientId = newClientId;
+    }
+  }
   // Handle create new client if "new" is selected
-  if (clientSelectVal === 'new') {
+  else if (clientSelectVal === 'new') {
     const cName = document.getElementById('flow-client-name').value.trim();
     const cPhone = document.getElementById('flow-client-phone').value.trim();
     const cSocial = document.getElementById('flow-client-social').value.trim();
@@ -1202,6 +1332,8 @@ function handleAddFlowSubmit(e) {
     profit: parseInt(document.getElementById('flow-profit').value) || 0,
     debt: parseInt(document.getElementById('flow-revenue').value) || 0, // Default debt = revenue
     deadline: flowSteps[0].deadline,
+    customerMsgTime: customerMsgTime,
+    infoEntryTime: infoEntryTime,
     files: [],
     riskNote: document.getElementById('flow-risk').value.trim(),
     history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo quy trình lô hàng`],
@@ -1235,8 +1367,20 @@ function populateFlowClientDropdown() {
   const select = document.getElementById('flow-client-select');
   if (!select) return;
   
-  // Keep the first "new" option
   select.innerHTML = '<option value="new">-- Tạo Khách Hàng Mới --</option>';
+  
+  // List Facebook Leads first (prefixed with 'lead-')
+  if (AppState.leads) {
+    AppState.leads.forEach(l => {
+      if (l.stage !== 'failed') {
+        const opt = document.createElement('option');
+        opt.value = `lead-${l.id}`;
+        opt.innerText = `[Lead Fanpage] ${l.name}`;
+        select.appendChild(opt);
+      }
+    });
+  }
+
   AppState.clients.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c.id;

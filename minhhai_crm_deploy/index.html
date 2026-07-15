@@ -36,7 +36,7 @@
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
           <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
             <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
-            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v44.9</span>
+            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v45.0</span>
           </div>
         </div>
       </div>
@@ -1759,6 +1759,238 @@
     </div>
   </div>
 
+  <!-- ==================== modal-add-ops-flow ==================== -->
+  <div class="modal" id="modal-add-ops-flow">
+    <div class="modal-content" style="width: 700px; max-width: 95%;">
+      <div class="modal-header">
+        <h3>Khởi Tạo Lô Hàng / Workflow Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-ops-flow">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-ops-flow">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="flow-name">Tên lô hàng/workflow <span class="text-rose">*</span></label>
+              <input type="text" id="flow-name" class="form-control" placeholder="Ví dụ: Vải thô K1090 Nam Thuận" required>
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-service-type">Loại dịch vụ <span class="text-rose">*</span></label>
+              <select id="flow-service-type" class="form-control" required>
+                <option value="mua hộ">Mua hộ</option>
+                <option value="ký gửi">Ký gửi</option>
+                <option value="chính ngạch" selected>Chính ngạch</option>
+                <option value="hàng lô">Hàng lô</option>
+                <option value="sourcing">Sourcing</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Client selection -->
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="flow-client-select">Chọn khách hàng thân thiết</label>
+              <select id="flow-client-select" class="form-control">
+                <option value="new">-- Tạo Khách Hàng Mới --</option>
+                <!-- JS populated -->
+              </select>
+            </div>
+            <div class="form-group col-6" id="flow-new-client-fields">
+              <label for="flow-client-name">Tên khách mới <span class="text-rose">*</span></label>
+              <input type="text" id="flow-client-name" class="form-control" placeholder="Nhập tên khách hàng...">
+            </div>
+          </div>
+
+          <div class="form-row" id="flow-new-client-extra" style="margin-top: 0;">
+            <div class="form-group col-6">
+              <label for="flow-client-phone">SĐT khách mới</label>
+              <input type="text" id="flow-client-phone" class="form-control" placeholder="Nhập SĐT...">
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-client-social">Facebook/Zalo Link</label>
+              <input type="text" id="flow-client-social" class="form-control" placeholder="Link chat...">
+            </div>
+          </div>
+
+          <div class="form-row" id="flow-time-audit-fields">
+            <div class="form-group col-6">
+              <label for="flow-customer-msg-time">Thời gian khách nhắn tin <span class="text-rose">*</span></label>
+              <input type="datetime-local" id="flow-customer-msg-time" class="form-control" required>
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-info-entry-time">Thời gian nhập thông tin <span class="text-rose">*</span></label>
+              <input type="datetime-local" id="flow-info-entry-time" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-4">
+              <label for="flow-assignee">Phụ trách chính</label>
+              <select id="flow-assignee" class="form-control"></select>
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-cskh">CSKH liên quan</label>
+              <select id="flow-cskh" class="form-control"></select>
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-buyer">Người mua hàng</label>
+              <select id="flow-buyer" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="flow-warehouse-cn">Kho nhận Trung Quốc</label>
+              <input type="text" id="flow-warehouse-cn" class="form-control" placeholder="Ví dụ: Bằng Tường, Đông Hưng...">
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-warehouse-vn">Kho trả Việt Nam</label>
+              <input type="text" id="flow-warehouse-vn" class="form-control" placeholder="Ví dụ: Hà Nội, Hải Phòng...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-4">
+              <label for="flow-val-total">Giá trị đơn hàng (VND)</label>
+              <input type="number" id="flow-val-total" class="form-control" min="0" value="0">
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-revenue">Doanh thu dự kiến</label>
+              <input type="number" id="flow-revenue" class="form-control" min="0" value="0">
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-profit">Lợi nhuận dự kiến</label>
+              <input type="number" id="flow-profit" class="form-control" min="0" value="0">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="flow-risk">Ghi chú rủi ro / Cảnh báo đặc biệt</label>
+            <textarea id="flow-risk" class="form-control" rows="2" placeholder="Nhập lưu ý đặc biệt cho lô hàng..."></textarea>
+          </div>
+
+          <div class="modal-footer mt-4">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-ops-flow">Hủy</button>
+            <button type="submit" class="btn btn-primary">Khởi Tạo Quy Trình</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== modal-flow-detail ==================== -->
+  <div class="modal" id="modal-flow-detail">
+    <div class="modal-content" style="width: 780px; max-width: 95%;">
+      <div class="modal-header">
+        <div>
+          <h3 id="flow-detail-title">Lô Hàng Nam Thuận</h3>
+          <span class="card-subtitle" id="flow-detail-subtitle">Chính ngạch - MH401</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+          <select id="modal-flow-stage-select" style="font-size: 12px; padding: 4px 8px; background: #111827; color: white; border: 1px solid #4b5563; border-radius: 6px; cursor: pointer; outline: none; width: 155px; height: 28px; line-height: 1;">
+            <option value="" disabled selected>Chọn bước...</option>
+            <option value="1">1. Nhận thông tin</option>
+            <option value="2">2. Báo giá</option>
+            <option value="3">3. Thương lượng</option>
+            <option value="4">4. Thành công</option>
+            <option value="5">5. Mua hàng</option>
+            <option value="6">6. Shop gửi</option>
+            <option value="7">7. Về TQ</option>
+            <option value="8">8. Về VN</option>
+            <option value="9">9. Giao hàng</option>
+            <option value="10">10. Thu nợ</option>
+            <option value="11">11. Hoàn tất</option>
+          </select>
+          <button class="btn-close-modal" data-modal="modal-flow-detail" style="margin-left: 8px;">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <!-- Timeline Steps view -->
+        <div class="flow-steps-timeline" style="display:flex; justify-content:space-between; align-items:center; background:#111827; padding:12px; border-radius:var(--radius-md); overflow-x:auto; margin-bottom:20px; gap:8px;">
+          <!-- 11 Steps bubbles -->
+        </div>
+
+        <div class="dashboard-grid grid-1-3" style="gap:20px;">
+          <!-- Left: Step settings & checklists -->
+          <div style="background: rgba(31, 41, 55, 0.2); padding: 15px; border-radius: var(--radius-md); border:1px solid var(--border-color);">
+            <h4 id="flow-step-panel-title" style="font-size:15px; font-weight:bold; border-bottom:1px solid var(--border-color); padding-bottom:6px; margin-bottom:12px; color:var(--color-primary);">Bước 1: Nhận thông tin</h4>
+            
+            <div class="form-group">
+              <label for="flow-step-assignee">Người phụ trách bước này</label>
+              <select id="flow-step-assignee" class="form-control"></select>
+            </div>
+
+            <div class="form-group">
+              <label for="flow-step-deadline">Hạn chót cho bước này</label>
+              <input type="date" id="flow-step-deadline" class="form-control">
+            </div>
+
+            <div id="flow-step-time-audit-group" style="display:none; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
+              <h5 style="font-size:12.5px; font-weight:bold; color:var(--color-primary); margin-bottom:8px;"><i class="fa-solid fa-clock-rotate-left"></i> Kiểm Tra Thời Gian Phản Hồi</h5>
+              <div class="form-group">
+                <label for="flow-step-customer-msg-time">Thời gian khách nhắn tin</label>
+                <input type="datetime-local" id="flow-step-customer-msg-time" class="form-control">
+              </div>
+              <div class="form-group">
+                <label for="flow-step-info-entry-time">Thời gian nhập thông tin</label>
+                <input type="datetime-local" id="flow-step-info-entry-time" class="form-control">
+              </div>
+              <div id="flow-step-time-audit-result" style="margin-top: 8px;"></div>
+            </div>
+
+            <div class="form-group">
+              <label>Checklist nghiệp vụ:</label>
+              <div id="flow-step-checklist-container" style="display:flex; flex-direction:column; gap:8px; margin-top:6px; max-height:160px; overflow-y:auto; padding-right:4px;">
+                <!-- Checklist checkboxes -->
+              </div>
+              <div style="display:flex; gap:6px; margin-top:8px;">
+                <input type="text" id="flow-step-new-chk" class="form-control" style="font-size:12px; height:30px;" placeholder="Thêm việc cần làm...">
+                <button type="button" class="btn btn-sm btn-outline" id="btn-flow-step-add-chk"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Comments, documents, files -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div class="form-group">
+              <label>Ghi chú bước:</label>
+              <textarea id="flow-step-note" class="form-control" rows="3" placeholder="Nhập ghi chú kết quả xử lý bước này..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Tài liệu & Hình ảnh của lô hàng:</label>
+              <div id="flow-step-files-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
+                <!-- Step files list -->
+              </div>
+              <div style="display:flex; gap:6px; width:100%;">
+                <input type="text" id="flow-step-new-file-name" class="form-control" style="font-size:12px; height:32px; width:120px; flex-shrink:0;" placeholder="Tên file/Link...">
+                <input type="text" id="flow-step-new-file-url" class="form-control" style="font-size:12px; height:32px; flex-grow:1;" placeholder="https://...">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-flow-step-add-file" style="flex-shrink:0;">Ghim</button>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px;">
+              <label>Thảo luận nội bộ bước này:</label>
+              <div id="flow-step-comments" style="display:flex; flex-direction:column; gap:8px; background:#111827; border:1px solid var(--border-color); border-radius:var(--radius-sm); height:110px; overflow-y:auto; padding:8px; margin-bottom:6px;">
+                <!-- Comments list -->
+              </div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="flow-step-new-comment" class="form-control" style="font-size:12px; height:32px;" placeholder="Nhập tin nhắn trao đổi...">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-flow-step-add-comment"><i class="fa-solid fa-paper-plane"></i> Gửi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 20px; border-top:1px solid var(--border-color); padding-top:12px;">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-flow-detail">Đóng</button>
+          <button type="button" class="btn btn-danger" id="btn-flow-delete" style="margin-right:auto;"><i class="fa-solid fa-trash-can"></i> Xóa lô hàng</button>
+          <button type="button" class="btn btn-primary" id="btn-flow-step-save">Lưu Thông Tin Bước</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: ADD SINGLE TASK -->
   <div class="modal" id="modal-add-ops-task">
     <div class="modal-content" style="width: 550px; max-width: 95%;">
@@ -2208,9 +2440,19 @@
           <!-- Phiên bản mới nhất -->
           <div class="changelog-version-group">
             <div class="changelog-version-header">
+              <h4>Phiên bản v45.0</h4>
+              <span class="version-date">(15/07/2026)</span>
+              <span class="badge bg-emerald" style="font-size:10px; padding: 2px 6px;">Mới nhất</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Kiểm tra phản hồi 2h (Response Time SLA Audit):</strong> Thêm tính năng kiểm tra thời gian từ lúc khách hàng nhắn tin đến lúc nhập thông tin lô hàng. Tự động tính toán và hiển thị nhãn Đạt chuẩn/Trễ hạn (SLA 2 tiếng) trực quan ngay trên thẻ lô hàng ở Kanban và trong chi tiết bước Nhận thông tin.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-version-group" style="opacity: 0.85;">
+            <div class="changelog-version-header">
               <h4>Phiên bản v44.9</h4>
               <span class="version-date">(14/07/2026)</span>
-              <span class="badge bg-emerald" style="font-size:10px; padding: 2px 6px;">Mới nhất</span>
             </div>
             <ul class="changelog-changes-list">
               <li><strong>Đăng nhập đa thiết bị (Multi-device Login Sync):</strong> Tùy chỉnh cơ chế phân giải API tự động lấy địa chỉ origin hiện tại thay vì ép kết nối tĩnh Render. Hỗ trợ tất cả nhân viên truy cập hệ thống bằng địa chỉ IP cục bộ hay các máy tính khác trong mạng nội bộ bình thường.</li>
@@ -2318,12 +2560,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.10"></script>
-  <script src="crm.js?v=20.10"></script>
-  <script src="tasks.js?v=20.10"></script>
-  <script src="ops.js?v=20.10"></script>
-  <script src="inbox-sim.js?v=20.10"></script>
-  <script src="games.js?v=20.10"></script>
-  <script src="suggestions.js?v=20.10"></script>
+  <script src="app.js?v=20.11"></script>
+  <script src="crm.js?v=20.11"></script>
+  <script src="tasks.js?v=20.11"></script>
+  <script src="ops.js?v=20.11"></script>
+  <script src="inbox-sim.js?v=20.11"></script>
+  <script src="games.js?v=20.11"></script>
+  <script src="suggestions.js?v=20.11"></script>
 </body>
 </html>
