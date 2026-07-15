@@ -604,11 +604,25 @@ function renderOpsWorkflows() {
               const mins = diffMin % 60;
               const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
               const isOk = diffMin <= 120;
-              if (isOk) {
-                return `<div style="font-size: 10px; color: #34d399; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-circle-check"></i> Phản hồi đạt: ${timeText}</div>`;
-              } else {
-                return `<div style="font-size: 10px; color: #ef4444; font-weight: bold; margin-top: 4px; display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-triangle-exclamation"></i> Phản hồi trễ: ${timeText} (>2h)</div>`;
-              }
+              
+              const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+              const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+              
+              const color = isOk ? '#34d399' : '#ef4444';
+              const icon = isOk ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
+              const labelText = isOk ? `Phản hồi đạt: ${timeText}` : `Phản hồi trễ: ${timeText} (>2h)`;
+              
+              return `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px;">
+                  <div style="font-size: 10px; color: ${color}; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                    <i class="${icon}"></i> ${labelText}
+                  </div>
+                  <label style="display: inline-flex; align-items: center; gap: 4px; cursor: pointer; margin: 0; user-select: none;" onclick="event.stopPropagation();" ${!isAdminOrManager ? 'title="Chỉ Quản lý mới có quyền duyệt"' : ''}>
+                    <input type="checkbox" onchange="window.toggleManagerVerify('${flow.id}', this.checked)" ${flow.managerVerified ? 'checked' : ''} ${!isAdminOrManager ? 'disabled' : ''} style="cursor: pointer; width: 11px; height: 11px; margin: 0;">
+                    <span style="font-size: 9.5px; color: ${flow.managerVerified ? '#34d399' : '#9ca3af'}; font-weight: bold;">Duyệt</span>
+                  </label>
+                </div>
+              `;
             }
           }
           return '';
@@ -979,6 +993,19 @@ function renderActiveStepPanel() {
         }
       };
       
+      const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+      const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+      const verifyChk = document.getElementById('flow-step-manager-verify');
+      if (verifyChk) {
+        verifyChk.checked = !!flow.managerVerified;
+        verifyChk.disabled = !isAdminOrManager;
+        if (!isAdminOrManager) {
+          verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+        } else {
+          verifyChk.parentElement.removeAttribute('title');
+        }
+      }
+
       updateAuditMessage();
       msgTimeInput.oninput = updateAuditMessage;
       entryTimeInput.oninput = updateAuditMessage;
@@ -1134,6 +1161,10 @@ function handleSaveActiveStepData() {
   if (currentActiveStepNum === 1) {
     flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
     flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
+    const verifyChk = document.getElementById('flow-step-manager-verify');
+    if (verifyChk) {
+      flow.managerVerified = verifyChk.checked;
+    }
   }
 
   // If status is not complete, we can keep it as is, or set to completed if all checklists are ticked!
@@ -3198,6 +3229,25 @@ window.archiveAssignedTask = function(taskId) {
     if (typeof renderMyTasks === 'function') renderMyTasks();
     showToast('Đã đóng công việc và lưu trữ thành công.', 'success');
   }
+};
+
+window.toggleManagerVerify = function(flowId, checked) {
+  const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(f => f.id === flowId);
+  if (!flow) return;
+
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+  const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+
+  if (!isAdminOrManager) {
+    showToast('Chỉ Quản lý mới có quyền duyệt thời gian!', 'warning');
+    renderOpsWorkflows();
+    return;
+  }
+
+  flow.managerVerified = !!checked;
+  saveState();
+  renderOpsWorkflows();
+  showToast(flow.managerVerified ? 'Đã duyệt thời gian phản hồi!' : 'Đã hủy duyệt thời gian phản hồi!', 'success');
 };
 
 
