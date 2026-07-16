@@ -1137,6 +1137,7 @@ function renderActiveLeadStepPanel() {
       
       fileInfo.querySelector('button').onclick = () => {
         lead.files.splice(idx, 1);
+        saveState();
         renderActiveLeadStepPanel();
       };
       
@@ -1398,6 +1399,7 @@ function handleLeadAddStepFile() {
 
   nameInput.value = '';
   urlInput.value = '';
+  saveState();
   renderActiveLeadStepPanel();
 }
 
