@@ -1739,6 +1739,7 @@ function handleAddFlowSubmit(e) {
 
 function populateFlowUserDropdowns() {
   const users = AppState.users;
+  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
   ['flow-assignee', 'flow-cskh', 'flow-buyer'].forEach(id => {
     const select = document.getElementById(id);
     if (!select) return;
@@ -1747,6 +1748,7 @@ function populateFlowUserDropdowns() {
       const opt = document.createElement('option');
       opt.value = u.id;
       opt.innerText = u.name;
+      if (currentUser && u.id === currentUser.id) opt.selected = true;
       select.appendChild(opt);
     });
   });
