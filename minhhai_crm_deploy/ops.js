@@ -376,7 +376,7 @@ function renderFounderDashboard() {
   if (!container) return;
 
   const totalTasks = AppState.single_tasks.length;
-  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && parseSafeDate(t.deadline) < new Date())).length;
+  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
   const completedTodayTasks = AppState.single_tasks.filter(t => t.status === 'completed').length; // Simplification for today
 
   const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: Báo giá
@@ -387,7 +387,7 @@ function renderFounderDashboard() {
   // Render KPI grid cards
   let html = `
     <div class="stats-grid" style="margin-top: 15px;">
-      <div class="stat-card" style="cursor:pointer;" onclick="window.navigateToView('tasks-single')">
+      <div class="stat-card">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Tổng task đang mở</span>
@@ -395,7 +395,7 @@ function renderFounderDashboard() {
           <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
         </div>
       </div>
-      <div class="stat-card" style="cursor:pointer;" onclick="window.navigateToView('tasks-single')">
+      <div class="stat-card">
         <div class="stat-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
         <div class="stat-data">
           <span class="stat-label">Công việc quá hạn</span>
@@ -403,7 +403,7 @@ function renderFounderDashboard() {
           <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cần xử lý gấp!</span>
         </div>
       </div>
-      <div class="stat-card" style="cursor:pointer;" onclick="window.navigateToView('tasks-single')">
+      <div class="stat-card">
         <div class="stat-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Việc đã hoàn thành</span>
@@ -452,7 +452,7 @@ function renderFounderDashboard() {
   const userOverdueCounts = {};
   AppState.users.forEach(u => { userOverdueCounts[u.id] = 0; });
   AppState.single_tasks.forEach(t => {
-    const isOverdue = t.status === 'overdue' || (t.status !== 'completed' && t.deadline && parseSafeDate(t.deadline) < new Date());
+    const isOverdue = t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date());
     if (isOverdue && t.assigneeId) {
       userOverdueCounts[t.assigneeId] = (userOverdueCounts[t.assigneeId] || 0) + 1;
     }
@@ -557,7 +557,7 @@ function renderOpsWorkflows() {
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
 
     // Overdue filter
-    const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
+    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
     if (overdueVal && !isOverdue) return;
 
     filteredFlows.push(flow);
@@ -625,7 +625,7 @@ function renderOpsWorkflows() {
         // Evaluate SLA duration in minutes if it exists
         const getSlaMins = (f) => {
           if (f.customerMsgTime && f.infoEntryTime) {
-            const diffMs = parseSafeDate(f.infoEntryTime) - parseSafeDate(f.customerMsgTime);
+            const diffMs = new Date(f.infoEntryTime) - new Date(f.customerMsgTime);
             return diffMs >= 0 ? Math.floor(diffMs / 60000) : 999999;
           }
           return 999999;
@@ -670,7 +670,7 @@ function renderOpsWorkflows() {
           
           let slaBadge = '<span class="text-muted" style="font-size:11.5px; font-style:italic;">--</span>';
           if (flow.customerMsgTime && flow.infoEntryTime) {
-            const diffMs = parseSafeDate(flow.infoEntryTime) - parseSafeDate(flow.customerMsgTime);
+            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
             if (diffMs >= 0) {
               const diffMins = Math.floor(diffMs / 60000);
               const hours = Math.floor(diffMins / 60);
@@ -691,7 +691,7 @@ function renderOpsWorkflows() {
           const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
           const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Bước ${flow.stage}: ${currentStepName}</span>`;
           
-          const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11;
+          const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
           const deadlineBadge = isOverdue
             ? `<span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Trễ hạn</span>`
             : `<span style="color:var(--text-secondary);">${flow.deadline || 'Chưa đặt'}</span>`;
@@ -771,7 +771,7 @@ function renderOpsWorkflows() {
     // Populate columns cards
     stepLists[i].forEach(flow => {
       const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-      const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11;
+      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
       const card = document.createElement('div');
       card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
       card.setAttribute('draggable', 'true');
@@ -801,7 +801,7 @@ function renderOpsWorkflows() {
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
         ${(() => {
           if (flow.customerMsgTime && flow.infoEntryTime) {
-            const diffMs = parseSafeDate(flow.infoEntryTime) - parseSafeDate(flow.customerMsgTime);
+            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
             const diffMin = Math.round(diffMs / (1000 * 60));
             if (diffMin >= 0) {
               const hrs = Math.floor(diffMin / 60);
@@ -941,7 +941,6 @@ function handleFlowMoveAttempt(flowId, targetStage) {
       return;
     }
   }
-
   // If moving to Thất bại (stage 12), require fail reason + evidence
   if (targetStage === 12) {
     document.getElementById('fail-prompt-client-name').innerText = flow.name;
@@ -1186,7 +1185,7 @@ function renderActiveStepPanel() {
     "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
 
-  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1]}`;
+  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1] || 'Thất bại'}`;
 
   // Populate users
   const assigneeSelect = document.getElementById('flow-step-assignee');
@@ -1205,126 +1204,139 @@ function renderActiveStepPanel() {
   // Set notes
   document.getElementById('flow-step-note').value = stepData.note || '';
 
-  // Response time audit section for Step 1
+  // ===== ALWAYS SHOW: Audit time section (Step 1 data) =====
   const auditGroup = document.getElementById('flow-step-time-audit-group');
   if (auditGroup) {
-    if (currentActiveStepNum === 1) {
-      auditGroup.style.display = 'block';
-      const msgTimeInput = document.getElementById('flow-step-customer-msg-time');
-      const entryTimeInput = document.getElementById('flow-step-info-entry-time');
-      const auditResult = document.getElementById('flow-step-time-audit-result');
-      
-      msgTimeInput.value = flow.customerMsgTime || '';
-      entryTimeInput.value = flow.infoEntryTime || '';
-      
-      const updateAuditMessage = () => {
-        const msgTime = msgTimeInput.value;
-        const entryTime = entryTimeInput.value;
-        if (msgTime && entryTime) {
-          const diffMs = parseSafeDate(entryTime) - parseSafeDate(msgTime);
-          const diffMin = Math.round(diffMs / (1000 * 60));
-          if (diffMin >= 0) {
-            const hrs = Math.floor(diffMin / 60);
-            const mins = diffMin % 60;
-            const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-            const isOk = diffMin <= 120;
-            if (isOk) {
-              auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
-            } else {
-              auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
-            }
+    auditGroup.style.display = 'block';
+    const msgTimeInput = document.getElementById('flow-step-customer-msg-time');
+    const entryTimeInput = document.getElementById('flow-step-info-entry-time');
+    const auditResult = document.getElementById('flow-step-time-audit-result');
+    
+    msgTimeInput.value = flow.customerMsgTime || '';
+    entryTimeInput.value = flow.infoEntryTime || '';
+    
+    const updateAuditMessage = () => {
+      const msgTime = msgTimeInput.value;
+      const entryTime = entryTimeInput.value;
+      if (msgTime && entryTime) {
+        const diffMs = new Date(entryTime) - new Date(msgTime);
+        const diffMin = Math.round(diffMs / (1000 * 60));
+        if (diffMin >= 0) {
+          const hrs = Math.floor(diffMin / 60);
+          const mins = diffMin % 60;
+          const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+          const isOk = diffMin <= 120;
+          if (isOk) {
+            auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
           } else {
-            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
+            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
           }
         } else {
-          auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
+          auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
         }
-      };
-      
-      const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-      const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-      const verifyChk = document.getElementById('flow-step-manager-verify');
-      if (verifyChk) {
-        verifyChk.checked = !!flow.managerVerified;
-        verifyChk.disabled = !isAdminOrManager;
-        if (!isAdminOrManager) {
-          verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
-        } else {
-          verifyChk.parentElement.removeAttribute('title');
-        }
+      } else {
+        auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
       }
-
-      // Evidence URL logic (No preview container as requested)
-      const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-      if (evidenceUrlInput) {
-        evidenceUrlInput.value = flow.evidenceUrl || '';
+    };
+    
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+    const verifyChk = document.getElementById('flow-step-manager-verify');
+    if (verifyChk) {
+      verifyChk.checked = !!flow.managerVerified;
+      verifyChk.disabled = !isAdminOrManager;
+      if (!isAdminOrManager) {
+        verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+      } else {
+        verifyChk.parentElement.removeAttribute('title');
       }
-
-      updateAuditMessage();
-      msgTimeInput.oninput = updateAuditMessage;
-      entryTimeInput.oninput = updateAuditMessage;
-    } else {
-      auditGroup.style.display = 'none';
     }
 
-    const flowFailGroup = document.getElementById('flow-step-fail-group');
-    if (flowFailGroup) {
-      if (currentActiveStepNum === 12) {
-        flowFailGroup.style.display = 'block';
-        const reasonSelect = document.getElementById('flow-step-fail-reason');
-        const reasonOtherGroup = document.getElementById('flow-step-fail-reason-other-group');
-        const reasonOtherInput = document.getElementById('flow-step-fail-reason-other');
-        const evidenceInput = document.getElementById('flow-step-fail-evidence');
-        const approvedCheckbox = document.getElementById('flow-step-fail-approved');
-        
-        const storedReason = flow.failReason || '';
-        const stdReasons = [
-          'Giá dịch vụ cao',
-          'Thời gian vận chuyển lâu',
-          'Không cạnh tranh được với đại lý VN',
-          'Trả lời chậm',
-          'Hàng khó từ chối',
-          'Không đủ năng lực xử lý hàng',
-          'Không cạnh tranh được giá dịch vụ với đối thủ',
-          'Không tìm được hàng cho KH',
-          'Khách lẻ, hàng khó => chủ động từ chối',
-          'Khách hàng ko quan tâm',
-          'Do AI tư vấn chưa tốt'
-        ];
-        
-        if (storedReason && !stdReasons.includes(storedReason)) {
-          reasonSelect.value = 'Khác';
+    const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
+    if (evidenceUrlInput) {
+      evidenceUrlInput.value = flow.evidenceUrl || '';
+    }
+
+    updateAuditMessage();
+    msgTimeInput.oninput = updateAuditMessage;
+    entryTimeInput.oninput = updateAuditMessage;
+  }
+
+  // ===== ALWAYS SHOW: Quote feedback section (Step 2 data) =====
+  const quoteFeedbackGroup = document.getElementById('flow-step-quote-feedback-group');
+  if (quoteFeedbackGroup) {
+    quoteFeedbackGroup.style.display = 'block';
+    const quoteTextarea = document.getElementById('flow-step-quote-feedback');
+    if (quoteTextarea) {
+      quoteTextarea.value = flow.quoteFeedback || '';
+      quoteTextarea.oninput = (e) => {
+        const val = e.target.value;
+        flow.quoteFeedback = val;
+        const step2 = flow.steps.find(s => s.stepNum === 2);
+        if (step2) {
+          const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+          if (item) {
+            item.done = val.trim().length >= 3;
+          }
+        }
+        saveState();
+      };
+    }
+  }
+
+  // ===== Fail group (only show for step 12) =====
+  const flowFailGroup = document.getElementById('flow-step-fail-group');
+  if (flowFailGroup) {
+    if (flow.stage === 12) {
+      flowFailGroup.style.display = 'block';
+      const reasonSelect = document.getElementById('flow-step-fail-reason');
+      const reasonOtherGroup = document.getElementById('flow-step-fail-reason-other-group');
+      const reasonOtherInput = document.getElementById('flow-step-fail-reason-other');
+      const evidenceInput = document.getElementById('flow-step-fail-evidence');
+      const approvedCheckbox = document.getElementById('flow-step-fail-approved');
+      
+      const storedReason = flow.failReason || '';
+      const stdReasons = [
+        'Giá dịch vụ cao',
+        'Thời gian vận chuyển lâu',
+        'Không cạnh tranh được với đại lý VN',
+        'Trả lời chậm',
+        'Hàng khó từ chối',
+        'Không đủ năng lực xử lý hàng',
+        'Không cạnh tranh được giá dịch vụ với đối thủ',
+        'Không tìm được hàng cho KH',
+        'Khách lẻ, hàng khó => chủ động từ chối',
+        'Khách hàng ko quan tâm',
+        'Do AI tư vấn chưa tốt'
+      ];
+      
+      if (storedReason && !stdReasons.includes(storedReason)) {
+        reasonSelect.value = 'Khác';
+        reasonOtherGroup.style.display = 'block';
+        reasonOtherInput.value = storedReason;
+      } else {
+        reasonSelect.value = storedReason;
+        reasonOtherGroup.style.display = 'none';
+        reasonOtherInput.value = '';
+      }
+
+      reasonSelect.onchange = (e) => {
+        if (e.target.value === 'Khác') {
           reasonOtherGroup.style.display = 'block';
-          reasonOtherInput.value = storedReason;
         } else {
-          reasonSelect.value = storedReason;
           reasonOtherGroup.style.display = 'none';
           reasonOtherInput.value = '';
         }
+      };
 
-        reasonSelect.onchange = (e) => {
-          if (e.target.value === 'Khác') {
-            reasonOtherGroup.style.display = 'block';
-          } else {
-            reasonOtherGroup.style.display = 'none';
-            reasonOtherInput.value = '';
-          }
-        };
-
-        evidenceInput.value = flow.failEvidence || '';
-        approvedCheckbox.checked = !!flow.failApproved;
-        
-        const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-        const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-        approvedCheckbox.disabled = !isAdminOrManager;
-        if (!isAdminOrManager) {
-          approvedCheckbox.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
-        } else {
-          approvedCheckbox.parentElement.removeAttribute('title');
-        }
-      } else {
-        flowFailGroup.style.display = 'none';
-      }
+      evidenceInput.value = flow.failEvidence || '';
+      approvedCheckbox.checked = !!flow.failApproved;
+      
+      const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+      const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
+      approvedCheckbox.disabled = !isAdminOrManager2;
+    } else {
+      flowFailGroup.style.display = 'none';
     }
   }
 
@@ -1333,7 +1345,6 @@ function renderActiveStepPanel() {
   chkContainer.innerHTML = '';
   if (stepData.checklist && stepData.checklist.length > 0) {
     stepData.checklist.forEach((item, idx) => {
-      // Hide the checkbox if it's the system-linked quote feedback text
       if (item.text === "cập nhật tình trạng sau báo giá") return;
       
       const row = document.createElement('div');
@@ -1367,45 +1378,15 @@ function renderActiveStepPanel() {
     });
   }
 
-  // Inject system task textarea dynamically for Step 2 (Báo giá)
-  if (currentActiveStepNum === 2) {
-    const row = document.createElement('div');
-    row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px; width: 100%; box-sizing: border-box;';
-    row.innerHTML = `
-      <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
-        [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
-      </div>
-      <textarea id="flow-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${flow.quoteFeedback || ''}</textarea>
-    `;
-    
-    const textarea = row.querySelector('textarea');
-    textarea.oninput = (e) => {
-      const val = e.target.value;
-      flow.quoteFeedback = val;
-      
-      const step2 = flow.steps.find(s => s.stepNum === 2);
-      if (step2) {
-        const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
-        if (item) {
-          item.done = val.trim().length >= 3;
-        }
-      }
-      saveState();
-    };
-    
-    chkContainer.appendChild(row);
-  }
-
   // Handle empty state
   if (chkContainer.innerHTML === '') {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
-  // Render step files (with image previews support)
+  // Render step files
   const filesContainer = document.getElementById('flow-step-files-list');
   filesContainer.innerHTML = '';
   
-  // Collect files associated with this shipment (global)
   const stepFiles = flow.files || [];
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
@@ -1423,7 +1404,6 @@ function renderActiveStepPanel() {
                       nameLower.includes('jpg') || 
                       nameLower.includes('jpeg');
 
-      // Resolve Google Drive direct preview link if applicable
       let displayUrl = file.url;
       if (file.url.toLowerCase().includes('drive.google.com')) {
         let fileId = '';
@@ -1456,7 +1436,7 @@ function renderActiveStepPanel() {
     filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
   }
 
-  // Render comments for this step (v18)
+  // Render comments
   renderActiveStepComments();
 }
 
@@ -1471,22 +1451,37 @@ function handleSaveActiveStepData() {
   stepData.deadline = document.getElementById('flow-step-deadline').value;
   stepData.note = document.getElementById('flow-step-note').value.trim();
 
-  // Save audit times if on step 1
-  if (currentActiveStepNum === 1) {
-    flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
-    flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
-    const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-    if (evidenceUrlInput) {
-      flow.evidenceUrl = evidenceUrlInput.value.trim();
-    }
-    const verifyChk = document.getElementById('flow-step-manager-verify');
-    if (verifyChk) {
+  // Always save audit times (Step 1 data - now always visible)
+  flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
+  flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
+  const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
+  if (evidenceUrlInput) {
+    flow.evidenceUrl = evidenceUrlInput.value.trim();
+  }
+  const verifyChk = document.getElementById('flow-step-manager-verify');
+  if (verifyChk) {
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+    if (isAdminOrManager) {
       flow.managerVerified = verifyChk.checked;
     }
   }
 
-  // Save fail reason, evidence and manager approval if on step 12 (Thất bại)
-  if (currentActiveStepNum === 12) {
+  // Always save quote feedback (Step 2 data - now always visible)
+  const quoteFeedbackEl = document.getElementById('flow-step-quote-feedback');
+  if (quoteFeedbackEl) {
+    flow.quoteFeedback = quoteFeedbackEl.value;
+    const step2 = flow.steps.find(s => s.stepNum === 2);
+    if (step2) {
+      const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+      if (item) {
+        item.done = quoteFeedbackEl.value.trim().length >= 3;
+      }
+    }
+  }
+
+  // Save fail reason, evidence and manager approval if flow is at step 12 (Thất bại)
+  if (flow.stage === 12) {
     const reasonSelect = document.getElementById('flow-step-fail-reason');
     const reasonVal = reasonSelect.value;
     if (!reasonVal) {
@@ -1514,9 +1509,9 @@ function handleSaveActiveStepData() {
     flow.failEvidence = evidenceVal;
     flow.evidenceUrl = evidenceVal;
 
-    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-    if (isAdminOrManager) {
+    const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
+    if (isAdminOrManager2) {
       flow.failApproved = document.getElementById('flow-step-fail-approved').checked;
     }
   }
@@ -1883,8 +1878,8 @@ function renderOpsSingleTasks() {
         valA = priorityOrder[a.priority] || 0;
         valB = priorityOrder[b.priority] || 0;
       } else if (currentSortField === 'deadline') {
-        valA = a.deadline ? parseSafeDate(a.deadline).getTime() : 0;
-        valB = b.deadline ? parseSafeDate(b.deadline).getTime() : 0;
+        valA = a.deadline ? new Date(a.deadline).getTime() : 0;
+        valB = b.deadline ? new Date(b.deadline).getTime() : 0;
       } else if (currentSortField === 'status') {
         const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
         valA = statusLabels[a.status] || '';
@@ -2033,6 +2028,18 @@ function renderSingleTasksBoard(tasks) {
       const task = AppState.single_tasks.find(tk => tk.id === taskId);
       if (task && task.status !== status) {
         task.status = status;
+        
+        if (task.assigneeId === AppState.currentUserId) {
+          if (typeof window.updateStreakOnActivity === 'function') {
+            window.updateStreakOnActivity(AppState.currentUserId);
+          }
+        }
+        if (status === 'completed') {
+          if (typeof window.awardPointsForCompletedTask === 'function') {
+            window.awardPointsForCompletedTask(task);
+          }
+        }
+        
         saveState();
         renderOpsSingleTasks();
         addNotification('Cập nhật Công việc 📝', `Đã chuyển công việc "${task.title}" sang cột ${status.toUpperCase()}`, 'info');
@@ -2464,7 +2471,11 @@ function handleAddSingleTaskSubmit(e) {
   // If in project views, refresh project tasks & overview lists
   if (currentActiveProjectId) {
     renderProjectTasksTab(currentActiveProjectId);
-    openProjectDetails(currentActiveProjectId);
+    if (typeof openProjectDedicatedView === 'function') {
+      openProjectDedicatedView(currentActiveProjectId);
+    } else {
+      openProjectDetails(currentActiveProjectId);
+    }
   }
 
   addNotification('Giao Việc 📝', `Đã giao công việc mới: "${title}" cho nhân viên phụ trách.`, 'success');
@@ -2992,7 +3003,7 @@ function renderMyTasks() {
         const chkDone = stepData.checklist ? stepData.checklist.filter(c => c.done).length : 0;
         const chkTotal = stepData.checklist ? stepData.checklist.length : 0;
 
-        const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11;
+        const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
 
         const card = document.createElement('div');
         card.className = 'kanban-card';
@@ -3075,11 +3086,20 @@ function renderMyTasks() {
         const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
         const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
 
-        const isOverdue = task.deadline && parseSafeDate(task.deadline) < new Date();
+        const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
         const card = document.createElement('div');
         card.className = 'kanban-card';
         card.style.cssText = `cursor: pointer; border-left: 4px solid ${task.projectId ? '#10b981' : '#f59e0b'}; transition: transform 0.2s; margin-bottom: 8px;`;
+
+        let projectInfoHtml = '';
+        if (task.projectId) {
+          const proj = (AppState.projects || []).find(p => p.id === task.projectId);
+          if (proj) {
+            projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+          }
+        }
+
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
@@ -3091,6 +3111,7 @@ function renderMyTasks() {
             </div>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
+          ${projectInfoHtml}
           <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
             <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
@@ -3124,7 +3145,7 @@ function renderMyTasks() {
         let currentStepIdx = task.stepsStatus ? task.stepsStatus.lastIndexOf(true) : 0;
         if (currentStepIdx === -1) currentStepIdx = 0;
 
-        const isOverdue = task.deadline && parseSafeDate(task.deadline) < new Date();
+        const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
         let stepSelectHtml = '';
         if (steps.length > 0) {
@@ -3203,7 +3224,7 @@ function renderMyTasks() {
           const assignee = AppState.users.find(u => u.id === task.assigneeId);
           const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
 
-          const isOverdue = task.deadline && parseSafeDate(task.deadline) < new Date() && task.status !== 'completed';
+          const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
 
           const card = document.createElement('div');
           card.className = 'kanban-card';
@@ -3358,7 +3379,7 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
 };
 
 window.openProjectDedicatedView = function(projId) {
-  const p = AppState.projects.find(proj => proj.id === projId);
+  const p = (AppState.projects || []).find(proj => proj.id === projId);
   if (!p) return;
 
   currentActiveProjectId = projId;
@@ -3375,12 +3396,32 @@ window.openProjectDedicatedView = function(projId) {
   }).filter(Boolean).join(', ') : '';
   
   document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
+  
+  // Reset description editing mode views
+  const viewMode = document.getElementById('project-desc-view-mode');
+  const editMode = document.getElementById('project-desc-edit-mode');
+  const btnEditDesc = document.getElementById('btn-edit-project-desc');
+  if (viewMode) viewMode.style.display = 'block';
+  if (editMode) editMode.style.display = 'none';
+  if (btnEditDesc) btnEditDesc.style.display = '';
+
   document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
+
+  // Calculate and update progress bar
+  const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
+  const totalTasks = projTasks.length;
+  const completedTasks = projTasks.filter(t => t.status === 'completed').length;
+  const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  
+  const percentEl = document.getElementById('dedicated-project-progress-percent');
+  if (percentEl) percentEl.innerText = `${percent}%`;
+  
+  const barEl = document.getElementById('dedicated-project-progress-bar');
+  if (barEl) barEl.style.width = `${percent}%`;
 
   // Render tasks
   const tasksContainer = document.getElementById('dedicated-project-tasks-list');
   tasksContainer.innerHTML = '';
-  const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
   if (projTasks.length === 0) {
     tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">Chưa có công việc nào liên kết với dự án này.</span>`;
   } else {
@@ -3389,17 +3430,47 @@ window.openProjectDedicatedView = function(projId) {
       div.className = 'mini-task-item';
       div.style.cssText = 'padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 6px;';
       
-      const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
-      const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
+      const statusLabels = { 
+        todo: 'Chưa làm', 
+        pending: 'Chưa làm',
+        doing: 'Đang làm', 
+        waiting: 'Chờ phản hồi',
+        checking: 'Chờ duyệt',
+        completed: 'Hoàn thành', 
+        overdue: 'Quá hạn', 
+        canceled: 'Đã hủy' 
+      };
+      const statusColors = { 
+        todo: 'bg-blue',
+        pending: 'bg-gray', 
+        doing: 'bg-orange', 
+        waiting: 'bg-purple',
+        checking: 'bg-purple', 
+        completed: 'bg-emerald', 
+        overdue: 'bg-rose',
+        canceled: 'bg-gray' 
+      };
       
+      const isCompleted = task.status === 'completed';
+      const completeButton = isCompleted ? '' : `
+        <button class="btn btn-xs btn-primary" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; background: #059669; cursor: pointer; color: white;">
+          <i class="fa-solid fa-check"></i> Xong
+        </button>
+      `;
+
+      const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
+      const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
+
       div.innerHTML = `
         <div>
           <strong>${task.title}</strong>
           <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
+          <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
+          ${completeButton}
           <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
-          <span style="font-size: 10.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
+          <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
         </div>
       `;
       div.onclick = (e) => {
@@ -3444,6 +3515,25 @@ window.openProjectDedicatedView = function(projId) {
   openModal('modal-project-dedicated-view');
 };
 
+window.handleQuickCompleteTask = function(event, taskId) {
+  event.stopPropagation();
+  const task = AppState.single_tasks.find(t => t.id === taskId);
+  if (task) {
+    task.status = 'completed';
+    if (task.assigneeId === AppState.currentUserId) {
+      if (typeof window.updateStreakOnActivity === 'function') {
+        window.updateStreakOnActivity(AppState.currentUserId);
+      }
+    }
+    if (typeof window.awardPointsForCompletedTask === 'function') {
+      window.awardPointsForCompletedTask(task);
+    }
+    saveState();
+    showToast('Đã đánh dấu hoàn thành công việc!', 'success');
+    openProjectDedicatedView(currentActiveProjectId);
+  }
+};
+
 window.handleDeleteDedicatedProjectDoc = function(idx) {
   const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
   if (p && p.documents) {
@@ -3463,7 +3553,8 @@ function renderDedicatedProjectDiscussion(p) {
   } else {
     p.comments.forEach(c => {
       const div = document.createElement('div');
-      div.style.cssText = 'padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); font-size:11.5px;';
+      div.className = 'chat-msg-row';
+      div.style.cssText = 'padding: 8px 12px; margin-bottom: 8px; font-size:11.5px;';
       div.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
           <strong style="color:var(--color-primary);">${c.author}</strong>
@@ -3520,6 +3611,47 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         input.value = '';
         renderDedicatedProjectDiscussion(p);
+      }
+    };
+  }
+
+  // Edit project description event listeners binding
+  const btnEditDesc = document.getElementById('btn-edit-project-desc');
+  const btnSaveDesc = document.getElementById('btn-save-project-desc');
+  const btnCancelDesc = document.getElementById('btn-cancel-project-desc');
+  
+  if (btnEditDesc) {
+    btnEditDesc.onclick = () => {
+      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
+      if (p) {
+        document.getElementById('edit-project-desc-input').value = p.desc || '';
+        document.getElementById('edit-project-notes-input').value = p.notes || '';
+        document.getElementById('project-desc-view-mode').style.display = 'none';
+        document.getElementById('project-desc-edit-mode').style.display = 'flex';
+        btnEditDesc.style.display = 'none';
+      }
+    };
+  }
+  
+  if (btnCancelDesc) {
+    btnCancelDesc.onclick = () => {
+      document.getElementById('project-desc-view-mode').style.display = 'block';
+      document.getElementById('project-desc-edit-mode').style.display = 'none';
+      if (btnEditDesc) btnEditDesc.style.display = '';
+    };
+  }
+  
+  if (btnSaveDesc) {
+    btnSaveDesc.onclick = () => {
+      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
+      if (p) {
+        p.desc = document.getElementById('edit-project-desc-input').value.trim();
+        p.notes = document.getElementById('edit-project-notes-input').value.trim();
+        saveState();
+        showToast('Đã lưu thông tin dự án!', 'success');
+        
+        // Refresh view
+        openProjectDedicatedView(p.id);
       }
     };
   }

@@ -1185,7 +1185,7 @@ function renderActiveStepPanel() {
     "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
 
-  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1]}`;
+  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1] || 'Thất bại'}`;
 
   // Populate users
   const assigneeSelect = document.getElementById('flow-step-assignee');
@@ -1204,126 +1204,139 @@ function renderActiveStepPanel() {
   // Set notes
   document.getElementById('flow-step-note').value = stepData.note || '';
 
-  // Response time audit section for Step 1
+  // ===== ALWAYS SHOW: Audit time section (Step 1 data) =====
   const auditGroup = document.getElementById('flow-step-time-audit-group');
   if (auditGroup) {
-    if (currentActiveStepNum === 1) {
-      auditGroup.style.display = 'block';
-      const msgTimeInput = document.getElementById('flow-step-customer-msg-time');
-      const entryTimeInput = document.getElementById('flow-step-info-entry-time');
-      const auditResult = document.getElementById('flow-step-time-audit-result');
-      
-      msgTimeInput.value = flow.customerMsgTime || '';
-      entryTimeInput.value = flow.infoEntryTime || '';
-      
-      const updateAuditMessage = () => {
-        const msgTime = msgTimeInput.value;
-        const entryTime = entryTimeInput.value;
-        if (msgTime && entryTime) {
-          const diffMs = new Date(entryTime) - new Date(msgTime);
-          const diffMin = Math.round(diffMs / (1000 * 60));
-          if (diffMin >= 0) {
-            const hrs = Math.floor(diffMin / 60);
-            const mins = diffMin % 60;
-            const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-            const isOk = diffMin <= 120;
-            if (isOk) {
-              auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
-            } else {
-              auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
-            }
+    auditGroup.style.display = 'block';
+    const msgTimeInput = document.getElementById('flow-step-customer-msg-time');
+    const entryTimeInput = document.getElementById('flow-step-info-entry-time');
+    const auditResult = document.getElementById('flow-step-time-audit-result');
+    
+    msgTimeInput.value = flow.customerMsgTime || '';
+    entryTimeInput.value = flow.infoEntryTime || '';
+    
+    const updateAuditMessage = () => {
+      const msgTime = msgTimeInput.value;
+      const entryTime = entryTimeInput.value;
+      if (msgTime && entryTime) {
+        const diffMs = new Date(entryTime) - new Date(msgTime);
+        const diffMin = Math.round(diffMs / (1000 * 60));
+        if (diffMin >= 0) {
+          const hrs = Math.floor(diffMin / 60);
+          const mins = diffMin % 60;
+          const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+          const isOk = diffMin <= 120;
+          if (isOk) {
+            auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
           } else {
-            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
+            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
           }
         } else {
-          auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
+          auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
         }
-      };
-      
-      const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-      const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-      const verifyChk = document.getElementById('flow-step-manager-verify');
-      if (verifyChk) {
-        verifyChk.checked = !!flow.managerVerified;
-        verifyChk.disabled = !isAdminOrManager;
-        if (!isAdminOrManager) {
-          verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
-        } else {
-          verifyChk.parentElement.removeAttribute('title');
-        }
+      } else {
+        auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
       }
-
-      // Evidence URL logic (No preview container as requested)
-      const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-      if (evidenceUrlInput) {
-        evidenceUrlInput.value = flow.evidenceUrl || '';
+    };
+    
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+    const verifyChk = document.getElementById('flow-step-manager-verify');
+    if (verifyChk) {
+      verifyChk.checked = !!flow.managerVerified;
+      verifyChk.disabled = !isAdminOrManager;
+      if (!isAdminOrManager) {
+        verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+      } else {
+        verifyChk.parentElement.removeAttribute('title');
       }
-
-      updateAuditMessage();
-      msgTimeInput.oninput = updateAuditMessage;
-      entryTimeInput.oninput = updateAuditMessage;
-    } else {
-      auditGroup.style.display = 'none';
     }
 
-    const flowFailGroup = document.getElementById('flow-step-fail-group');
-    if (flowFailGroup) {
-      if (currentActiveStepNum === 12) {
-        flowFailGroup.style.display = 'block';
-        const reasonSelect = document.getElementById('flow-step-fail-reason');
-        const reasonOtherGroup = document.getElementById('flow-step-fail-reason-other-group');
-        const reasonOtherInput = document.getElementById('flow-step-fail-reason-other');
-        const evidenceInput = document.getElementById('flow-step-fail-evidence');
-        const approvedCheckbox = document.getElementById('flow-step-fail-approved');
-        
-        const storedReason = flow.failReason || '';
-        const stdReasons = [
-          'Giá dịch vụ cao',
-          'Thời gian vận chuyển lâu',
-          'Không cạnh tranh được với đại lý VN',
-          'Trả lời chậm',
-          'Hàng khó từ chối',
-          'Không đủ năng lực xử lý hàng',
-          'Không cạnh tranh được giá dịch vụ với đối thủ',
-          'Không tìm được hàng cho KH',
-          'Khách lẻ, hàng khó => chủ động từ chối',
-          'Khách hàng ko quan tâm',
-          'Do AI tư vấn chưa tốt'
-        ];
-        
-        if (storedReason && !stdReasons.includes(storedReason)) {
-          reasonSelect.value = 'Khác';
+    const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
+    if (evidenceUrlInput) {
+      evidenceUrlInput.value = flow.evidenceUrl || '';
+    }
+
+    updateAuditMessage();
+    msgTimeInput.oninput = updateAuditMessage;
+    entryTimeInput.oninput = updateAuditMessage;
+  }
+
+  // ===== ALWAYS SHOW: Quote feedback section (Step 2 data) =====
+  const quoteFeedbackGroup = document.getElementById('flow-step-quote-feedback-group');
+  if (quoteFeedbackGroup) {
+    quoteFeedbackGroup.style.display = 'block';
+    const quoteTextarea = document.getElementById('flow-step-quote-feedback');
+    if (quoteTextarea) {
+      quoteTextarea.value = flow.quoteFeedback || '';
+      quoteTextarea.oninput = (e) => {
+        const val = e.target.value;
+        flow.quoteFeedback = val;
+        const step2 = flow.steps.find(s => s.stepNum === 2);
+        if (step2) {
+          const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+          if (item) {
+            item.done = val.trim().length >= 3;
+          }
+        }
+        saveState();
+      };
+    }
+  }
+
+  // ===== Fail group (only show for step 12) =====
+  const flowFailGroup = document.getElementById('flow-step-fail-group');
+  if (flowFailGroup) {
+    if (flow.stage === 12) {
+      flowFailGroup.style.display = 'block';
+      const reasonSelect = document.getElementById('flow-step-fail-reason');
+      const reasonOtherGroup = document.getElementById('flow-step-fail-reason-other-group');
+      const reasonOtherInput = document.getElementById('flow-step-fail-reason-other');
+      const evidenceInput = document.getElementById('flow-step-fail-evidence');
+      const approvedCheckbox = document.getElementById('flow-step-fail-approved');
+      
+      const storedReason = flow.failReason || '';
+      const stdReasons = [
+        'Giá dịch vụ cao',
+        'Thời gian vận chuyển lâu',
+        'Không cạnh tranh được với đại lý VN',
+        'Trả lời chậm',
+        'Hàng khó từ chối',
+        'Không đủ năng lực xử lý hàng',
+        'Không cạnh tranh được giá dịch vụ với đối thủ',
+        'Không tìm được hàng cho KH',
+        'Khách lẻ, hàng khó => chủ động từ chối',
+        'Khách hàng ko quan tâm',
+        'Do AI tư vấn chưa tốt'
+      ];
+      
+      if (storedReason && !stdReasons.includes(storedReason)) {
+        reasonSelect.value = 'Khác';
+        reasonOtherGroup.style.display = 'block';
+        reasonOtherInput.value = storedReason;
+      } else {
+        reasonSelect.value = storedReason;
+        reasonOtherGroup.style.display = 'none';
+        reasonOtherInput.value = '';
+      }
+
+      reasonSelect.onchange = (e) => {
+        if (e.target.value === 'Khác') {
           reasonOtherGroup.style.display = 'block';
-          reasonOtherInput.value = storedReason;
         } else {
-          reasonSelect.value = storedReason;
           reasonOtherGroup.style.display = 'none';
           reasonOtherInput.value = '';
         }
+      };
 
-        reasonSelect.onchange = (e) => {
-          if (e.target.value === 'Khác') {
-            reasonOtherGroup.style.display = 'block';
-          } else {
-            reasonOtherGroup.style.display = 'none';
-            reasonOtherInput.value = '';
-          }
-        };
-
-        evidenceInput.value = flow.failEvidence || '';
-        approvedCheckbox.checked = !!flow.failApproved;
-        
-        const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-        const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-        approvedCheckbox.disabled = !isAdminOrManager;
-        if (!isAdminOrManager) {
-          approvedCheckbox.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
-        } else {
-          approvedCheckbox.parentElement.removeAttribute('title');
-        }
-      } else {
-        flowFailGroup.style.display = 'none';
-      }
+      evidenceInput.value = flow.failEvidence || '';
+      approvedCheckbox.checked = !!flow.failApproved;
+      
+      const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+      const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
+      approvedCheckbox.disabled = !isAdminOrManager2;
+    } else {
+      flowFailGroup.style.display = 'none';
     }
   }
 
@@ -1332,7 +1345,6 @@ function renderActiveStepPanel() {
   chkContainer.innerHTML = '';
   if (stepData.checklist && stepData.checklist.length > 0) {
     stepData.checklist.forEach((item, idx) => {
-      // Hide the checkbox if it's the system-linked quote feedback text
       if (item.text === "cập nhật tình trạng sau báo giá") return;
       
       const row = document.createElement('div');
@@ -1366,45 +1378,15 @@ function renderActiveStepPanel() {
     });
   }
 
-  // Inject system task textarea dynamically for Step 2 (Báo giá)
-  if (currentActiveStepNum === 2) {
-    const row = document.createElement('div');
-    row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px; width: 100%; box-sizing: border-box;';
-    row.innerHTML = `
-      <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
-        [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
-      </div>
-      <textarea id="flow-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${flow.quoteFeedback || ''}</textarea>
-    `;
-    
-    const textarea = row.querySelector('textarea');
-    textarea.oninput = (e) => {
-      const val = e.target.value;
-      flow.quoteFeedback = val;
-      
-      const step2 = flow.steps.find(s => s.stepNum === 2);
-      if (step2) {
-        const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
-        if (item) {
-          item.done = val.trim().length >= 3;
-        }
-      }
-      saveState();
-    };
-    
-    chkContainer.appendChild(row);
-  }
-
   // Handle empty state
   if (chkContainer.innerHTML === '') {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
-  // Render step files (with image previews support)
+  // Render step files
   const filesContainer = document.getElementById('flow-step-files-list');
   filesContainer.innerHTML = '';
   
-  // Collect files associated with this shipment (global)
   const stepFiles = flow.files || [];
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
@@ -1422,7 +1404,6 @@ function renderActiveStepPanel() {
                       nameLower.includes('jpg') || 
                       nameLower.includes('jpeg');
 
-      // Resolve Google Drive direct preview link if applicable
       let displayUrl = file.url;
       if (file.url.toLowerCase().includes('drive.google.com')) {
         let fileId = '';
@@ -1455,7 +1436,7 @@ function renderActiveStepPanel() {
     filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
   }
 
-  // Render comments for this step (v18)
+  // Render comments
   renderActiveStepComments();
 }
 
@@ -1470,22 +1451,37 @@ function handleSaveActiveStepData() {
   stepData.deadline = document.getElementById('flow-step-deadline').value;
   stepData.note = document.getElementById('flow-step-note').value.trim();
 
-  // Save audit times if on step 1
-  if (currentActiveStepNum === 1) {
-    flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
-    flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
-    const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-    if (evidenceUrlInput) {
-      flow.evidenceUrl = evidenceUrlInput.value.trim();
-    }
-    const verifyChk = document.getElementById('flow-step-manager-verify');
-    if (verifyChk) {
+  // Always save audit times (Step 1 data - now always visible)
+  flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
+  flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
+  const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
+  if (evidenceUrlInput) {
+    flow.evidenceUrl = evidenceUrlInput.value.trim();
+  }
+  const verifyChk = document.getElementById('flow-step-manager-verify');
+  if (verifyChk) {
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+    if (isAdminOrManager) {
       flow.managerVerified = verifyChk.checked;
     }
   }
 
-  // Save fail reason, evidence and manager approval if on step 12 (Thất bại)
-  if (currentActiveStepNum === 12) {
+  // Always save quote feedback (Step 2 data - now always visible)
+  const quoteFeedbackEl = document.getElementById('flow-step-quote-feedback');
+  if (quoteFeedbackEl) {
+    flow.quoteFeedback = quoteFeedbackEl.value;
+    const step2 = flow.steps.find(s => s.stepNum === 2);
+    if (step2) {
+      const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+      if (item) {
+        item.done = quoteFeedbackEl.value.trim().length >= 3;
+      }
+    }
+  }
+
+  // Save fail reason, evidence and manager approval if flow is at step 12 (Thất bại)
+  if (flow.stage === 12) {
     const reasonSelect = document.getElementById('flow-step-fail-reason');
     const reasonVal = reasonSelect.value;
     if (!reasonVal) {
@@ -1513,9 +1509,9 @@ function handleSaveActiveStepData() {
     flow.failEvidence = evidenceVal;
     flow.evidenceUrl = evidenceVal;
 
-    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-    if (isAdminOrManager) {
+    const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
+    if (isAdminOrManager2) {
       flow.failApproved = document.getElementById('flow-step-fail-approved').checked;
     }
   }
