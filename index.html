@@ -1260,7 +1260,7 @@
 
           <!-- Kanban Board -->
           <div class="kanban-board-wrapper" id="ops-kanban-wrapper" style="margin-top: 20px; overflow-x: auto; padding-bottom: 15px;">
-            <div class="kanban-board" id="ops-workflows-kanban" style="grid-template-columns: repeat(11, 290px); gap: 16px;">
+            <div class="kanban-board" id="ops-workflows-kanban" style="grid-template-columns: repeat(12, 290px); gap: 16px;">
               <!-- 11 columns dynamically rendered by ops.js -->
             </div>
           </div>
@@ -2060,16 +2060,37 @@
             </div>
 
             <!-- Fail reason row for Failed stage -->
-            <div class="form-group" id="lead-step-fail-group" style="display: none;">
+            <div id="lead-step-fail-group" style="display: none; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
               <label for="lead-step-fail-reason" class="text-rose">Lý do thất bại <span class="text-rose">*</span></label>
               <select id="lead-step-fail-reason" class="form-control">
                 <option value="">-- Chọn lý do thất bại --</option>
                 <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
-                <option value="Khách hàng không phản hồi">Khách hàng không phản hồi</option>
-                <option value="Khách hàng tự đi">Khách hàng tự đi</option>
-                <option value="Hạn chế mặt hàng/Không vận chuyển được">Hạn chế mặt hàng/Không vận chuyển được</option>
+                <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
+                <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
+                <option value="Trả lời chậm">Trả lời chậm</option>
+                <option value="Hàng khó từ chối">Hàng khó từ chối</option>
+                <option value="Không đủ năng lực xử lý hàng">Không đủ năng lực xử lý hàng</option>
+                <option value="Không cạnh tranh được giá dịch vụ với đối thủ">Không cạnh tranh được giá dịch vụ với đối thủ</option>
+                <option value="Không tìm được hàng cho KH">Không tìm được hàng cho KH</option>
+                <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
+                <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
+                <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
                 <option value="Khác">Khác</option>
               </select>
+              <div id="lead-step-fail-reason-other-group" style="display: none; margin-top: 8px;">
+                <label for="lead-step-fail-reason-other" style="font-size: 12.5px;">Nhập chi tiết lý do khác <span class="text-rose">*</span></label>
+                <input type="text" id="lead-step-fail-reason-other" class="form-control" placeholder="Viết cụ thể lý do...">
+              </div>
+              <div class="form-group" style="margin-top: 12px;">
+                <label for="lead-step-fail-evidence" style="font-size: 12.5px;" class="text-rose">Bằng chứng thất bại (Link ảnh/Drive) <span class="text-rose">*</span></label>
+                <input type="text" id="lead-step-fail-evidence" class="form-control" placeholder="Nhập link bằng chứng bắt buộc...">
+              </div>
+              <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; margin: 0; user-select: none;">
+                  <input type="checkbox" id="lead-step-fail-approved" style="cursor: pointer; width: 13px; height: 13px; margin: 0;">
+                  <span style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">Quản lý duyệt thất bại</span>
+                </label>
+              </div>
             </div>
 
             <div class="form-group" style="margin-top: 12px;">
@@ -2690,6 +2711,7 @@
             <option value="9">9. Giao hàng</option>
             <option value="10">10. Thu nợ</option>
             <option value="11">11. Hoàn tất</option>
+            <option value="12">12. Thất bại</option>
           </select>
           <button class="btn-close-modal" data-modal="modal-flow-detail" style="margin-left: 8px;">&times;</button>
         </div>
@@ -2713,6 +2735,40 @@
             <div class="form-group">
               <label for="flow-step-deadline">Hạn chót cho bước này</label>
               <input type="date" id="flow-step-deadline" class="form-control">
+            </div>
+
+            <!-- Fail reason and approval row for Step 12 (Thất bại) -->
+            <div id="flow-step-fail-group" style="display: none; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
+              <label for="flow-step-fail-reason" class="text-rose">Lý do thất bại <span class="text-rose">*</span></label>
+              <select id="flow-step-fail-reason" class="form-control">
+                <option value="">-- Chọn lý do thất bại --</option>
+                <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
+                <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
+                <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
+                <option value="Trả lời chậm">Trả lời chậm</option>
+                <option value="Hàng khó từ chối">Hàng khó từ chối</option>
+                <option value="Không đủ năng lực xử lý hàng">Không đủ năng lực xử lý hàng</option>
+                <option value="Không cạnh tranh được giá dịch vụ với đối thủ">Không cạnh tranh được giá dịch vụ với đối thủ</option>
+                <option value="Không tìm được hàng cho KH">Không tìm được hàng cho KH</option>
+                <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
+                <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
+                <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
+                <option value="Khác">Khác</option>
+              </select>
+              <div id="flow-step-fail-reason-other-group" style="display: none; margin-top: 8px;">
+                <label for="flow-step-fail-reason-other" style="font-size: 12.5px;">Nhập chi tiết lý do khác <span class="text-rose">*</span></label>
+                <input type="text" id="flow-step-fail-reason-other" class="form-control" placeholder="Viết cụ thể lý do...">
+              </div>
+              <div class="form-group" style="margin-top: 12px;">
+                <label for="flow-step-fail-evidence" style="font-size: 12.5px;" class="text-rose">Bằng chứng thất bại (Link ảnh/Drive) <span class="text-rose">*</span></label>
+                <input type="text" id="flow-step-fail-evidence" class="form-control" placeholder="Nhập link bằng chứng bắt buộc...">
+              </div>
+              <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+                <label style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer; margin: 0; user-select: none;">
+                  <input type="checkbox" id="flow-step-fail-approved" style="cursor: pointer; width: 13px; height: 13px; margin: 0;">
+                  <span style="font-size: 11px; font-weight: bold; color: var(--text-secondary);">Quản lý duyệt thất bại</span>
+                </label>
+              </div>
             </div>
 
             <div id="flow-step-time-audit-group" style="display:none; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
@@ -2842,12 +2898,12 @@
         <button class="btn-close-modal text-white" data-modal="modal-fail-reason-prompt">&times;</button>
       </div>
       <div class="modal-body">
-        <p>Vui lòng chọn lý do khách hàng <strong><span id="fail-prompt-client-name">Khách hàng</span></strong> dừng giao dịch để lưu thống kê tỷ lệ:</p>
+        <p>Vui lòng chọn lý do khách hàng <strong><span id="fail-prompt-client-name">Khách hàng</span></strong> dừng giao dịch để lưu thống kê:</p>
         
         <div class="form-group mt-3">
           <label for="prompt-fail-reason">Lý do thất bại <span class="text-rose">*</span></label>
           <select id="prompt-fail-reason" class="form-control" required>
-            <option value="">-- Chọn nguyên nhân --</option>
+            <option value="">-- Chọn lý do thất bại --</option>
             <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
             <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
             <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
@@ -2859,9 +2915,14 @@
             <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
             <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
             <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
-            <option value="Khác">Lý do khác</option>
+            <option value="Khác">Khác</option>
           </select>
           <input type="text" id="prompt-fail-reason-other" class="form-control" placeholder="Nhập lý do khác cụ thể..." style="display:none; margin-top: 8px;">
+        </div>
+
+        <div class="form-group mt-3">
+          <label for="prompt-fail-evidence" class="text-rose">Bằng chứng thất bại (Link ảnh/Drive) <span class="text-rose">*</span></label>
+          <input type="text" id="prompt-fail-evidence" class="form-control" placeholder="Nhập link bằng chứng bắt buộc..." required>
         </div>
 
         <div class="modal-footer mt-4">

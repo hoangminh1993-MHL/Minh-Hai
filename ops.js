@@ -490,7 +490,7 @@ function renderFounderDashboard() {
   container.innerHTML = html;
 }
 
-// ==================== CRM KHÁCH CŨ & LÔ HÀNG (11 BƯỚC) ==================== //
+// ==================== CRM KHÁCH CŨ & LÔ HÀNG (12 BƯỚC) ==================== //
 function renderOpsWorkflows() {
   // Sanitize checklists: only allow 'cập nhật tình trạng sau báo giá' in Step 2, clear all others
   if (AppState.shipment_workflows) {
@@ -521,11 +521,11 @@ function renderOpsWorkflows() {
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
   ];
 
-  // 11 steps arrays
-  const stepLists = Array.from({ length: 11 }, () => []);
+  // 12 steps arrays
+  const stepLists = Array.from({ length: 12 }, () => []);
   const filteredFlows = [];
 
   // Filter shipment workflows
@@ -557,14 +557,14 @@ function renderOpsWorkflows() {
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
 
     // Overdue filter
-    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
     if (overdueVal && !isOverdue) return;
 
     filteredFlows.push(flow);
 
     // Place into corresponding step array (flow.stage is 1-indexed)
     const idx = flow.stage - 1;
-    if (idx >= 0 && idx < 11) {
+    if (idx >= 0 && idx < 12) {
       stepLists[idx].push(flow);
     }
   });
@@ -727,8 +727,8 @@ function renderOpsWorkflows() {
     return;
   }
 
-  // Render 11 columns
-  for (let i = 0; i < 11; i++) {
+  // Render 12 columns
+  for (let i = 0; i < 12; i++) {
     const col = document.createElement('div');
     col.className = 'kanban-column';
     col.setAttribute('data-stage', i + 1);
@@ -869,6 +869,7 @@ function renderOpsWorkflows() {
             <option value="9" ${flow.stage === 9 ? 'disabled' : ''}>9. Giao hàng</option>
             <option value="10" ${flow.stage === 10 ? 'disabled' : ''}>10. Thu nợ</option>
             <option value="11" ${flow.stage === 11 ? 'disabled' : ''}>11. Hoàn tất</option>
+            <option value="12" ${flow.stage === 12 ? 'disabled' : ''}>12. Thất bại</option>
           </select>
         </div>
       `;
@@ -1015,7 +1016,7 @@ function handleConfirmedFlowMove() {
 function executeFlowMove(flow, targetStage) {
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
   ];
   const oldStage = flow.stage;
   flow.stage = targetStage;
@@ -1026,6 +1027,17 @@ function executeFlowMove(flow, targetStage) {
     else if (s.stepNum === targetStage) s.status = 'doing';
     else s.status = 'todo';
   });
+
+  // When moving to Thất bại, set failApproved = false
+  if (targetStage === 12) {
+    flow.failApproved = false;
+  }
+  // When moving away from Thất bại, clear fail fields
+  if (oldStage === 12 && targetStage !== 12) {
+    flow.failReason = null;
+    flow.failEvidence = null;
+    flow.failApproved = false;
+  }
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -1052,7 +1064,7 @@ function executeFlowMove(flow, targetStage) {
   addNotification('Cập nhật Lô Hàng 🚚', `Đã chuyển lô hàng "${flow.name}" sang bước: ${stepNames[targetStage - 1]}`, 'success');
 }
 
-// Open detail modal for 11 steps workflow
+// Open detail modal for 12 steps workflow
 let currentActiveFlowId = null;
 let currentActiveStepNum = 1;
 
@@ -1082,16 +1094,16 @@ function openFlowDetailModal(flowId) {
     };
   }
 
-  // Render 11 steps timeline bubbles
+  // Render 12 steps timeline bubbles
   const timeline = document.querySelector('.flow-steps-timeline');
   timeline.innerHTML = '';
   
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
   ];
 
-  for (let i = 1; i <= 11; i++) {
+  for (let i = 1; i <= 12; i++) {
     const bubble = document.createElement('div');
     const stepData = flow.steps.find(s => s.stepNum === i) || {};
     
@@ -1230,6 +1242,66 @@ function renderActiveStepPanel() {
       entryTimeInput.oninput = updateAuditMessage;
     } else {
       auditGroup.style.display = 'none';
+    }
+
+    const flowFailGroup = document.getElementById('flow-step-fail-group');
+    if (flowFailGroup) {
+      if (currentActiveStepNum === 12) {
+        flowFailGroup.style.display = 'block';
+        const reasonSelect = document.getElementById('flow-step-fail-reason');
+        const reasonOtherGroup = document.getElementById('flow-step-fail-reason-other-group');
+        const reasonOtherInput = document.getElementById('flow-step-fail-reason-other');
+        const evidenceInput = document.getElementById('flow-step-fail-evidence');
+        const approvedCheckbox = document.getElementById('flow-step-fail-approved');
+        
+        const storedReason = flow.failReason || '';
+        const stdReasons = [
+          'Giá dịch vụ cao',
+          'Thời gian vận chuyển lâu',
+          'Không cạnh tranh được với đại lý VN',
+          'Trả lời chậm',
+          'Hàng khó từ chối',
+          'Không đủ năng lực xử lý hàng',
+          'Không cạnh tranh được giá dịch vụ với đối thủ',
+          'Không tìm được hàng cho KH',
+          'Khách lẻ, hàng khó => chủ động từ chối',
+          'Khách hàng ko quan tâm',
+          'Do AI tư vấn chưa tốt'
+        ];
+        
+        if (storedReason && !stdReasons.includes(storedReason)) {
+          reasonSelect.value = 'Khác';
+          reasonOtherGroup.style.display = 'block';
+          reasonOtherInput.value = storedReason;
+        } else {
+          reasonSelect.value = storedReason;
+          reasonOtherGroup.style.display = 'none';
+          reasonOtherInput.value = '';
+        }
+
+        reasonSelect.onchange = (e) => {
+          if (e.target.value === 'Khác') {
+            reasonOtherGroup.style.display = 'block';
+          } else {
+            reasonOtherGroup.style.display = 'none';
+            reasonOtherInput.value = '';
+          }
+        };
+
+        evidenceInput.value = flow.failEvidence || '';
+        approvedCheckbox.checked = !!flow.failApproved;
+        
+        const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+        const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+        approvedCheckbox.disabled = !isAdminOrManager;
+        if (!isAdminOrManager) {
+          approvedCheckbox.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+        } else {
+          approvedCheckbox.parentElement.removeAttribute('title');
+        }
+      } else {
+        flowFailGroup.style.display = 'none';
+      }
     }
   }
 
@@ -1390,6 +1462,42 @@ function handleSaveActiveStepData() {
     }
   }
 
+  // Save fail reason, evidence and manager approval if on step 12 (Thất bại)
+  if (currentActiveStepNum === 12) {
+    const reasonSelect = document.getElementById('flow-step-fail-reason');
+    const reasonVal = reasonSelect.value;
+    if (!reasonVal) {
+      showToast('Vui lòng chọn lý do thất bại!', 'warning');
+      return;
+    }
+    
+    let finalReason = reasonVal;
+    if (reasonVal === 'Khác') {
+      const reasonOtherVal = document.getElementById('flow-step-fail-reason-other').value.trim();
+      if (!reasonOtherVal) {
+        showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
+        return;
+      }
+      finalReason = reasonOtherVal;
+    }
+    
+    const evidenceVal = document.getElementById('flow-step-fail-evidence').value.trim();
+    if (!evidenceVal) {
+      showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+      return;
+    }
+    
+    flow.failReason = finalReason;
+    flow.failEvidence = evidenceVal;
+    flow.evidenceUrl = evidenceVal;
+
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
+    if (isAdminOrManager) {
+      flow.failApproved = document.getElementById('flow-step-fail-approved').checked;
+    }
+  }
+
   // If status is not complete, we can keep it as is, or set to completed if all checklists are ticked!
   const hasPending = stepData.checklist.some(c => !c.done);
   if (!hasPending && stepData.status !== 'done') {
@@ -1532,15 +1640,15 @@ function handleAddFlowSubmit(e) {
     clientId = newClientId;
   }
 
-  // Pre-generate 11 steps templates
+  // Pre-generate 12 steps templates
   const flowSteps = [];
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
     "Shop Trung Quốc gửi hàng", "Về đến kho Trung Quốc", "Về đến kho Hà Nội/Hải Phòng",
-    "Giao hàng cho khách", "Thu nợ", "Hoàn tất"
+    "Giao hàng cho khách", "Thu nợ", "Hoàn tất", "Thất bại"
   ];
   
-  for (let i = 1; i <= 11; i++) {
+  for (let i = 1; i <= 12; i++) {
     const isFirst = (i === 1);
     
     // Add default required checklists for step 1, 5, 10

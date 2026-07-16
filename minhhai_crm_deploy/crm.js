@@ -116,6 +116,7 @@ function initCRMEvents() {
     btnConfirmFail.addEventListener('click', () => {
       const select = document.getElementById('prompt-fail-reason');
       const otherInput = document.getElementById('prompt-fail-reason-other');
+      const evidenceInput = document.getElementById('prompt-fail-evidence');
       let reason = select.value;
 
       if (!reason) {
@@ -131,9 +132,15 @@ function initCRMEvents() {
         }
       }
 
+      const evidence = evidenceInput.value.trim();
+      if (!evidence) {
+        showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+        return;
+      }
+
       closeModal('modal-fail-reason-prompt');
       if (failPromptCallback) {
-        failPromptCallback(reason);
+        failPromptCallback(reason, evidence);
         failPromptCallback = null;
       }
     });
@@ -393,9 +400,19 @@ function renderCRMBoard() {
     const salesName = salesUser ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
     // Show fail reason badge if failed
-    const failReasonHtml = (lead.stage === 'failed' && lead.failReason) 
-      ? `<div class="card-fail-reason" title="Lý do: ${lead.failReason}"><i class="fa-solid fa-circle-xmark"></i> ${lead.failReason}</div>`
-      : '';
+    let failReasonHtml = '';
+    if (lead.stage === 'failed') {
+      const appColor = lead.failApproved ? '#10b981' : '#f59e0b';
+      const appIcon = lead.failApproved ? 'fa-circle-check' : 'fa-clock';
+      const appText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
+      
+      failReasonHtml = `
+        <div class="card-fail-reason" title="Lý do: ${lead.failReason || 'Chưa rõ'}"><i class="fa-solid fa-circle-xmark"></i> ${lead.failReason || 'Chưa rõ'}</div>
+        <div class="card-fail-reason" style="background: rgba(31,41,55,0.2); border: 1px solid ${appColor}; color: ${appColor}; font-weight: bold; margin-top: 4px;" title="Trạng thái duyệt của quản lý">
+          <i class="fa-solid ${appIcon}"></i> ${appText}
+        </div>
+      `;
+    }
 
     // Values formatted
     const valRmbStr = lead.valRmb > 0 ? formatRmb(lead.valRmb) : '';
@@ -606,15 +623,18 @@ function handleLeadMove(leadId, targetStage) {
     document.getElementById('prompt-fail-reason').value = '';
     document.getElementById('prompt-fail-reason-other').value = '';
     document.getElementById('prompt-fail-reason-other').style.display = 'none';
+    document.getElementById('prompt-fail-evidence').value = '';
     
     openModal('modal-fail-reason-prompt');
     
-    failPromptCallback = (reason) => {
+    failPromptCallback = (reason, evidence) => {
       const oldStage = lead.stage;
       lead.stage = 'failed';
       lead.stageEntryTimes = lead.stageEntryTimes || {};
       lead.stageEntryTimes['failed'] = Date.now();
       lead.failReason = reason;
+      lead.failEvidence = evidence;
+      lead.failApproved = false; // Initialize to false
       lead.updatedTime = formatDateTime(new Date());
       
       // Update step status
@@ -932,7 +952,58 @@ function renderActiveLeadStepPanel() {
   const failGroup = document.getElementById('lead-step-fail-group');
   if (currentActiveLeadStepNum === 7) {
     failGroup.style.display = 'block';
-    document.getElementById('lead-step-fail-reason').value = lead.failReason || '';
+    
+    const reasonSelect = document.getElementById('lead-step-fail-reason');
+    const reasonOtherGroup = document.getElementById('lead-step-fail-reason-other-group');
+    const reasonOtherInput = document.getElementById('lead-step-fail-reason-other');
+    const evidenceInput = document.getElementById('lead-step-fail-evidence');
+    const approvedCheckbox = document.getElementById('lead-step-fail-approved');
+    
+    const storedReason = lead.failReason || '';
+    const stdReasons = [
+      'Giá dịch vụ cao',
+      'Thời gian vận chuyển lâu',
+      'Không cạnh tranh được với đại lý VN',
+      'Trả lời chậm',
+      'Hàng khó từ chối',
+      'Không đủ năng lực xử lý hàng',
+      'Không cạnh tranh được giá dịch vụ với đối thủ',
+      'Không tìm được hàng cho KH',
+      'Khách lẻ, hàng khó => chủ động từ chối',
+      'Khách hàng ko quan tâm',
+      'Do AI tư vấn chưa tốt'
+    ];
+    
+    if (storedReason && !stdReasons.includes(storedReason)) {
+      reasonSelect.value = 'Khác';
+      reasonOtherGroup.style.display = 'block';
+      reasonOtherInput.value = storedReason;
+    } else {
+      reasonSelect.value = storedReason;
+      reasonOtherGroup.style.display = 'none';
+      reasonOtherInput.value = '';
+    }
+
+    reasonSelect.onchange = (e) => {
+      if (e.target.value === 'Khác') {
+        reasonOtherGroup.style.display = 'block';
+      } else {
+        reasonOtherGroup.style.display = 'none';
+        reasonOtherInput.value = '';
+      }
+    };
+
+    evidenceInput.value = lead.failEvidence || '';
+    approvedCheckbox.checked = !!lead.failApproved;
+    
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong';
+    approvedCheckbox.disabled = !isAdminOrManager;
+    if (!isAdminOrManager) {
+      approvedCheckbox.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+    } else {
+      approvedCheckbox.parentElement.removeAttribute('title');
+    }
   } else {
     failGroup.style.display = 'none';
   }
@@ -1133,7 +1204,38 @@ function handleSaveActiveLeadStepData() {
     lead.valVnd = parseFloat(document.getElementById('lead-step-val-vnd').value) || 0;
   }
   if (currentActiveLeadStepNum === 7) {
-    lead.failReason = document.getElementById('lead-step-fail-reason').value;
+    const reasonSelect = document.getElementById('lead-step-fail-reason');
+    const reasonVal = reasonSelect.value;
+    if (!reasonVal) {
+      showToast('Vui lòng chọn lý do thất bại!', 'warning');
+      return;
+    }
+    
+    let finalReason = reasonVal;
+    if (reasonVal === 'Khác') {
+      const reasonOtherVal = document.getElementById('lead-step-fail-reason-other').value.trim();
+      if (!reasonOtherVal) {
+        showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
+        return;
+      }
+      finalReason = reasonOtherVal;
+    }
+    
+    const evidenceVal = document.getElementById('lead-step-fail-evidence').value.trim();
+    if (!evidenceVal) {
+      showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+      return;
+    }
+    
+    lead.failReason = finalReason;
+    lead.failEvidence = evidenceVal;
+    
+    // Only verify failApproved if changed by Manager/Admin
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong';
+    if (isAdminOrManager) {
+      lead.failApproved = document.getElementById('lead-step-fail-approved').checked;
+    }
   }
 
   if (currentActiveLeadStepNum !== currentStepNum) {
