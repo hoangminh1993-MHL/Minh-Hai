@@ -376,7 +376,7 @@ function renderFounderDashboard() {
   if (!container) return;
 
   const totalTasks = AppState.single_tasks.length;
-  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
+  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && parseSafeDate(t.deadline) < new Date())).length;
   const completedTodayTasks = AppState.single_tasks.filter(t => t.status === 'completed').length; // Simplification for today
 
   const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: Báo giá
@@ -387,7 +387,7 @@ function renderFounderDashboard() {
   // Render KPI grid cards
   let html = `
     <div class="stats-grid" style="margin-top: 15px;">
-      <div class="stat-card">
+      <div class="stat-card" style="cursor:pointer;" onclick="window.navigateToView('tasks-single')">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Tổng task đang mở</span>
@@ -395,7 +395,7 @@ function renderFounderDashboard() {
           <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="cursor:pointer;" onclick="window.navigateToView('tasks-single')">
         <div class="stat-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
         <div class="stat-data">
           <span class="stat-label">Công việc quá hạn</span>
@@ -403,7 +403,7 @@ function renderFounderDashboard() {
           <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cần xử lý gấp!</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="cursor:pointer;" onclick="window.navigateToView('tasks-single')">
         <div class="stat-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Việc đã hoàn thành</span>
@@ -452,7 +452,7 @@ function renderFounderDashboard() {
   const userOverdueCounts = {};
   AppState.users.forEach(u => { userOverdueCounts[u.id] = 0; });
   AppState.single_tasks.forEach(t => {
-    const isOverdue = t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date());
+    const isOverdue = t.status === 'overdue' || (t.status !== 'completed' && t.deadline && parseSafeDate(t.deadline) < new Date());
     if (isOverdue && t.assigneeId) {
       userOverdueCounts[t.assigneeId] = (userOverdueCounts[t.assigneeId] || 0) + 1;
     }
@@ -557,7 +557,7 @@ function renderOpsWorkflows() {
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
 
     // Overdue filter
-    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
+    const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
     if (overdueVal && !isOverdue) return;
 
     filteredFlows.push(flow);
@@ -625,7 +625,7 @@ function renderOpsWorkflows() {
         // Evaluate SLA duration in minutes if it exists
         const getSlaMins = (f) => {
           if (f.customerMsgTime && f.infoEntryTime) {
-            const diffMs = new Date(f.infoEntryTime) - new Date(f.customerMsgTime);
+            const diffMs = parseSafeDate(f.infoEntryTime) - parseSafeDate(f.customerMsgTime);
             return diffMs >= 0 ? Math.floor(diffMs / 60000) : 999999;
           }
           return 999999;
@@ -670,7 +670,7 @@ function renderOpsWorkflows() {
           
           let slaBadge = '<span class="text-muted" style="font-size:11.5px; font-style:italic;">--</span>';
           if (flow.customerMsgTime && flow.infoEntryTime) {
-            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
+            const diffMs = parseSafeDate(flow.infoEntryTime) - parseSafeDate(flow.customerMsgTime);
             if (diffMs >= 0) {
               const diffMins = Math.floor(diffMs / 60000);
               const hours = Math.floor(diffMins / 60);
@@ -691,7 +691,7 @@ function renderOpsWorkflows() {
           const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
           const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Bước ${flow.stage}: ${currentStepName}</span>`;
           
-          const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+          const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11;
           const deadlineBadge = isOverdue
             ? `<span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Trễ hạn</span>`
             : `<span style="color:var(--text-secondary);">${flow.deadline || 'Chưa đặt'}</span>`;
@@ -771,7 +771,7 @@ function renderOpsWorkflows() {
     // Populate columns cards
     stepLists[i].forEach(flow => {
       const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+      const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11;
       const card = document.createElement('div');
       card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
       card.setAttribute('draggable', 'true');
@@ -801,7 +801,7 @@ function renderOpsWorkflows() {
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
         ${(() => {
           if (flow.customerMsgTime && flow.infoEntryTime) {
-            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
+            const diffMs = parseSafeDate(flow.infoEntryTime) - parseSafeDate(flow.customerMsgTime);
             const diffMin = Math.round(diffMs / (1000 * 60));
             if (diffMin >= 0) {
               const hrs = Math.floor(diffMin / 60);
@@ -1198,7 +1198,7 @@ function renderActiveStepPanel() {
         const msgTime = msgTimeInput.value;
         const entryTime = entryTimeInput.value;
         if (msgTime && entryTime) {
-          const diffMs = new Date(entryTime) - new Date(msgTime);
+          const diffMs = parseSafeDate(entryTime) - parseSafeDate(msgTime);
           const diffMin = Math.round(diffMs / (1000 * 60));
           if (diffMin >= 0) {
             const hrs = Math.floor(diffMin / 60);
@@ -1855,8 +1855,8 @@ function renderOpsSingleTasks() {
         valA = priorityOrder[a.priority] || 0;
         valB = priorityOrder[b.priority] || 0;
       } else if (currentSortField === 'deadline') {
-        valA = a.deadline ? new Date(a.deadline).getTime() : 0;
-        valB = b.deadline ? new Date(b.deadline).getTime() : 0;
+        valA = a.deadline ? parseSafeDate(a.deadline).getTime() : 0;
+        valB = b.deadline ? parseSafeDate(b.deadline).getTime() : 0;
       } else if (currentSortField === 'status') {
         const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
         valA = statusLabels[a.status] || '';
@@ -2964,7 +2964,7 @@ function renderMyTasks() {
         const chkDone = stepData.checklist ? stepData.checklist.filter(c => c.done).length : 0;
         const chkTotal = stepData.checklist ? stepData.checklist.length : 0;
 
-        const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+        const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date() && flow.stage < 11;
 
         const card = document.createElement('div');
         card.className = 'kanban-card';
@@ -3047,7 +3047,7 @@ function renderMyTasks() {
         const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
         const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
 
-        const isOverdue = task.deadline && new Date(task.deadline) < new Date();
+        const isOverdue = task.deadline && parseSafeDate(task.deadline) < new Date();
 
         const card = document.createElement('div');
         card.className = 'kanban-card';
@@ -3096,7 +3096,7 @@ function renderMyTasks() {
         let currentStepIdx = task.stepsStatus ? task.stepsStatus.lastIndexOf(true) : 0;
         if (currentStepIdx === -1) currentStepIdx = 0;
 
-        const isOverdue = task.deadline && new Date(task.deadline) < new Date();
+        const isOverdue = task.deadline && parseSafeDate(task.deadline) < new Date();
 
         let stepSelectHtml = '';
         if (steps.length > 0) {
@@ -3175,7 +3175,7 @@ function renderMyTasks() {
           const assignee = AppState.users.find(u => u.id === task.assigneeId);
           const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
 
-          const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
+          const isOverdue = task.deadline && parseSafeDate(task.deadline) < new Date() && task.status !== 'completed';
 
           const card = document.createElement('div');
           card.className = 'kanban-card';

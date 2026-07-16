@@ -1,4 +1,15 @@
 // ==================== GLOBAL STATE & CONFIGURATION ==================== //
+window.parseSafeDate = function(dateStr) {
+  if (!dateStr) return new Date();
+  if (typeof dateStr === 'string') {
+    // Safari does not support 'YYYY-MM-DD HH:mm:ss', only 'YYYY-MM-DDTHH:mm:ss'
+    // This regex replaces the first space between date and time with 'T'
+    const safeStr = dateStr.replace(/^(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2}(?::\d{2})?)/, '$1T$2');
+    return new Date(safeStr);
+  }
+  return new Date(dateStr);
+};
+
 function getApiUrl(path) {
   const customApiBase = localStorage.getItem('minhhai_custom_api_base');
   if (customApiBase) {
@@ -228,12 +239,12 @@ async function syncLoadState() {
     const res = await fetch(getApiUrl('/api/state'));
     if (res.ok) {
       const data = await res.json();
-      AppState.users = data.users;
-      AppState.leads = data.leads;
-      AppState.tasks = data.tasks;
-      AppState.workflows = data.workflows;
-      AppState.sausageLogs = data.sausageLogs;
-      AppState.notifications = data.notifications;
+      AppState.users = data.users || [];
+      AppState.leads = data.leads || [];
+      AppState.tasks = data.tasks || [];
+      AppState.workflows = data.workflows || {};
+      AppState.sausageLogs = data.sausageLogs || [];
+      AppState.notifications = data.notifications || [];
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
       
       // Seed operational lists (v18)
@@ -273,16 +284,31 @@ async function syncLoadState() {
 }
 
 function loadState() {
-  AppState.users = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_USERS)) || [];
-  AppState.leads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
-  AppState.tasks = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_TASKS)) || [];
-  AppState.workflows = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_WORKFLOWS)) || {};
-  AppState.sausageLogs = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LOGS)) || [];
-  AppState.notifications = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_NOTIFS)) || [];
+  const safeParse = (key, defaultVal) => {
+    try {
+      const str = localStorage.getItem(key);
+      if (!str || str === 'undefined') return defaultVal;
+      return JSON.parse(str);
+    } catch(e) {
+      return defaultVal;
+    }
+  };
+
+  AppState.users = safeParse(CONFIG.LS_KEY_USERS, []);
+  AppState.leads = safeParse(CONFIG.LS_KEY_LEADS, []);
+  AppState.tasks = safeParse(CONFIG.LS_KEY_TASKS, []);
+  AppState.workflows = safeParse(CONFIG.LS_KEY_WORKFLOWS, {});
+  AppState.sausageLogs = safeParse(CONFIG.LS_KEY_LOGS, []);
+  AppState.notifications = safeParse(CONFIG.LS_KEY_NOTIFS, []);
+  
+  AppState.clients = safeParse('votr_clients_db', []);
+  AppState.projects = safeParse('votr_projects_db', []);
+  AppState.shipment_workflows = safeParse('votr_shipment_workflows_db', []);
+  AppState.single_tasks = safeParse('votr_single_tasks_db', []);
+  AppState.suggestions = safeParse('votr_suggestions_db', []);
+  
   AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || (AppState.users && AppState.users[0]?.id) || 'usr-1';
 
-  AppState.clients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
-  AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
   AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
   AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
   AppState.suggestions = JSON.parse(localStorage.getItem('votr_suggestions_db')) || [];
@@ -830,7 +856,7 @@ function renderAdminStaffWorkloadTable() {
         if (stepData && stepData.assigneeId === userId) {
           if (stepData.status !== 'done') {
             activeTasksCount++;
-            const isOverdue = flow.deadline && new Date(flow.deadline) < new Date();
+            const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date();
             if (isOverdue) overdueTasksCount++;
           } else {
             completedTasksCount++;
@@ -845,7 +871,7 @@ function renderAdminStaffWorkloadTable() {
         if (t.assigneeId === userId) {
           if (t.status !== 'completed' && t.status !== 'canceled') {
             activeTasksCount++;
-            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            const isOverdue = t.deadline && parseSafeDate(t.deadline) < new Date();
             if (isOverdue) overdueTasksCount++;
           } else if (t.status === 'completed') {
             completedTasksCount++;
@@ -860,7 +886,7 @@ function renderAdminStaffWorkloadTable() {
         if (t.assigneeId === userId) {
           if (t.status !== 'completed' && t.status !== 'canceled') {
             activeTasksCount++;
-            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
+            const isOverdue = t.deadline && parseSafeDate(t.deadline) < new Date();
             if (isOverdue) overdueTasksCount++;
           } else if (t.status === 'completed') {
             completedTasksCount++;
@@ -1258,7 +1284,7 @@ function renderRewardsView() {
   const logContainer = document.getElementById('rewards-points-log');
   logContainer.innerHTML = '';
 
-  const recentLogs = [...AppState.sausageLogs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
+  const recentLogs = [...AppState.sausageLogs].sort((a,b) => parseSafeDate(b.date) - parseSafeDate(a.date)).slice(0, 10);
   
   if (recentLogs.length === 0) {
     logContainer.innerHTML = `<div class="empty-state" style="padding: 20px 0; text-align: center; color: var(--text-muted);">Chưa có nhật ký phát thưởng nào.</div>`;
@@ -1823,7 +1849,7 @@ function renderStaffDashboard(user) {
     urgentList.sort((a, b) => {
       if (!a.deadline) return 1;
       if (!b.deadline) return -1;
-      return new Date(a.deadline) - new Date(b.deadline);
+      return parseSafeDate(a.deadline) - parseSafeDate(b.deadline);
     });
 
     const displayList = urgentList.slice(0, 5);
@@ -1831,7 +1857,7 @@ function renderStaffDashboard(user) {
       urgentContainer.innerHTML = `<span class="text-muted" style="font-size:11.5px; font-style:italic;">Tuyệt vời! Bạn không có việc nào cận hạn hay quá hạn.</span>`;
     } else {
       displayList.forEach(item => {
-        const isOverdue = item.deadline && new Date(item.deadline) < new Date();
+        const isOverdue = item.deadline && parseSafeDate(item.deadline) < new Date();
         const div = document.createElement('div');
         div.className = 'mini-task-item';
         div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;';

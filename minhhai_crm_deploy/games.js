@@ -1082,7 +1082,7 @@ function renderBetPools() {
       const lobbyCard = document.createElement('div');
       lobbyCard.style.cssText = 'background:#1f2937; border:1px solid var(--border-color); border-radius:10px; padding:15px; display:flex; flex-direction:column; gap:12px;';
       
-      const isExpired = new Date(b.deadline) < new Date();
+      const isExpired = parseSafeDate(b.deadline) < new Date();
       const timeText = isExpired ? '<span style="color:#ef4444; font-weight:bold;">Đã hết hạn đặt cược</span>' : `Hạn cược: ${b.deadline.replace('T', ' ')}`;
 
       // Calculate totals

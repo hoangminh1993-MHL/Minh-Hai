@@ -814,7 +814,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
   lead.files = lead.files || [];
   lead.stageEntryTimes = lead.stageEntryTimes || {};
   if (!lead.stageEntryTimes[lead.stage]) {
-    const fallbackTime = lead.createdTime ? new Date(lead.createdTime).getTime() : (lead.date ? new Date(lead.date).getTime() : Date.now());
+    const fallbackTime = lead.createdTime ? parseSafeDate(lead.createdTime).getTime() : (lead.date ? new Date(lead.date).getTime() : Date.now());
     lead.stageEntryTimes[lead.stage] = fallbackTime;
   }
 };
@@ -1515,7 +1515,7 @@ function checkLeadOverdue(lead) {
     lead.stageEntryTimes = {};
   }
   const now = Date.now();
-  const created = lead.createdTime ? new Date(lead.createdTime).getTime() : now;
+  const created = lead.createdTime ? parseSafeDate(lead.createdTime).getTime() : now;
 
   if (lead.stage === 'get_phone') {
     const entered = lead.stageEntryTimes.get_phone || created;
