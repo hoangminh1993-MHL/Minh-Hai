@@ -919,9 +919,33 @@ function renderOpsWorkflows() {
   populateFlowFilterUsers();
 }
 
+function ensureTwelveSteps(flow) {
+  if (!flow) return;
+  if (!flow.steps) flow.steps = [];
+  if (flow.steps.length < 12) {
+    const defaultStepNames = [
+      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+      "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    ];
+    for (let i = flow.steps.length + 1; i <= 12; i++) {
+      flow.steps.push({
+        stepNum: i,
+        name: defaultStepNames[i - 1],
+        assigneeId: flow.assigneeId || 'usr-admin',
+        deadline: '',
+        status: 'todo',
+        checklist: [],
+        note: '',
+        comments: []
+      });
+    }
+  }
+}
+
 function handleFlowMoveAttempt(flowId, targetStage) {
   const flow = AppState.shipment_workflows.find(f => f.id === flowId);
   if (!flow) return;
+  ensureTwelveSteps(flow);
 
   const currentStage = flow.stage;
   if (currentStage === targetStage) return;
@@ -1044,6 +1068,7 @@ function handleConfirmedFlowMove() {
 }
 
 function executeFlowMove(flow, targetStage) {
+  ensureTwelveSteps(flow);
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
     "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
@@ -1101,6 +1126,7 @@ let currentActiveStepNum = 1;
 function openFlowDetailModal(flowId) {
   const flow = AppState.shipment_workflows.find(f => f.id === flowId);
   if (!flow) return;
+  ensureTwelveSteps(flow);
 
   currentActiveFlowId = flowId;
   currentActiveStepNum = flow.stage; // Set default view to current active step
@@ -1190,7 +1216,7 @@ function renderActiveStepPanel() {
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
   ];
 
   document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1] || 'Thất bại'}`;
