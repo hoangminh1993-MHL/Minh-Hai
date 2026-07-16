@@ -433,9 +433,19 @@
 
         <!-- VIEW: CRM KANBAN -->
         <section id="view-crm" class="app-view">
-          <div class="crm-controls">
-            <div class="search-filter">
+          <div class="crm-controls" style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+            <div class="search-filter" style="display: flex; align-items: center; gap: 12px; flex: 1;">
               <input type="text" id="crm-search" class="form-control" placeholder="Tìm kiếm khách hàng (Tên, SĐT, Nhu cầu)...">
+              
+              <!-- View Toggles (Board vs List) -->
+              <div class="btn-group" style="display: flex; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px;">
+                <button class="btn btn-sm btn-view-toggle active" id="btn-crm-view-board" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer; transition: all 0.2s;">
+                  <i class="fa-solid fa-table-columns"></i> Cột (Kanban)
+                </button>
+                <button class="btn btn-sm btn-view-toggle" id="btn-crm-view-list" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
+                  <i class="fa-solid fa-list"></i> Dòng (Danh sách)
+                </button>
+              </div>
             </div>
             <!-- Only Sales and Admin can add leads -->
             <div class="crm-actions">
@@ -446,7 +456,7 @@
           </div>
 
           <!-- Kanban Board -->
-          <div class="kanban-board-wrapper">
+          <div class="kanban-board-wrapper" id="crm-kanban-wrapper">
             <div class="kanban-board" id="crm-kanban-board">
               
               <!-- Column 1: Nhận Thông Tin -->
@@ -535,6 +545,27 @@
               </div>
 
             </div>
+          </div>
+
+          <!-- List View (Dòng) -->
+          <div class="list-view-wrapper" id="crm-list-wrapper" style="display: none; margin-top: 20px; overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <table class="leaderboard-table" style="min-width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: bold;">
+                  <th style="text-align: left; padding: 12px 10px;">Khách Hàng</th>
+                  <th style="text-align: left; padding: 12px 10px;">Số Điện Thoại</th>
+                  <th style="text-align: left; padding: 12px 10px;">Nguồn/Phân loại</th>
+                  <th style="text-align: left; padding: 12px 10px;">Người Phụ Trách</th>
+                  <th style="text-align: left; padding: 12px 10px;">Trạng Thái</th>
+                  <th style="text-align: left; padding: 12px 10px;">Nhu Cầu/Ghi Chú</th>
+                  <th style="text-align: left; padding: 12px 10px; width: 140px;">Cập Nhật Cuối</th>
+                  <th style="text-align: center; padding: 12px 10px; width: 120px;">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="crm-list-table-body" style="font-size: 13px;">
+                <!-- Dynamically populated in crm.js -->
+              </tbody>
+            </table>
           </div>
         </section>
 
@@ -1208,6 +1239,16 @@
               <input type="checkbox" id="ops-flow-filter-overdue"> Trễ hạn bước
             </label>
 
+            <!-- View Toggles (Board vs List) -->
+            <div class="btn-group" style="display: flex; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px;">
+              <button class="btn btn-sm btn-view-toggle active" id="btn-ops-view-board" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer; transition: all 0.2s;">
+                <i class="fa-solid fa-table-columns"></i> Cột (Kanban)
+              </button>
+              <button class="btn btn-sm btn-view-toggle" id="btn-ops-view-list" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
+                <i class="fa-solid fa-list"></i> Dòng (Danh sách)
+              </button>
+            </div>
+
             <button class="btn btn-primary" id="btn-add-flow-modal" style="margin-left: auto;">
               <i class="fa-solid fa-plus"></i> Khởi Tạo Lô Hàng Mới
             </button>
@@ -1217,10 +1258,31 @@
             </button>
           </div>
 
-          <div class="kanban-board-wrapper" style="margin-top: 20px; overflow-x: auto; padding-bottom: 15px;">
+          <!-- Kanban Board -->
+          <div class="kanban-board-wrapper" id="ops-kanban-wrapper" style="margin-top: 20px; overflow-x: auto; padding-bottom: 15px;">
             <div class="kanban-board" id="ops-workflows-kanban" style="grid-template-columns: repeat(11, 290px); gap: 16px;">
               <!-- 11 columns dynamically rendered by ops.js -->
             </div>
+          </div>
+
+          <!-- List View -->
+          <div class="list-view-wrapper" id="ops-list-wrapper" style="display: none; margin-top: 20px; overflow-x: auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+            <table class="leaderboard-table" style="min-width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: bold;">
+                  <th style="text-align: left; padding: 12px 10px;">Lô Hàng / Loại Hình</th>
+                  <th style="text-align: left; padding: 12px 10px;">Khách Hàng (Mã KH)</th>
+                  <th style="text-align: left; padding: 12px 10px;">Người Phụ Trách</th>
+                  <th style="text-align: left; padding: 12px 10px;">Bước Hiện Tại</th>
+                  <th style="text-align: left; padding: 12px 10px;">SLA Phản Hồi B1</th>
+                  <th style="text-align: left; padding: 12px 10px; width: 140px;">Hạn Bước hiện tại</th>
+                  <th style="text-align: center; padding: 12px 10px; width: 120px;">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="ops-list-table-body" style="font-size: 13px;">
+                <!-- Dynamically populated in ops.js -->
+              </tbody>
+            </table>
           </div>
         </section>
 

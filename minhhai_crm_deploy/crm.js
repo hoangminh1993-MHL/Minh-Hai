@@ -21,6 +21,22 @@ function formatDateTime(date) {
 }
 
 function initCRMEvents() {
+  // View mode toggling
+  const btnBoard = document.getElementById('btn-crm-view-board');
+  const btnList = document.getElementById('btn-crm-view-list');
+  if (btnBoard && btnList) {
+    btnBoard.onclick = () => {
+      AppState.crmViewMode = 'board';
+      saveState();
+      renderCRMBoard();
+    };
+    btnList.onclick = () => {
+      AppState.crmViewMode = 'list';
+      saveState();
+      renderCRMBoard();
+    };
+  }
+
   // Search input
   const searchInput = document.getElementById('crm-search');
   if (searchInput) {
@@ -197,6 +213,103 @@ function renderCRMBoard() {
                           (lead.note && lead.note.toLowerCase().includes(searchVal));
     return matchesSearch;
   });
+
+  // Synchronize toggle UI state
+  const viewMode = AppState.crmViewMode || 'board';
+  const btnBoard = document.getElementById('btn-crm-view-board');
+  const btnList = document.getElementById('btn-crm-view-list');
+  const kanbanWrapper = document.getElementById('crm-kanban-wrapper');
+  const listWrapper = document.getElementById('crm-list-wrapper');
+
+  if (btnBoard && btnList && kanbanWrapper && listWrapper) {
+    if (viewMode === 'list') {
+      btnList.classList.add('active');
+      btnList.style.background = 'var(--color-primary)';
+      btnList.style.color = 'white';
+      btnBoard.classList.remove('active');
+      btnBoard.style.background = 'transparent';
+      btnBoard.style.color = 'var(--text-secondary)';
+      kanbanWrapper.style.display = 'none';
+      listWrapper.style.display = 'block';
+    } else {
+      btnBoard.classList.add('active');
+      btnBoard.style.background = 'var(--color-primary)';
+      btnBoard.style.color = 'white';
+      btnList.classList.remove('active');
+      btnList.style.background = 'transparent';
+      btnList.style.color = 'var(--text-secondary)';
+      kanbanWrapper.style.display = 'block';
+      listWrapper.style.display = 'none';
+    }
+  }
+
+  if (viewMode === 'list') {
+    const listBody = document.getElementById('crm-list-table-body');
+    if (listBody) {
+      listBody.innerHTML = '';
+      if (filteredLeads.length === 0) {
+        listBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy khách hàng nào.</td></tr>`;
+      } else {
+        filteredLeads.forEach(lead => {
+          const salesUser = AppState.users.find(u => u.id === lead.salesId);
+          const salesName = salesUser ? salesUser.name : 'Chưa giao';
+          
+          const stageLabels = {
+            receive_info: 'Nhận thông tin',
+            get_phone: 'Lấy SĐT',
+            explore_info: 'Khai thác thông tin',
+            quotation: 'Báo giá',
+            negotiating: 'Thương lượng',
+            success: 'Thành công',
+            failed: 'Thất bại'
+          };
+          
+          const stageColors = {
+            receive_info: '#3b82f6',
+            get_phone: '#8b5cf6',
+            explore_info: '#f97316',
+            quotation: '#eab308',
+            negotiating: '#f97316',
+            success: '#10b981',
+            failed: '#ef4444'
+          };
+          
+          const stageBadge = `<span class="badge" style="background: ${stageColors[lead.stage] || '#6b7280'}; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;">${stageLabels[lead.stage] || lead.stage}</span>`;
+          
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid var(--border-color)';
+          tr.style.cursor = 'pointer';
+          tr.addEventListener('click', () => {
+            openLeadDetailModal(lead.id);
+          });
+          
+          tr.innerHTML = `
+            <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${lead.name}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.phone || 'Chưa có'}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.source || 'Trực tiếp'}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
+            <td style="padding: 12px 10px;">${stageBadge}</td>
+            <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${lead.note || ''}">${lead.note || 'Không có ghi chú.'}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary); font-size: 12px;">${lead.updatedTime || lead.createdTime || lead.date || ''}</td>
+            <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
+              <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
+            </td>
+          `;
+          listBody.appendChild(tr);
+        });
+      }
+    }
+    
+    // Still update column counts in background
+    stages.forEach(st => {
+      const countSpan = document.getElementById(`count-${st}`);
+      if (countSpan) {
+        const count = AppState.leads.filter(l => l.stage === st).length;
+        countSpan.innerText = count;
+      }
+    });
+    return;
+  }
 
   // Render cards
   filteredLeads.forEach(lead => {

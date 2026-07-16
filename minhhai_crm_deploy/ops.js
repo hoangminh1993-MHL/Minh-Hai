@@ -106,8 +106,27 @@ function initOpsEvents() {
     btnExportCSV.onclick = exportWorkflowsToCSV;
   }
 
+  // View mode toggling for Ops Workflows
+  const btnOpsBoard = document.getElementById('btn-ops-view-board');
+  const btnOpsList = document.getElementById('btn-ops-view-list');
+  if (btnOpsBoard && btnOpsList) {
+    btnOpsBoard.onclick = () => {
+      AppState.opsViewMode = 'board';
+      saveState();
+      renderOpsWorkflows();
+    };
+    btnOpsList.onclick = () => {
+      AppState.opsViewMode = 'list';
+      saveState();
+      renderOpsWorkflows();
+    };
+  }
+
   // Filter triggers
-  document.getElementById('ops-flow-search').oninput = renderOpsWorkflows;
+  const opsFlowSearch = document.getElementById('ops-flow-search');
+  if (opsFlowSearch) {
+    opsFlowSearch.oninput = renderOpsWorkflows;
+  }
   document.getElementById('ops-flow-filter-service').onchange = renderOpsWorkflows;
   document.getElementById('ops-flow-filter-assignee').onchange = renderOpsWorkflows;
   document.getElementById('ops-flow-filter-overdue').onchange = renderOpsWorkflows;
@@ -483,6 +502,7 @@ function renderOpsWorkflows() {
 
   // 11 steps arrays
   const stepLists = Array.from({ length: 11 }, () => []);
+  const filteredFlows = [];
 
   // Filter shipment workflows
   const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
@@ -516,12 +536,113 @@ function renderOpsWorkflows() {
     const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
     if (overdueVal && !isOverdue) return;
 
+    filteredFlows.push(flow);
+
     // Place into corresponding step array (flow.stage is 1-indexed)
     const idx = flow.stage - 1;
     if (idx >= 0 && idx < 11) {
       stepLists[idx].push(flow);
     }
   });
+
+  const viewMode = AppState.opsViewMode || 'board';
+  const btnBoard = document.getElementById('btn-ops-view-board');
+  const btnList = document.getElementById('btn-ops-view-list');
+  const kanbanWrapper = document.getElementById('ops-kanban-wrapper');
+  const listWrapper = document.getElementById('ops-list-wrapper');
+
+  if (btnBoard && btnList && kanbanWrapper && listWrapper) {
+    if (viewMode === 'list') {
+      btnList.classList.add('active');
+      btnList.style.background = 'var(--color-primary)';
+      btnList.style.color = 'white';
+      btnBoard.classList.remove('active');
+      btnBoard.style.background = 'transparent';
+      btnBoard.style.color = 'var(--text-secondary)';
+      kanbanWrapper.style.display = 'none';
+      listWrapper.style.display = 'block';
+    } else {
+      btnBoard.classList.add('active');
+      btnBoard.style.background = 'var(--color-primary)';
+      btnBoard.style.color = 'white';
+      btnList.classList.remove('active');
+      btnList.style.background = 'transparent';
+      btnList.style.color = 'var(--text-secondary)';
+      kanbanWrapper.style.display = 'block';
+      listWrapper.style.display = 'none';
+    }
+  }
+
+  if (viewMode === 'list') {
+    const listBody = document.getElementById('ops-list-table-body');
+    if (listBody) {
+      listBody.innerHTML = '';
+      if (filteredFlows.length === 0) {
+        listBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy lô hàng nào.</td></tr>`;
+      } else {
+        filteredFlows.forEach(flow => {
+          const client = AppState.clients.find(c => c.id === flow.clientId) || {};
+          const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
+          const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
+          
+          let slaBadge = '<span class="text-muted" style="font-size:11.5px; font-style:italic;">--</span>';
+          if (flow.customerMsgTime && flow.infoEntryTime) {
+            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
+            if (diffMs >= 0) {
+              const diffMins = Math.floor(diffMs / 60000);
+              const hours = Math.floor(diffMins / 60);
+              const mins = diffMins % 60;
+              const timeText = hours > 0 ? `${hours}h${mins}m` : `${mins}m`;
+              if (diffMins <= 120) {
+                slaBadge = `<span class="badge" style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-check"></i> Đạt (${timeText})</span>`;
+              } else {
+                slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Muộn (${timeText})</span>`;
+              }
+            } else {
+              slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-xmark"></i> Lỗi thời gian</span>`;
+            }
+          } else if (flow.stage === 1) {
+            slaBadge = `<span class="badge" style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Chờ nhập thời gian</span>`;
+          }
+          
+          const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
+          const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Bước ${flow.stage}: ${currentStepName}</span>`;
+          
+          const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
+          const deadlineBadge = isOverdue
+            ? `<span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Trễ hạn</span>`
+            : `<span style="color:var(--text-secondary);">${flow.deadline || 'Chưa đặt'}</span>`;
+            
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid var(--border-color)';
+          tr.style.cursor = 'pointer';
+          tr.addEventListener('click', () => {
+            openFlowDetailModal(flow.id);
+          });
+          
+          tr.innerHTML = `
+            <td style="padding: 12px 10px;">
+              <div style="font-weight: bold; color: var(--color-primary);">${flow.name}</div>
+              <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Dịch vụ: ${flow.serviceType || 'Chưa rõ'}</div>
+            </td>
+            <td style="padding: 12px 10px;">
+              <div style="font-weight: 600;">${client.name || 'Vô danh'}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">Mã KH: ${client.code || '--'}</div>
+            </td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${assigneeName}</td>
+            <td style="padding: 12px 10px;">${stepBadge}</td>
+            <td style="padding: 12px 10px;">${slaBadge}</td>
+            <td style="padding: 12px 10px;">${deadlineBadge}</td>
+            <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
+              <button class="btn btn-sm btn-outline" onclick="openFlowDetailModal('${flow.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
+            </td>
+          `;
+          listBody.appendChild(tr);
+        });
+      }
+    }
+    return;
+  }
 
   // Render 11 columns
   for (let i = 0; i < 11; i++) {
