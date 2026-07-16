@@ -794,8 +794,8 @@ function renderOpsWorkflows() {
 
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.code || 'KH CŨ'}</span>
-          <span class="badge bg-blue" style="font-size:9px; padding:2px 4px;">${flow.serviceType}</span>
+          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.name || 'Vô danh'} - ${flow.name}</span>
+          <span class="badge bg-blue" style="font-size:9px; padding:2px 4px; white-space: nowrap; margin-left: 4px;">${flow.serviceType}</span>
         </div>
         <div class="card-client-name" style="margin-top:6px; font-size:13.5px;">${flow.name}</div>
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
@@ -1525,6 +1525,7 @@ function handleFlowAddStepChecklistItem() {
     if (!stepData.checklist) stepData.checklist = [];
     stepData.checklist.push({ text: text, done: false, required: false });
     textInput.value = '';
+    saveState();
     renderActiveStepPanel();
   }
 }
@@ -1556,6 +1557,7 @@ function handleFlowAddStepFile() {
 
   nameInput.value = '';
   urlInput.value = '';
+  saveState();
   renderActiveStepPanel();
 }
 
@@ -1567,6 +1569,7 @@ window.handleDeleteFlowFile = function(idx) {
     flow.files.splice(idx, 1);
   }
 
+  saveState();
   renderActiveStepPanel();
 };
 
