@@ -29,7 +29,7 @@ function renderSuggestions() {
   const staffLayout = document.getElementById('suggestions-staff-layout');
   const adminLayout = document.getElementById('suggestions-admin-layout');
 
-  if (user.role === 'admin') {
+  if (user.username === 'hoangminh') {
     if (staffLayout) staffLayout.style.display = 'none';
     if (adminLayout) adminLayout.style.display = 'block';
     renderAdminSuggestions();
@@ -51,13 +51,20 @@ function handleSuggestionSubmit(e) {
   const titleInput = document.getElementById('sugg-title');
   const typeSelect = document.getElementById('sugg-type');
   const descInput = document.getElementById('sugg-desc');
+  const imageInput = document.getElementById('sugg-image');
 
   const title = titleInput.value.trim();
   const type = typeSelect.value;
   const desc = descInput.value.trim();
+  const imageUrl = imageInput ? imageInput.value.trim() : '';
 
   if (!title || !desc) {
     showToast("Vui lòng nhập đầy đủ thông tin đề xuất!", "warning");
+    return;
+  }
+
+  if (!imageUrl) {
+    showToast("Vui lòng dán link hình ảnh minh họa bắt buộc!", "warning");
     return;
   }
 
@@ -67,6 +74,7 @@ function handleSuggestionSubmit(e) {
     title: title,
     type: type,
     desc: desc,
+    imageUrl: imageUrl,
     authorId: user.id,
     authorName: user.name,
     date: new Date().toISOString().split('T')[0],
@@ -89,6 +97,7 @@ function handleSuggestionSubmit(e) {
   // Reset form
   titleInput.value = '';
   descInput.value = '';
+  if (imageInput) imageInput.value = '';
 
   // Refresh
   renderSuggestions();
@@ -138,6 +147,7 @@ function renderStaffSuggestions() {
         <div>${statusBadge}</div>
       </div>
       <p style="margin:4px 0; font-size:12.5px; color:var(--text-muted); line-height:1.4; white-space:pre-wrap;">${s.desc}</p>
+      ${s.imageUrl ? `<div style="margin-top:4px;"><a href="${s.imageUrl}" target="_blank" style="font-size:11.5px; color:#3b82f6;"><i class="fa-solid fa-image"></i> Xem hình ảnh đính kèm</a></div>` : ''}
       <span style="font-size:10.5px; color:var(--text-muted); align-self:flex-end;">Ngày gửi: ${s.date}</span>
     `;
 
@@ -208,6 +218,7 @@ function renderAdminSuggestions() {
         <div>${statusText}</div>
       </div>
       <div style="background:rgba(0,0,0,0.15); padding:10px; border-radius:6px; border:1px solid var(--border-color); font-size:13px; color:#fff; line-height:1.45; white-space:pre-wrap;">${s.desc}</div>
+      ${s.imageUrl ? `<div><a href="${s.imageUrl}" target="_blank" style="font-size:12px; color:#3b82f6;"><i class="fa-solid fa-image"></i> Xem hình ảnh đính kèm</a></div>` : ''}
       ${buttonsHtml}
     `;
 
