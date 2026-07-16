@@ -941,6 +941,28 @@ function handleFlowMoveAttempt(flowId, targetStage) {
       return;
     }
   }
+  // If moving to Thất bại (stage 12), require fail reason + evidence
+  if (targetStage === 12) {
+    document.getElementById('fail-prompt-client-name').innerText = flow.name;
+    document.getElementById('prompt-fail-reason').value = '';
+    document.getElementById('prompt-fail-reason-other').value = '';
+    document.getElementById('prompt-fail-reason-other').style.display = 'none';
+    document.getElementById('prompt-fail-evidence').value = '';
+    
+    openModal('modal-fail-reason-prompt');
+    
+    failPromptCallback = (reason, evidence) => {
+      flow.failReason = reason;
+      flow.failEvidence = evidence;
+      flow.failApproved = false;
+      executeFlowMove(flow, 12);
+      saveState();
+      renderOpsWorkflows();
+      addNotification('Lô hàng thất bại', `Lô hàng ${flow.name} đã chuyển sang Thất bại: ${reason}`, 'warning');
+    };
+    return;
+  }
+
   // Verify transition checklists of the current step
   const currentStepData = flow.steps.find(s => s.stepNum === currentStage);
   if (currentStepData && currentStepData.checklist && currentStepData.checklist.length > 0) {
