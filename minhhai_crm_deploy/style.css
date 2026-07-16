@@ -151,6 +151,8 @@ select option {
   z-index: 100;
   padding: 24px 16px;
   box-shadow: var(--shadow-lg);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
 .brand {
@@ -209,14 +211,16 @@ select option {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-secondary);
-  transition: var(--transition-normal);
+  transition: background-color 0.25s, color 0.25s;
   position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 .nav-item i {
   font-size: 18px;
   width: 20px;
   text-align: center;
-  transition: var(--transition-normal);
+  transition: transform 0.25s;
 }
 .nav-item:hover {
   background-color: rgba(255, 255, 255, 0.05);
