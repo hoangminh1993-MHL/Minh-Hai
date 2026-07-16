@@ -424,10 +424,20 @@ function startStatePolling() {
           }
 
           // Re-render active view
-          const activeTabElement = document.querySelector('.nav-item.active');
-          if (activeTabElement) {
-            const currentViewId = activeTabElement.getAttribute('data-view');
-            navigateToView(currentViewId, false);
+          // Only re-render if the user is not actively interacting to avoid cursor jumping, input loss, and drag-and-drop lag.
+          const isUserInteracting = 
+            document.querySelector('.dragging') !== null || 
+            document.querySelector('.modal.active') !== null || 
+            ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+
+          if (!isUserInteracting) {
+            const activeTabElement = document.querySelector('.nav-item.active');
+            if (activeTabElement) {
+              const currentViewId = activeTabElement.getAttribute('data-view');
+              navigateToView(currentViewId, false);
+            }
+          } else {
+            console.log('Phát hiện dữ liệu mới nhưng tạm hoãn vẽ lại giao diện nền để tránh lag...');
           }
           
           // Refresh user context and notification dropdown
