@@ -1525,6 +1525,7 @@ function handleFlowAddStepChecklistItem() {
     if (!stepData.checklist) stepData.checklist = [];
     stepData.checklist.push({ text: text, done: false, required: false });
     textInput.value = '';
+    saveState();
     renderActiveStepPanel();
   }
 }
