@@ -122,14 +122,38 @@ function initOpsEvents() {
     };
   }
 
+  // Sortable headers in list view
+  document.querySelectorAll('.ops-sortable-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const field = header.getAttribute('data-field');
+      if (AppState.opsSortField === field) {
+        AppState.opsSortOrder = AppState.opsSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        AppState.opsSortField = field;
+        AppState.opsSortOrder = 'asc';
+      }
+      saveState();
+      renderOpsWorkflows();
+    });
+  });
+
   // Filter triggers
   const opsFlowSearch = document.getElementById('ops-flow-search');
   if (opsFlowSearch) {
     opsFlowSearch.oninput = renderOpsWorkflows;
   }
-  document.getElementById('ops-flow-filter-service').onchange = renderOpsWorkflows;
-  document.getElementById('ops-flow-filter-assignee').onchange = renderOpsWorkflows;
-  document.getElementById('ops-flow-filter-overdue').onchange = renderOpsWorkflows;
+  const opsFlowFilterService = document.getElementById('ops-flow-filter-service');
+  if (opsFlowFilterService) {
+    opsFlowFilterService.onchange = renderOpsWorkflows;
+  }
+  const opsFlowFilterAssignee = document.getElementById('ops-flow-filter-assignee');
+  if (opsFlowFilterAssignee) {
+    opsFlowFilterAssignee.onchange = renderOpsWorkflows;
+  }
+  const opsFlowFilterOverdue = document.getElementById('ops-flow-filter-overdue');
+  if (opsFlowFilterOverdue) {
+    opsFlowFilterOverdue.onchange = renderOpsWorkflows;
+  }
 
   // --- Single Tasks events ---
   const btnAddSingleTaskModal = document.getElementById('btn-add-single-task-modal');
@@ -574,6 +598,65 @@ function renderOpsWorkflows() {
   }
 
   if (viewMode === 'list') {
+    const opsSortField = AppState.opsSortField || 'name';
+    const opsSortOrder = AppState.opsSortOrder || 'asc';
+    
+    filteredFlows.sort((a, b) => {
+      let valA = '';
+      let valB = '';
+      
+      if (opsSortField === 'name') {
+        valA = a.name || '';
+        valB = b.name || '';
+      } else if (opsSortField === 'client') {
+        const clientA = AppState.clients.find(c => c.id === a.clientId) || {};
+        const clientB = AppState.clients.find(c => c.id === b.clientId) || {};
+        valA = clientA.name || '';
+        valB = clientB.name || '';
+      } else if (opsSortField === 'assignee') {
+        const uA = AppState.users.find(u => u.id === a.assigneeId);
+        const uB = AppState.users.find(u => u.id === b.assigneeId);
+        valA = uA ? uA.name : '';
+        valB = uB ? uB.name : '';
+      } else if (opsSortField === 'stage') {
+        valA = a.stage || 0;
+        valB = b.stage || 0;
+      } else if (opsSortField === 'sla') {
+        // Evaluate SLA duration in minutes if it exists
+        const getSlaMins = (f) => {
+          if (f.customerMsgTime && f.infoEntryTime) {
+            const diffMs = new Date(f.infoEntryTime) - new Date(f.customerMsgTime);
+            return diffMs >= 0 ? Math.floor(diffMs / 60000) : 999999;
+          }
+          return 999999;
+        };
+        valA = getSlaMins(a);
+        valB = getSlaMins(b);
+      } else if (opsSortField === 'deadline') {
+        valA = a.deadline || '9999-12-31';
+        valB = b.deadline || '9999-12-31';
+      }
+      
+      if (valA < valB) return opsSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return opsSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    // Update header sort icons
+    document.querySelectorAll('.ops-sortable-header').forEach(header => {
+      const field = header.getAttribute('data-field');
+      const iconSpan = header.querySelector('.sort-icon');
+      if (iconSpan) {
+        if (field === opsSortField) {
+          iconSpan.innerHTML = opsSortOrder === 'asc' ? ' ▲' : ' ▼';
+          iconSpan.style.opacity = '1';
+        } else {
+          iconSpan.innerHTML = ' ⇅';
+          iconSpan.style.opacity = '0.3';
+        }
+      }
+    });
+
     const listBody = document.getElementById('ops-list-table-body');
     if (listBody) {
       listBody.innerHTML = '';

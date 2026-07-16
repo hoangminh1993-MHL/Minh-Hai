@@ -438,11 +438,11 @@
               <input type="text" id="crm-search" class="form-control" placeholder="Tìm kiếm khách hàng (Tên, SĐT, Nhu cầu)...">
               
               <!-- View Toggles (Board vs List) -->
-              <div class="btn-group" style="display: flex; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px;">
-                <button class="btn btn-sm btn-view-toggle active" id="btn-crm-view-board" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer; transition: all 0.2s;">
+              <div class="btn-group" style="display: flex; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px; flex-shrink: 0;">
+                <button class="btn btn-sm btn-view-toggle active" id="btn-crm-view-board" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer; transition: all 0.2s; white-space: nowrap;">
                   <i class="fa-solid fa-table-columns"></i> Cột (Kanban)
                 </button>
-                <button class="btn btn-sm btn-view-toggle" id="btn-crm-view-list" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
+                <button class="btn btn-sm btn-view-toggle" id="btn-crm-view-list" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; white-space: nowrap;">
                   <i class="fa-solid fa-list"></i> Dòng (Danh sách)
                 </button>
               </div>
@@ -552,14 +552,14 @@
             <table class="leaderboard-table" style="min-width: 100%; border-collapse: collapse;">
               <thead>
                 <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: bold;">
-                  <th style="text-align: left; padding: 12px 10px;">Khách Hàng</th>
-                  <th style="text-align: left; padding: 12px 10px;">Số Điện Thoại</th>
-                  <th style="text-align: left; padding: 12px 10px;">Nguồn/Phân loại</th>
-                  <th style="text-align: left; padding: 12px 10px;">Người Phụ Trách</th>
-                  <th style="text-align: left; padding: 12px 10px;">Trạng Thái</th>
-                  <th style="text-align: left; padding: 12px 10px;">Nhu Cầu/Ghi Chú</th>
-                  <th style="text-align: left; padding: 12px 10px; width: 140px;">Cập Nhật Cuối</th>
-                  <th style="text-align: center; padding: 12px 10px; width: 120px;">Thao Tác</th>
+                  <th class="crm-sortable-header" data-field="name" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Khách Hàng <span class="sort-icon"></span></th>
+                  <th class="crm-sortable-header" data-field="phone" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Số Điện Thoại <span class="sort-icon"></span></th>
+                  <th class="crm-sortable-header" data-field="source" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Nguồn/Phân loại <span class="sort-icon"></span></th>
+                  <th class="crm-sortable-header" data-field="sales" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Người Phụ Trách <span class="sort-icon"></span></th>
+                  <th class="crm-sortable-header" data-field="stage" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Trạng Thái <span class="sort-icon"></span></th>
+                  <th style="text-align: left; padding: 12px 10px; user-select: none; white-space: nowrap;">Nhu Cầu/Ghi Chú</th>
+                  <th class="crm-sortable-header" data-field="updated" style="text-align: left; padding: 12px 10px; width: 140px; cursor: pointer; user-select: none; white-space: nowrap;">Cập Nhật Cuối <span class="sort-icon"></span></th>
+                  <th style="text-align: center; padding: 12px 10px; width: 120px; user-select: none; white-space: nowrap;">Thao Tác</th>
                 </tr>
               </thead>
               <tbody id="crm-list-table-body" style="font-size: 13px;">
@@ -917,7 +917,7 @@
           <div class="filter-bar" style="margin-top: 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
             <input type="text" id="ops-flow-search" class="form-control" style="max-width: 250px;" placeholder="Tìm tên lô hàng, mã khách...">
             
-            <select id="ops-flow-filter-service" class="form-control" style="max-width: 150px;">
+            <select id="ops-flow-filter-service" class="form-control" style="display: none;">
               <option value="all">-- Loại dịch vụ --</option>
               <option value="mua hộ">Mua hộ</option>
               <option value="ký gửi">Ký gửi</option>
@@ -926,7 +926,7 @@
               <option value="sourcing">Sourcing</option>
             </select>
 
-            <select id="ops-flow-filter-assignee" class="form-control" style="max-width: 150px;">
+            <select id="ops-flow-filter-assignee" class="form-control" style="min-width: 185px; width: auto;">
               <option value="all">-- Người phụ trách --</option>
               <!-- Populated dynamically -->
             </select>
@@ -936,11 +936,11 @@
             </label>
 
             <!-- View Toggles (Board vs List) -->
-            <div class="btn-group" style="display: flex; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px;">
-              <button class="btn btn-sm btn-view-toggle active" id="btn-ops-view-board" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer; transition: all 0.2s;">
+            <div class="btn-group" style="display: flex; background: #1f2937; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 2px; flex-shrink: 0;">
+              <button class="btn btn-sm btn-view-toggle active" id="btn-ops-view-board" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: var(--color-primary); color: white; cursor: pointer; transition: all 0.2s; white-space: nowrap;">
                 <i class="fa-solid fa-table-columns"></i> Cột (Kanban)
               </button>
-              <button class="btn btn-sm btn-view-toggle" id="btn-ops-view-list" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;">
+              <button class="btn btn-sm btn-view-toggle" id="btn-ops-view-list" style="padding: 5px 12px; font-size: 11.5px; border-radius: 4px; display: flex; align-items: center; gap: 4px; border: none; background: transparent; color: var(--text-secondary); cursor: pointer; transition: all 0.2s; white-space: nowrap;">
                 <i class="fa-solid fa-list"></i> Dòng (Danh sách)
               </button>
             </div>
@@ -966,13 +966,13 @@
             <table class="leaderboard-table" style="min-width: 100%; border-collapse: collapse;">
               <thead>
                 <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: bold;">
-                  <th style="text-align: left; padding: 12px 10px;">Lô Hàng / Loại Hình</th>
-                  <th style="text-align: left; padding: 12px 10px;">Khách Hàng (Mã KH)</th>
-                  <th style="text-align: left; padding: 12px 10px;">Người Phụ Trách</th>
-                  <th style="text-align: left; padding: 12px 10px;">Bước Hiện Tại</th>
-                  <th style="text-align: left; padding: 12px 10px;">SLA Phản Hồi B1</th>
-                  <th style="text-align: left; padding: 12px 10px; width: 140px;">Hạn Bước hiện tại</th>
-                  <th style="text-align: center; padding: 12px 10px; width: 120px;">Thao Tác</th>
+                  <th class="ops-sortable-header" data-field="name" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Lô Hàng / Loại Hình <span class="sort-icon"></span></th>
+                  <th class="ops-sortable-header" data-field="client" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Khách Hàng (Mã KH) <span class="sort-icon"></span></th>
+                  <th class="ops-sortable-header" data-field="assignee" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Người Phụ Trách <span class="sort-icon"></span></th>
+                  <th class="ops-sortable-header" data-field="stage" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">Bước Hiện Tại <span class="sort-icon"></span></th>
+                  <th class="ops-sortable-header" data-field="sla" style="text-align: left; padding: 12px 10px; cursor: pointer; user-select: none; white-space: nowrap;">SLA Phản Hồi B1 <span class="sort-icon"></span></th>
+                  <th class="ops-sortable-header" data-field="deadline" style="text-align: left; padding: 12px 10px; width: 140px; cursor: pointer; user-select: none; white-space: nowrap;">Hạn Bước hiện tại <span class="sort-icon"></span></th>
+                  <th style="text-align: center; padding: 12px 10px; width: 120px; user-select: none; white-space: nowrap;">Thao Tác</th>
                 </tr>
               </thead>
               <tbody id="ops-list-table-body" style="font-size: 13px;">
@@ -2647,12 +2647,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.13"></script>
-  <script src="crm.js?v=20.13"></script>
-  <script src="tasks.js?v=20.13"></script>
-  <script src="ops.js?v=20.13"></script>
-  <script src="inbox-sim.js?v=20.13"></script>
-  <script src="games.js?v=20.13"></script>
-  <script src="suggestions.js?v=20.13"></script>
+  <script src="app.js?v=20.14"></script>
+  <script src="crm.js?v=20.14"></script>
+  <script src="tasks.js?v=20.14"></script>
+  <script src="ops.js?v=20.14"></script>
+  <script src="inbox-sim.js?v=20.14"></script>
+  <script src="games.js?v=20.14"></script>
+  <script src="suggestions.js?v=20.14"></script>
 </body>
 </html>

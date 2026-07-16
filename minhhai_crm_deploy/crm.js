@@ -37,6 +37,21 @@ function initCRMEvents() {
     };
   }
 
+  // Sortable headers in list view
+  document.querySelectorAll('.crm-sortable-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const field = header.getAttribute('data-field');
+      if (AppState.crmSortField === field) {
+        AppState.crmSortOrder = AppState.crmSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        AppState.crmSortField = field;
+        AppState.crmSortOrder = 'asc';
+      }
+      saveState();
+      renderCRMBoard();
+    });
+  });
+
   // Search input
   const searchInput = document.getElementById('crm-search');
   if (searchInput) {
@@ -244,6 +259,57 @@ function renderCRMBoard() {
   }
 
   if (viewMode === 'list') {
+    // Sort leads if in list view and sort configuration is set
+    const crmSortField = AppState.crmSortField || 'name';
+    const crmSortOrder = AppState.crmSortOrder || 'asc';
+
+    filteredLeads.sort((a, b) => {
+      let valA = '';
+      let valB = '';
+      
+      if (crmSortField === 'name') {
+        valA = a.name || '';
+        valB = b.name || '';
+      } else if (crmSortField === 'phone') {
+        valA = a.phone || '';
+        valB = b.phone || '';
+      } else if (crmSortField === 'source') {
+        valA = a.source || '';
+        valB = b.source || '';
+      } else if (crmSortField === 'sales') {
+        const uA = AppState.users.find(u => u.id === a.salesId);
+        const uB = AppState.users.find(u => u.id === b.salesId);
+        valA = uA ? uA.name : '';
+        valB = uB ? uB.name : '';
+      } else if (crmSortField === 'stage') {
+        const stagesOrder = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
+        valA = stagesOrder.indexOf(a.stage);
+        valB = stagesOrder.indexOf(b.stage);
+      } else if (crmSortField === 'updated') {
+        valA = a.updatedTime || a.createdTime || a.date || '';
+        valB = b.updatedTime || b.createdTime || b.date || '';
+      }
+      
+      if (valA < valB) return crmSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return crmSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    // Update header sort icons
+    document.querySelectorAll('.crm-sortable-header').forEach(header => {
+      const field = header.getAttribute('data-field');
+      const iconSpan = header.querySelector('.sort-icon');
+      if (iconSpan) {
+        if (field === crmSortField) {
+          iconSpan.innerHTML = crmSortOrder === 'asc' ? ' ▲' : ' ▼';
+          iconSpan.style.opacity = '1';
+        } else {
+          iconSpan.innerHTML = ' ⇅';
+          iconSpan.style.opacity = '0.3';
+        }
+      }
+    });
+
     const listBody = document.getElementById('crm-list-table-body');
     if (listBody) {
       listBody.innerHTML = '';
