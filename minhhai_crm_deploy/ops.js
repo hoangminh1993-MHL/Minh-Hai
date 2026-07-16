@@ -756,7 +756,7 @@ function renderOpsWorkflows() {
       col.classList.add('drag-over');
     });
 
-    cardsContainer.addEventListener('dragleave', () => {
+    cardsContainer.addEventListener('dragleave', (e) => {
       col.classList.remove('drag-over');
     });
 
@@ -765,7 +765,12 @@ function renderOpsWorkflows() {
       col.classList.remove('drag-over');
       const flowId = e.dataTransfer.getData('text/plain') || draggingFlowId;
       const targetStage = i + 1;
-      handleFlowMoveAttempt(flowId, targetStage);
+      
+      // Delay the move attempt slightly to allow 'dragend' event to fire properly.
+      // Destroying the dragged DOM element synchronously during 'drop' causes browser D&D state to glitch/lag.
+      setTimeout(() => {
+        handleFlowMoveAttempt(flowId, targetStage);
+      }, 50);
     });
 
     // Populate columns cards
@@ -877,6 +882,7 @@ function renderOpsWorkflows() {
       card.addEventListener('dragstart', (e) => {
         draggingFlowId = flow.id;
         e.dataTransfer.setData('text/plain', flow.id);
+        e.dataTransfer.effectAllowed = 'move';
         card.classList.add('dragging');
       });
 
@@ -895,6 +901,8 @@ function renderOpsWorkflows() {
         select.addEventListener('change', (e) => {
           const val = parseInt(e.target.value);
           if (val) {
+            // Revert dropdown visual value IMMEDIATELY so if validation fails, it stays correct
+            e.target.value = flow.stage;
             handleFlowMoveAttempt(flow.id, val);
           }
         });
