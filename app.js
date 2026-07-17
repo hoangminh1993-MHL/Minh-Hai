@@ -348,11 +348,37 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
+const CLIENT_VERSION = '20.39';
+
+async function checkCodeVersionUpdate() {
+  try {
+    const res = await fetch('/index.html', { cache: 'no-store' });
+    if (res.ok) {
+      const htmlText = await res.text();
+      const match = htmlText.match(/app\.js\?v=([\d\.]+)/);
+      if (match && match[1]) {
+        const serverVersion = match[1];
+        if (serverVersion !== CLIENT_VERSION) {
+          console.log(`[Version] Server version is ${serverVersion}, local is ${CLIENT_VERSION}. Reloading page...`);
+          window.location.reload();
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Lỗi kiểm tra phiên bản mới:', err);
+  }
+}
 
 let pollingInterval = null;
+let pollingTicks = 0;
 function startStatePolling() {
+  checkCodeVersionUpdate();
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(async () => {
+    pollingTicks++;
+    if (pollingTicks % 30 === 0) {
+      checkCodeVersionUpdate();
+    }
     try {
       const res = await fetch(getApiUrl('/api/state'));
       if (res.ok) {
