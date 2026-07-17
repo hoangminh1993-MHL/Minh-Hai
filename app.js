@@ -834,6 +834,7 @@ function renderCurrentUser() {
 function applyRoleBasedNavigation() {
   const user = getCurrentUser();
   const isAdmin = user && user.role === 'admin';
+  const isAdminOrManager = user && (user.role === 'admin' || user.role === 'manager');
 
   const navSettings = document.getElementById('nav-settings');
   const navStaffMgmt = document.getElementById('nav-staff-mgmt');
@@ -845,7 +846,7 @@ function applyRoleBasedNavigation() {
   const adminView = document.getElementById('dashboard-admin-view');
   const staffView = document.getElementById('dashboard-staff-view');
   if (adminView && staffView) {
-    if (isAdmin) {
+    if (isAdminOrManager) {
       adminView.style.display = 'block';
       staffView.style.display = 'none';
     } else {
@@ -874,7 +875,8 @@ function applyRoleBasedNavigation() {
 // ==================== DASHBOARD RENDER & CHARTS ==================== //
 function renderDashboard() {
   const user = getCurrentUser();
-  if (user && user.role !== 'admin') {
+  const isAdminOrManager = user && (user.role === 'admin' || user.role === 'manager');
+  if (!isAdminOrManager) {
     renderStaffDashboard(user);
     return;
   }
