@@ -486,11 +486,13 @@ function renderCRMBoard() {
         e.dataTransfer.setData('text/plain', lead.id);
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
+        document.getElementById('crm-kanban-board')?.classList.add('board-dragging');
       });
 
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
         draggingLeadId = null;
+        document.getElementById('crm-kanban-board')?.classList.remove('board-dragging');
       });
     }
 

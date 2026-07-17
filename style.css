@@ -977,6 +977,12 @@ textarea.form-control {
   border-style: dashed;
   border-color: var(--color-primary);
 }
+.board-dragging .kanban-card {
+  pointer-events: none;
+}
+.board-dragging .kanban-card.dragging {
+  pointer-events: auto;
+}
 .card-client-name {
   font-size: 13px;
   font-weight: 600;

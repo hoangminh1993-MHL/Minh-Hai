@@ -884,11 +884,13 @@ function renderOpsWorkflows() {
         e.dataTransfer.setData('text/plain', flow.id);
         e.dataTransfer.effectAllowed = 'move';
         card.classList.add('dragging');
+        document.getElementById('ops-kanban-board')?.classList.add('board-dragging');
       });
 
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
         draggingFlowId = null;
+        document.getElementById('ops-kanban-board')?.classList.remove('board-dragging');
       });
 
       card.addEventListener('click', (e) => {
