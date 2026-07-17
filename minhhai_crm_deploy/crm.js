@@ -447,24 +447,37 @@ function renderCRMBoard() {
           <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
         </div>
       </div>
-      <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
-        <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
-        <select class="card-stage-select" style="font-size: 10px; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-          <option value="" disabled selected>Chọn...</option>
-          <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
-          <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
-          <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác thông tin</option>
-          <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
-          <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
-          <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
-          <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
-        </select>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-share-nodes"></i> Nguồn KH:</span>
+          <select class="card-source-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+            <option value="Fanpage" ${lead.source === 'Fanpage' ? 'selected' : ''}>Fanpage</option>
+            <option value="KH cũ" ${lead.source === 'KH cũ' ? 'selected' : ''}>KH cũ</option>
+            <option value="BNI" ${lead.source === 'BNI' ? 'selected' : ''}>BNI</option>
+            <option value="GT" ${lead.source === 'GT' ? 'selected' : ''}>GT</option>
+            <option value="Cá nhân" ${lead.source === 'Cá nhân' ? 'selected' : ''}>Cá nhân</option>
+            <option value="Giới thiệu" ${lead.source === 'Giới thiệu' ? 'selected' : ''}>Giới thiệu</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+          <select class="card-stage-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+            <option value="" disabled selected>Chọn...</option>
+            <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
+            <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
+            <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác TT</option>
+            <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
+            <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
+            <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
+            <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
+          </select>
+        </div>
       </div>
     `;
 
     // Click card to open detail
     card.addEventListener('click', (e) => {
-      if (e.target.closest('.card-stage-select')) return;
+      if (e.target.closest('.card-stage-select') || e.target.closest('.card-source-select')) return;
       if (card.classList.contains('dragging')) return;
       openLeadDetailModal(lead.id);
     });
@@ -475,6 +488,23 @@ function renderCRMBoard() {
         const val = e.target.value;
         if (val) {
           handleLeadMove(lead.id, val);
+        }
+      });
+    }
+
+    const sourceSelect = card.querySelector('.card-source-select');
+    if (sourceSelect) {
+      sourceSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val) {
+          lead.source = val;
+          lead.updatedTime = formatDateTime(new Date());
+          saveState();
+          
+          if (typeof renderDashboard === 'function') renderDashboard();
+          if (typeof renderCRMBoard === 'function') renderCRMBoard();
+          
+          addNotification('Cập nhật Nguồn', `Đã chuyển nguồn khách hàng ${lead.name} sang: ${val}`, 'info');
         }
       });
     }
