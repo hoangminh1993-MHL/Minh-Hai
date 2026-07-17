@@ -228,6 +228,7 @@ async function syncLoadState() {
     const res = await fetch(getApiUrl('/api/state'));
     if (res.ok) {
       const data = await res.json();
+      AppState.lastUpdated = data.lastUpdated || parseInt(localStorage.getItem('votr_last_updated')) || 0;
       AppState.users = data.users;
       AppState.leads = data.leads;
       AppState.tasks = data.tasks;
@@ -317,7 +318,10 @@ function backfillGamificationData() {
 }
 
 async function saveState() {
+  AppState.lastUpdated = Date.now();
+
   // Sync to local storage
+  localStorage.setItem('votr_last_updated', String(AppState.lastUpdated));
   localStorage.setItem(CONFIG.LS_KEY_USERS, JSON.stringify(AppState.users));
   localStorage.setItem(CONFIG.LS_KEY_LEADS, JSON.stringify(AppState.leads));
   localStorage.setItem(CONFIG.LS_KEY_TASKS, JSON.stringify(AppState.tasks));
@@ -364,6 +368,13 @@ function startStatePolling() {
 
         const data = await res.json();
         
+        // Ignore server state if it's older than or equal to our local updates (to prevent race conditions)
+        const clientLastUpdated = AppState.lastUpdated || 0;
+        const serverLastUpdated = data.lastUpdated || 0;
+        if (clientLastUpdated > 0 && serverLastUpdated <= clientLastUpdated) {
+          return;
+        }
+
         // Detect if anything changed
         const oldLeadsCount = AppState.leads ? AppState.leads.length : 0;
         const newLeadsCount = data.leads ? data.leads.length : 0;
@@ -405,6 +416,7 @@ function startStatePolling() {
           sausageLogsChanged
         ) {
           console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
+          AppState.lastUpdated = data.lastUpdated || 0;
           AppState.users = data.users;
           AppState.leads = data.leads;
           AppState.tasks = data.tasks;
