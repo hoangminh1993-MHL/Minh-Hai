@@ -627,6 +627,30 @@ function handleLeadMove(leadId, targetStage) {
 
   // If moving to FAILED, ask for reason
   if (targetStage === 'failed') {
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+    if (!isAdminOrManager) {
+      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      
+      // Automatically redirect to negotiation instead
+      lead.stage = 'negotiation';
+      lead.stageEntryTimes = lead.stageEntryTimes || {};
+      lead.stageEntryTimes['negotiating'] = Date.now(); // In CRM negotiating is 5
+      lead.failReason = null;
+      lead.failEvidence = null;
+      lead.failApproved = null;
+      lead.updatedTime = formatDateTime(new Date());
+      
+      const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
+      if (currentStepData) currentStepData.status = 'done';
+      const negoStep = lead.steps.find(s => s.stepNum === 5); // Negotiation step
+      if (negoStep) negoStep.status = 'doing';
+
+      saveState();
+      renderCRMBoard();
+      return;
+    }
+
     document.getElementById('fail-prompt-client-name').innerText = lead.name;
     document.getElementById('prompt-fail-reason').value = '';
     document.getElementById('prompt-fail-reason-other').value = '';
@@ -1236,6 +1260,13 @@ function handleSaveActiveLeadStepData() {
     lead.valVnd = parseFloat(document.getElementById('lead-step-val-vnd').value) || 0;
   }
   if (currentActiveLeadStepNum === 7) {
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+    if (!isAdminOrManager) {
+      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      return;
+    }
+
     const reasonSelect = document.getElementById('lead-step-fail-reason');
     const reasonVal = reasonSelect.value;
     if (!reasonVal) {

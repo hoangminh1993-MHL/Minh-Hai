@@ -984,6 +984,22 @@ function handleFlowMoveAttempt(flowId, targetStage) {
   }
   // If moving to Thất bại (stage 12), require fail reason + evidence
   if (targetStage === 12) {
+    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
+    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+    if (!isAdminOrManager) {
+      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      
+      // Automatically redirect to Step 3: Thương lượng instead of Step 12: Thất bại
+      executeFlowMove(flow, 3);
+      flow.failReason = null;
+      flow.failEvidence = null;
+      flow.failApproved = null;
+      
+      saveState();
+      renderOpsWorkflows();
+      return;
+    }
+
     document.getElementById('fail-prompt-client-name').innerText = flow.name;
     document.getElementById('prompt-fail-reason').value = '';
     document.getElementById('prompt-fail-reason-other').value = '';
