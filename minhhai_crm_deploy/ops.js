@@ -2326,9 +2326,15 @@ window.handleDeleteTaskFile = function(idx) {
 function handleAddTaskFile() {
   const nameInput = document.getElementById('ops-task-detail-new-file-name');
   const urlInput = document.getElementById('ops-task-detail-new-file-url');
-  const name = nameInput.value.trim();
+  let name = nameInput.value.trim();
   const url = urlInput.value.trim();
-  if (!name || !url) return;
+  if (!url) {
+    showToast("Vui lòng nhập đường dẫn liên kết URL!", "warning");
+    return;
+  }
+  if (!name) {
+    name = "Tài liệu đính kèm";
+  }
 
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
   if (task) {
