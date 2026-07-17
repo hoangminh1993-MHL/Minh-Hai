@@ -708,6 +708,7 @@ function renderOpsWorkflows() {
             <td style="padding: 12px 10px;">
               <div style="font-weight: bold; color: var(--color-primary);">${flow.name}</div>
               <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Dịch vụ: ${flow.serviceType || 'Chưa rõ'}</div>
+              ${flow.failReason ? `<div style="font-size: 10px; color: #f87171; margin-top: 2px;"><i class="fa-solid fa-triangle-exclamation"></i> Lý do hỏng: ${flow.failReason}</div>` : ''}
             </td>
             <td style="padding: 12px 10px;">
               <div style="font-weight: 600;">${client.name || 'Vô danh'}</div>
@@ -845,11 +846,16 @@ function renderOpsWorkflows() {
             }
           }
           return '';
-        })()}
+        })() || ''}
         ${overdueBadge}
         <div style="font-size: 10.2px; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 4px;">
           <i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Chưa thiết lập'}
         </div>
+        ${flow.failReason ? `
+          <div style="margin-top: 6px; padding: 4px 6px; background: rgba(239, 68, 68, 0.12); border: 1px dashed rgba(239, 68, 68, 0.25); border-radius: 4px; font-size: 10.5px; color: #f87171; line-height: 1.3;">
+            <i class="fa-solid fa-triangle-exclamation"></i> <strong>Lý do hỏng:</strong> ${flow.failReason}
+          </div>
+        ` : ''}
         <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; flex-direction:column; gap:2px; font-size:10px; color:var(--text-muted);">
             <span><i class="fa-solid fa-user-gear"></i> Phụ trách: ${assigneeName}</span>
@@ -987,6 +993,26 @@ function handleFlowMoveAttempt(flowId, targetStage) {
     openModal('modal-fail-reason-prompt');
     
     failPromptCallback = (reason, evidence) => {
+      const allowedFailReasons = [
+        "Không đủ năng lực xử lý hàng",
+        "Hàng khó từ chối",
+        "Khách lẻ, hàng khó => chủ động từ chối",
+        "Không tìm được hàng cho KH"
+      ];
+      
+      const isNegotiationReason = !allowedFailReasons.includes(reason);
+      
+      if (isNegotiationReason) {
+        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển lô hàng sang cột Thương lượng.", "info");
+        executeFlowMove(flow, 3);
+        flow.failReason = null;
+        flow.failEvidence = null;
+        flow.failApproved = null;
+        saveState();
+        renderOpsWorkflows();
+        return;
+      }
+
       flow.failReason = reason;
       flow.failEvidence = evidence;
       flow.failApproved = false;

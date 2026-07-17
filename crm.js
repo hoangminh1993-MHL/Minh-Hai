@@ -636,6 +636,36 @@ function handleLeadMove(leadId, targetStage) {
     openModal('modal-fail-reason-prompt');
     
     failPromptCallback = (reason, evidence) => {
+      const allowedFailReasons = [
+        "Không đủ năng lực xử lý hàng",
+        "Hàng khó từ chối",
+        "Khách lẻ, hàng khó => chủ động từ chối",
+        "Không tìm được hàng cho KH"
+      ];
+      
+      const isNegotiationReason = !allowedFailReasons.includes(reason);
+      
+      if (isNegotiationReason) {
+        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển khách hàng sang cột Thương lượng.", "info");
+        
+        lead.stage = 'negotiation';
+        lead.stageEntryTimes = lead.stageEntryTimes || {};
+        lead.stageEntryTimes['negotiation'] = Date.now();
+        lead.failReason = null;
+        lead.failEvidence = null;
+        lead.failApproved = null;
+        lead.updatedTime = formatDateTime(new Date());
+        
+        const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
+        if (currentStepData) currentStepData.status = 'done';
+        const negoStep = lead.steps.find(s => s.stepNum === 5); // Negotiation step
+        if (negoStep) negoStep.status = 'doing';
+
+        saveState();
+        renderCRMBoard();
+        return;
+      }
+
       const oldStage = lead.stage;
       lead.stage = 'failed';
       lead.stageEntryTimes = lead.stageEntryTimes || {};
