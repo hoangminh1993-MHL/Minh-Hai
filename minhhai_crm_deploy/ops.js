@@ -3022,10 +3022,12 @@ function renderMyTasks() {
   const myFlowsList = document.getElementById('my-flows-list');
   const mySingleTasksList = document.getElementById('my-single-tasks-list');
   const myProjectTasksList = document.getElementById('my-project-tasks-list');
+  const myHelperTasksList = document.getElementById('my-helper-tasks-list');
 
   myFlowsList.innerHTML = '';
   mySingleTasksList.innerHTML = '';
   myProjectTasksList.innerHTML = '';
+  if (myHelperTasksList) myHelperTasksList.innerHTML = '';
 
   // Step names translation mapping
   const stepNames = [
@@ -3254,7 +3256,73 @@ function renderMyTasks() {
     myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có việc dự án VIP nào cần làm.</span>`;
   }
 
-  // 5. Tasks I assigned to others (Việc Tôi Đã Giao)
+  // 5. Tasks I assist (Việc Tôi Hỗ Trợ)
+  let helperCount = 0;
+  if (myHelperTasksList) {
+    myHelperTasksList.innerHTML = '';
+    if (AppState.single_tasks) {
+      AppState.single_tasks.forEach(task => {
+        // Show tasks where current user is the helper, and not completed/canceled/archived
+        if (task.helperId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
+          helperCount++;
+          const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
+          const chkTotal = task.checklist ? task.checklist.length : 0;
+          
+          const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
+          const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
+
+          const isOverdue = task.deadline && new Date(task.deadline) < new Date();
+
+          const card = document.createElement('div');
+          card.className = 'kanban-card';
+          card.style.cssText = `cursor: pointer; border-left: 4px solid #06b6d4; transition: transform 0.2s; margin-bottom: 8px;`;
+
+          let projectInfoHtml = '';
+          if (task.projectId) {
+            const proj = (AppState.projects || []).find(p => p.id === task.projectId);
+            if (proj) {
+              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+            }
+          }
+
+          const assignee = AppState.users.find(u => u.id === task.assigneeId);
+          const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
+
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span style="font-size:9.5px; color:var(--text-muted); font-weight:bold;">${task.dept.toUpperCase()}</span>
+              </div>
+            </div>
+            <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
+            ${projectInfoHtml}
+            <div style="font-size:11px; margin-top:4px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+            <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
+              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
+            </div>
+          `;
+          
+          card.onclick = () => {
+            if (typeof openOpsTaskDetail === 'function') {
+              openOpsTaskDetail(task.id);
+            }
+          };
+          myHelperTasksList.appendChild(card);
+        }
+      });
+    }
+    const helperCountLabel = document.getElementById('my-helper-tasks-count');
+    if (helperCountLabel) {
+      helperCountLabel.innerText = helperCount;
+    }
+    if (helperCount === 0) {
+      myHelperTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có công việc nào bạn hỗ trợ đang chờ.</span>`;
+    }
+  }
+
+  // 6. Tasks I assigned to others (Việc Tôi Đã Giao)
   const myAssignedTasksList = document.getElementById('my-assigned-tasks-list');
   let assignedCount = 0;
   if (myAssignedTasksList) {

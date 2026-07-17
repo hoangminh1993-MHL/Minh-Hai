@@ -30,7 +30,7 @@
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-icon" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: var(--radius-sm);">
-          <img src="logo.png" style="width: 100%; height: 100%; object-fit: contain;">
+          <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;">
         </div>
         <div class="brand-name">
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
@@ -87,6 +87,10 @@
           <i class="fa-solid fa-lightbulb"></i>
           <span>Ý Tưởng & Đề Xuất</span>
         </a>
+        <a href="#customer-health" class="nav-item" data-view="customer-health">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span>Sức Khỏe Khách</span>
+        </a>
         <!-- Parent menu Thiết lập -->
         <div class="nav-group" id="nav-group-settings" style="margin-top: 10px;">
           <div class="nav-group-header" onclick="toggleNavGroup('settings')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; color: var(--text-muted); font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer; border-radius: var(--radius-md); transition: background 0.2s, color 0.2s;">
@@ -105,10 +109,6 @@
             <a href="#" class="nav-item" id="btn-edit-profile-menu" style="padding: 8px 12px; font-size: 12.5px;">
               <i class="fa-solid fa-user-pen"></i>
               <span>Chỉnh Sửa Profile</span>
-            </a>
-            <a href="#" class="nav-item" id="btn-view-changelog" style="padding: 8px 12px; font-size: 12.5px;">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-              <span>Lịch Sử Cập Nhật</span>
             </a>
           </div>
         </div>
@@ -708,14 +708,35 @@
               <div class="dashboard-card" style="border: 1px solid var(--border-color); border-radius: 8px;">
                 <div class="card-header" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
                   <div>
-                    <h3 style="font-size: 15px; font-weight: bold; color: #ef4444; margin: 0;"><i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i>Khôi Phục Hệ Thống</h3>
-                    <span class="card-subtitle">Quản lý dọn dẹp và reset dữ liệu CRM</span>
+                    <h3 style="font-size: 15px; font-weight: bold; color: var(--color-primary); margin: 0;"><i class="fa-solid fa-database" style="margin-right: 6px;"></i>Quản Lý Dữ Liệu</h3>
+                    <span class="card-subtitle">Sao lưu, phục hồi và chuyển đổi dữ liệu CRM</span>
                   </div>
                 </div>
-                <div class="card-body">
-                  <button type="button" class="btn btn-danger" id="btn-reset-db" style="width: 100%; font-size: 12.5px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                    <i class="fa-solid fa-trash-can"></i> Xóa Dữ Liệu Nháp (Reset CRM)
-                  </button>
+                <div class="card-body" style="display: flex; flex-direction: column; gap: 14px;">
+                  <!-- Export Database -->
+                  <div>
+                    <button type="button" class="btn btn-primary" id="btn-export-db" style="width: 100%; font-size: 12.5px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #10b981; border-color: #10b981;">
+                      <i class="fa-solid fa-download"></i> Xuất File Sao Lưu (.JSON)
+                    </button>
+                    <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: block;">Tải toàn bộ dữ liệu đang lưu về máy tính của bạn làm bản sao lưu.</span>
+                  </div>
+                  
+                  <!-- Import Database -->
+                  <div style="border-top: 1px dashed var(--border-color); padding-top: 14px;">
+                    <label class="btn btn-outline" style="width: 100%; font-size: 12.5px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; border-color: #f59e0b; color: #f59e0b; margin: 0;">
+                      <i class="fa-solid fa-upload"></i> Nhập File Dữ Liệu (.JSON)
+                      <input type="file" id="input-import-db" accept=".json" style="display: none;">
+                    </label>
+                    <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: block;">Chọn file JSON đã xuất từ máy khác để khôi phục/đồng bộ dữ liệu sang máy này.</span>
+                  </div>
+
+                  <!-- Reset Database -->
+                  <div style="border-top: 1px dashed var(--border-color); padding-top: 14px;">
+                    <button type="button" class="btn btn-danger" id="btn-reset-db" style="width: 100%; font-size: 12.5px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                      <i class="fa-solid fa-trash-can"></i> Xóa Dữ Liệu Nháp (Reset CRM)
+                    </button>
+                    <span style="font-size: 10.5px; color: var(--text-muted); margin-top: 4px; display: block;">* Cảnh báo: Hành động này xóa sạch dữ liệu CRM trên máy chủ!</span>
+                  </div>
                 </div>
               </div>
 
@@ -763,67 +784,350 @@
 
         <!-- VIEW: REWARDS & LEADERBOARD -->
         <section id="view-rewards" class="app-view">
-          <div class="rewards-grid">
-            <!-- Left Side: Global Leaderboard -->
-            <div class="rewards-card leaderboard-card-full">
-              <div class="card-header-icon">
-                <i class="fa-solid fa-trophy trophy-header-icon"></i>
-                <div>
-                  <h3>Bảng Xếp Hạng Điểm Thưởng</h3>
-                  <p>Xếp hạng thành tích tích lũy "Xúc Xích" của 20 nhân viên Minh Hải Logistics</p>
+          <!-- Sub tab bar inside rewards view -->
+          <div class="rewards-tab-bar" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+            <button class="rewards-tab-btn active" data-reward-tab="leaderboard" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--color-primary); cursor: pointer; border-bottom: 3px solid var(--color-primary); display: flex; align-items: center; gap: 6px; font-size: 14px;">🏆 Bảng Xếp Hạng</button>
+            <button class="rewards-tab-btn" data-reward-tab="missions" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;">🎯 Nhiệm Vụ & Quiz</button>
+            <button class="rewards-tab-btn" data-reward-tab="store" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;">🎁 Cửa Hàng Quà</button>
+            <button class="rewards-tab-btn" data-reward-tab="games" style="background: none; border: none; padding: 10px 20px; font-weight: bold; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 14px;">🎡 Forward Journey</button>
+          </div>
+
+          <!-- Content Section: Leaderboard -->
+          <div id="reward-tab-content-leaderboard" class="reward-tab-content" style="display: block;">
+            <div class="rewards-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+              <!-- Left Side: Global Leaderboard -->
+              <div class="rewards-card leaderboard-card-full" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                <div class="card-header-icon" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                  <i class="fa-solid fa-trophy trophy-header-icon" style="font-size: 32px; color: #f59e0b;"></i>
+                  <div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: bold;">Bảng Thi Đua Minh Hải</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Hệ thống thi đua 3 lớp giúp nâng tầm chất lượng và năng suất làm việc</p>
+                  </div>
+                </div>
+
+                <!-- Leaderboard Filters -->
+                <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                  <button class="btn btn-sm btn-primary" id="btn-leaderboard-personal" style="border-radius: 20px; padding: 6px 14px;">Cá Nhân</button>
+                  <button class="btn btn-sm btn-outline" id="btn-leaderboard-team" style="border-radius: 20px; padding: 6px 14px;">Đội Nhóm</button>
+                  <button class="btn btn-sm btn-outline" id="btn-leaderboard-honor" style="border-radius: 20px; padding: 6px 14px;">Bảng Vinh Danh</button>
+                </div>
+                
+                <div class="leaderboard-table-wrapper" style="overflow-x: auto;">
+                  <!-- Personal Table -->
+                  <table class="leaderboard-table" id="table-leaderboard-personal" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                        <th class="text-center" style="padding: 10px; width: 60px;">Hạng</th>
+                        <th style="padding: 10px;">Nhân Viên</th>
+                        <th style="padding: 10px;">Bộ Phận</th>
+                        <th class="text-center" style="padding: 10px;">Điểm Cá Nhân</th>
+                        <th class="text-center" style="padding: 10px;">Tổng Đã Nhận</th>
+                        <th style="padding: 10px;">Danh Hiệu</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rewards-leaderboard-body">
+                      <!-- Dynamically populated -->
+                    </tbody>
+                  </table>
+
+                  <!-- Team Table -->
+                  <table class="leaderboard-table" id="table-leaderboard-team" style="width: 100%; border-collapse: collapse; display: none;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                        <th class="text-center" style="padding: 10px; width: 60px;">Hạng</th>
+                        <th style="padding: 10px;">Đội Ngũ / Phòng Ban</th>
+                        <th class="text-center" style="padding: 10px;">Tổng Điểm Nhóm</th>
+                        <th class="text-center" style="padding: 10px;">Tỷ Lệ Hoàn Thành Task</th>
+                        <th style="padding: 10px;">Đánh Giá Tháng</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rewards-leaderboard-team-body">
+                      <!-- Dynamically populated -->
+                    </tbody>
+                  </table>
+
+                  <!-- Honor Table -->
+                  <table class="leaderboard-table" id="table-leaderboard-honor" style="width: 100%; border-collapse: collapse; display: none;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
+                        <th style="padding: 10px;">Hạng Mục Vinh Danh</th>
+                        <th style="padding: 10px;">Nhân Sự Đứng Đầu</th>
+                        <th class="text-center" style="padding: 10px;">Thành Tích Đạt Được</th>
+                        <th style="padding: 10px;">Danh Hiệu Vinh Danh</th>
+                      </tr>
+                    </thead>
+                    <tbody id="rewards-leaderboard-honor-body">
+                      <!-- Dynamically populated -->
+                    </tbody>
+                  </table>
                 </div>
               </div>
-              
-              <div class="leaderboard-table-wrapper">
-                <table class="leaderboard-table">
+
+              <!-- Right Side: Point Rules & Log -->
+              <div class="rewards-card rules-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                <h3 style="font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Quy Chế Tích Lũy Điểm</h3>
+                <div class="points-rule-list" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                  <div class="rule-item" style="display: flex; gap: 10px; align-items: flex-start; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                    <div class="rule-points" style="font-weight: bold; color: #10b981; font-size: 14px;">+5 <i class="fa-solid fa-hotdog"></i></div>
+                    <div class="rule-desc">
+                      <h4 style="font-size: 12px; font-weight: bold; margin: 0;">Hoàn thành task đúng hạn</h4>
+                      <p style="font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0;">Cộng điểm tự động khi công việc hoàn thành đúng hạn.</p>
+                    </div>
+                  </div>
+                  <div class="rule-item" style="display: flex; gap: 10px; align-items: flex-start; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                    <div class="rule-points" style="font-weight: bold; color: #10b981; font-size: 14px;">+10 <i class="fa-solid fa-hotdog"></i></div>
+                    <div class="rule-desc">
+                      <h4 style="font-size: 12px; font-weight: bold; margin: 0;">Một tuần không task trễ hạn</h4>
+                      <p style="font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0;">Thưởng chuyên cần hàng tuần cho nhân sự gương mẫu.</p>
+                    </div>
+                  </div>
+                  <div class="rule-item" style="display: flex; gap: 10px; align-items: flex-start; padding: 8px; background: rgba(255,255,255,0.02); border-radius: 6px;">
+                    <div class="rule-points" style="font-weight: bold; color: #10b981; font-size: 14px;">+10 - +30 <i class="fa-solid fa-hotdog"></i></div>
+                    <div class="rule-desc">
+                      <h4 style="font-size: 12px; font-weight: bold; margin: 0;">Phát hiện rủi ro / Cải tiến</h4>
+                      <p style="font-size: 11px; color: var(--text-muted); margin: 2px 0 0 0;">Điểm thưởng sáng tạo và trách nhiệm cao đột xuất.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="recent-logs-section">
+                  <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Nhật Ký Tích Điểm</h3>
+                  <div class="log-list" id="rewards-points-log" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;">
+                    <!-- Dynamically populated -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content Section: Missions & Quiz -->
+          <div id="reward-tab-content-missions" class="reward-tab-content" style="display: none;">
+            <div class="rewards-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+              <!-- Left Side: Missions list -->
+              <div class="rewards-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                <div class="card-header-icon" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                  <i class="fa-solid fa-bullseye" style="font-size: 32px; color: #ef4444;"></i>
+                  <div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: bold;">Hệ Thống Nhiệm Vụ Tuần & Tháng</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Hoàn thành nhiệm vụ để duy trì thói quen làm việc tốt và tích lũy lượt quay</p>
+                  </div>
+                </div>
+
+                <div id="missions-list-container" style="display: flex; flex-direction: column; gap: 12px;">
+                  <!-- Dynamic Missions list -->
+                </div>
+              </div>
+
+              <!-- Right Side: Inner Quiz -->
+              <div class="rewards-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                <h3 style="font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-circle-question" style="color: #3b82f6;"></i> Quiz Nội Bộ Mỗi Ngày</h3>
+                
+                <div id="quiz-container">
+                  <!-- Dynamic quiz layout will render here -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content Section: Store -->
+          <div id="reward-tab-content-store" class="reward-tab-content" style="display: none;">
+            <div class="rewards-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+              <!-- Left Side: Product Grid -->
+              <div class="rewards-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                <div class="card-header-icon" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                  <i class="fa-solid fa-store" style="font-size: 32px; color: #10b981;"></i>
+                  <div>
+                    <h3 style="margin: 0; font-size: 18px; font-weight: bold;">Cửa Hàng Quà Đổi Điểm</h3>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Sử dụng xúc xích cá nhân tích lũy của bạn để đổi lấy các quà tặng và quyền lợi đặc biệt</p>
+                  </div>
+                </div>
+
+                <div id="store-products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                  <!-- Dynamic products list -->
+                </div>
+              </div>
+
+              <!-- Right Side: Redemption History -->
+              <div class="rewards-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                <h3 style="font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử Đổi Quà</h3>
+                <div id="store-history-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 450px; overflow-y: auto;">
+                  <!-- Dynamic redemption history -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content Section: Games -->
+          <div id="reward-tab-content-games" class="reward-tab-content" style="display: none;">
+            <div class="rewards-grid" style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+              <!-- Left Side: Mascot Tree & Badges -->
+              <div class="rewards-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 24px;">
+                <!-- Growth Mascot Section -->
+                <div>
+                  <div class="card-header-icon" style="display: flex; align-items: center; gap: 15px; margin-bottom: 16px;">
+                    <i class="fa-solid fa-seedling" style="font-size: 32px; color: #10b981;"></i>
+                    <div>
+                      <h3 style="margin: 0; font-size: 18px; font-weight: bold;">Cây Tiến Lên - Forward Journey</h3>
+                      <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">Cây đại diện cho sự nỗ lực và năng suất công việc của bạn. Hãy hoàn thành nhiều việc để cây lớn nhanh!</p>
+                    </div>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 40px; background: rgba(0,0,0,0.15); padding: 20px; border-radius: 12px; border: 1px solid var(--border-color);">
+                    <!-- CSS Tree Graphic Container -->
+                    <div id="progress-tree-graphic-container" style="width: 140px; height: 140px; display: flex; align-items: flex-end; justify-content: center; position: relative;">
+                      <!-- The tree graphic will be dynamically generated by js -->
+                    </div>
+                    <div style="flex: 1;">
+                      <h4 id="progress-tree-level-title" style="font-size: 15px; font-weight: bold; margin-top: 0; margin-bottom: 8px;">Cây Tiến Lên: Đang tải...</h4>
+                      <!-- Progress bar -->
+                      <div style="width: 100%; height: 12px; background: #374151; border-radius: 6px; overflow: hidden; margin-bottom: 6px;">
+                        <div id="progress-tree-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 6px; transition: width 0.5s ease-in-out;"></div>
+                      </div>
+                      <span id="progress-tree-percent-text" style="font-size: 12px; color: var(--text-muted);">Tiến trình: 0%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Badges Grid -->
+                <div>
+                  <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;"><i class="fa-solid fa-award"></i> Bộ Sưu Tập Huy Hiệu Danh Dự</h3>
+                  <div id="badges-grid-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
+                    <!-- Dynamic badges collection -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right Side: Lucky Spin & Secret Box -->
+              <div class="rewards-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 24px;">
+                <!-- Lucky Spin -->
+                <div>
+                  <h3 style="font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-circle-dot" style="color: #f59e0b;"></i> Vòng Quay May Mắn</h3>
+                  <div style="display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                    <!-- canvas wheel -->
+                    <div style="position: relative; width: 180px; height: 180px;">
+                      <canvas id="lucky-wheel-canvas" width="180" height="180" style="border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 4px solid var(--border-color); transition: transform 4s cubic-bezier(0.15, 0.9, 0.25, 1);"></canvas>
+                      <!-- Pointer -->
+                      <div style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 18px solid #ef4444; z-index: 10;"></div>
+                    </div>
+                    <div style="text-align: center;">
+                      <div id="lucky-spins-count-text" style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Số lượt quay khả dụng: 0 lượt</div>
+                      <button class="btn btn-primary btn-sm" id="btn-spin-wheel" style="padding: 6px 20px; border-radius: 20px; font-weight: bold;">Bắt Đầu Quay</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Secret Gift Box -->
+                <div>
+                  <h3 style="font-size: 16px; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-gift" style="color: #ef4444;"></i> Hộp Quà Bí Mật</h3>
+                  <div style="display: flex; align-items: center; gap: 15px; background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.15); padding: 15px; border-radius: 8px;">
+                    <div id="secret-gift-box-icon" style="font-size: 36px; color: #ef4444; cursor: pointer; animation: pulse 2s infinite;">
+                      <i class="fa-solid fa-gift"></i>
+                    </div>
+                    <div style="flex: 1;">
+                      <h4 style="font-size: 13px; font-weight: bold; margin: 0; color: #ef4444;">Mở Hộp Quà Định Kỳ</h4>
+                      <p id="secret-gift-box-status" style="font-size: 11px; margin: 4px 0 0 0; color: var(--text-muted);">Mở hộp quà ngẫu nhiên nhận thêm điểm hoặc huy hiệu mỗi khi bạn tích lũy thêm 100 điểm.</p>
+                      <button class="btn btn-outline btn-sm" id="btn-open-gift-box" style="margin-top: 8px; padding: 3px 12px; font-size: 10.5px; display: none;">Mở Ngay</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: CUSTOMER HEALTH -->
+        <section id="view-customer-health" class="app-view">
+          <div class="workflow-desc" style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
+            <p style="margin:0;"><i class="fa-solid fa-heart-pulse text-rose"></i> <strong>Sức Khỏe Khách Hàng:</strong> Phân tích hành vi gửi hàng của khách hàng từ Google Sheets để phát hiện các nguy cơ sụt giảm sản lượng hoặc mất khách hàng.</p>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span id="health-last-sync-time" class="text-muted" style="font-size:11px;">Cập nhật: Chưa đồng bộ</span>
+              <button class="btn btn-sm" id="btn-sync-health" style="display:inline-flex; align-items:center; gap:6px; font-weight: bold; background: #f59e0b; color: #0f172a !important; border: none; cursor: pointer; padding: 6px 14px; border-radius: 4px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);"><i class="fa-solid fa-rotate" style="color: #0f172a !important;"></i> Đồng bộ ngay</button>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="dashboard-grid" style="margin-top: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px;">
+            <div class="dashboard-card" style="border-left: 4px solid #10b981; padding: 15px; background: var(--card-bg); border-radius: 8px;">
+              <span class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: bold;">Khỏe mạnh 🟢</span>
+              <h3 id="health-count-healthy" style="font-size: 24px; margin: 5px 0 0 0; color: #10b981; font-weight: bold;">0</h3>
+            </div>
+            <div class="dashboard-card" style="border-left: 4px solid #f59e0b; padding: 15px; background: var(--card-bg); border-radius: 8px;">
+              <span class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: bold;">Suy giảm / Cảnh báo 🟡</span>
+              <h3 id="health-count-warning" style="font-size: 24px; margin: 5px 0 0 0; color: #f59e0b; font-weight: bold;">0</h3>
+            </div>
+            <div class="dashboard-card" style="border-left: 4px solid #a855f7; padding: 15px; background: var(--card-bg); border-radius: 8px;">
+              <span class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: bold;">Cần chú ý 🟣</span>
+              <h3 id="health-count-attention" style="font-size: 24px; margin: 5px 0 0 0; color: #a855f7; font-weight: bold;">0</h3>
+            </div>
+            <div class="dashboard-card" style="border-left: 4px solid #ef4444; padding: 15px; background: var(--card-bg); border-radius: 8px;">
+              <span class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: bold;">Nguy cơ mất 🔴</span>
+              <h3 id="health-count-danger" style="font-size: 24px; margin: 5px 0 0 0; color: #ef4444; font-weight: bold;">0</h3>
+            </div>
+            <div class="dashboard-card" style="border-left: 4px solid #6b7280; padding: 15px; background: var(--card-bg); border-radius: 8px;">
+              <span class="text-muted" style="font-size: 11px; text-transform: uppercase; font-weight: bold;">Đã mất ⚫</span>
+              <h3 id="health-count-lost" style="font-size: 24px; margin: 5px 0 0 0; color: #9ca3af; font-weight: bold;">0</h3>
+            </div>
+          </div>
+
+          <!-- Main Grid -->
+          <div style="margin-top: 24px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;">
+            <!-- Left Side: Table of customers -->
+            <div class="dashboard-card" style="padding: 20px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px; margin-bottom:15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <h3 style="margin:0; font-size:16px; font-weight:bold;">Danh Sách Sức Khỏe Khách Hàng</h3>
+                <!-- Filters -->
+                <div style="display:flex; gap:10px; align-items:center; flex-wrap: wrap;">
+                  <input type="text" id="health-search-input" placeholder="Tìm khách..." style="padding: 5px 10px; font-size:12px; border:1px solid var(--border-color); border-radius:4px; background: rgba(255,255,255,0.05); color:white; width: 130px;">
+                  <select id="health-filter-status" style="padding: 5px 10px; font-size:12px; border:1px solid var(--border-color); border-radius:4px; background: rgba(255,255,255,0.05); color:white; width: 130px; cursor: pointer;">
+                    <option value="" style="background: var(--card-bg);">Tất cả trạng thái</option>
+                    <option value="healthy" style="background: var(--card-bg);">🟢 Khỏe mạnh</option>
+                    <option value="warning" style="background: var(--card-bg);">🟡 Suy giảm / Chú ý</option>
+                    <option value="danger" style="background: var(--card-bg);">🔴 Nguy cơ mất</option>
+                    <option value="lost" style="background: var(--card-bg);">⚫ Đã mất</option>
+                  </select>
+                  <select id="health-filter-cskh" style="padding: 5px 10px; font-size:12px; border:1px solid var(--border-color); border-radius:4px; background: rgba(255,255,255,0.05); color:white; width: 130px; cursor: pointer;">
+                    <option value="" style="background: var(--card-bg);">Tất cả CSKH</option>
+                  </select>
+                </div>
+              </div>
+              <div class="card-body" style="overflow-x: auto;">
+                <table class="table" style="width: 100%; border-collapse: collapse; font-size: 11.5px; color: var(--text-color);">
                   <thead>
-                    <tr>
-                      <th class="text-center">Hạng</th>
-                      <th>Nhân Viên</th>
-                      <th>Phòng Ban</th>
-                      <th class="text-center">Số Xúc Xích Hiện Tại</th>
-                      <th class="text-center">Tổng Số Đã Nhận</th>
-                      <th>Danh Hiệu</th>
+                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left; opacity:0.8;">
+                      <th style="padding: 10px 5px;">Mã/Tên khách</th>
+                      <th style="padding: 10px 5px;">CSKH</th>
+                      <th style="padding: 10px 5px;">Brand</th>
+                      <th style="padding: 10px 5px; text-align:right;">Sản lượng T5</th>
+                      <th style="padding: 10px 5px; text-align:right;">Sản lượng T6</th>
+                      <th style="padding: 10px 5px; text-align:right;">Sản lượng T7</th>
+                      <th style="padding: 10px 5px;">Gửi gần nhất</th>
+                      <th style="padding: 10px 5px; text-align:center;">Trạng thái</th>
                     </tr>
                   </thead>
-                  <tbody id="rewards-leaderboard-body">
-                    <!-- Dynamically populated in app.js -->
+                  <tbody id="health-table-body">
+                    <!-- Dynamically filled -->
                   </tbody>
                 </table>
               </div>
             </div>
-
-            <!-- Right Side: Point Rules & Log -->
-            <div class="rewards-card rules-card">
-              <h3>Quy Chế Tích Lũy Điểm</h3>
-              <div class="points-rule-list">
-                <div class="rule-item">
-                  <div class="rule-points">+50 <i class="fa-solid fa-hotdog"></i></div>
-                  <div class="rule-desc">
-                    <h4>Chốt đơn thành công (Sales)</h4>
-                    <p>Khi thẻ khách hàng trên CRM chuyển thành "Thành công" và hoàn thành đơn hàng đầu tiên.</p>
-                  </div>
+            
+            <!-- Right Side: Chart and general stats -->
+            <div style="display:flex; flex-direction:column; gap:20px;">
+              <div class="dashboard-card" style="padding: 20px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <div class="card-header" style="margin-bottom: 12px;">
+                  <h3 style="margin:0; font-size:15px; font-weight:bold;"><i class="fa-solid fa-chart-line text-blue" style="margin-right:6px;"></i> Biến Động Doanh Số (VND)</h3>
                 </div>
-                <div class="rule-item">
-                  <div class="rule-points">+10 - +100 <i class="fa-solid fa-hotdog"></i></div>
-                  <div class="rule-desc">
-                    <h4>Hoàn thành nhiệm vụ được giao</h4>
-                    <p>Mỗi công việc tùy theo độ phức tạp sẽ được gán sẵn một số lượng điểm thưởng xúc xích khác nhau.</p>
-                  </div>
-                </div>
-                <div class="rule-item">
-                  <div class="rule-points">+20 <i class="fa-solid fa-hotdog"></i></div>
-                  <div class="rule-desc">
-                    <h4>Xử lý hàng nhanh / Không sai sót</h4>
-                    <p>Điểm cộng khích lệ từ Admin cho các nhân viên kho/sourcing hoàn thành đúng tiến độ trong ngày.</p>
-                  </div>
+                <div class="card-body" style="height: 220px; position: relative;">
+                  <canvas id="health-chart"></canvas>
                 </div>
               </div>
-
-              <div class="recent-logs-section">
-                <h3>Nhật Ký Tích Điểm Gần Đây</h3>
-                <div class="log-list" id="rewards-points-log">
-                  <!-- Dynamically populated in app.js -->
+              
+              <div class="dashboard-card" style="padding: 20px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                <div class="card-header" style="margin-bottom: 12px;">
+                  <h3 style="margin:0; font-size:15px; font-weight:bold;"><i class="fa-solid fa-chart-pie text-emerald" style="margin-right:6px;"></i> Tỷ Lệ Nhóm Sức Khỏe</h3>
+                </div>
+                <div class="card-body" style="height: 180px; position: relative; display:flex; justify-content:center; align-items:center;">
+                  <canvas id="health-pie-chart" style="max-height:100%; max-width:100%;"></canvas>
                 </div>
               </div>
             </div>
@@ -989,7 +1293,7 @@
             <p><i class="fa-solid fa-clipboard-user text-blue"></i> <strong>Công Việc Của Tôi:</strong> Xem và quản lý tập trung toàn bộ các đầu việc, khâu vận chuyển lô hàng và dự án được giao cho riêng bạn.</p>
           </div>
 
-          <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
             <!-- Column 1: Lô Hàng & Khách Mới -->
             <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
               <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--color-primary);">
@@ -1020,7 +1324,17 @@
               </div>
             </div>
 
-            <!-- Column 4: Việc tôi đã giao -->
+            <!-- Column 4: Việc tôi hỗ trợ -->
+            <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
+              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #06b6d4; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #06b6d4;">
+                <i class="fa-solid fa-hands-holding"></i> 🤝 Việc Tôi Hỗ Trợ (<span id="my-helper-tasks-count">0</span>)
+              </h3>
+              <div id="my-helper-tasks-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
+                <!-- JS Rendered -->
+              </div>
+            </div>
+
+            <!-- Column 5: Việc tôi đã giao -->
             <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
               <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #a855f7; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #a855f7;">
                 <i class="fa-solid fa-paper-plane"></i> ✉️ Việc Tôi Đã Giao (<span id="my-assigned-tasks-count">0</span>)
@@ -1440,7 +1754,7 @@
                 <!-- Section 1: My tickets -->
                 <div class="dashboard-card" style="padding: 20px; flex: 1;">
                   <h3 style="font-size: 15px; font-weight: bold; margin-top: 0; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <span><i class="fa-solid fa-scroll"></i> Vé Số Đã Mua Hôm Ngay</span>
+                    <span><i class="fa-solid fa-scroll"></i> Vé Số Đã Mua Hôm Nay</span>
                     <button class="btn btn-sm btn-outline" id="btn-quick-draw-lottery" style="font-size: 11px; padding: 2px 6px;">Quay Thử / Xem Nhanh</button>
                   </h3>
                   <div id="lottery-my-tickets-container" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
@@ -1761,7 +2075,6 @@
             </div>
 
             <!-- Fail reason row for Failed stage -->
-            <!-- Fail reason row for Failed stage -->
             <div id="lead-step-fail-group" style="display: none; margin-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 15px;">
               <label for="lead-step-fail-reason" class="text-rose">Lý do thất bại <span class="text-rose">*</span></label>
               <select id="lead-step-fail-reason" class="form-control">
@@ -1810,19 +2123,19 @@
           <!-- Right: Comments, documents, files -->
           <div style="display:flex; flex-direction:column; gap:16px;">
             <div class="form-group">
-              <label>Ghi chú bước này:</label>
+              <label>Ghi chú bước:</label>
               <textarea id="lead-step-note" class="form-control" rows="3" placeholder="Nhập ghi chú kết quả xử lý bước này..."></textarea>
             </div>
 
             <div class="form-group">
-              <label>Đính kèm tài liệu/Hình ảnh:</label>
+              <label>Tài liệu & Hình ảnh của khách hàng:</label>
               <div id="lead-step-files-list" style="display:flex; flex-direction:column; gap:6px; margin-bottom:8px;">
                 <!-- Step files list -->
               </div>
-              <div style="display:flex; gap:6px;">
-                <input type="text" id="lead-step-new-file-name" class="form-control" style="font-size:12px; height:32px;" placeholder="Tên file/Link...">
-                <input type="text" id="lead-step-new-file-url" class="form-control" style="font-size:12px; height:32px;" placeholder="https://...">
-                <button type="button" class="btn btn-sm btn-primary" id="btn-lead-step-add-file">Ghim</button>
+              <div style="display:flex; gap:6px; width:100%;">
+                <input type="text" id="lead-step-new-file-name" class="form-control" style="font-size:12px; height:32px; width:120px; flex-shrink:0;" placeholder="Tên file/Link...">
+                <input type="text" id="lead-step-new-file-url" class="form-control" style="font-size:12px; height:32px; flex-grow:1;" placeholder="https://...">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-lead-step-add-file" style="flex-shrink:0;">Ghim</button>
               </div>
             </div>
 
@@ -1844,6 +2157,426 @@
           <button type="button" class="btn btn-danger" id="btn-lead-delete" style="margin-right:auto;"><i class="fa-solid fa-trash-can"></i> Xóa cơ hội</button>
           <button type="button" class="btn btn-primary" id="btn-lead-step-save">Lưu Thông Tin Bước</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD SINGLE TASK -->
+  <div class="modal" id="modal-add-ops-task">
+    <div class="modal-content" style="width: 550px; max-width: 95%;">
+      <div class="modal-header">
+        <h3>Giao Việc Đơn Lẻ Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-ops-task">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-ops-task">
+          <div class="form-group">
+            <label for="ops-task-title">Tên công việc <span class="text-rose">*</span></label>
+            <input type="text" id="ops-task-title" class="form-control" placeholder="Nhập tên việc cần làm..." required>
+          </div>
+          
+          <div class="form-group">
+            <label for="ops-task-desc">Mô tả chi tiết</label>
+            <textarea id="ops-task-desc" class="form-control" rows="3" placeholder="Chi tiết yêu cầu công việc..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="ops-task-dept">Phòng ban liên quan</label>
+              <select id="ops-task-dept" class="form-control">
+                <option value="sales">Sales & CSKH</option>
+                <option value="sourcing">Sourcing</option>
+                <option value="warehouse">Kho bãi</option>
+                <option value="admin">Kế toán & Admin</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label for="ops-task-priority">Mức độ ưu tiên</label>
+              <select id="ops-task-priority" class="form-control">
+                <option value="low">Thấp</option>
+                <option value="normal" selected>Bình thường</option>
+                <option value="high">Cao</option>
+                <option value="urgent">Khẩn cấp (Lưu ý!)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="ops-task-assignee">Người phụ trách chính <span class="text-rose">*</span></label>
+              <select id="ops-task-assignee" class="form-control" required></select>
+            </div>
+            <div class="form-group col-6">
+              <label for="ops-task-helper">Người phối hợp hỗ trợ</label>
+              <select id="ops-task-helper" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="ops-task-deadline">Thời hạn chót (Deadline) <span class="text-rose">*</span></label>
+              <input type="date" id="ops-task-deadline" class="form-control" required>
+            </div>
+            <div class="form-group col-6">
+              <label for="ops-task-project">Liên kết dự án (Nếu có)</label>
+              <select id="ops-task-project" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-top:0;">
+            <div class="form-group col-6">
+              <label for="ops-task-client">Liên kết Khách hàng/Lô hàng (Nếu có)</label>
+              <select id="ops-task-client" class="form-control"></select>
+            </div>
+            <div class="form-group col-6">
+              <label for="ops-task-tags">Tags phân loại (Ngăn cách bởi dấu phẩy)</label>
+              <input type="text" id="ops-task-tags" class="form-control" placeholder="CSKH, kho, cong no, khach VIP...">
+            </div>
+          </div>
+
+          <div class="modal-footer mt-4">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-ops-task">Hủy</button>
+            <button type="submit" class="btn btn-primary">Giao Công Việc</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SINGLE TASK DETAIL & MANAGEMENT -->
+  <div class="modal" id="modal-ops-task-detail">
+    <div class="modal-content" style="width: 850px; max-width: 95%;">
+      <div class="modal-header">
+        <div>
+          <h3 id="ops-task-detail-title">Kiểm đếm kiện hàng vải</h3>
+          <div id="ops-task-detail-subtitle" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; color: var(--text-secondary);">
+            <span>Phụ trách:</span>
+            <select id="ops-task-detail-assignee" class="form-control" style="width: 170px; display: inline-block; padding: 2px 6px; height: 26px; font-size: 12.5px; background: #1f2937; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+            <span style="margin: 0 4px; opacity: 0.5;">|</span>
+            <span>Hỗ trợ:</span>
+            <select id="ops-task-detail-helper" class="form-control" style="width: 170px; display: inline-block; padding: 2px 6px; height: 26px; font-size: 12.5px; background: #1f2937; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
+            <span id="ops-task-detail-project-text" style="margin-left: 8px; font-weight: bold; color: var(--color-primary);"></span>
+          </div>
+        </div>
+        <button class="btn-close-modal" data-modal="modal-ops-task-detail">&times;</button>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <div class="dashboard-grid grid-1-3" style="gap:20px;">
+          <!-- Left side detail -->
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <strong>Trạng thái công việc:</strong>
+              <select id="ops-task-detail-status" class="form-control" style="margin-top:6px;"></select>
+            </div>
+            
+            <div><strong>Hạn chót:</strong> <span id="ops-task-detail-deadline">2026-07-15</span></div>
+            <div><strong>Độ ưu tiên:</strong> <span id="ops-task-detail-priority-badge" class="badge">Bình thường</span></div>
+            
+            <div class="form-group" style="margin-top: 8px;">
+              <label>Checklist công việc nhỏ:</label>
+              <div id="ops-task-detail-checklist" style="display:flex; flex-direction:column; gap:6px; margin-top:4px; max-height:150px; overflow-y:auto;">
+                <!-- checklist items -->
+              </div>
+              <div style="display:flex; gap:6px; margin-top:8px;">
+                <input type="text" id="ops-task-detail-new-chk" class="form-control" style="font-size:12px; height:30px;" placeholder="Thêm việc nhỏ...">
+                <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-add-chk"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right side feedback -->
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>Mô tả chi tiết:</strong>
+                <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-edit-desc" style="padding:2px 6px; font-size:11px;"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+              </div>
+              <p id="ops-task-detail-desc" style="color:var(--text-secondary); font-size:13px; line-height:1.4; margin-top:4px; background:#111827; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); white-space:pre-wrap;">Mô tả...</p>
+              <div id="ops-task-detail-edit-desc-group" style="display:none; margin-top:4px; flex-direction:column; gap:6px;">
+                <textarea id="ops-task-detail-desc-input" class="form-control" rows="3" style="font-size:12.5px; background:#111827; color:white; border:1px solid var(--border-color);"></textarea>
+                <div style="display:flex; gap:6px; justify-content:flex-end;">
+                  <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-cancel-desc" style="padding:4px 8px; font-size:11px;">Hủy</button>
+                  <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-detail-save-desc" style="padding:4px 8px; font-size:11px;">Lưu</button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <strong>File đính kèm:</strong>
+              <div id="ops-task-detail-files" style="display:flex; flex-direction:column; gap:6px; margin-top:4px; max-height:100px; overflow-y:auto; margin-bottom:6px;">
+                <!-- files list -->
+              </div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="ops-task-detail-new-file-name" class="form-control" style="font-size:11px; height:28px;" placeholder="Tên file/link...">
+                <input type="text" id="ops-task-detail-new-file-url" class="form-control" style="font-size:11px; height:28px;" placeholder="https://...">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-add-file" style="height:28px; padding:0 8px;">Thêm</button>
+              </div>
+            </div>
+
+            <div>
+              <strong>Trao đổi / Nhận xét nội bộ:</strong>
+              <div id="ops-task-detail-comments" style="display:flex; flex-direction:column; gap:8px; margin-top:4px; background:#111827; border:1px solid var(--border-color); border-radius:var(--radius-sm); height:120px; overflow-y:auto; padding:8px;">
+                <!-- comments -->
+              </div>
+              <div style="display:flex; gap:6px; margin-top:6px;">
+                <input type="text" id="ops-task-detail-new-comment" class="form-control" style="font-size:12px; height:32px;" placeholder="Nhập thảo luận...">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-add-comment"><i class="fa-solid fa-paper-plane"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 20px; border-top:1px solid var(--border-color); padding-top:12px;">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-ops-task-detail">Đóng</button>
+          <button type="button" class="btn btn-danger" id="btn-ops-task-delete" style="margin-right:auto;"><i class="fa-solid fa-trash-can"></i> Xóa công việc</button>
+          <button type="button" class="btn btn-primary" id="btn-ops-task-save">Lưu Cập Nhật</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD OPS PROJECT -->
+  <div class="modal" id="modal-add-ops-project">
+    <div class="modal-content" style="width: 550px; max-width: 95%;">
+      <div class="modal-header">
+        <h3>Tạo Dự Án / Phòng Ban Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-ops-project">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-ops-project">
+          <div class="form-group">
+            <label for="project-name">Tên dự án/phòng ban <span class="text-rose">*</span></label>
+            <input type="text" id="project-name" class="form-control" placeholder="Ví dụ: Kho HP - Kiểm soát tồn kho, Khách VIP Nam Thuận..." required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="project-type">Loại dự án</label>
+              <select id="project-type" class="form-control">
+                <option value="phòng ban">Phòng ban</option>
+                <option value="khách hàng VIP">Khách hàng VIP</option>
+                <option value="lô hàng">Lô hàng lớn</option>
+                <option value="nội bộ">Nội bộ</option>
+                <option value="marketing">Marketing</option>
+                <option value="khác">Khác</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label for="project-manager">Người quản lý dự án</label>
+              <select id="project-manager" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="project-desc">Mô tả dự án</label>
+            <textarea id="project-desc" class="form-control" rows="3" placeholder="Mục tiêu dự án hoặc chức năng chính..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Thành viên tham gia:</label>
+            <div id="project-members-checklist" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; max-height:120px; overflow-y:auto; background:#111827; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-top:4px;">
+              <!-- User checkboxes -->
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="project-notes">Ghi chú đặc biệt / Lưu ý quan trọng</label>
+            <input type="text" id="project-notes" class="form-control" placeholder="Nhập ghi chú quan trọng ban đầu...">
+          </div>
+
+          <div class="modal-footer mt-4">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-ops-project">Hủy</button>
+            <button type="submit" class="btn btn-primary">Tạo Dự Án</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD PROJECT DOCUMENT / GOOGLE LINK -->
+  <div class="modal" id="modal-project-add-doc" style="z-index: 1200;">
+    <div class="modal-content" style="width: 450px; max-width: 95%;">
+      <div class="modal-header">
+        <h3>Ghi Ghim Tài Liệu Dự Án</h3>
+        <button class="btn-close-modal" data-modal="modal-project-add-doc">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-project-add-doc">
+          <div class="form-group">
+            <label for="proj-doc-name">Tên tài liệu / Biên bản <span class="text-rose">*</span></label>
+            <input type="text" id="proj-doc-name" class="form-control" placeholder="Ví dụ: Báo giá lô 24/07, File kiểm kho..." required>
+          </div>
+          <div class="form-group">
+            <label for="proj-doc-url">Đường link liên kết (Google Drive, Docs, Sheets...) <span class="text-rose">*</span></label>
+            <input type="text" id="proj-doc-url" class="form-control" placeholder="https://docs.google.com/..." required>
+          </div>
+          <div class="form-group">
+            <label for="proj-doc-note">Ghi chú / Lưu ý thêm</label>
+            <input type="text" id="proj-doc-note" class="form-control" placeholder="Ví dụ: Bản cập nhật tuần 1...">
+          </div>
+
+          <div class="modal-footer mt-4">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-project-add-doc">Hủy</button>
+            <button type="submit" class="btn btn-primary">Lưu Ghim</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DEDICATED PROJECT WORKSPACE VIEW -->
+  <div class="modal" id="modal-project-dedicated-view">
+    <div class="modal-content" style="width: 1200px; max-width: 95%; height: 85vh; display: flex; flex-direction: column; padding: 0; background: #0f172a; border: 1px solid rgba(234, 179, 8, 0.2);">
+      <!-- Header -->
+      <div class="modal-header" style="padding: 16px 24px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center; background: #1e293b;">
+        <div>
+          <h2 id="dedicated-project-name" style="margin: 0; color: #f59e0b; font-size: 1.5rem; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-folder-open"></i> Tên Dự Án
+          </h2>
+          <div id="dedicated-project-meta" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Quản lý: ... | Thành viên: ...</div>
+        </div>
+        <button class="btn-close-modal" data-modal="modal-project-dedicated-view" style="font-size: 24px; background: none; border: none; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Workspace Body -->
+      <div class="modal-body" style="flex: 1; display: flex; overflow: hidden; padding: 0;">
+        <!-- Left Panel: Info & Progress -->
+        <div class="project-dedicated-left" style="width: 28%; border-right: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; background: #111827;">
+          <div>
+            <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Tiến Độ Dự Án</h4>
+            <div class="project-progress-container" style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+                <span>Hoàn thành công việc</span>
+                <strong id="dedicated-project-progress-percent">0%</strong>
+              </div>
+              <div class="progress-bar-bg" style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                <div id="dedicated-project-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f59e0b, #eab308); transition: width 0.3s ease;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 style="margin: 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Mô tả & Ghi chú</h4>
+              <button id="btn-edit-project-desc" class="btn btn-xs btn-outline" style="padding: 2px 6px; font-size: 10.5px;"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+            </div>
+            
+            <!-- Read-only View -->
+            <div id="project-desc-view-mode">
+              <div id="dedicated-project-desc" style="font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; white-space: pre-wrap;">Mô tả chi tiết dự án...</div>
+            </div>
+            
+            <!-- Edit View -->
+            <div id="project-desc-edit-mode" style="display: none; flex-direction: column; gap: 10px;">
+              <div class="form-group" style="margin-bottom: 8px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Mô tả chi tiết</label>
+                <textarea id="edit-project-desc-input" class="form-control" style="font-size: 12px; height: 100px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: white;" placeholder="Nhập mô tả dự án..."></textarea>
+              </div>
+              <div class="form-group" style="margin-bottom: 8px;">
+                <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Ghi chú đặc biệt / Lưu ý</label>
+                <input type="text" id="edit-project-notes-input" class="form-control" style="font-size: 12px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: white;" placeholder="Nhập ghi chú...">
+              </div>
+              <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                <button id="btn-save-project-desc" class="btn btn-xs btn-primary" style="padding: 4px 10px; font-size: 11px;">Lưu</button>
+                <button id="btn-cancel-project-desc" class="btn btn-xs btn-outline" style="padding: 4px 10px; font-size: 11px;">Hủy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Middle Panel: Tasks & Documents -->
+        <div class="project-dedicated-middle" style="width: 44%; border-right: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; overflow: hidden;">
+          <!-- Top Section: Tasks -->
+          <div style="flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 16px; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-list-check"></i> Công Việc Dự Án</h3>
+              <button class="btn btn-sm btn-primary" id="btn-dedicated-project-add-task" style="padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-plus"></i> Giao việc</button>
+            </div>
+            <div id="dedicated-project-tasks-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+              <!-- Tasks will be loaded here dynamically -->
+            </div>
+          </div>
+
+          <!-- Bottom Section: Documents -->
+          <div style="flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-shield"></i> Tài Liệu & Link Liên Kết</h3>
+              <button class="btn btn-sm btn-outline" id="btn-dedicated-project-add-doc" style="padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-link"></i> Ghim Link</button>
+            </div>
+            <div id="dedicated-project-docs-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+              <!-- Documents will be loaded here dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel: Chat & Discussions -->
+        <div class="project-dedicated-right" style="width: 28%; display: flex; flex-direction: column; background: #0b0f19; overflow: hidden;">
+          <div style="padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #111827;">
+            <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-comments"></i> Thảo Luận Nhóm</h3>
+          </div>
+          
+          <!-- Chat messages area -->
+          <div id="dedicated-project-discussion" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+            <!-- Discussions will load here dynamically -->
+          </div>
+
+          <!-- Chat input area -->
+          <form id="form-dedicated-project-add-comment" style="padding: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: #111827; display: flex; gap: 8px;">
+            <input type="text" id="dedicated-project-comment-input" class="form-control" placeholder="Nhập tin nhắn thảo luận..." style="flex: 1; font-size: 12.5px; height: 36px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);" required>
+            <button type="submit" class="btn btn-primary" style="padding: 0 14px; height: 36px;"><i class="fa-solid fa-paper-plane"></i></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANDATORY CHECKLIST PROMPT ON STAGE MOVE -->
+  <div class="modal" id="modal-step-checklist-confirm">
+    <div class="modal-content" style="width: 500px; max-width: 95%;">
+      <div class="modal-header">
+        <h3 style="color:var(--color-primary);"><i class="fa-solid fa-triangle-exclamation"></i> Xác Nhận Checklist Bắt Buộc</h3>
+        <button class="btn-close-modal" data-modal="modal-step-checklist-confirm">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:14px; margin-bottom:12px;">Bạn đang di chuyển lô hàng sang bước mới. Vui lòng xác nhận bạn đã hoàn thành các checklist bắt buộc sau đây của bước trước:</p>
+        
+        <div id="ops-mandatory-checklist-list" style="display:flex; flex-direction:column; gap:10px; background:#111827; padding:15px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <!-- Checklist items with check status -->
+        </div>
+
+        <p id="ops-checklist-warning-text" style="color:var(--color-error); font-size:12px; margin-top:8px; display:none; font-weight:bold;">
+          <i class="fa-solid fa-circle-exclamation"></i> Vui lòng hoàn thành toàn bộ checklist bắt buộc trước khi chuyển sang bước tiếp theo!
+        </p>
+
+        <div class="modal-footer mt-4">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-step-checklist-confirm">Hủy Di Chuyển</button>
+          <button type="button" class="btn btn-primary" id="btn-ops-confirm-move">Xác Nhận & Di Chuyển</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== modal-global-quick-chooser ==================== -->
+  <div class="modal" id="modal-global-quick-chooser">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 24px; border-radius: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-circle-plus" style="color: #eab308;"></i> Tạo Việc Nhanh
+        </h3>
+        <button class="btn-close-modal" data-modal="modal-global-quick-chooser" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; text-align: left;">Vui lòng chọn loại công việc bạn muốn khởi tạo:</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsFlowModal();" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3b82f6; border-color: #3b82f6; border-radius: 8px;">
+          <i class="fa-solid fa-truck-ramp-box"></i> 🚚 Khởi Tạo Lô Hàng / Quy Trình mới
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsTaskModal(true);" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #10b981; border-color: #10b981; color: #ffffff; border-radius: 8px;">
+          <i class="fa-solid fa-folder-open"></i> 📂 Tạo Công Việc Theo Dự Án
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsTaskModal();" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f59e0b; border-color: #f59e0b; border-radius: 8px;">
+          <i class="fa-solid fa-list-check"></i> 📋 Tạo Công Việc Đơn Lẻ (Hàng ngày)
+        </button>
       </div>
     </div>
   </div>
@@ -2150,290 +2883,76 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD SINGLE TASK -->
-  <div class="modal" id="modal-add-ops-task">
-    <div class="modal-content" style="width: 550px; max-width: 95%;">
+  <!-- ==================== modal-leads-list ==================== -->
+  <div class="modal" id="modal-leads-list">
+    <div class="modal-content" style="width: 720px; max-width: 95%;">
       <div class="modal-header">
-        <h3>Giao Việc Đơn Lẻ Mới</h3>
-        <button class="btn-close-modal" data-modal="modal-add-ops-task">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="form-add-ops-task">
-          <div class="form-group">
-            <label for="ops-task-title">Tên công việc <span class="text-rose">*</span></label>
-            <input type="text" id="ops-task-title" class="form-control" placeholder="Nhập tên việc cần làm..." required>
-          </div>
-          
-          <div class="form-group">
-            <label for="ops-task-desc">Mô tả chi tiết</label>
-            <textarea id="ops-task-desc" class="form-control" rows="3" placeholder="Chi tiết yêu cầu công việc..."></textarea>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="ops-task-dept">Phòng ban liên quan</label>
-              <select id="ops-task-dept" class="form-control">
-                <option value="sales">Sales & CSKH</option>
-                <option value="sourcing">Sourcing</option>
-                <option value="warehouse">Kho bãi</option>
-                <option value="admin">Kế toán & Admin</option>
-              </select>
-            </div>
-            <div class="form-group col-6">
-              <label for="ops-task-priority">Mức độ ưu tiên</label>
-              <select id="ops-task-priority" class="form-control">
-                <option value="low">Thấp</option>
-                <option value="normal" selected>Bình thường</option>
-                <option value="high">Cao</option>
-                <option value="urgent">Khẩn cấp (Lưu ý!)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="ops-task-assignee">Người phụ trách chính <span class="text-rose">*</span></label>
-              <select id="ops-task-assignee" class="form-control" required></select>
-            </div>
-            <div class="form-group col-6">
-              <label for="ops-task-helper">Người phối hợp hỗ trợ</label>
-              <select id="ops-task-helper" class="form-control"></select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="ops-task-deadline">Thời hạn chót (Deadline) <span class="text-rose">*</span></label>
-              <input type="date" id="ops-task-deadline" class="form-control" required>
-            </div>
-            <div class="form-group col-6">
-              <label for="ops-task-project">Liên kết dự án (Nếu có)</label>
-              <select id="ops-task-project" class="form-control"></select>
-            </div>
-          </div>
-
-          <div class="form-row" style="margin-top:0;">
-            <div class="form-group col-6">
-              <label for="ops-task-client">Liên kết Khách hàng/Lô hàng (Nếu có)</label>
-              <select id="ops-task-client" class="form-control"></select>
-            </div>
-            <div class="form-group col-6">
-              <label for="ops-task-tags">Tags phân loại (Ngăn cách bởi dấu phẩy)</label>
-              <input type="text" id="ops-task-tags" class="form-control" placeholder="CSKH, kho, cong no, khach VIP...">
-            </div>
-          </div>
-
-          <div class="modal-footer mt-4">
-            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-ops-task">Hủy</button>
-            <button type="submit" class="btn btn-primary">Giao Công Việc</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: SINGLE TASK DETAIL & MANAGEMENT -->
-  <div class="modal" id="modal-ops-task-detail">
-    <div class="modal-content" style="width: 850px; max-width: 95%;">
-      <div class="modal-header">
-        <div>
-          <h3 id="ops-task-detail-title">Kiểm đếm kiện hàng vải</h3>
-          <div id="ops-task-detail-subtitle" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 13px; color: var(--text-secondary);">
-            <span>Phụ trách:</span>
-            <select id="ops-task-detail-assignee" class="form-control" style="width: 170px; display: inline-block; padding: 2px 6px; height: 26px; font-size: 12.5px; background: #1f2937; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-            <span style="margin: 0 4px; opacity: 0.5;">|</span>
-            <span>Hỗ trợ:</span>
-            <select id="ops-task-detail-helper" class="form-control" style="width: 170px; display: inline-block; padding: 2px 6px; height: 26px; font-size: 12.5px; background: #1f2937; color: white; border: 1px solid var(--border-color); border-radius: 4px;"></select>
-            <span id="ops-task-detail-project-text" style="margin-left: 8px; font-weight: bold; color: var(--color-primary);"></span>
-          </div>
-        </div>
-        <button class="btn-close-modal" data-modal="modal-ops-task-detail">&times;</button>
+        <h3 id="leads-list-modal-title">Danh Sách Khách Hàng</h3>
+        <button class="btn-close-modal" data-modal="modal-leads-list">&times;</button>
       </div>
       <div class="modal-body" style="padding-top: 10px;">
-        <div class="dashboard-grid grid-1-3" style="gap:20px;">
-          <!-- Left side detail -->
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <div>
-              <strong>Trạng thái công việc:</strong>
-              <select id="ops-task-detail-status" class="form-control" style="margin-top:6px;"></select>
-            </div>
-            
-            <div><strong>Hạn chót:</strong> <span id="ops-task-detail-deadline">2026-07-15</span></div>
-            <div><strong>Độ ưu tiên:</strong> <span id="ops-task-detail-priority-badge" class="badge">Bình thường</span></div>
-            
-            <div class="form-group" style="margin-top: 8px;">
-              <label>Checklist công việc nhỏ:</label>
-              <div id="ops-task-detail-checklist" style="display:flex; flex-direction:column; gap:6px; margin-top:4px; max-height:150px; overflow-y:auto;">
-                <!-- checklist items -->
-              </div>
-              <div style="display:flex; gap:6px; margin-top:8px;">
-                <input type="text" id="ops-task-detail-new-chk" class="form-control" style="font-size:12px; height:30px;" placeholder="Thêm việc nhỏ...">
-                <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-add-chk"><i class="fa-solid fa-plus"></i></button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right side feedback -->
-          <div style="display:flex; flex-direction:column; gap:12px;">
-            <div>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <strong>Mô tả chi tiết:</strong>
-                <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-edit-desc" style="padding:2px 6px; font-size:11px;"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
-              </div>
-              <p id="ops-task-detail-desc" style="color:var(--text-secondary); font-size:13px; line-height:1.4; margin-top:4px; background:#111827; padding:8px; border-radius:var(--radius-sm); border:1px solid var(--border-color); white-space:pre-wrap;">Mô tả...</p>
-              <div id="ops-task-detail-edit-desc-group" style="display:none; margin-top:4px; flex-direction:column; gap:6px;">
-                <textarea id="ops-task-detail-desc-input" class="form-control" rows="3" style="font-size:12.5px; background:#111827; color:white; border:1px solid var(--border-color);"></textarea>
-                <div style="display:flex; gap:6px; justify-content:flex-end;">
-                  <button type="button" class="btn btn-sm btn-outline" id="btn-ops-task-detail-cancel-desc" style="padding:4px 8px; font-size:11px;">Hủy</button>
-                  <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-detail-save-desc" style="padding:4px 8px; font-size:11px;">Lưu</button>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <strong>File đính kèm:</strong>
-              <div id="ops-task-detail-files" style="display:flex; flex-direction:column; gap:6px; margin-top:4px; max-height:100px; overflow-y:auto; margin-bottom:6px;">
-                <!-- files list -->
-              </div>
-              <div style="display:flex; gap:6px;">
-                <input type="text" id="ops-task-detail-new-file-name" class="form-control" style="font-size:11px; height:28px;" placeholder="Tên file/link...">
-                <input type="text" id="ops-task-detail-new-file-url" class="form-control" style="font-size:11px; height:28px;" placeholder="https://...">
-                <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-add-file" style="height:28px; padding:0 8px;">Thêm</button>
-              </div>
-            </div>
-
-            <div>
-              <strong>Trao đổi / Nhận xét nội bộ:</strong>
-              <div id="ops-task-detail-comments" style="display:flex; flex-direction:column; gap:8px; margin-top:4px; background:#111827; border:1px solid var(--border-color); border-radius:var(--radius-sm); height:120px; overflow-y:auto; padding:8px;">
-                <!-- comments -->
-              </div>
-              <div style="display:flex; gap:6px; margin-top:6px;">
-                <input type="text" id="ops-task-detail-new-comment" class="form-control" style="font-size:12px; height:32px;" placeholder="Nhập thảo luận...">
-                <button type="button" class="btn btn-sm btn-primary" id="btn-ops-task-add-comment"><i class="fa-solid fa-paper-plane"></i></button>
-              </div>
-            </div>
-          </div>
+        <div class="table-container" style="max-height: 400px; overflow-y: auto; border-radius: var(--radius-md);">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Khách Hàng</th>
+                <th>SĐT / Nguồn KH</th>
+                <th>Sales Phụ Trách</th>
+                <th>Giá Trị</th>
+                <th>Ngày Tạo</th>
+                <th id="leads-list-modal-th-extra">Chi tiết</th>
+              </tr>
+            </thead>
+            <tbody id="leads-list-modal-body">
+              <!-- Dynamically populated in app.js -->
+            </tbody>
+          </table>
         </div>
-
-        <div class="modal-footer" style="margin-top: 20px; border-top:1px solid var(--border-color); padding-top:12px;">
-          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-ops-task-detail">Đóng</button>
-          <button type="button" class="btn btn-danger" id="btn-ops-task-delete" style="margin-right:auto;"><i class="fa-solid fa-trash-can"></i> Xóa công việc</button>
-          <button type="button" class="btn btn-primary" id="btn-ops-task-save">Lưu Cập Nhật</button>
+        <div class="modal-footer" style="margin-top: 20px;">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-leads-list">Đóng</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL: ADD OPS PROJECT -->
-  <div class="modal" id="modal-add-ops-project">
-    <div class="modal-content" style="width: 550px; max-width: 95%;">
-      <div class="modal-header">
-        <h3>Tạo Dự Án / Phòng Ban Mới</h3>
-        <button class="btn-close-modal" data-modal="modal-add-ops-project">&times;</button>
+  <!-- ==================== modal-fail-reason-prompt ==================== -->
+  <div class="modal" id="modal-fail-reason-prompt">
+    <div class="modal-content modal-sm">
+      <div class="modal-header bg-rose text-white">
+        <h3><i class="fa-solid fa-circle-xmark"></i> Xác Nhận Khách Thất Bại</h3>
+        <button class="btn-close-modal text-white" data-modal="modal-fail-reason-prompt">&times;</button>
       </div>
       <div class="modal-body">
-        <form id="form-add-ops-project">
-          <div class="form-group">
-            <label for="project-name">Tên dự án/phòng ban <span class="text-rose">*</span></label>
-            <input type="text" id="project-name" class="form-control" placeholder="Ví dụ: Kho HP - Kiểm soát tồn kho, Khách VIP Nam Thuận..." required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group col-6">
-              <label for="project-type">Loại dự án</label>
-              <select id="project-type" class="form-control">
-                <option value="phòng ban">Phòng ban</option>
-                <option value="khách hàng VIP">Khách hàng VIP</option>
-                <option value="lô hàng">Lô hàng lớn</option>
-                <option value="nội bộ">Nội bộ</option>
-                <option value="marketing">Marketing</option>
-                <option value="khác">Khác</option>
-              </select>
-            </div>
-            <div class="form-group col-6">
-              <label for="project-manager">Người quản lý dự án</label>
-              <select id="project-manager" class="form-control"></select>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="project-desc">Mô tả dự án</label>
-            <textarea id="project-desc" class="form-control" rows="3" placeholder="Mục tiêu dự án hoặc chức năng chính..."></textarea>
-          </div>
-
-          <div class="form-group">
-            <label>Thành viên tham gia:</label>
-            <div id="project-members-checklist" style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; max-height:120px; overflow-y:auto; background:#111827; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); margin-top:4px;">
-              <!-- User checkboxes -->
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="project-notes">Ghi chú đặc biệt / Lưu ý quan trọng</label>
-            <input type="text" id="project-notes" class="form-control" placeholder="Nhập ghi chú quan trọng ban đầu...">
-          </div>
-
-          <div class="modal-footer mt-4">
-            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-ops-project">Hủy</button>
-            <button type="submit" class="btn btn-primary">Tạo Dự Án</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: ADD PROJECT DOCUMENT / GOOGLE LINK -->
-  <div class="modal" id="modal-project-add-doc">
-    <div class="modal-content" style="width: 450px; max-width: 95%;">
-      <div class="modal-header">
-        <h3>Ghi Ghim Tài Liệu Dự Án</h3>
-        <button class="btn-close-modal" data-modal="modal-project-add-doc">&times;</button>
-      </div>
-      <div class="modal-body">
-        <form id="form-project-add-doc">
-          <div class="form-group">
-            <label for="proj-doc-name">Tên tài liệu / Biên bản <span class="text-rose">*</span></label>
-            <input type="text" id="proj-doc-name" class="form-control" placeholder="Ví dụ: Báo giá lô 24/07, File kiểm kho..." required>
-          </div>
-          <div class="form-group">
-            <label for="proj-doc-url">Đường link liên kết (Google Drive, Docs, Sheets...) <span class="text-rose">*</span></label>
-            <input type="text" id="proj-doc-url" class="form-control" placeholder="https://docs.google.com/..." required>
-          </div>
-          <div class="form-group">
-            <label for="proj-doc-note">Ghi chú / Lưu ý thêm</label>
-            <input type="text" id="proj-doc-note" class="form-control" placeholder="Ví dụ: Bản cập nhật tuần 1...">
-          </div>
-
-          <div class="modal-footer mt-4">
-            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-project-add-doc">Hủy</button>
-            <button type="submit" class="btn btn-primary">Lưu Ghim</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: MANDATORY CHECKLIST PROMPT ON STAGE MOVE -->
-  <div class="modal" id="modal-step-checklist-confirm">
-    <div class="modal-content" style="width: 500px; max-width: 95%;">
-      <div class="modal-header">
-        <h3 style="color:var(--color-primary);"><i class="fa-solid fa-triangle-exclamation"></i> Xác Nhận Checklist Bắt Buộc</h3>
-        <button class="btn-close-modal" data-modal="modal-step-checklist-confirm">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p style="font-size:14px; margin-bottom:12px;">Bạn đang di chuyển lô hàng sang bước mới. Vui lòng xác nhận bạn đã hoàn thành các checklist bắt buộc sau đây của bước trước:</p>
+        <p>Vui lòng chọn lý do khách hàng <strong><span id="fail-prompt-client-name">Khách hàng</span></strong> dừng giao dịch để lưu thống kê:</p>
         
-        <div id="ops-mandatory-checklist-list" style="display:flex; flex-direction:column; gap:10px; background:#111827; padding:15px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
-          <!-- Checklist items with check status -->
+        <div class="form-group mt-3">
+          <label for="prompt-fail-reason">Lý do thất bại <span class="text-rose">*</span></label>
+          <select id="prompt-fail-reason" class="form-control" required>
+            <option value="">-- Chọn lý do thất bại --</option>
+            <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
+            <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
+            <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
+            <option value="Trả lời chậm">Trả lời chậm</option>
+            <option value="Hàng khó từ chối">Hàng khó từ chối</option>
+            <option value="Không đủ năng lực xử lý hàng">Không đủ năng lực xử lý hàng</option>
+            <option value="Không cạnh tranh được giá dịch vụ với đối thủ">Không cạnh tranh được giá dịch vụ với đối thủ</option>
+            <option value="Không tìm được hàng cho KH">Không tìm được hàng cho KH</option>
+            <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
+            <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
+            <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
+            <option value="Khác">Khác</option>
+          </select>
+          <input type="text" id="prompt-fail-reason-other" class="form-control" placeholder="Nhập lý do khác cụ thể..." style="display:none; margin-top: 8px;">
         </div>
 
-        <p id="ops-checklist-warning-text" style="color:var(--color-error); font-size:12px; margin-top:8px; display:none; font-weight:bold;">
-          <i class="fa-solid fa-circle-exclamation"></i> Vui lòng hoàn thành toàn bộ checklist bắt buộc trước khi chuyển sang bước tiếp theo!
-        </p>
+        <div class="form-group mt-3">
+          <label for="prompt-fail-evidence" class="text-rose">Bằng chứng thất bại (Link ảnh/Drive) <span class="text-rose">*</span></label>
+          <input type="text" id="prompt-fail-evidence" class="form-control" placeholder="Nhập link bằng chứng bắt buộc..." required>
+        </div>
 
         <div class="modal-footer mt-4">
-          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-step-checklist-confirm">Hủy Di Chuyển</button>
-          <button type="button" class="btn btn-primary" id="btn-ops-confirm-move">Xác Nhận & Di Chuyển</button>
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-fail-reason-prompt">Hủy</button>
+          <button type="button" class="btn btn-danger" id="btn-confirm-fail">Xác nhận thất bại</button>
         </div>
       </div>
     </div>
@@ -2625,7 +3144,7 @@
             </div>
             <ul class="changelog-changes-list">
               <li><strong>Nút Đóng Việc (Acknowledge & Archive):</strong> Thêm nút "Đã xem & Đóng việc" cho các task hoàn thành ở cột Việc Tôi Đã Giao để người giao tự chủ động đóng và đưa vào kho lưu trữ khi đã xác nhận tiến độ.</li>
-              <li><strong>Thiết kế thẻ Hoàn thành có độ tương phản cao:</strong> Loại bỏ kiểu chữ gạch quang mờ tối khó đọc. Thẻ hoàn thành giờ đây có viền và nền xanh lá nhẹ nhàng, chữ trắng nổi bật kèm biểu tượng dấu tích xanh trực quan.</li>
+              <li><strong>Thiết kế thẻ Hoàn thành có độ tương phản cao:</strong> Loại bỏ kiểu chữ gạch ngang mờ tối khó đọc. Thẻ hoàn thành giờ đây có viền và nền xanh lá nhẹ nhàng, chữ trắng nổi bật kèm biểu tượng dấu tích xanh trực quan.</li>
             </ul>
           </div>
 
@@ -2715,59 +3234,16 @@
     </div>
   </div>
 
-  <!-- ==================== modal-fail-reason-prompt ==================== -->
-  <div class="modal" id="modal-fail-reason-prompt">
-    <div class="modal-content modal-sm">
-      <div class="modal-header bg-rose text-white">
-        <h3><i class="fa-solid fa-circle-xmark"></i> Xác Nhận Khách Thất Bại</h3>
-        <button class="btn-close-modal text-white" data-modal="modal-fail-reason-prompt">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>Vui lòng chọn lý do khách hàng <strong><span id="fail-prompt-client-name">Khách hàng</span></strong> dừng giao dịch để lưu thống kê:</p>
-        
-        <div class="form-group mt-3">
-          <label for="prompt-fail-reason">Lý do thất bại <span class="text-rose">*</span></label>
-          <select id="prompt-fail-reason" class="form-control" required>
-            <option value="">-- Chọn lý do thất bại --</option>
-            <option value="Giá dịch vụ cao">Giá dịch vụ cao</option>
-            <option value="Thời gian vận chuyển lâu">Thời gian vận chuyển lâu</option>
-            <option value="Không cạnh tranh được với đại lý VN">Không cạnh tranh được với đại lý VN</option>
-            <option value="Trả lời chậm">Trả lời chậm</option>
-            <option value="Hàng khó từ chối">Hàng khó từ chối</option>
-            <option value="Không đủ năng lực xử lý hàng">Không đủ năng lực xử lý hàng</option>
-            <option value="Không cạnh tranh được giá dịch vụ với đối thủ">Không cạnh tranh được giá dịch vụ với đối thủ</option>
-            <option value="Không tìm được hàng cho KH">Không tìm được hàng cho KH</option>
-            <option value="Khách lẻ, hàng khó => chủ động từ chối">Khách lẻ, hàng khó => chủ động từ chối</option>
-            <option value="Khách hàng ko quan tâm">Khách hàng ko quan tâm</option>
-            <option value="Do AI tư vấn chưa tốt">Do AI tư vấn chưa tốt</option>
-            <option value="Khác">Khác</option>
-          </select>
-          <input type="text" id="prompt-fail-reason-other" class="form-control" placeholder="Nhập lý do khác cụ thể..." style="display:none; margin-top: 8px;">
-        </div>
-
-        <div class="form-group mt-3">
-          <label for="prompt-fail-evidence" class="text-rose">Bằng chứng thất bại (Link ảnh/Drive) <span class="text-rose">*</span></label>
-          <input type="text" id="prompt-fail-evidence" class="form-control" placeholder="Nhập link bằng chứng bắt buộc..." required>
-        </div>
-
-        <div class="modal-footer mt-4">
-          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-fail-reason-prompt">Hủy</button>
-          <button type="button" class="btn btn-danger" id="btn-confirm-fail">Xác nhận thất bại</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Notification Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.30"></script>
-  <script src="crm.js?v=20.30"></script>
-  <script src="tasks.js?v=20.30"></script>
-  <script src="ops.js?v=20.30"></script>
-  <script src="inbox-sim.js?v=20.30"></script>
-  <script src="games.js?v=20.30"></script>
-  <script src="suggestions.js?v=20.30"></script>
+  <script src="app.js?v=20.31"></script>
+  <script src="crm.js?v=20.31"></script>
+  <script src="tasks.js?v=20.31"></script>
+  <script src="ops.js?v=20.31"></script>
+  <script src="inbox-sim.js?v=20.31"></script>
+  <script src="games.js?v=20.31"></script>
+  <script src="suggestions.js?v=20.31"></script>
 </body>
 </html>

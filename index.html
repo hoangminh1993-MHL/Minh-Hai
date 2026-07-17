@@ -1293,7 +1293,7 @@
             <p><i class="fa-solid fa-clipboard-user text-blue"></i> <strong>Công Việc Của Tôi:</strong> Xem và quản lý tập trung toàn bộ các đầu việc, khâu vận chuyển lô hàng và dự án được giao cho riêng bạn.</p>
           </div>
 
-          <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
+          <div style="margin-top: 20px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;">
             <!-- Column 1: Lô Hàng & Khách Mới -->
             <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
               <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: var(--color-primary);">
@@ -1324,7 +1324,17 @@
               </div>
             </div>
 
-            <!-- Column 4: Việc tôi đã giao -->
+            <!-- Column 4: Việc tôi hỗ trợ -->
+            <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
+              <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #06b6d4; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #06b6d4;">
+                <i class="fa-solid fa-hands-holding"></i> 🤝 Việc Tôi Hỗ Trợ (<span id="my-helper-tasks-count">0</span>)
+              </h3>
+              <div id="my-helper-tasks-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1;">
+                <!-- JS Rendered -->
+              </div>
+            </div>
+
+            <!-- Column 5: Việc tôi đã giao -->
             <div class="dashboard-card" style="padding: 16px; min-height: 500px; display: flex; flex-direction: column;">
               <h3 style="font-size: 15px; font-weight: bold; border-bottom: 2px solid #a855f7; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #a855f7;">
                 <i class="fa-solid fa-paper-plane"></i> ✉️ Việc Tôi Đã Giao (<span id="my-assigned-tasks-count">0</span>)
@@ -3228,12 +3238,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.30"></script>
-  <script src="crm.js?v=20.30"></script>
-  <script src="tasks.js?v=20.30"></script>
-  <script src="ops.js?v=20.30"></script>
-  <script src="inbox-sim.js?v=20.30"></script>
-  <script src="games.js?v=20.30"></script>
-  <script src="suggestions.js?v=20.30"></script>
+  <script src="app.js?v=20.31"></script>
+  <script src="crm.js?v=20.31"></script>
+  <script src="tasks.js?v=20.31"></script>
+  <script src="ops.js?v=20.31"></script>
+  <script src="inbox-sim.js?v=20.31"></script>
+  <script src="games.js?v=20.31"></script>
+  <script src="suggestions.js?v=20.31"></script>
 </body>
 </html>
