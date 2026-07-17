@@ -387,7 +387,7 @@ function renderFounderDashboard() {
   // Render KPI grid cards
   let html = `
     <div class="stats-grid" style="margin-top: 15px;">
-      <div class="stat-card">
+      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'all'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Tổng task đang mở</span>
@@ -395,7 +395,7 @@ function renderFounderDashboard() {
           <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'all'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
         <div class="stat-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
         <div class="stat-data">
           <span class="stat-label">Công việc quá hạn</span>
@@ -403,7 +403,7 @@ function renderFounderDashboard() {
           <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cần xử lý gấp!</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'completed'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
         <div class="stat-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Việc đã hoàn thành</span>
@@ -411,7 +411,7 @@ function renderFounderDashboard() {
           <span class="stat-trend trend-up">Vận hành nội bộ</span>
         </div>
       </div>
-      <div class="stat-card">
+      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('crm-clients-workflows');">
         <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-data">
           <span class="stat-label">Đơn chờ thu nợ (Bước 10)</span>
