@@ -195,21 +195,6 @@ function renderCRMBoard() {
 
   // Auto-heal tasks for any lead currently in quotation stage
   let stateChanged = false;
-  if (AppState.leads) {
-    AppState.leads.forEach(lead => {
-      if (lead.stage === 'quotation') {
-        if (!AppState.single_tasks) AppState.single_tasks = [];
-        const hasTask = AppState.single_tasks.some(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-        if (!hasTask) {
-          createNegotiatingTaskIfNeeded(lead);
-          stateChanged = true;
-        }
-      }
-    });
-    if (stateChanged) {
-      saveState();
-    }
-  }
 
   const user = getCurrentUser();
   const searchVal = document.getElementById('crm-search').value.toLowerCase().trim();
@@ -637,16 +622,7 @@ function handleLeadMove(leadId, targetStage) {
       return;
     }
 
-    let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-    if (!task) {
-      createNegotiatingTaskIfNeeded(lead);
-      task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-    }
-    if (task) {
-      task.status = 'completed';
-      task.desc = `Tình trạng khách hàng sau báo giá: ${quoteFeedback}`;
-      saveState();
-    }
+    saveState();
   }
 
   // If moving to FAILED, ask for reason
@@ -1096,21 +1072,6 @@ function renderActiveLeadStepPanel() {
     textarea.oninput = (e) => {
       const val = e.target.value;
       lead.quoteFeedback = val;
-      
-      let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-      if (!task) {
-        createNegotiatingTaskIfNeeded(lead);
-        task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-      }
-      if (task) {
-        if (val.trim().length >= 3) {
-          task.status = 'completed';
-          task.desc = `Tình trạng khách hàng sau báo giá: ${val.trim()}`;
-        } else {
-          task.status = 'todo';
-          task.desc = `Cập nhật tình trạng khách hàng ${lead.name} sau báo giá`;
-        }
-      }
     };
     textarea.onchange = () => {
       saveState();
@@ -1321,19 +1282,8 @@ function handleSaveActiveLeadStepData() {
         return;
       }
 
-      let task = AppState.single_tasks && AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-      if (!task) {
-        createNegotiatingTaskIfNeeded(lead);
-        task = AppState.single_tasks.find(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá'));
-      }
-      if (task) {
-        task.status = 'completed';
-        task.desc = `Tình trạng khách hàng sau báo giá: ${quoteFeedback}`;
-        saveState();
-      }
+      saveState();
     }
-
-
 
     const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
     currentStepData.status = 'done';
@@ -1341,12 +1291,6 @@ function handleSaveActiveLeadStepData() {
     const targetStage = stepNumToStage[currentActiveLeadStepNum];
     lead.stageEntryTimes = lead.stageEntryTimes || {};
     lead.stageEntryTimes[targetStage] = Date.now();
-
-    if (targetStage === 'quotation') {
-      if (typeof createNegotiatingTaskIfNeeded === 'function') {
-        createNegotiatingTaskIfNeeded(lead);
-      }
-    }
     
     if (targetStage === 'success') {
       if (lead.stage !== 'success') {
@@ -1569,6 +1513,14 @@ function checkLeadOverdue(lead) {
     const entered = lead.stageEntryTimes.explore_info || created;
     const elapsed = now - entered;
     return elapsed > 12 * 60 * 60 * 1000; // 12 hours
+  }
+  if (lead.stage === 'quotation') {
+    const entered = lead.stageEntryTimes.quotation || created;
+    const elapsed = now - entered;
+    const hasFeedback = lead.quoteFeedback && lead.quoteFeedback.trim().length >= 3;
+    if (!hasFeedback && elapsed > 24 * 60 * 60 * 1000) {
+      return true; // Overdue if no feedback after 24h
+    }
   }
   return false;
 }

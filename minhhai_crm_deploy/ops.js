@@ -375,9 +375,10 @@ function renderFounderDashboard() {
   const container = document.getElementById('ops-dashboard-content');
   if (!container) return;
 
-  const totalTasks = AppState.single_tasks.length;
-  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
-  const completedTodayTasks = AppState.single_tasks.filter(t => t.status === 'completed').length; // Simplification for today
+  const activeSingleTasks = (AppState.single_tasks || []).filter(t => !(t.title && t.title.includes('Tình trạng KH sau báo giá')));
+  const totalTasks = activeSingleTasks.length;
+  const overdueTasks = activeSingleTasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
+  const completedTodayTasks = activeSingleTasks.filter(t => t.status === 'completed').length; // Simplification for today
 
   const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: Báo giá
   const waitingShop = AppState.shipment_workflows.filter(w => w.stage === 6).length; // Step 6: Shop gửi hàng
@@ -391,7 +392,7 @@ function renderFounderDashboard() {
         <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Tổng task đang mở</span>
-          <h3>${AppState.single_tasks.filter(t => t.status !== 'completed').length}</h3>
+          <h3>${activeSingleTasks.filter(t => t.status !== 'completed').length}</h3>
           <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
         </div>
       </div>
@@ -1879,6 +1880,8 @@ function renderOpsSingleTasks() {
   const statusVal = statusEl ? statusEl.value : 'all';
 
   let filtered = AppState.single_tasks.filter(t => {
+    if (t.title && t.title.includes('Tình trạng KH sau báo giá')) return false;
+
     const matchesSearch = t.title.toLowerCase().includes(searchVal) || (t.desc && t.desc.toLowerCase().includes(searchVal));
     if (!matchesSearch) return false;
 
@@ -3125,6 +3128,8 @@ function renderMyTasks() {
 
   if (AppState.single_tasks) {
     AppState.single_tasks.forEach(task => {
+      if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
+
       if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
         const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
         const chkTotal = task.checklist ? task.checklist.length : 0;
@@ -3262,6 +3267,8 @@ function renderMyTasks() {
     myHelperTasksList.innerHTML = '';
     if (AppState.single_tasks) {
       AppState.single_tasks.forEach(task => {
+        if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
+
         // Show tasks where current user is the helper, and not completed/canceled/archived
         if (task.helperId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
           helperCount++;
@@ -3330,6 +3337,8 @@ function renderMyTasks() {
     
     if (AppState.single_tasks) {
       AppState.single_tasks.forEach(task => {
+        if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
+
         // Show tasks where current user is the creator but NOT the assignee, and not archived
         if (task.creatorId === userId && task.assigneeId !== userId && task.status !== 'archived') {
           assignedCount++;
