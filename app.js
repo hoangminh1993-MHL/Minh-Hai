@@ -900,8 +900,6 @@ function renderDashboard() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentMonth = now.getMonth();
-  const currentMonthStart = new Date(currentYear, currentMonth, 1).getTime();
-  const currentMonthEnd = new Date(currentYear, currentMonth + 1, 1).getTime();
 
   let closedSuccessInMonth = 0;
   let newLeadsInMonth = 0;
@@ -911,13 +909,47 @@ function renderDashboard() {
     AppState.leads.forEach(lead => {
       if (lead.source !== 'Fanpage') return;
 
-      const leadDate = new Date(lead.date);
-      const isCreatedThisMonth = leadDate.getFullYear() === currentYear && leadDate.getMonth() === currentMonth;
+      // Extract creation year and month from lead.date ("YYYY-MM-DD") timezone-safely
+      let leadYear = 0;
+      let leadMonth = -1;
+      if (lead.date) {
+        const parts = lead.date.split('-');
+        if (parts.length >= 2) {
+          leadYear = parseInt(parts[0]);
+          leadMonth = parseInt(parts[1]) - 1;
+        }
+      }
+
+      const isCreatedThisMonth = leadYear === currentYear && leadMonth === currentMonth;
+      const isCreatedBeforeThisMonth = (leadYear < currentYear) || (leadYear === currentYear && leadMonth < currentMonth);
 
       // 1. Count closed success in this month
       if (lead.stage === 'success') {
-        const successTime = lead.stageEntryTimes ? (lead.stageEntryTimes['success'] || 0) : 0;
-        if (successTime >= currentMonthStart && successTime < currentMonthEnd) {
+        let successYear = 0;
+        let successMonth = -1;
+
+        const successTime = lead.stageEntryTimes ? lead.stageEntryTimes['success'] : null;
+        if (successTime) {
+          const d = new Date(successTime);
+          if (!isNaN(d.getTime())) {
+            successYear = d.getFullYear();
+            successMonth = d.getMonth();
+          }
+        }
+        
+        // Fallback to updatedTime, createdTime, or date if successTime is missing or invalid
+        if (successMonth === -1) {
+          const refTime = lead.updatedTime || lead.createdTime || lead.date;
+          if (refTime) {
+            const parts = refTime.split('-');
+            if (parts.length >= 2) {
+              successYear = parseInt(parts[0]);
+              successMonth = parseInt(parts[1]) - 1;
+            }
+          }
+        }
+
+        if (successYear === currentYear && successMonth === currentMonth) {
           closedSuccessInMonth++;
         }
       }
@@ -925,17 +957,40 @@ function renderDashboard() {
       // 2. Count new leads in this month
       if (isCreatedThisMonth) {
         newLeadsInMonth++;
-      } else if (leadDate.getTime() < currentMonthStart) {
+      } else if (isCreatedBeforeThisMonth) {
         // 3. Count active leads from previous months
         let isActiveAtStart = false;
         if (lead.stage !== 'success' && lead.stage !== 'failed') {
           isActiveAtStart = true;
         } else {
-          const resolveTime = lead.stageEntryTimes ? (lead.stageEntryTimes[lead.stage] || 0) : 0;
-          if (resolveTime >= currentMonthStart) {
+          // Check when it reached the current terminal stage
+          let resolveYear = 0;
+          let resolveMonth = -1;
+          const resolveTime = lead.stageEntryTimes ? lead.stageEntryTimes[lead.stage] : null;
+          if (resolveTime) {
+            const d = new Date(resolveTime);
+            if (!isNaN(d.getTime())) {
+              resolveYear = d.getFullYear();
+              resolveMonth = d.getMonth();
+            }
+          }
+          if (resolveMonth === -1) {
+            const refTime = lead.updatedTime || lead.createdTime || lead.date;
+            if (refTime) {
+              const parts = refTime.split('-');
+              if (parts.length >= 2) {
+                resolveYear = parseInt(parts[0]);
+                resolveMonth = parseInt(parts[1]) - 1;
+              }
+            }
+          }
+          // If resolved in current month (or later), it was still active at start of current month
+          const isResolvedThisMonthOrLater = (resolveYear > currentYear) || (resolveYear === currentYear && resolveMonth >= currentMonth);
+          if (isResolvedThisMonthOrLater) {
             isActiveAtStart = true;
           }
         }
+
         if (isActiveAtStart) {
           oldActiveLeadsInMonth++;
         }
