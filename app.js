@@ -896,6 +896,65 @@ function renderDashboard() {
   document.getElementById('stat-conversion-rate').innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> ${convRate}% Tỉ lệ chuyển đổi`;
   document.getElementById('stat-fail-rate').innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${failRate}% Tỉ lệ thất bại`;
 
+  // 1.1 Compute Fanpage Monthly Conversion Rate
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentMonthStart = new Date(currentYear, currentMonth, 1).getTime();
+  const currentMonthEnd = new Date(currentYear, currentMonth + 1, 1).getTime();
+
+  let closedSuccessInMonth = 0;
+  let newLeadsInMonth = 0;
+  let oldActiveLeadsInMonth = 0;
+
+  if (AppState.leads) {
+    AppState.leads.forEach(lead => {
+      if (lead.source !== 'Fanpage') return;
+
+      const leadDate = new Date(lead.date);
+      const isCreatedThisMonth = leadDate.getFullYear() === currentYear && leadDate.getMonth() === currentMonth;
+
+      // 1. Count closed success in this month
+      if (lead.stage === 'success') {
+        const successTime = lead.stageEntryTimes ? (lead.stageEntryTimes['success'] || 0) : 0;
+        if (successTime >= currentMonthStart && successTime < currentMonthEnd) {
+          closedSuccessInMonth++;
+        }
+      }
+
+      // 2. Count new leads in this month
+      if (isCreatedThisMonth) {
+        newLeadsInMonth++;
+      } else if (leadDate.getTime() < currentMonthStart) {
+        // 3. Count active leads from previous months
+        let isActiveAtStart = false;
+        if (lead.stage !== 'success' && lead.stage !== 'failed') {
+          isActiveAtStart = true;
+        } else {
+          const resolveTime = lead.stageEntryTimes ? (lead.stageEntryTimes[lead.stage] || 0) : 0;
+          if (resolveTime >= currentMonthStart) {
+            isActiveAtStart = true;
+          }
+        }
+        if (isActiveAtStart) {
+          oldActiveLeadsInMonth++;
+        }
+      }
+    });
+  }
+
+  const fanpageTotalDenominator = newLeadsInMonth + oldActiveLeadsInMonth;
+  const fanpageConvRate = fanpageTotalDenominator > 0 
+    ? Math.round((closedSuccessInMonth / fanpageTotalDenominator) * 100) 
+    : 0;
+
+  const statFanpageConvRateEl = document.getElementById('stat-fanpage-conv-rate');
+  const statFanpageConvDetailEl = document.getElementById('stat-fanpage-conv-detail');
+  if (statFanpageConvRateEl) statFanpageConvRateEl.innerText = `${fanpageConvRate}%`;
+  if (statFanpageConvDetailEl) {
+    statFanpageConvDetailEl.innerText = `Chốt ${closedSuccessInMonth} / Tổng ${fanpageTotalDenominator} (Mới: ${newLeadsInMonth}, Cũ: ${oldActiveLeadsInMonth})`;
+  }
+
   // 2. Render Charts
   renderDashboardCharts();
 

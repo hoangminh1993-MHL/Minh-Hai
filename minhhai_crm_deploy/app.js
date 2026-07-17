@@ -1,15 +1,4 @@
 // ==================== GLOBAL STATE & CONFIGURATION ==================== //
-window.parseSafeDate = function(dateStr) {
-  if (!dateStr) return new Date();
-  if (typeof dateStr === 'string') {
-    // Safari does not support 'YYYY-MM-DD HH:mm:ss', only 'YYYY-MM-DDTHH:mm:ss'
-    // This regex replaces the first space between date and time with 'T'
-    const safeStr = dateStr.replace(/^(\d{4}-\d{2}-\d{2})\s(\d{2}:\d{2}(?::\d{2})?)/, '$1T$2');
-    return new Date(safeStr);
-  }
-  return new Date(dateStr);
-};
-
 function getApiUrl(path) {
   const customApiBase = localStorage.getItem('minhhai_custom_api_base');
   if (customApiBase) {
@@ -239,12 +228,12 @@ async function syncLoadState() {
     const res = await fetch(getApiUrl('/api/state'));
     if (res.ok) {
       const data = await res.json();
-      AppState.users = data.users || [];
-      AppState.leads = data.leads || [];
-      AppState.tasks = data.tasks || [];
-      AppState.workflows = data.workflows || {};
-      AppState.sausageLogs = data.sausageLogs || [];
-      AppState.notifications = data.notifications || [];
+      AppState.users = data.users;
+      AppState.leads = data.leads;
+      AppState.tasks = data.tasks;
+      AppState.workflows = data.workflows;
+      AppState.sausageLogs = data.sausageLogs;
+      AppState.notifications = data.notifications;
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
       
       // Seed operational lists (v18)
@@ -257,6 +246,7 @@ async function syncLoadState() {
       if (window.initLeadSteps && AppState.leads) {
         AppState.leads.forEach(window.initLeadSteps);
       }
+      backfillGamificationData();
 
       const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
       AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || loggedUser.id || (data.users && data.users[0]?.id) || 'usr-admin';
@@ -284,31 +274,19 @@ async function syncLoadState() {
 }
 
 function loadState() {
-  const safeParse = (key, defaultVal) => {
-    try {
-      const str = localStorage.getItem(key);
-      if (!str || str === 'undefined') return defaultVal;
-      return JSON.parse(str);
-    } catch(e) {
-      return defaultVal;
-    }
-  };
-
-  AppState.users = safeParse(CONFIG.LS_KEY_USERS, []);
-  AppState.leads = safeParse(CONFIG.LS_KEY_LEADS, []);
-  AppState.tasks = safeParse(CONFIG.LS_KEY_TASKS, []);
-  AppState.workflows = safeParse(CONFIG.LS_KEY_WORKFLOWS, {});
-  AppState.sausageLogs = safeParse(CONFIG.LS_KEY_LOGS, []);
-  AppState.notifications = safeParse(CONFIG.LS_KEY_NOTIFS, []);
-  
-  AppState.clients = safeParse('votr_clients_db', []);
-  AppState.projects = safeParse('votr_projects_db', []);
-  AppState.shipment_workflows = safeParse('votr_shipment_workflows_db', []);
-  AppState.single_tasks = safeParse('votr_single_tasks_db', []);
-  AppState.suggestions = safeParse('votr_suggestions_db', []);
-  
+  AppState.users = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_USERS)) || INITIAL_USERS;
+  if (!AppState.users || AppState.users.length === 0) {
+    AppState.users = [...INITIAL_USERS];
+  }
+  AppState.leads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
+  AppState.tasks = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_TASKS)) || [];
+  AppState.workflows = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_WORKFLOWS)) || {};
+  AppState.sausageLogs = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LOGS)) || [];
+  AppState.notifications = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_NOTIFS)) || [];
   AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || (AppState.users && AppState.users[0]?.id) || 'usr-1';
 
+  AppState.clients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
+  AppState.projects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
   AppState.shipment_workflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
   AppState.single_tasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
   AppState.suggestions = JSON.parse(localStorage.getItem('votr_suggestions_db')) || [];
@@ -318,6 +296,24 @@ function loadState() {
   }
 
   updateMyTasksBadge();
+  backfillGamificationData();
+}
+
+function backfillGamificationData() {
+  if (AppState.users) {
+    AppState.users.forEach(u => {
+      if (u.teamPoints === undefined) u.teamPoints = 0;
+      if (u.streakDays === undefined) u.streakDays = 0;
+      if (u.lastUpdateDate === undefined) u.lastUpdateDate = null;
+      if (u.spinsCount === undefined) u.spinsCount = 0;
+      if (u.lastSpinDate === undefined) u.lastSpinDate = null;
+      if (u.treeLevel === undefined) u.treeLevel = 1;
+      if (u.treeProgress === undefined) u.treeProgress = 0;
+      if (!u.badges) u.badges = [];
+      if (!u.completedMissions) u.completedMissions = [];
+      if (u.quizTakenToday === undefined) u.quizTakenToday = false;
+    });
+  }
 }
 
 async function saveState() {
@@ -521,6 +517,7 @@ function navigateToView(viewId, updateHash = true) {
     'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
     'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
     'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' },
+    'customer-health': { main: 'Sức Khỏe Khách Hàng', sub: 'Phân tích dữ liệu vận chuyển các tháng và cảnh báo nguy cơ sụt giảm sản lượng hoặc mất khách.' },
     'mini-games': { main: 'Khu Vui Chơi & Giải Trí', sub: 'Đấu trí cờ caro cược điểm, chơi xổ số bao/đề 18h hàng ngày, và tổ chức bet kèo nội bộ.' },
     'suggestions': { main: 'Ý Tưởng & Đề Xuất Quy Trình', sub: 'Nhận đóng góp ý kiến tối ưu quy trình và báo cáo lỗi phần mềm từ nhân sự.' }
   };
@@ -548,6 +545,8 @@ function navigateToView(viewId, updateHash = true) {
     if (typeof renderMyTasks === 'function') renderMyTasks();
   } else if (viewId === 'rewards') {
     renderRewardsView();
+  } else if (viewId === 'customer-health') {
+    renderCustomerHealthView();
   } else if (viewId === 'settings') {
     renderFacebookConfig();
     const apiInput = document.getElementById('settings-api-base-input');
@@ -636,6 +635,72 @@ function renderFacebookConfig() {
       }
     };
   }
+
+  // Export Database
+  const btnExport = document.getElementById('btn-export-db');
+  if (btnExport) {
+    btnExport.onclick = () => {
+      try {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppState, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href",     dataStr);
+        downloadAnchor.setAttribute("download", `minhhai_crm_backup_${new Date().toISOString().slice(0,10)}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast('Đã xuất file sao lưu dữ liệu thành công!', 'success');
+      } catch (err) {
+        showToast('Lỗi khi xuất dữ liệu!', 'error');
+        console.error(err);
+      }
+    };
+  }
+
+  // Import Database
+  const inputImport = document.getElementById('input-import-db');
+  if (inputImport) {
+    inputImport.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          if (!parsed.users || !parsed.leads) {
+            showToast('Định dạng file sao lưu không hợp lệ!', 'error');
+            return;
+          }
+          if (!confirm('Bạn có chắc chắn muốn khôi phục dữ liệu từ file này? Dữ liệu hiện tại trên hệ thống sẽ bị ghi đè hoàn toàn.')) {
+            inputImport.value = '';
+            return;
+          }
+          
+          // Copy values to AppState
+          AppState.users = parsed.users || AppState.users;
+          AppState.leads = parsed.leads || AppState.leads;
+          AppState.tasks = parsed.tasks || AppState.tasks;
+          AppState.workflows = parsed.workflows || AppState.workflows;
+          AppState.sausageLogs = parsed.sausageLogs || AppState.sausageLogs;
+          AppState.notifications = parsed.notifications || AppState.notifications;
+          AppState.clients = parsed.clients || AppState.clients;
+          AppState.projects = parsed.projects || AppState.projects;
+          AppState.shipment_workflows = parsed.shipment_workflows || AppState.shipment_workflows;
+          AppState.single_tasks = parsed.single_tasks || AppState.single_tasks;
+          if (parsed.currentUserId) AppState.currentUserId = parsed.currentUserId;
+          
+          showToast('Đang đồng bộ dữ liệu lên máy chủ...', 'info');
+          await saveState();
+          showToast('Đồng bộ dữ liệu thành công! Đang tải lại...', 'success');
+          setTimeout(() => window.location.reload(), 1500);
+        } catch (err) {
+          showToast('Lỗi khi đọc file hoặc ghi đè dữ liệu!', 'error');
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    };
+  }
 }
 
 function initRoleSwitcher() {
@@ -681,7 +746,11 @@ function initRoleSwitcher() {
 
 function getCurrentUser() {
   const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
-  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0];
+  const defaultUser = (AppState.users && AppState.users[0]) || INITIAL_USERS[0];
+  if (!AppState.users || AppState.users.length === 0) {
+    AppState.users = [...INITIAL_USERS];
+  }
+  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0] || defaultUser;
 }
 
 window.getUserAvatarInnerHtml = function(avatar) {
@@ -827,6 +896,65 @@ function renderDashboard() {
   document.getElementById('stat-conversion-rate').innerHTML = `<i class="fa-solid fa-arrow-trend-up"></i> ${convRate}% Tỉ lệ chuyển đổi`;
   document.getElementById('stat-fail-rate').innerHTML = `<i class="fa-solid fa-arrow-trend-down"></i> ${failRate}% Tỉ lệ thất bại`;
 
+  // 1.1 Compute Fanpage Monthly Conversion Rate
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const currentMonthStart = new Date(currentYear, currentMonth, 1).getTime();
+  const currentMonthEnd = new Date(currentYear, currentMonth + 1, 1).getTime();
+
+  let closedSuccessInMonth = 0;
+  let newLeadsInMonth = 0;
+  let oldActiveLeadsInMonth = 0;
+
+  if (AppState.leads) {
+    AppState.leads.forEach(lead => {
+      if (lead.source !== 'Fanpage') return;
+
+      const leadDate = new Date(lead.date);
+      const isCreatedThisMonth = leadDate.getFullYear() === currentYear && leadDate.getMonth() === currentMonth;
+
+      // 1. Count closed success in this month
+      if (lead.stage === 'success') {
+        const successTime = lead.stageEntryTimes ? (lead.stageEntryTimes['success'] || 0) : 0;
+        if (successTime >= currentMonthStart && successTime < currentMonthEnd) {
+          closedSuccessInMonth++;
+        }
+      }
+
+      // 2. Count new leads in this month
+      if (isCreatedThisMonth) {
+        newLeadsInMonth++;
+      } else if (leadDate.getTime() < currentMonthStart) {
+        // 3. Count active leads from previous months
+        let isActiveAtStart = false;
+        if (lead.stage !== 'success' && lead.stage !== 'failed') {
+          isActiveAtStart = true;
+        } else {
+          const resolveTime = lead.stageEntryTimes ? (lead.stageEntryTimes[lead.stage] || 0) : 0;
+          if (resolveTime >= currentMonthStart) {
+            isActiveAtStart = true;
+          }
+        }
+        if (isActiveAtStart) {
+          oldActiveLeadsInMonth++;
+        }
+      }
+    });
+  }
+
+  const fanpageTotalDenominator = newLeadsInMonth + oldActiveLeadsInMonth;
+  const fanpageConvRate = fanpageTotalDenominator > 0 
+    ? Math.round((closedSuccessInMonth / fanpageTotalDenominator) * 100) 
+    : 0;
+
+  const statFanpageConvRateEl = document.getElementById('stat-fanpage-conv-rate');
+  const statFanpageConvDetailEl = document.getElementById('stat-fanpage-conv-detail');
+  if (statFanpageConvRateEl) statFanpageConvRateEl.innerText = `${fanpageConvRate}%`;
+  if (statFanpageConvDetailEl) {
+    statFanpageConvDetailEl.innerText = `Chốt ${closedSuccessInMonth} / Tổng ${fanpageTotalDenominator} (Mới: ${newLeadsInMonth}, Cũ: ${oldActiveLeadsInMonth})`;
+  }
+
   // 2. Render Charts
   renderDashboardCharts();
 
@@ -866,7 +994,7 @@ function renderAdminStaffWorkloadTable() {
         if (stepData && stepData.assigneeId === userId) {
           if (stepData.status !== 'done') {
             activeTasksCount++;
-            const isOverdue = flow.deadline && parseSafeDate(flow.deadline) < new Date();
+            const isOverdue = flow.deadline && new Date(flow.deadline) < new Date();
             if (isOverdue) overdueTasksCount++;
           } else {
             completedTasksCount++;
@@ -881,7 +1009,7 @@ function renderAdminStaffWorkloadTable() {
         if (t.assigneeId === userId) {
           if (t.status !== 'completed' && t.status !== 'canceled') {
             activeTasksCount++;
-            const isOverdue = t.deadline && parseSafeDate(t.deadline) < new Date();
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
             if (isOverdue) overdueTasksCount++;
           } else if (t.status === 'completed') {
             completedTasksCount++;
@@ -896,7 +1024,7 @@ function renderAdminStaffWorkloadTable() {
         if (t.assigneeId === userId) {
           if (t.status !== 'completed' && t.status !== 'canceled') {
             activeTasksCount++;
-            const isOverdue = t.deadline && parseSafeDate(t.deadline) < new Date();
+            const isOverdue = t.deadline && new Date(t.deadline) < new Date();
             if (isOverdue) overdueTasksCount++;
           } else if (t.status === 'completed') {
             completedTasksCount++;
@@ -1240,61 +1368,309 @@ function renderMiniLeaderboard() {
 }
 
 // ==================== REWARDS & LEADERBOARD VIEW ==================== //
+const REWARDS_STORE_PRODUCTS = [
+  { id: 'p-1', name: 'Ly trà sữa Trân châu', points: 40, icon: 'fa-glass-water', desc: 'Ly trà sữa size L mát lạnh tự chọn tại quầy.' },
+  { id: 'p-2', name: 'Combo ăn trưa văn phòng', points: 80, icon: 'fa-bowl-food', desc: 'Suất cơm trưa đầy đặn kèm nước ngọt.' },
+  { id: 'p-3', name: 'Bình nước Minh Hải', points: 120, icon: 'fa-bottle-water', desc: 'Bình giữ nhiệt in logo Minh Hải cực cool.' },
+  { id: 'p-4', name: 'Voucher 100.000đ ăn uống', points: 180, icon: 'fa-ticket', desc: 'Voucher ăn uống thanh toán trực tiếp tại các quán liên kết.' },
+  { id: 'p-5', name: 'Vé đi muộn 30 phút', points: 200, icon: 'fa-user-clock', desc: 'Đăng ký trước đi muộn 30 phút không bị tính ngày công trễ.' },
+  { id: 'p-6', name: 'Vé về sớm 60 phút', points: 250, icon: 'fa-clock', desc: 'Về sớm 1 tiếng được phê duyệt trước cho công việc gia đình.' },
+  { id: 'p-7', name: 'Vé nghỉ phép nửa ngày', points: 600, icon: 'fa-calendar-day', desc: 'Nửa ngày nghỉ phép hưởng nguyên lương được phê duyệt.' }
+];
+
+const REWARDS_BADGES = [
+  { id: 'badge-ontime', name: 'Chiến Binh Đúng Hạn', icon: 'fa-calendar-check', desc: 'Hoàn thành task đúng hạn trong 7 ngày liên tục.', color: '#10b981' },
+  { id: 'badge-supporter', name: 'Đồng Đội Vàng', icon: 'fa-handshake-angle', desc: 'Có ít nhất 3 task hỗ trợ đồng đội được quản lý duyệt.', color: '#3b82f6' },
+  { id: 'badge-innovator', name: 'Vua Cải Tiến', icon: 'fa-lightbulb', desc: 'Có đề xuất cải tiến được áp dụng thành công.', color: '#f59e0b' },
+  { id: 'badge-caring', name: 'Không Bỏ Sót', icon: 'fa-heart', desc: 'Không trễ phản hồi bất kỳ tin nhắn Fanpage nào trong tuần.', color: '#ef4444' },
+  { id: 'badge-debt', name: 'Dũng Sĩ Thu Nợ', icon: 'fa-shield-halved', desc: 'Xử lý và hoàn tất nợ cước của 3 workflow hàng hóa.', color: '#8b5cf6' }
+];
+
+const REWARDS_QUIZZES = [
+  {
+    question: "Khi khách hàng gửi hàng ký gửi từ Trung Quốc về Việt Nam, bước đầu tiên trong quy trình vận hành (workflow) là gì?",
+    options: [
+      "Báo giá và thương lượng",
+      "Nhận thông tin và tạo mã khách hàng",
+      "Mua hàng hộ",
+      "Giao hàng và thu nợ"
+    ],
+    correct: 1,
+    explanation: "Đầu tiên, nhân viên CSKH/Sales phải Nhận thông tin, thiết lập mã số khách hàng và xác định nhu cầu ký gửi."
+  },
+  {
+    question: "Hạn mức tối đa số ngày xử lý thông tin nợ cước (Thu nợ) của Minh Hải Logistics đối với khách hàng VIP là bao nhiêu ngày?",
+    options: [
+      "3 ngày kể từ khi giao hàng",
+      "7 ngày kể từ khi giao hàng",
+      "15 ngày kể từ khi giao hàng",
+      "Không giới hạn thời gian"
+    ],
+    correct: 1,
+    explanation: "Theo chính sách của Minh Hải Logistics, công nợ khách hàng VIP cần được thu hồi trong vòng 7 ngày kể từ khi giao hàng xong."
+  },
+  {
+    question: "Nguyên tắc cốt lõi trong văn hóa phục vụ của Minh Hải Logistics là gì?",
+    options: [
+      "Nhanh nhất có thể",
+      "Không bỏ sót khách hàng, xử lý phát sinh đến cùng",
+      "Giá rẻ nhất thị trường",
+      "Chỉ tập trung phục vụ khách mua sỉ"
+    ],
+    correct: 1,
+    explanation: "Nguyên tắc cốt lõi là 'Không bỏ sót khách hàng, theo sát đơn nợ và xử lý phát sinh khiếu nại đến cùng'."
+  }
+];
+
+const REWARDS_MISSIONS = [
+  { id: 'm-1', type: 'daily', title: 'Cập nhật công việc hàng ngày', desc: 'Cập nhật trạng thái công việc của bạn ít nhất 1 lần trong ngày.', reward: '+2 Xúc xích', points: 2 },
+  { id: 'm-2', type: 'daily', title: 'Hoàn thành bài Quiz nội bộ', desc: 'Tham gia trả lời câu hỏi tìm hiểu quy trình dịch vụ hàng ngày.', reward: '+5 Xúc xích', points: 5 },
+  { id: 'm-3', type: 'weekly', title: 'Chiến binh Đúng Hạn tuần', desc: 'Không để bất kỳ công việc nào trễ hạn trong suốt cả tuần.', reward: '+10 Xúc xích & +1 Lượt quay', points: 10, spins: 1 },
+  { id: 'm-4', type: 'weekly', title: 'Đồng đội vàng chuyên cần', desc: 'Hỗ trợ đồng nghiệp hoàn thành ít nhất 1 công việc khó.', reward: '+5 Xúc xích', points: 5 },
+  { id: 'm-5', type: 'monthly', title: 'Forward Everyday', desc: 'Duy trì tỷ lệ hoàn thành công việc đúng hạn trên 95% trong tháng.', reward: '+30 Xúc xích & Huy hiệu "Chiến Binh Đúng Hạn"', points: 30, badge: 'badge-ontime' }
+];
+
+window.rewardsActiveTab = 'leaderboard';
+window.leaderboardSubTab = 'personal';
+
 function renderRewardsView() {
-  const tbody = document.getElementById('rewards-leaderboard-body');
-  tbody.innerHTML = '';
+  const container = document.getElementById('view-rewards');
+  if (!container) return;
 
-  const sortedUsers = [...AppState.users].sort((a, b) => b.points - a.points);
-  
-  // Find highest points to determine levels or titles
-  const maxPts = sortedUsers[0]?.points || 1;
-
-  const roleLabels = { admin: 'Admin', sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
-  sortedUsers.forEach((u, index) => {
-    const rank = index + 1;
-    const tr = document.createElement('tr');
+  // Initialize sub-tab events once
+  if (!window.rewardsTabsInitialized) {
+    window.rewardsTabsInitialized = true;
     
-    let rankHtml = `<td class="text-center font-weight-bold">${rank}</td>`;
-    if (rank === 1) rankHtml = `<td class="text-center"><i class="fa-solid fa-trophy trophy-1"></i> 1</td>`;
-    else if (rank === 2) rankHtml = `<td class="text-center"><i class="fa-solid fa-trophy trophy-2"></i> 2</td>`;
-    else if (rank === 3) rankHtml = `<td class="text-center"><i class="fa-solid fa-trophy trophy-3"></i> 3</td>`;
+    document.querySelectorAll('.rewards-tab-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        document.querySelectorAll('.rewards-tab-btn').forEach(b => {
+          b.classList.remove('active');
+          b.style.color = 'var(--text-muted)';
+          b.style.borderBottom = 'none';
+        });
+        const targetBtn = e.currentTarget;
+        targetBtn.classList.add('active');
+        targetBtn.style.color = 'var(--color-primary)';
+        targetBtn.style.borderBottom = '3px solid var(--color-primary)';
+        
+        const tab = targetBtn.getAttribute('data-reward-tab');
+        window.rewardsActiveTab = tab;
+        document.querySelectorAll('.reward-tab-content').forEach(c => c.style.display = 'none');
+        document.getElementById(`reward-tab-content-${tab}`).style.display = 'block';
+        
+        renderRewardsTabContent(tab);
+      };
+    });
 
-    // Determine custom titles
-    let title = 'Tập sự Xúc xích';
-    let titleClass = 'text-muted';
-    if (u.points >= 350) { title = 'Đại vương Xúc xích'; titleClass = 'text-gold'; }
-    else if (u.points >= 280) { title = 'Chiến thần Săn Xúc xích'; titleClass = 'text-orange'; }
-    else if (u.points >= 200) { title = 'Kẻ hủy diệt Xúc xích'; titleClass = 'text-blue'; }
-    else if (u.points >= 150) { title = 'Thợ săn Xúc xích'; titleClass = 'text-purple'; }
+    // Leaderboard submenu filter buttons
+    const btnPers = document.getElementById('btn-leaderboard-personal');
+    if (btnPers) {
+      btnPers.onclick = () => {
+        window.leaderboardSubTab = 'personal';
+        switchLeaderboardSubTab('personal');
+      };
+    }
+    const btnTeam = document.getElementById('btn-leaderboard-team');
+    if (btnTeam) {
+      btnTeam.onclick = () => {
+        window.leaderboardSubTab = 'team';
+        switchLeaderboardSubTab('team');
+      };
+    }
+    const btnHonor = document.getElementById('btn-leaderboard-honor');
+    if (btnHonor) {
+      btnHonor.onclick = () => {
+        window.leaderboardSubTab = 'honor';
+        switchLeaderboardSubTab('honor');
+      };
+    }
+  }
 
-    // Mock Total Earned: Current Points + 20% estimated spent
-    const totalEarned = Math.round(u.points * 1.25);
+  // Render currently active tab
+  renderRewardsTabContent(window.rewardsActiveTab);
+}
 
-    const roleLabel = roleLabels[u.role] || u.role.toUpperCase();
-    tr.innerHTML = `
-      ${rankHtml}
-      <td>
-        <div style="display:flex; align-items:center; gap: 8px;">
-          <div class="rank-avatar" style="margin: 0;"><i class="fa-solid ${u.avatar}"></i></div>
-          <div>
-            <h4 style="font-size: 13px; font-weight:600;">${u.name}</h4>
-            <span style="font-size: 10px; color: var(--text-muted)">ID: ${u.id}</span>
-          </div>
-        </div>
-      </td>
-      <td><span class="role-badge badge-${u.role}">${roleLabel}</span></td>
-      <td class="text-center text-gold font-weight-bold" style="font-size:14px; font-weight:700;">${u.points} <i class="fa-solid fa-hotdog" style="font-size:12px;"></i></td>
-      <td class="text-center text-muted">${totalEarned}</td>
-      <td><span class="${titleClass}" style="font-size:12px; font-weight:600;"><i class="fa-solid fa-star" style="font-size:10px; margin-right:4px;"></i>${title}</span></td>
-    `;
-    tbody.appendChild(tr);
+function renderRewardsTabContent(tab) {
+  if (tab === 'leaderboard') {
+    switchLeaderboardSubTab(window.leaderboardSubTab);
+    renderRecentPointsLog();
+  } else if (tab === 'missions') {
+    renderMissionsTab();
+    renderQuiz();
+  } else if (tab === 'store') {
+    renderStoreTab();
+  } else if (tab === 'games') {
+    renderGamesTab();
+  }
+}
+
+function switchLeaderboardSubTab(subTab) {
+  const btns = {
+    personal: document.getElementById('btn-leaderboard-personal'),
+    team: document.getElementById('btn-leaderboard-team'),
+    honor: document.getElementById('btn-leaderboard-honor')
+  };
+  const tables = {
+    personal: document.getElementById('table-leaderboard-personal'),
+    team: document.getElementById('table-leaderboard-team'),
+    honor: document.getElementById('table-leaderboard-honor')
+  };
+  
+  Object.keys(btns).forEach(k => {
+    if (btns[k]) {
+      btns[k].className = k === subTab ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline';
+    }
+    if (tables[k]) {
+      tables[k].style.display = k === subTab ? 'table' : 'none';
+    }
   });
+  
+  renderLeaderboardData(subTab);
+}
 
-  // Render recent logs
+function renderLeaderboardData(subTab) {
+  if (subTab === 'personal') {
+    const tbody = document.getElementById('rewards-leaderboard-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    const sortedUsers = [...AppState.users].sort((a, b) => b.points - a.points);
+    const roleLabels = { admin: 'Admin', sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+    
+    sortedUsers.forEach((u, index) => {
+      const rank = index + 1;
+      const tr = document.createElement('tr');
+      
+      let rankHtml = `<td class="text-center font-weight-bold" style="padding: 10px;">${rank}</td>`;
+      if (rank === 1) rankHtml = `<td class="text-center" style="padding: 10px;"><i class="fa-solid fa-trophy text-gold" style="color: #f59e0b;"></i> 1</td>`;
+      else if (rank === 2) rankHtml = `<td class="text-center" style="padding: 10px;"><i class="fa-solid fa-trophy text-muted"></i> 2</td>`;
+      else if (rank === 3) rankHtml = `<td class="text-center" style="padding: 10px;"><i class="fa-solid fa-trophy" style="color: #b45309;"></i> 3</td>`;
+
+      let title = 'Tập sự';
+      let titleClass = 'text-muted';
+      if (u.points >= 350) { title = 'Đại vương Xúc xích'; titleClass = 'text-gold'; }
+      else if (u.points >= 280) { title = 'Chiến thần Săn việc'; titleClass = 'text-orange'; }
+      else if (u.points >= 200) { title = 'Kẻ hủy diệt Task'; titleClass = 'text-blue'; }
+      else if (u.points >= 150) { title = 'Thợ săn Điểm'; titleClass = 'text-purple'; }
+
+      const totalEarned = Math.round(u.points * 1.25);
+      const roleLabel = roleLabels[u.role] || u.role.toUpperCase();
+      
+      tr.innerHTML = `
+        ${rankHtml}
+        <td style="padding: 10px;">
+          <div style="display:flex; align-items:center; gap: 8px;">
+            <div class="rank-avatar" style="margin: 0; background: rgba(255,255,255,0.05); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;"><i class="fa-solid ${u.avatar || 'fa-user-tie'}"></i></div>
+            <div>
+              <h4 style="font-size: 13px; font-weight:600; margin: 0;">${u.name}</h4>
+              <span style="font-size: 10px; color: var(--text-muted)">ID: ${u.id}</span>
+            </div>
+          </div>
+        </td>
+        <td style="padding: 10px;"><span class="role-badge badge-${u.role}">${roleLabel}</span></td>
+        <td class="text-center text-gold font-weight-bold" style="font-size:14px; font-weight:700; padding: 10px; color: #f59e0b;">${u.points} <i class="fa-solid fa-hotdog" style="font-size:12px;"></i></td>
+        <td class="text-center text-muted" style="padding: 10px;">${totalEarned}</td>
+        <td style="padding: 10px;"><span class="${titleClass}" style="font-size:12px; font-weight:600;"><i class="fa-solid fa-star" style="font-size:10px; margin-right:4px;"></i>${title}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } else if (subTab === 'team') {
+    const tbody = document.getElementById('rewards-leaderboard-team-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    const depts = ['admin', 'sales', 'sourcing', 'warehouse'];
+    const roleLabels = { admin: 'Ban Giám Đốc', sales: 'Đội Sales & CSKH', sourcing: 'Đội Sourcing tìm hàng', warehouse: 'Đội Kho bãi & Vận hành' };
+    
+    const deptData = depts.map(d => {
+      const users = AppState.users.filter(u => u.role === d);
+      const totalPoints = users.reduce((sum, u) => sum + (u.teamPoints || 0), 0);
+      
+      const userIds = users.map(u => u.id);
+      let totalTasks = 0;
+      let completedTasks = 0;
+      
+      if (AppState.tasks) {
+        AppState.tasks.forEach(t => {
+          if (userIds.includes(t.assigneeId)) {
+            totalTasks++;
+            if (t.status === 'completed') completedTasks++;
+          }
+        });
+      }
+      if (AppState.single_tasks) {
+        AppState.single_tasks.forEach(t => {
+          if (userIds.includes(t.assigneeId)) {
+            totalTasks++;
+            if (t.status === 'completed') completedTasks++;
+          }
+        });
+      }
+      
+      const rate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 100;
+      return { dept: d, label: roleLabels[d], points: totalPoints, rate: rate };
+    }).sort((a, b) => b.points - a.points);
+
+    deptData.forEach((d, index) => {
+      const rank = index + 1;
+      const tr = document.createElement('tr');
+      
+      let rating = 'Bình thường';
+      let ratingColor = 'var(--text-muted)';
+      if (d.rate >= 90) { rating = 'Xuất sắc 🌟'; ratingColor = '#10b981'; }
+      else if (d.rate >= 80) { rating = 'Tốt 👍'; ratingColor = '#3b82f6'; }
+      else if (d.rate < 60) { rating = 'Cần cải thiện ⚠️'; ratingColor = '#ef4444'; }
+      
+      tr.innerHTML = `
+        <td class="text-center font-weight-bold" style="padding: 12px 10px;">${rank}</td>
+        <td style="padding: 12px 10px; font-weight: bold; font-size: 13px;">${d.label}</td>
+        <td class="text-center text-gold font-weight-bold" style="padding: 12px 10px; color:#f59e0b;">${d.points} Pts</td>
+        <td class="text-center" style="padding: 12px 10px;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <div style="width: 60px; height: 8px; background: #374151; border-radius: 4px; overflow:hidden;">
+              <div style="width: ${d.rate}%; height: 100%; background: #10b981;"></div>
+            </div>
+            <span style="font-size: 12px; font-weight: bold;">${d.rate}%</span>
+          </div>
+        </td>
+        <td style="padding: 12px 10px; color: ${ratingColor}; font-weight: bold; font-size: 12.5px;">${rating}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } else if (subTab === 'honor') {
+    const tbody = document.getElementById('rewards-leaderboard-honor-body');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    const topOntimeUser = [...AppState.users].sort((a,b) => b.points - a.points)[0] || { name: 'Chưa có', points: 0 };
+    const topHelperUser = [...AppState.users].sort((a,b) => (b.teamPoints||0) - (a.teamPoints||0))[0] || { name: 'Chưa có', teamPoints: 0 };
+    const topInnovatorUser = AppState.users.find(u => u.role === 'admin') || AppState.users[0] || { name: 'Chưa có' };
+
+    const rows = [
+      { category: '🏆 Chiến Binh Đúng Hạn Nhất', user: topOntimeUser.name, score: `${topOntimeUser.points} task hoàn tất`, title: 'Forward Master' },
+      { category: '🤝 Người Hỗ Trợ Đội Nhóm Tốt Nhất', user: topHelperUser.name, score: `${topHelperUser.teamPoints || 0} điểm hỗ trợ`, title: 'Golden Supporter' },
+      { category: '💡 Ngôi Sao Sáng Tạo & Cải Tiến', user: topInnovatorUser.name, score: 'Có đề xuất hữu ích', title: 'Innovation Star' }
+    ];
+
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td style="padding: 12px 10px; font-weight: bold; font-size: 13px; color: var(--color-primary);">${r.category}</td>
+        <td style="padding: 12px 10px; font-weight: bold;">${r.user}</td>
+        <td class="text-center text-muted" style="padding: 12px 10px; font-size: 12px;">${r.score}</td>
+        <td style="padding: 12px 10px;"><span class="text-gold" style="font-weight: bold; font-size: 12px;"><i class="fa-solid fa-medal"></i> ${r.title}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+}
+
+function renderRecentPointsLog() {
   const logContainer = document.getElementById('rewards-points-log');
+  if (!logContainer) return;
   logContainer.innerHTML = '';
 
-  const recentLogs = [...AppState.sausageLogs].sort((a,b) => parseSafeDate(b.date) - parseSafeDate(a.date)).slice(0, 10);
+  const recentLogs = [...AppState.sausageLogs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
   
   if (recentLogs.length === 0) {
     logContainer.innerHTML = `<div class="empty-state" style="padding: 20px 0; text-align: center; color: var(--text-muted);">Chưa có nhật ký phát thưởng nào.</div>`;
@@ -1305,15 +1681,461 @@ function renderRewardsView() {
     const user = AppState.users.find(u => u.id === l.userId);
     const div = document.createElement('div');
     div.className = 'log-item';
+    div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding: 8px; border-bottom:1px solid rgba(255,255,255,0.03);';
     div.innerHTML = `
-      <div class="log-text">
+      <div class="log-text" style="font-size:12px;">
         <strong>${user ? user.name : 'Nhân viên'}</strong>: ${l.text}
-        <div class="notification-time">${l.date}</div>
+        <div class="notification-time" style="font-size:10px; color:var(--text-muted); margin-top:2px;">${l.date}</div>
       </div>
-      <span class="log-pts">+${l.points} <i class="fa-solid fa-hotdog" style="font-size: 10px;"></i></span>
+      <span class="log-pts" style="font-weight:bold; font-size:13px; color:#f59e0b;">${l.points > 0 ? '+' : ''}${l.points} <i class="fa-solid fa-hotdog" style="font-size: 10px;"></i></span>
     `;
     logContainer.appendChild(div);
   });
+}
+
+function renderMissionsTab() {
+  const container = document.getElementById('missions-list-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  
+  REWARDS_MISSIONS.forEach(m => {
+    const isCompleted = loggedUser.completedMissions && loggedUser.completedMissions.includes(m.id);
+    
+    // Check if daily update status is claimable
+    let claimable = false;
+    if (m.id === 'm-1' && loggedUser.lastUpdateDate === new Date().toISOString().split('T')[0]) {
+      claimable = true;
+    }
+    if (m.id === 'm-2' && loggedUser.quizTakenToday) {
+      claimable = true;
+    }
+
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02); border:1px solid var(--border-color); padding: 15px; border-radius: 8px;';
+    
+    let btnHtml = `<button class="btn btn-sm btn-outline" disabled style="font-size:11px; padding: 4px 10px;">Chưa Đạt</button>`;
+    if (isCompleted) {
+      btnHtml = `<span style="color:#10b981; font-weight:bold; font-size:12px;"><i class="fa-solid fa-circle-check"></i> Đã Nhận</span>`;
+    } else if (claimable) {
+      btnHtml = `<button class="btn btn-sm btn-primary" onclick="claimMission('${m.id}')" style="font-size:11px; padding: 4px 10px; background: #10b981; border-color:#10b981;">Nhận Thưởng</button>`;
+    }
+
+    div.innerHTML = `
+      <div>
+        <h4 style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+          <span class="badge" style="font-size:9.5px; padding: 2px 6px; background: ${m.type === 'daily' ? '#3b82f6' : m.type === 'weekly' ? '#8b5cf6' : '#ec4899'}; color: white;">${m.type.toUpperCase()}</span>
+          ${m.title}
+        </h4>
+        <p style="margin: 0; font-size:12px; color:var(--text-muted);">${m.desc}</p>
+        <span style="font-size: 11px; color:#f59e0b; font-weight:bold; display:block; margin-top:4px;"><i class="fa-solid fa-gift"></i> Thưởng: ${m.reward}</span>
+      </div>
+      <div>
+        ${btnHtml}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+window.claimMission = function(missionId) {
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  if (!loggedUser.completedMissions) loggedUser.completedMissions = [];
+  
+  if (loggedUser.completedMissions.includes(missionId)) return;
+  
+  const m = REWARDS_MISSIONS.find(mission => mission.id === missionId);
+  if (!m) return;
+
+  loggedUser.completedMissions.push(missionId);
+  loggedUser.points += m.points;
+  if (m.spins) loggedUser.spinsCount = (loggedUser.spinsCount || 0) + m.spins;
+  if (m.badge && !loggedUser.badges.includes(m.badge)) {
+    loggedUser.badges.push(m.badge);
+    addNotification('Huy hiệu mới! 🏅', `Chúc mừng bạn đã đạt huy hiệu "${REWARDS_BADGES.find(b => b.id === m.badge)?.name}"`, 'success');
+  }
+
+  AppState.sausageLogs.push({
+    userId: loggedUser.id,
+    text: `Hoàn thành nhiệm vụ: ${m.title}`,
+    points: m.points,
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  saveState();
+  showToast(`Đã nhận thành công ${m.reward}!`, 'success');
+  renderRewardsView();
+};
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  const todayStr = new Date().toISOString().split('T')[0];
+  const alreadyTaken = loggedUser.lastQuizTakenDate === todayStr;
+
+  const quizIdx = new Date().getDate() % REWARDS_QUIZZES.length;
+  const quiz = REWARDS_QUIZZES[quizIdx];
+
+  if (alreadyTaken) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 20px;">
+        <i class="fa-solid fa-circle-check" style="font-size:42px; color:#10b981; margin-bottom:12px;"></i>
+        <h4 style="font-size:14px; font-weight:bold; margin-bottom:6px;">Bạn đã tham gia Quiz hôm nay!</h4>
+        <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Hệ thống câu hỏi sẽ được làm mới vào ngày mai. Hãy tiếp tục duy trì thói quen học tập!</p>
+        <div style="background: rgba(255,255,255,0.03); border: 1px dashed var(--border-color); border-radius: 8px; padding: 12px; font-size: 11.5px; text-align: left;">
+          <strong>Giải thích đáp án hôm nay:</strong> ${quiz.explanation}
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  let optionsHtml = '';
+  quiz.options.forEach((opt, idx) => {
+    optionsHtml += `
+      <label style="display:flex; align-items:center; gap: 8px; background: rgba(255,255,255,0.01); border:1px solid var(--border-color); border-radius: 6px; padding: 10px; cursor:pointer; font-size:12.5px; transition: var(--transition-fast);">
+        <input type="radio" name="daily-quiz-option" value="${idx}">
+        <span>${opt}</span>
+      </label>
+    `;
+  });
+
+  container.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap: 12px;">
+      <p style="font-size: 13px; font-weight: bold; margin: 0; line-height: 1.4;">${quiz.question}</p>
+      <div style="display:flex; flex-direction:column; gap: 8px; margin-top:6px;">
+        ${optionsHtml}
+      </div>
+      <button class="btn btn-primary btn-sm" id="btn-submit-quiz" onclick="submitQuizAnswer(${quizIdx})" style="margin-top:10px; width:100%; font-weight:bold;">Gửi Câu Trả Lời</button>
+    </div>
+  `;
+}
+
+window.submitQuizAnswer = function(quizIdx) {
+  const selectedOpt = document.querySelector('input[name="daily-quiz-option"]:checked');
+  if (!selectedOpt) {
+    showToast('Vui lòng chọn một phương án trả lời!', 'warning');
+    return;
+  }
+
+  const selectedAnswer = parseInt(selectedOpt.value);
+  const quiz = REWARDS_QUIZZES[quizIdx];
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  loggedUser.lastQuizTakenDate = todayStr;
+  loggedUser.quizTakenToday = true;
+
+  const correct = selectedAnswer === quiz.correct;
+  if (correct) {
+    loggedUser.points += 5;
+    AppState.sausageLogs.push({
+      userId: loggedUser.id,
+      text: "Trả lời chính xác Quiz nội bộ hàng ngày",
+      points: 5,
+      date: todayStr
+    });
+    showToast('Chính xác! Bạn được cộng +5 điểm xúc xích.', 'success');
+  } else {
+    showToast('Rất tiếc, câu trả lời chưa chính xác!', 'error');
+  }
+
+  saveState();
+  renderRewardsView();
+};
+
+function renderStoreTab() {
+  const grid = document.getElementById('store-products-grid');
+  const history = document.getElementById('store-history-list');
+  if (!grid || !history) return;
+
+  grid.innerHTML = '';
+  history.innerHTML = '';
+
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+
+  // Render products
+  REWARDS_STORE_PRODUCTS.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'store-product-card';
+    card.innerHTML = `
+      <div style="text-align: center;">
+        <i class="fa-solid ${p.icon}" style="font-size:28px; color:var(--color-primary); margin-bottom:8px; display:block;"></i>
+        <h4 style="margin: 0; font-size:13.5px; font-weight:bold;">${p.name}</h4>
+        <p style="margin:4px 0 0 0; font-size:11px; color:var(--text-muted); line-height: 1.3;">${p.desc}</p>
+      </div>
+      <div>
+        <div class="store-product-points">${p.points} <i class="fa-solid fa-hotdog" style="font-size:11px;"></i></div>
+        <button class="btn btn-sm btn-primary" onclick="redeemProduct('${p.id}')" style="width:100%; font-size:11px; font-weight:bold; border-radius: 4px;">Đổi Quà</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  // Render redemption history logs (Negative points in logs)
+  const redeemLogs = AppState.sausageLogs.filter(l => l.points < 0 && l.userId === loggedUser.id);
+  if (redeemLogs.length === 0) {
+    history.innerHTML = `<div class="empty-state" style="text-align:center; padding: 20px 0; color:var(--text-muted); font-style:italic; font-size:12px;">Bạn chưa thực hiện giao dịch đổi quà nào.</div>`;
+    return;
+  }
+
+  redeemLogs.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(l => {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); border:1px solid var(--border-color); padding: 8px 12px; border-radius: 6px; font-size:12px;';
+    div.innerHTML = `
+      <div>
+        <span style="font-weight:bold; color:#10b981;">Thành công</span>
+        <div style="font-size:11.5px; margin-top:2px;">${l.text}</div>
+        <div style="font-size:10px; color:var(--text-muted); margin-top:2px;">${l.date}</div>
+      </div>
+      <span style="font-weight:bold; color:#ef4444;">${l.points} <i class="fa-solid fa-hotdog" style="font-size:10px;"></i></span>
+    `;
+    history.appendChild(div);
+  });
+}
+
+window.redeemProduct = function(productId) {
+  const p = REWARDS_STORE_PRODUCTS.find(product => product.id === productId);
+  if (!p) return;
+
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  if (loggedUser.points < p.points) {
+    showToast(`Không đủ điểm! Bạn cần tích lũy thêm ${p.points - loggedUser.points} xúc xích để đổi quà này.`, 'error');
+    return;
+  }
+
+  // Deduct points and log
+  loggedUser.points -= p.points;
+  AppState.sausageLogs.push({
+    userId: loggedUser.id,
+    text: `Đổi thưởng: ${p.name}`,
+    points: -p.points,
+    date: new Date().toISOString().split('T')[0]
+  });
+
+  saveState();
+  showToast(`Đổi quà thành công: ${p.name}. Vui lòng liên hệ Admin để nhận quà!`, 'success');
+  renderRewardsView();
+};
+
+function renderGamesTab() {
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  
+  // Render Cây Tiến Lên Title & Progress
+  const treeTitle = document.getElementById('progress-tree-level-title');
+  const treeBar = document.getElementById('progress-tree-bar');
+  const treeText = document.getElementById('progress-tree-percent-text');
+  
+  const levelNames = ['Hạt Mầm Thử Thách', 'Chồi Non Chăm Chỉ', 'Cây Con Cố Gắng', 'Cây Lớn Vững Vàng', 'Cây Cổ Thụ Forward'];
+  const treeLevel = loggedUser.treeLevel || 1;
+  const treeProgress = loggedUser.treeProgress || 0;
+  
+  if (treeTitle) treeTitle.innerText = `Cây Tiến Lên: ${levelNames[treeLevel - 1] || 'Cây Con'} (Cấp ${treeLevel})`;
+  if (treeBar) treeBar.style.width = `${treeProgress}%`;
+  if (treeText) treeText.innerText = `Tiến trình tới cấp kế tiếp: ${treeProgress}%`;
+
+  // Draw tree graphic
+  const treeContainer = document.getElementById('progress-tree-graphic-container');
+  if (treeContainer) {
+    let html = `<div class="tree-pot-graphic"></div>`;
+    const trunkHeight = 15 + treeLevel * 12;
+    html += `<div class="tree-trunk" style="height: ${trunkHeight}px;"></div>`;
+    const foliageSize = 25 + treeLevel * 10;
+    const foliageBottom = 10 + trunkHeight - 8;
+    html += `<div class="tree-foliage" style="width: ${foliageSize}px; height: ${foliageSize}px; bottom: ${foliageBottom}px;"></div>`;
+    html += `<div style="position: absolute; bottom: 5px; right: 5px; background: #10b981; color: white; font-size: 9px; padding: 2px 5px; border-radius: 4px; font-weight: bold;">Cấp ${treeLevel}</div>`;
+    treeContainer.innerHTML = html;
+  }
+
+  // Render Badges grid
+  const badgesContainer = document.getElementById('badges-grid-container');
+  if (badgesContainer) {
+    badgesContainer.innerHTML = '';
+    REWARDS_BADGES.forEach(b => {
+      const unlocked = loggedUser.badges && loggedUser.badges.includes(b.id);
+      const card = document.createElement('div');
+      card.className = `badge-item-card ${unlocked ? 'unlocked' : 'locked'}`;
+      card.style.cssText = `background: ${unlocked ? 'rgba(16, 185, 129, 0.04)' : 'rgba(255,255,255,0.01)'}; border:1px solid ${unlocked ? 'rgba(16, 185, 129, 0.25)' : 'var(--border-color)'}; border-radius:8px; padding:12px; text-align:center; opacity: ${unlocked ? '1' : '0.3'}; filter: ${unlocked ? 'none' : 'grayscale(100%)'}; transition: all 0.2s ease;`;
+      
+      card.innerHTML = `
+        <i class="fa-solid ${b.icon}" style="font-size:24px; color:${unlocked ? b.color : 'var(--text-muted)'}; margin-bottom:6px; display:block;"></i>
+        <h5 style="margin:0; font-size:11.5px; font-weight:bold; color:${unlocked ? 'white' : 'var(--text-muted)'};">${b.name}</h5>
+        <p style="margin:4px 0 0 0; font-size:9.5px; color:var(--text-muted); line-height:1.2;">${b.desc}</p>
+      `;
+      badgesContainer.appendChild(card);
+    });
+  }
+
+  // Render Lucky Spin
+  const spinsText = document.getElementById('lucky-spins-count-text');
+  if (spinsText) {
+    spinsText.innerText = `Số lượt quay khả dụng: ${loggedUser.spinsCount || 0} lượt`;
+  }
+  
+  const btnSpin = document.getElementById('btn-spin-wheel');
+  if (btnSpin) {
+    btnSpin.onclick = () => spinLuckyWheel();
+    btnSpin.disabled = (loggedUser.spinsCount || 0) <= 0;
+  }
+  
+  drawLuckyWheel();
+
+  // Render Secret Box status and button
+  const boxStatus = document.getElementById('secret-gift-box-status');
+  const btnOpenBox = document.getElementById('btn-open-gift-box');
+  const boxIcon = document.getElementById('secret-gift-box-icon');
+  
+  const claimableCount = Math.floor(loggedUser.points / 100);
+  const openedCount = loggedUser.openedGiftBoxes || 0;
+  const boxesAvailable = claimableCount - openedCount;
+
+  if (boxesAvailable > 0) {
+    if (boxStatus) boxStatus.innerText = `Chúc mừng! Bạn có ${boxesAvailable} hộp quà bí mật chưa mở!`;
+    if (btnOpenBox) {
+      btnOpenBox.style.display = 'inline-block';
+      btnOpenBox.onclick = () => openSecretGiftBox();
+    }
+    if (boxIcon) boxIcon.className = 'pulse-gift';
+  } else {
+    const nextPoints = 100 - (loggedUser.points % 100);
+    if (boxStatus) boxStatus.innerText = `Tích lũy thêm ${nextPoints} điểm nữa để nhận hộp quà bí mật tiếp theo.`;
+    if (btnOpenBox) btnOpenBox.style.display = 'none';
+    if (boxIcon) boxIcon.className = '';
+  }
+}
+
+function drawLuckyWheel() {
+  const canvas = document.getElementById('lucky-wheel-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  const sectors = ["+5 Điểm", "+10 Điểm", "Ly trà sữa", "+20 Điểm", "Mất lượt", "+1 Lượt", "Huy hiệu", "+15 Điểm"];
+  const colors = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#14b8a6", "#6b7280"];
+  
+  const numSectors = sectors.length;
+  const arc = Math.PI * 2 / numSectors;
+  
+  ctx.clearRect(0, 0, 180, 180);
+  
+  for (let i = 0; i < numSectors; i++) {
+    const angle = i * arc;
+    ctx.fillStyle = colors[i];
+    ctx.beginPath();
+    ctx.moveTo(90, 90);
+    ctx.arc(90, 90, 86, angle, angle + arc);
+    ctx.lineTo(90, 90);
+    ctx.fill();
+    
+    // Text
+    ctx.save();
+    ctx.translate(90, 90);
+    ctx.rotate(angle + arc / 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 8.5px Arial";
+    ctx.textAlign = "right";
+    ctx.fillText(sectors[i], 80, 3);
+    ctx.restore();
+  }
+}
+
+function spinLuckyWheel() {
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  if ((loggedUser.spinsCount || 0) <= 0) {
+    showToast('Bạn không còn lượt quay nào!', 'error');
+    return;
+  }
+
+  const canvas = document.getElementById('lucky-wheel-canvas');
+  const btnSpin = document.getElementById('btn-spin-wheel');
+  if (!canvas || !btnSpin) return;
+
+  btnSpin.disabled = true;
+  loggedUser.spinsCount--;
+
+  // Pick prize randomly
+  const prizeIndex = Math.floor(Math.random() * 8);
+  const degrees = 1800 + (360 - (prizeIndex * 45) - 22.5);
+  
+  canvas.style.transform = `rotate(${degrees}deg)`;
+
+  setTimeout(() => {
+    // Reset transform transition and style
+    canvas.style.transition = 'none';
+    canvas.style.transform = `rotate(${degrees % 360}deg)`;
+    setTimeout(() => {
+      canvas.style.transition = 'transform 4s cubic-bezier(0.15, 0.9, 0.25, 1)';
+    }, 50);
+
+    const prizeTexts = ["+5 Điểm cá nhân", "+10 Điểm cá nhân", "Ly trà sữa miễn phí", "+20 Điểm cá nhân", "Chúc bạn may mắn lần sau", "+1 Lượt quay mới", "Huy hiệu ngẫu nhiên", "+15 Điểm cá nhân"];
+    const pointsPrizes = [5, 10, 0, 20, 0, 0, 0, 15];
+
+    const prizeText = prizeTexts[prizeIndex];
+    const pts = pointsPrizes[prizeIndex];
+
+    if (pts > 0) {
+      loggedUser.points += pts;
+      AppState.sausageLogs.push({
+        userId: loggedUser.id,
+        text: `Quay thưởng: ${prizeText}`,
+        points: pts,
+        date: new Date().toISOString().split('T')[0]
+      });
+    } else if (prizeIndex === 5) { // +1 Spin
+      loggedUser.spinsCount++;
+    } else if (prizeIndex === 6) { // Random Badge
+      const unearned = REWARDS_BADGES.filter(b => !loggedUser.badges.includes(b.id));
+      if (unearned.length > 0) {
+        const newBadge = unearned[Math.floor(Math.random() * unearned.length)];
+        loggedUser.badges.push(newBadge.id);
+        addNotification('Huy hiệu mới! 🏅', `Chúc mừng bạn đã quay trúng huy hiệu "${newBadge.name}"`, 'success');
+      }
+    }
+
+    saveState();
+    showToast(`Kết quả vòng quay: Bạn đã trúng "${prizeText}"!`, 'success');
+    btnSpin.disabled = false;
+    renderRewardsView();
+  }, 4000);
+}
+
+function openSecretGiftBox() {
+  const loggedUser = AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users[0];
+  const claimableCount = Math.floor(loggedUser.points / 100);
+  const openedCount = loggedUser.openedGiftBoxes || 0;
+  const boxesAvailable = claimableCount - openedCount;
+
+  if (boxesAvailable <= 0) return;
+
+  loggedUser.openedGiftBoxes = openedCount + 1;
+
+  // Pick random box prize
+  const prizeOptions = [
+    { text: 'Thêm +10 Xúc xích cá nhân', points: 10 },
+    { text: 'Thêm +20 Xúc xích cá nhân', points: 20 },
+    { text: 'Thêm +1 Lượt quay Vòng quay may mắn', points: 0, spin: 1 }
+  ];
+  const prize = prizeOptions[Math.floor(Math.random() * prizeOptions.length)];
+
+  if (prize.points > 0) {
+    loggedUser.points += prize.points;
+    AppState.sausageLogs.push({
+      userId: loggedUser.id,
+      text: `Mở hộp quà bí mật: ${prize.text}`,
+      points: prize.points,
+      date: new Date().toISOString().split('T')[0]
+    });
+  }
+  if (prize.spin) {
+    loggedUser.spinsCount = (loggedUser.spinsCount || 0) + 1;
+  }
+
+  saveState();
+  showToast(`Mở hộp quà thành công: ${prize.text}!`, 'success');
+  renderRewardsView();
 }
 
 // ==================== TOAST & NOTIFICATION SYSTEM ==================== //
@@ -1859,7 +2681,7 @@ function renderStaffDashboard(user) {
     urgentList.sort((a, b) => {
       if (!a.deadline) return 1;
       if (!b.deadline) return -1;
-      return parseSafeDate(a.deadline) - parseSafeDate(b.deadline);
+      return new Date(a.deadline) - new Date(b.deadline);
     });
 
     const displayList = urgentList.slice(0, 5);
@@ -1867,7 +2689,7 @@ function renderStaffDashboard(user) {
       urgentContainer.innerHTML = `<span class="text-muted" style="font-size:11.5px; font-style:italic;">Tuyệt vời! Bạn không có việc nào cận hạn hay quá hạn.</span>`;
     } else {
       displayList.forEach(item => {
-        const isOverdue = item.deadline && parseSafeDate(item.deadline) < new Date();
+        const isOverdue = item.deadline && new Date(item.deadline) < new Date();
         const div = document.createElement('div');
         div.className = 'mini-task-item';
         div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
@@ -1892,6 +2714,367 @@ function renderStaffDashboard(user) {
       });
     }
   }
+}
+
+window.updateStreakOnActivity = function(userId) {
+  const user = AppState.users.find(u => u.id === userId);
+  if (!user) return;
+  
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (user.lastUpdateDate === todayStr) return; // Already updated today
+  
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  
+  if (user.lastUpdateDate === yesterdayStr) {
+    user.streakDays = (user.streakDays || 0) + 1;
+  } else {
+    user.streakDays = 1;
+  }
+  
+  user.lastUpdateDate = todayStr;
+  
+  // Award for 5 days streak
+  if (user.streakDays === 5) {
+    user.points = (user.points || 0) + 10;
+    user.spinsCount = (user.spinsCount || 0) + 1;
+    AppState.sausageLogs.push({
+      userId: user.id,
+      text: "Duy trì 5 ngày liên tiếp cập nhật công việc",
+      points: 10,
+      date: todayStr
+    });
+    addNotification('Chuỗi hoạt động 5 ngày! 🔥', `${user.name} nhận thêm +10 điểm & +1 lượt quay.`, 'success');
+  }
+};
+
+window.awardPointsForCompletedTask = function(task) {
+  if (!task || task.status !== 'completed') return;
+  const assignee = AppState.users.find(u => u.id === task.assigneeId);
+  if (!assignee) return;
+  
+  const loggedUserId = AppState.currentUserId;
+  if (assignee.id === loggedUserId) {
+    showToast("Đã hoàn tất công việc cá nhân! Đang chờ Quản lý duyệt điểm.", "info");
+    return;
+  }
+  
+  let pts = task.priority === 'high' ? 10 : 5;
+  const now = new Date();
+  if (task.deadline && new Date(task.deadline) > now) {
+    pts += 2; // перед сроком
+  }
+  
+  assignee.points = (assignee.points || 0) + pts;
+  
+  // Update tree progress
+  assignee.treeProgress = (assignee.treeProgress || 0) + (task.priority === 'high' ? 15 : 10);
+  if (assignee.treeProgress >= 100) {
+    assignee.treeProgress = assignee.treeProgress % 100;
+    assignee.treeLevel = Math.min((assignee.treeLevel || 1) + 1, 5);
+    addNotification('Cây Tiến Lên tiến hóa! 🌳', `Chúc mừng ${assignee.name} đã nuôi dưỡng Cây Tiến Lên lên Cấp ${assignee.treeLevel}!`, 'success');
+  }
+  
+  // Update team points
+  assignee.teamPoints = (assignee.teamPoints || 0) + Math.round(pts * 0.3);
+  
+  AppState.sausageLogs.push({
+    userId: assignee.id,
+    text: `Được phê duyệt hoàn thành công việc: ${task.title}`,
+    points: pts,
+    date: new Date().toISOString().split('T')[0]
+  });
+  
+  showToast(`Đã duyệt hoàn thành! Cộng +${pts} điểm cho ${assignee.name}.`, 'success');
+};
+
+
+// ==================== CUSTOMER HEALTH REPORT SYSTEM ==================== //
+
+let isSyncingHealth = false;
+let healthChartInstance = null;
+let healthPieChartInstance = null;
+let filtersInitialized = false;
+
+window.renderCustomerHealthView = function() {
+  initCustomerHealthFilters();
+  
+  if (!AppState.customerHealthData) {
+    window.syncCustomerHealthData();
+    return;
+  }
+  
+  const timeEl = document.getElementById('health-last-sync-time');
+  if (timeEl) {
+    const syncTime = AppState.customerHealthData.lastSyncTime;
+    timeEl.innerText = `Cập nhật: ${formatDateTime(syncTime)}`;
+  }
+  
+  displayCustomerHealthMetrics();
+};
+
+window.syncCustomerHealthData = function() {
+  if (isSyncingHealth) return;
+  isSyncingHealth = true;
+  
+  const btn = document.getElementById('btn-sync-health');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang đồng bộ...`;
+  }
+  
+  fetch(getApiUrl('/api/customer-health/sync'))
+    .then(res => {
+      if (!res.ok) {
+        return res.json().then(errData => {
+          throw new Error(errData.error || `HTTP error ${res.status}`);
+        }).catch(() => {
+          throw new Error(`HTTP error ${res.status}`);
+        });
+      }
+      return res.json();
+    })
+    .then(data => {
+      if (!data || data.error || !data.customers) {
+        throw new Error(data?.error || 'Dữ liệu không đúng cấu trúc');
+      }
+      AppState.customerHealthData = data;
+      showToast('Đồng bộ dữ liệu sức khỏe thành công!', 'success');
+      renderCustomerHealthView();
+    })
+    .catch(err => {
+      console.error(err);
+      showToast(`Lỗi đồng bộ: ${err.message || 'Không kết nối được server'}`, 'error');
+    })
+    .finally(() => {
+      isSyncingHealth = false;
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-rotate"></i> Đồng bộ ngay`;
+      }
+    });
+};
+
+function initCustomerHealthFilters() {
+  const syncBtn = document.getElementById('btn-sync-health');
+  if (syncBtn) {
+    syncBtn.onclick = () => window.syncCustomerHealthData();
+  }
+  
+  const searchInput = document.getElementById('health-search-input');
+  const statusFilter = document.getElementById('health-filter-status');
+  const cskhFilter = document.getElementById('health-filter-cskh');
+  
+  if (searchInput && !searchInput.oninput) searchInput.oninput = () => filterCustomerHealthTable();
+  if (statusFilter && !statusFilter.onchange) statusFilter.onchange = () => filterCustomerHealthTable();
+  if (cskhFilter && !cskhFilter.onchange) cskhFilter.onchange = () => filterCustomerHealthTable();
+  
+  if (filtersInitialized) return;
+  
+  const cskhSelect = document.getElementById('health-filter-cskh');
+  if (cskhSelect && AppState.customerHealthData) {
+    filtersInitialized = true;
+    cskhSelect.innerHTML = '<option value="">Tất cả CSKH</option>';
+    const uniqueCSKH = [...new Set((AppState.customerHealthData.customers || []).map(c => c.cskh).filter(Boolean))];
+    uniqueCSKH.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name;
+      opt.innerText = name;
+      opt.style.background = 'var(--card-bg)';
+      cskhSelect.appendChild(opt);
+    });
+  }
+}
+
+function displayCustomerHealthMetrics() {
+  const data = AppState.customerHealthData;
+  const customers = data.customers || [];
+  
+  let countHealthy = 0;
+  let countWarning = 0;
+  let countAttention = 0;
+  let countDanger = 0;
+  let countLost = 0;
+  
+  customers.forEach(c => {
+    if (c.status === 'healthy') countHealthy++;
+    else if (c.status === 'warning') {
+      if (c.volumeT7 > 0) countWarning++;
+      else countAttention++;
+    }
+    else if (c.status === 'danger') countDanger++;
+    else if (c.status === 'lost') countLost++;
+  });
+  
+  document.getElementById('health-count-healthy').innerText = countHealthy;
+  document.getElementById('health-count-warning').innerText = countWarning;
+  document.getElementById('health-count-attention').innerText = countAttention;
+  document.getElementById('health-count-danger').innerText = countDanger;
+  document.getElementById('health-count-lost').innerText = countLost;
+  
+  filterCustomerHealthTable();
+  renderCustomerHealthCharts();
+}
+
+function filterCustomerHealthTable() {
+  const data = AppState.customerHealthData;
+  const customers = data.customers || [];
+  
+  const query = (document.getElementById('health-search-input')?.value || '').trim().toLowerCase();
+  const statusVal = document.getElementById('health-filter-status')?.value || '';
+  const cskhVal = document.getElementById('health-filter-cskh')?.value || '';
+  
+  const tbody = document.getElementById('health-table-body');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  
+  const filtered = customers.filter(c => {
+    const matchSearch = !query || c.name.toLowerCase().indexOf(query) >= 0;
+    
+    let matchStatus = true;
+    if (statusVal === 'healthy') matchStatus = c.status === 'healthy';
+    else if (statusVal === 'warning') matchStatus = c.status === 'warning';
+    else if (statusVal === 'danger') matchStatus = c.status === 'danger';
+    else if (statusVal === 'lost') matchStatus = c.status === 'lost';
+    
+    const matchCSKH = !cskhVal || c.cskh === cskhVal;
+    
+    return matchSearch && matchStatus && matchCSKH;
+  });
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; font-style:italic; color:var(--text-muted);">Không tìm thấy khách hàng phù hợp.</td></tr>`;
+    return;
+  }
+  
+  const statusLabelMap = {
+    healthy: '<span class="badge bg-emerald" style="font-size:9.5px;">🟢 Khỏe mạnh</span>',
+    warning: '<span class="badge bg-orange" style="font-size:9.5px;">🟡 Cảnh báo</span>',
+    danger: '<span class="badge bg-rose" style="font-size:9.5px;">🔴 Nguy cơ mất</span>',
+    lost: '<span class="badge bg-gray" style="font-size:9.5px;">⚫ Đã mất</span>'
+  };
+  
+  filtered.forEach(c => {
+    let statusHtml = statusLabelMap[c.status] || c.status;
+    if (c.status === 'warning' && c.volumeT7 === 0) {
+      statusHtml = '<span class="badge bg-purple" style="font-size:9.5px;">🟣 Cần chú ý</span>';
+    }
+    
+    const tr = document.createElement('tr');
+    tr.style.cssText = 'border-bottom: 1px solid var(--border-color);';
+    tr.innerHTML = `
+      <td style="padding: 10px 5px; font-weight: bold;">${c.name}</td>
+      <td style="padding: 10px 5px;">${c.cskh}</td>
+      <td style="padding: 10px 5px;"><span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(255,255,255,0.05);">${c.brand}</span></td>
+      <td style="padding: 10px 5px; text-align:right; font-weight:500;">${formatVND(c.volumeT5)}</td>
+      <td style="padding: 10px 5px; text-align:right; font-weight:500;">${formatVND(c.volumeT6)}</td>
+      <td style="padding: 10px 5px; text-align:right; font-weight:500; color:var(--color-primary);">${formatVND(c.volumeT7)}</td>
+      <td style="padding: 10px 5px; color:var(--text-muted);">${c.lastShipmentDate || '-'}</td>
+      <td style="padding: 10px 5px; text-align:center;">${statusHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function formatVND(val) {
+  if (!val) return '0 đ';
+  return Math.round(val).toLocaleString('vi-VN') + ' đ';
+}
+
+function renderCustomerHealthCharts() {
+  const data = AppState.customerHealthData;
+  const totals = data.monthlyTotals || {};
+  
+  const ctx = document.getElementById('health-chart');
+  if (ctx) {
+    if (healthChartInstance) healthChartInstance.destroy();
+    healthChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['T4/2026', 'T5/2026', 'T6/2026', 'T7/2026'],
+        datasets: [{
+          label: 'Doanh thu (VND)',
+          data: [totals.T4 || 0, totals.T5 || 0, totals.T6 || 0, totals.T7 || 0],
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
+            ticks: {
+              color: '#9ca3af',
+              callback: function(value) {
+                return (value / 1e6) + 'M';
+              }
+            }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: '#9ca3af' }
+          }
+        }
+      }
+    });
+  }
+  
+  const ctxPie = document.getElementById('health-pie-chart');
+  if (ctxPie) {
+    if (healthPieChartInstance) healthPieChartInstance.destroy();
+    
+    let countHealthy = 0;
+    let countWarning = 0;
+    let countAttention = 0;
+    let countDanger = 0;
+    let countLost = 0;
+    
+    (data.customers || []).forEach(c => {
+      if (c.status === 'healthy') countHealthy++;
+      else if (c.status === 'warning') {
+        if (c.volumeT7 > 0) countWarning++;
+        else countAttention++;
+      }
+      else if (c.status === 'danger') countDanger++;
+      else if (c.status === 'lost') countLost++;
+    });
+    
+    healthPieChartInstance = new Chart(ctxPie, {
+      type: 'doughnut',
+      data: {
+        labels: ['Khỏe mạnh', 'Suy giảm', 'Cần chú ý', 'Nguy cơ mất', 'Đã mất'],
+        datasets: [{
+          data: [countHealthy, countWarning, countAttention, countDanger, countLost],
+          backgroundColor: ['#10b981', '#f59e0b', '#a855f7', '#ef4444', '#6b7280'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: '#9ca3af',
+              font: { size: 10 }
+            }
+          }
+        }
+      }
+    });
+  }
+}
 window.toggleNavGroup = function(groupId, forceState) {
   const items = document.getElementById(`nav-group-${groupId}-items`);
   const chevron = document.getElementById(`nav-group-${groupId}-chevron`);
