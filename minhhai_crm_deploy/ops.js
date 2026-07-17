@@ -1313,6 +1313,8 @@ function renderActiveStepPanel() {
             item.done = val.trim().length >= 3;
           }
         }
+      };
+      quoteTextarea.onchange = () => {
         saveState();
       };
     }

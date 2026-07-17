@@ -1079,6 +1079,8 @@ function renderActiveLeadStepPanel() {
           task.desc = `Cập nhật tình trạng khách hàng ${lead.name} sau báo giá`;
         }
       }
+    };
+    textarea.onchange = () => {
       saveState();
     };
     

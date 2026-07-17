@@ -444,7 +444,7 @@ function renderCRMBoard() {
         <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
         <div style="font-size: 11.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
           <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
-          <div class="${timeClass}"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
+          <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
         </div>
       </div>
       <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
@@ -814,7 +814,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
   lead.files = lead.files || [];
   lead.stageEntryTimes = lead.stageEntryTimes || {};
   if (!lead.stageEntryTimes[lead.stage]) {
-    const fallbackTime = lead.createdTime ? parseSafeDate(lead.createdTime).getTime() : (lead.date ? new Date(lead.date).getTime() : Date.now());
+    const fallbackTime = lead.createdTime ? new Date(lead.createdTime).getTime() : (lead.date ? new Date(lead.date).getTime() : Date.now());
     lead.stageEntryTimes[lead.stage] = fallbackTime;
   }
 };
@@ -903,6 +903,7 @@ function openLeadDetailModal(leadId) {
     }
   };
 
+  // Wire buttons inside modal
   document.getElementById('btn-lead-step-save').onclick = handleSaveActiveLeadStepData;
   
   const chkInput = document.getElementById('lead-step-new-chk');
@@ -1078,6 +1079,8 @@ function renderActiveLeadStepPanel() {
           task.desc = `Cập nhật tình trạng khách hàng ${lead.name} sau báo giá`;
         }
       }
+    };
+    textarea.onchange = () => {
       saveState();
     };
     
@@ -1523,7 +1526,7 @@ function checkLeadOverdue(lead) {
     lead.stageEntryTimes = {};
   }
   const now = Date.now();
-  const created = lead.createdTime ? parseSafeDate(lead.createdTime).getTime() : now;
+  const created = lead.createdTime ? new Date(lead.createdTime).getTime() : now;
 
   if (lead.stage === 'get_phone') {
     const entered = lead.stageEntryTimes.get_phone || created;
