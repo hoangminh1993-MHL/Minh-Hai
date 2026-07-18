@@ -164,7 +164,8 @@ function initOpsEvents() {
       
       const today = new Date();
       today.setDate(today.getDate() + 3);
-      document.getElementById('ops-task-deadline').value = today.toISOString().split('T')[0];
+      today.setHours(9, 0, 0, 0);
+      document.getElementById('ops-task-deadline').value = window.formatDateTimeLocal(today);
       
       openModal('modal-add-ops-task');
     };
@@ -292,7 +293,8 @@ function initOpsEvents() {
     
     const today = new Date();
     today.setDate(today.getDate() + 3);
-    document.getElementById('ops-task-deadline').value = today.toISOString().split('T')[0];
+    today.setHours(9, 0, 0, 0);
+    document.getElementById('ops-task-deadline').value = window.formatDateTimeLocal(today);
     
     openModal('modal-add-ops-task');
   };
@@ -2249,7 +2251,7 @@ window.openOpsTaskDetail = function(taskId) {
     helperSelect.value = task.helperId || '';
   }
   
-  document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
+  document.getElementById('ops-task-detail-deadline').value = task.deadline ? window.formatDateTimeLocal(task.deadline) : '';
   document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
 
   document.getElementById('ops-task-detail-desc').style.display = 'block';
@@ -2478,14 +2480,18 @@ function handleSaveTaskDetails() {
     }
   }
 
-  // Save assignee and helper updates
+  // Save assignee, helper and deadline updates
   const assigneeEl = document.getElementById('ops-task-detail-assignee');
   const helperEl = document.getElementById('ops-task-detail-helper');
+  const deadlineEl = document.getElementById('ops-task-detail-deadline');
   if (assigneeEl) {
     task.assigneeId = assigneeEl.value;
   }
   if (helperEl) {
     task.helperId = helperEl.value || null;
+  }
+  if (deadlineEl && deadlineEl.value) {
+    task.deadline = deadlineEl.value.replace('T', ' ');
   }
 
   saveState();
@@ -2515,7 +2521,7 @@ function handleAddSingleTaskSubmit(e) {
   const priority = document.getElementById('ops-task-priority').value;
   const assigneeId = document.getElementById('ops-task-assignee').value;
   const helperId = document.getElementById('ops-task-helper').value;
-  const deadline = document.getElementById('ops-task-deadline').value;
+  const deadline = document.getElementById('ops-task-deadline').value.replace('T', ' ');
   const projectId = document.getElementById('ops-task-project').value;
   const clientSelectVal = document.getElementById('ops-task-client').value;
   
@@ -3512,9 +3518,10 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
   // Default deadline to 3 days from now
   const today = new Date();
   today.setDate(today.getDate() + 3);
+  today.setHours(9, 0, 0, 0);
   const deadlineInput = document.getElementById('ops-task-deadline');
   if (deadlineInput) {
-    deadlineInput.value = today.toISOString().split('T')[0];
+    deadlineInput.value = window.formatDateTimeLocal(today);
   }
 
   const titleHeader = document.querySelector('#modal-add-ops-task h3');

@@ -20,7 +20,8 @@ function initTasksEvents() {
       // Reset deadline to today + 3 days
       const today = new Date();
       today.setDate(today.getDate() + 3);
-      document.getElementById('task-deadline').value = today.toISOString().split('T')[0];
+      today.setHours(9, 0, 0, 0); // Default to 09:00 AM
+      document.getElementById('task-deadline').value = window.formatDateTimeLocal(today);
 
       // Populate assignees dropdown based on default selected department
       const deptSelect = document.getElementById('task-dept');
@@ -239,14 +240,16 @@ function renderTasksList() {
       `;
     }
 
+    const proj = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
+    const projectBadge = proj ? `<span class="badge" style="font-size:9.5px; margin-left: 6px; font-weight: bold; background-color: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); display: inline-flex; align-items: center; gap: 3px; padding: 2px 6px; border-radius: 4px;"><i class="fa-solid fa-folder-open"></i> ${proj.name}</span>` : '';
+
     tr.innerHTML = `
       <td>
         <div class="task-cell-title">
-          <h4>${task.title}</h4>
+          <h4 style="display:inline-flex; align-items:center; flex-wrap:wrap; gap:6px;">${task.title} ${projectBadge}</h4>
           <p>${task.desc || 'Không có mô tả chi tiết.'} • Giao bởi: ${creatorName}</p>
         </div>
       </td>
-      <td>${deptBadge}</td>
       <td>
         <div style="display:flex; align-items:center; gap:6px;">
           <i class="fa-solid ${assignee ? assignee.avatar : 'fa-user'}" style="color:var(--color-primary); font-size:12px;"></i>
@@ -311,7 +314,7 @@ function handleAddTaskSubmit(e) {
   const dept = document.getElementById('task-dept').value;
   const assigneeId = document.getElementById('task-assignee').value;
   const points = parseInt(document.getElementById('task-sausage').value) || 20;
-  const deadline = document.getElementById('task-deadline').value;
+  const deadline = document.getElementById('task-deadline').value.replace('T', ' ');
   const desc = document.getElementById('task-desc').value.trim();
 
   // Create initial steps status (all false except the first one is true by default)

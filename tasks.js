@@ -20,7 +20,8 @@ function initTasksEvents() {
       // Reset deadline to today + 3 days
       const today = new Date();
       today.setDate(today.getDate() + 3);
-      document.getElementById('task-deadline').value = today.toISOString().split('T')[0];
+      today.setHours(9, 0, 0, 0); // Default to 09:00 AM
+      document.getElementById('task-deadline').value = window.formatDateTimeLocal(today);
 
       // Populate assignees dropdown based on default selected department
       const deptSelect = document.getElementById('task-dept');
@@ -249,7 +250,6 @@ function renderTasksList() {
           <p>${task.desc || 'Không có mô tả chi tiết.'} • Giao bởi: ${creatorName}</p>
         </div>
       </td>
-      <td>${deptBadge}</td>
       <td>
         <div style="display:flex; align-items:center; gap:6px;">
           <i class="fa-solid ${assignee ? assignee.avatar : 'fa-user'}" style="color:var(--color-primary); font-size:12px;"></i>
@@ -314,7 +314,7 @@ function handleAddTaskSubmit(e) {
   const dept = document.getElementById('task-dept').value;
   const assigneeId = document.getElementById('task-assignee').value;
   const points = parseInt(document.getElementById('task-sausage').value) || 20;
-  const deadline = document.getElementById('task-deadline').value;
+  const deadline = document.getElementById('task-deadline').value.replace('T', ' ');
   const desc = document.getElementById('task-desc').value.trim();
 
   // Create initial steps status (all false except the first one is true by default)

@@ -1,4 +1,11 @@
-// ==================== GLOBAL STATE & CONFIGURATION ==================== //
+window.formatDateTimeLocal = function(date) {
+  if (!date) return '';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (isNaN(d.getTime())) return '';
+  const tzOffset = d.getTimezoneOffset() * 60000;
+  return (new Date(d.getTime() - tzOffset)).toISOString().slice(0, 16);
+};
+
 function getApiUrl(path) {
   const customApiBase = localStorage.getItem('minhhai_custom_api_base');
   if (customApiBase) {
@@ -348,7 +355,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.42';
+const CLIENT_VERSION = '20.43';
 
 async function checkCodeVersionUpdate() {
   try {
