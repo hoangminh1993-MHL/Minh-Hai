@@ -355,7 +355,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.46';
+const CLIENT_VERSION = '20.47';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3402,4 +3402,5 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 });
+
 

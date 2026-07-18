@@ -4,6 +4,11 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 
 ---
 
+## [v47.4] - 2026-07-18
+### Thay đổi (Changed)
+- **Thống kê Dashboard:** Chuyển 4 thẻ thống kê chính ngạch và vận hành sang tab "Vận Hành & Khách Cũ (Founder)".
+- **Tích hợp:** Thêm tính năng click vào các thẻ thống kê này để tự động chuyển hướng và lọc danh sách lô hàng tương ứng trong bảng Vận hành.
+
 ## [v47.3] - 2026-07-18
 ### Thêm mới (Added)
 - **Thống kê Dashboard:** Thêm 4 thẻ thống kê mới vào màn hình Tổng quan để theo dõi: Tổng số lô chính ngạch phát sinh, Lô chính ngạch chốt được, Lợi nhuận mang về từ chính ngạch, và Số lượng lô hàng vận hành add vào CRM Khách cũ.

@@ -6,6 +6,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Global state variables for operations drag and drop
+window.openOpsWithFilter = function(serviceType, searchKeyword) {
+  navigateToView('crm-clients-workflows');
+  const serviceSel = document.getElementById('ops-flow-filter-service');
+  if (serviceSel) {
+    serviceSel.value = serviceType;
+  }
+  const searchInput = document.getElementById('ops-flow-search');
+  if (searchInput) {
+    searchInput.value = searchKeyword || '';
+  }
+  if (typeof renderOpsWorkflows === 'function') {
+    renderOpsWorkflows();
+  }
+};
+
 let draggingFlowId = null;
 let targetFlowStage = null;
 let confirmingMoveFlowId = null;
@@ -387,6 +402,49 @@ function renderFounderDashboard() {
   const arrivingCn = AppState.shipment_workflows.filter(w => w.stage === 7).length; // Step 7: Kho Trung Quốc
   const waitingDebt = AppState.shipment_workflows.filter(w => w.stage === 10).length; // Step 10: Thu nợ
 
+  // ---------------- Compute Chính Ngạch & Ops stats ---------------- //
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  let cnGenerated = 0;
+  let cnSuccess = 0;
+  let cnProfit = 0;
+  let totalOpsAdded = 0;
+
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(w => {
+      const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
+      const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
+      if (isThisMonth) {
+        totalOpsAdded++;
+        if (w.serviceType === 'chính ngạch') {
+          cnGenerated++;
+          cnProfit += (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0);
+        }
+      }
+      if (w.serviceType === 'chính ngạch' && w.stage >= 4 && w.stage !== 12 && isThisMonth) {
+        cnSuccess++;
+      }
+    });
+  }
+
+  if (AppState.leads) {
+    AppState.leads.forEach(l => {
+      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
+        const createdDate = new Date(l.createdTime || l.date);
+        if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
+          cnGenerated++;
+        }
+        if (l.stage === 'success') {
+          const updatedDate = new Date(l.updatedTime || l.createdTime || l.date);
+          if (updatedDate.getFullYear() === currentYear && updatedDate.getMonth() === currentMonth) {
+            cnSuccess++;
+          }
+        }
+      }
+    });
+  }
+  // ----------------------------------------------------------------- //
+
   // Render KPI grid cards
   let html = `
     <div class="stats-grid" style="margin-top: 15px;">
@@ -420,6 +478,42 @@ function renderFounderDashboard() {
           <span class="stat-label">Đơn chờ thu nợ (Bước 10)</span>
           <h3 class="text-gold">${waitingDebt}</h3>
           <span class="stat-trend text-gold"><i class="fa-solid fa-receipt"></i> Đối soát kế toán</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hàng thống kê Chính Ngạch & Khách cũ -->
+    <div class="stats-grid" style="margin-top: 15px;">
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.openOpsWithFilter) window.openOpsWithFilter('chính ngạch', '')">
+        <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lô chính ngạch phát sinh</span>
+          <h3>${cnGenerated}</h3>
+          <span class="stat-trend trend-up">Cần báo giá (Tháng)</span>
+        </div>
+      </div>
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.openOpsWithFilter) window.openOpsWithFilter('chính ngạch', '')">
+        <div class="stat-icon bg-emerald"><i class="fa-solid fa-check-double"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lô chính ngạch chốt được</span>
+          <h3>${cnSuccess}</h3>
+          <span class="stat-trend trend-up">Cả khách mới & cũ (Tháng)</span>
+        </div>
+      </div>
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.openOpsWithFilter) window.openOpsWithFilter('chính ngạch', '')">
+        <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lợi nhuận chính ngạch</span>
+          <h3>${cnProfit.toLocaleString()} đ</h3>
+          <span class="stat-trend trend-up">Đơn hàng CN (Tháng)</span>
+        </div>
+      </div>
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.openOpsWithFilter) window.openOpsWithFilter('all', '')">
+        <div class="stat-icon" style="background: #a855f7; color: white;"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lô hàng add vào CRM Khách cũ</span>
+          <h3>${totalOpsAdded}</h3>
+          <span class="stat-trend trend-up">Vận hành (Tháng)</span>
         </div>
       </div>
     </div>
