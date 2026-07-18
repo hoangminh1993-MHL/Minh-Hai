@@ -1270,7 +1270,7 @@ function handleSaveActiveLeadStepData() {
   }
   if (currentActiveLeadStepNum === 7) {
     const currentUser = getCurrentUser();
-    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong');
     if (!isAdminOrManager) {
       showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
       return;
@@ -1303,8 +1303,6 @@ function handleSaveActiveLeadStepData() {
     lead.failEvidence = evidenceVal;
     
     // Only verify failApproved if changed by Manager/Admin
-    const currentUser = getCurrentUser();
-    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong';
     if (isAdminOrManager) {
       lead.failApproved = document.getElementById('lead-step-fail-approved').checked;
     }

@@ -4,6 +4,12 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 
 ---
 
+## [v47.2] - 2026-07-18
+### Sửa lỗi (Fixed)
+- **Sửa lỗi hiển thị CRM Khách Mới:** Khắc phục lỗi cú pháp JavaScript (Uncaught SyntaxError do khai báo trùng lặp `currentUser` và `isAdminOrManager` trong `crm.js`) ngăn cản việc biên dịch mã nguồn và làm hỏng việc kết xuất danh sách khách hàng mới lên bảng Kanban.
+- **Sửa lỗi dữ liệu JSON:** Khắc phục lỗi cấu trúc JSON trong file `db.json` tại trường thông tin tài khoản nhân viên `usr-6` (thiếu dấu ngoặc nhọn đóng và các trường game, spins) giúp máy chủ và ứng dụng tải dữ liệu bình thường.
+
+
 ## [v47.1] - 2026-07-18
 ### Sửa lỗi (Fixed)
 - **Sửa lỗi hiển thị CRM Khách Mới:** Sửa mã trạng thái Thương lượng bị đồng bộ sai lệch ('negotiation' thay vì 'negotiating') gây ẩn mất thẻ trên bảng Kanban khi di chuyển. Đồng thời bổ sung bộ lọc tìm kiếm và nạp dữ liệu an toàn để khôi phục toàn bộ dữ liệu bị ẩn hiển thị lỗi.
