@@ -871,6 +871,7 @@ textarea.form-control {
   overflow-x: auto;
   padding-bottom: 12px;
   cursor: grab;
+  transform: rotateX(180deg);
 }
 .kanban-board-wrapper:active {
   cursor: grabbing;
@@ -879,6 +880,8 @@ textarea.form-control {
   display: grid;
   grid-template-columns: repeat(7, 300px);
   gap: 16px;
+  padding: 4px;
+  transform: rotateX(180deg);
   min-height: calc(100vh - 280px);
 }
 
