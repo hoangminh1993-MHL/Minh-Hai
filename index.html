@@ -36,7 +36,7 @@
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
           <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
             <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
-            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v45.0</span>
+            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v46.0</span>
           </div>
         </div>
       </div>
@@ -3129,9 +3129,22 @@
           <!-- Phiên bản mới nhất -->
           <div class="changelog-version-group">
             <div class="changelog-version-header">
+              <h4>Phiên bản v46.0</h4>
+              <span class="version-date">(18/07/2026)</span>
+              <span class="badge bg-emerald" style="font-size:10px; padding: 2px 6px;">Mới nhất</span>
+            </div>
+            <ul class="changelog-changes-list">
+              <li><strong>Phân quyền Thất bại & Thương lượng:</strong> Nhân viên CSKH bị chặn hoàn toàn chuyển sang Thất bại, hệ thống tự động đưa về Thương lượng. Chỉ Admin/Quản lý mới có quyền duyệt Thất bại.</li>
+              <li><strong>Hiển thị lý do thất bại:</strong> Hiện lý do hỏng màu đỏ trực quan ngay trên thẻ lô hàng vận hành ở Kanban và List view.</li>
+              <li><strong>Dashboard KPI tương tác:</strong> Click vào các thẻ KPI ở Dashboard vận hành tự động điều hướng thông minh đến danh sách việc/lô hàng tương ứng kèm bộ lọc.</li>
+              <li><strong>Dọn dẹp Việc Đơn Lẻ:</strong> Việc báo giá được kiểm soát trực tiếp trong CRM kèm cảnh báo quá hạn 24h, hoàn toàn ẩn khỏi bảng Việc Đơn Lẻ để tránh rác việc.</li>
+            </ul>
+          </div>
+
+          <div class="changelog-version-group" style="opacity: 0.85;">
+            <div class="changelog-version-header">
               <h4>Phiên bản v45.0</h4>
               <span class="version-date">(15/07/2026)</span>
-              <span class="badge bg-emerald" style="font-size:10px; padding: 2px 6px;">Mới nhất</span>
             </div>
             <ul class="changelog-changes-list">
               <li><strong>Kiểm tra phản hồi 2h (Response Time SLA Audit):</strong> Thêm tính năng kiểm tra thời gian từ lúc khách hàng nhắn tin đến lúc nhập thông tin lô hàng. Tự động tính toán và hiển thị nhãn Đạt chuẩn/Trễ hạn (SLA 2 tiếng) trực quan ngay trên thẻ lô hàng ở Kanban và trong chi tiết bước Nhận thông tin.</li>
@@ -3249,12 +3262,12 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=20.41"></script>
-  <script src="crm.js?v=20.41"></script>
-  <script src="tasks.js?v=20.41"></script>
-  <script src="ops.js?v=20.41"></script>
-  <script src="inbox-sim.js?v=20.41"></script>
-  <script src="games.js?v=20.41"></script>
-  <script src="suggestions.js?v=20.41"></script>
+  <script src="app.js?v=20.42"></script>
+  <script src="crm.js?v=20.42"></script>
+  <script src="tasks.js?v=20.42"></script>
+  <script src="ops.js?v=20.42"></script>
+  <script src="inbox-sim.js?v=20.42"></script>
+  <script src="games.js?v=20.42"></script>
+  <script src="suggestions.js?v=20.42"></script>
 </body>
 </html>
