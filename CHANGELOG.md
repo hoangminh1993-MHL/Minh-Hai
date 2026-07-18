@@ -4,6 +4,10 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 
 ---
 
+## [v47.5] - 2026-07-18
+### Thay đổi (Changed)
+- **Thống kê Dashboard Vận hành:** Khi click vào 4 ô thống kê chính ngạch và vận hành, thay vì chuyển hướng sang tab khác, hệ thống sẽ mở ra một popup (modal) hiển thị trực tiếp danh sách chi tiết các lô hàng tương ứng để dễ dàng theo dõi.
+
 ## [v47.4] - 2026-07-18
 ### Thay đổi (Changed)
 - **Thống kê Dashboard:** Chuyển 4 thẻ thống kê chính ngạch và vận hành sang tab "Vận Hành & Khách Cũ (Founder)".
