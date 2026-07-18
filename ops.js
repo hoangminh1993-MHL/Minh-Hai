@@ -25,10 +25,13 @@ window.showStatsModal = function(type) {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
       
+      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+
       const item = {
         code: w.trackingCode || w.code || w.id,
         name: w.clientName || 'N/A',
         service: w.serviceType || 'N/A',
+        source: 'Vận hành',
         stage: getWorkflowStageName(w.stage),
         date: createdDate.toLocaleDateString('vi-VN'),
         val: (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0).toLocaleString() + ' đ'
@@ -36,11 +39,11 @@ window.showStatsModal = function(type) {
 
       if (isThisMonth) {
         if (type === 'ops_added') items.push(item);
-        if (w.serviceType === 'chính ngạch' && (type === 'cn_generated' || type === 'cn_profit')) {
+        if (isChinhNgach && (type === 'cn_generated' || type === 'cn_profit')) {
           items.push(item);
         }
       }
-      if (w.serviceType === 'chính ngạch' && w.stage >= 4 && w.stage !== 12 && isThisMonth && type === 'cn_success') {
+      if (isChinhNgach && w.stage >= 4 && w.stage !== 12 && isThisMonth && type === 'cn_success') {
         items.push(item);
       }
     });
@@ -48,13 +51,17 @@ window.showStatsModal = function(type) {
 
   if (AppState.leads) {
     AppState.leads.forEach(l => {
+      // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows), tránh đếm trùng
+      if (l.stage === 'success') return; 
+
       if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
         const createdDate = new Date(l.createdTime || l.date);
         
         const item = {
           code: l.phone || l.id,
           name: l.name || 'N/A',
-          service: 'chính ngạch',
+          service: 'Chính ngạch',
+          source: 'CRM Khách mới',
           stage: l.stage === 'success' ? 'Thành công' : (l.stage === 'failed' ? 'Thất bại' : 'Tiềm năng'),
           date: createdDate.toLocaleDateString('vi-VN'),
           val: l.valTotal ? parseFloat(l.valTotal).toLocaleString() + ' đ' : '-'
@@ -65,28 +72,27 @@ window.showStatsModal = function(type) {
             items.push(item);
           }
         }
-        if (l.stage === 'success') {
-          const updatedDate = new Date(l.updatedTime || l.createdTime || l.date);
-          if (updatedDate.getFullYear() === currentYear && updatedDate.getMonth() === currentMonth && type === 'cn_success') {
-            items.push(item);
-          }
-        }
+        // Không push vào cn_success vì l.stage === 'success' đã bị loại ở trên để tránh đếm trùng
       }
     });
   }
 
   const tbody = document.getElementById('modal-stats-tbody');
   if (tbody) {
-    tbody.innerHTML = items.map(i => `
-      <tr>
-        <td>${i.code}</td>
-        <td>${i.name}</td>
-        <td><span class="badge ${i.service === 'chính ngạch' ? 'badge-blue' : 'badge-gold'}">${i.service}</span></td>
-        <td>${i.stage}</td>
-        <td>${i.date}</td>
-        <td>${i.val}</td>
-      </tr>
-    `).join('');
+    if (items.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">Không có dữ liệu trong tháng này</td></tr>`;
+    } else {
+      tbody.innerHTML = items.map(i => `
+        <tr>
+          <td>${i.code}</td>
+          <td>${i.name}</td>
+          <td><span class="badge ${i.service && i.service.toLowerCase() === 'chính ngạch' ? 'badge-blue' : 'badge-gold'}">${i.service}</span><br><span style="font-size: 0.8em; color: #888;">${i.source}</span></td>
+          <td>${i.stage}</td>
+          <td>${i.date}</td>
+          <td>${i.val}</td>
+        </tr>
+      `).join('');
+    }
   }
 
   const titles = {
@@ -497,14 +503,16 @@ function renderFounderDashboard() {
     AppState.shipment_workflows.forEach(w => {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
+      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+
       if (isThisMonth) {
-        totalOpsAdded++;
-        if (w.serviceType === 'chính ngạch') {
+        if (isChinhNgach) {
           cnGenerated++;
           cnProfit += (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0);
         }
+        totalOpsAdded++;
       }
-      if (w.serviceType === 'chính ngạch' && w.stage >= 4 && w.stage !== 12 && isThisMonth) {
+      if (isChinhNgach && w.stage >= 4 && w.stage !== 12 && isThisMonth) {
         cnSuccess++;
       }
     });
@@ -512,16 +520,13 @@ function renderFounderDashboard() {
 
   if (AppState.leads) {
     AppState.leads.forEach(l => {
+      // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows)
+      if (l.stage === 'success') return;
+
       if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
         const createdDate = new Date(l.createdTime || l.date);
         if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
           cnGenerated++;
-        }
-        if (l.stage === 'success') {
-          const updatedDate = new Date(l.updatedTime || l.createdTime || l.date);
-          if (updatedDate.getFullYear() === currentYear && updatedDate.getMonth() === currentMonth) {
-            cnSuccess++;
-          }
         }
       }
     });
@@ -4090,6 +4095,9 @@ window.toggleManagerVerify = function(flowId, checked) {
   renderOpsWorkflows();
   showToast(flow.managerVerified ? 'Đã duyệt thời gian phản hồi!' : 'Đã hủy duyệt thời gian phản hồi!', 'success');
 };
+
+
+
 
 
 
