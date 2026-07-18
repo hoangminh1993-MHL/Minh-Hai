@@ -182,10 +182,16 @@ function populateSalesDropdown(selectId, selectedId = '') {
 
 // ==================== RENDERING KANBAN ==================== //
 function renderCRMBoard() {
-  // Sanitize checklists for all leads: remove all default checklist items
+  // Sanitize stage and checklists for all leads
   if (AppState.leads) {
     AppState.leads.forEach(lead => {
-      if (lead.steps) {
+      if (lead.stage === 'negotiation') {
+        lead.stage = 'negotiating';
+      }
+      if (typeof window.initLeadSteps === 'function') {
+        window.initLeadSteps(lead);
+      }
+      if (Array.isArray(lead.steps)) {
         lead.steps.forEach(s => {
           s.checklist = [];
         });
@@ -209,15 +215,18 @@ function renderCRMBoard() {
   });
 
   // Filter leads by search query and user role permission
-  const currentUser = getCurrentUser();
+  const currentUser = getCurrentUser() || {};
   const filteredLeads = AppState.leads.filter(lead => {
     const isSpecialAccess = currentUser.role === 'admin' || currentUser.username === 'minhphuong';
-    if (currentUser && !isSpecialAccess && lead.salesId !== currentUser.id) {
+    if (currentUser && currentUser.id && !isSpecialAccess && lead.salesId !== currentUser.id) {
       return false;
     }
-    const matchesSearch = lead.name.toLowerCase().includes(searchVal) || 
-                          (lead.phone && lead.phone.includes(searchVal)) ||
-                          (lead.note && lead.note.toLowerCase().includes(searchVal));
+    const nameVal = String(lead.name || '').toLowerCase();
+    const phoneVal = String(lead.phone || '');
+    const noteVal = String(lead.note || '').toLowerCase();
+    const matchesSearch = nameVal.includes(searchVal) || 
+                          phoneVal.includes(searchVal) ||
+                          noteVal.includes(searchVal);
     return matchesSearch;
   });
 
@@ -382,7 +391,7 @@ function renderCRMBoard() {
 
     // Get assigned sales name
     const salesUser = AppState.users.find(u => u.id === lead.salesId);
-    const salesName = salesUser ? salesUser.name.split(' ').pop() : 'Chưa giao';
+    const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
     // Show fail reason badge if failed
     let failReasonHtml = '';
@@ -633,9 +642,9 @@ function handleLeadMove(leadId, targetStage) {
       showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
       
       // Automatically redirect to negotiation instead
-      lead.stage = 'negotiation';
+      lead.stage = 'negotiating';
       lead.stageEntryTimes = lead.stageEntryTimes || {};
-      lead.stageEntryTimes['negotiating'] = Date.now(); // In CRM negotiating is 5
+      lead.stageEntryTimes['negotiating'] = Date.now();
       lead.failReason = null;
       lead.failEvidence = null;
       lead.failApproved = null;
@@ -672,9 +681,9 @@ function handleLeadMove(leadId, targetStage) {
       if (isNegotiationReason) {
         showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển khách hàng sang cột Thương lượng.", "info");
         
-        lead.stage = 'negotiation';
+        lead.stage = 'negotiating';
         lead.stageEntryTimes = lead.stageEntryTimes || {};
-        lead.stageEntryTimes['negotiation'] = Date.now();
+        lead.stageEntryTimes['negotiating'] = Date.now();
         lead.failReason = null;
         lead.failEvidence = null;
         lead.failApproved = null;

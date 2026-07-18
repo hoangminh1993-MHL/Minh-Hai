@@ -3103,7 +3103,7 @@ function renderMyTasks() {
         const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
 
         const card = document.createElement('div');
-        card.className = 'kanban-card';
+        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #3b82f6; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3139,8 +3139,9 @@ function renderMyTasks() {
           negotiating: "Thương lượng"
         };
 
+        const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
         const card = document.createElement('div');
-        card.className = 'kanban-card';
+        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #8b5cf6; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3188,7 +3189,7 @@ function renderMyTasks() {
         const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
         const card = document.createElement('div');
-        card.className = 'kanban-card';
+        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
         card.style.cssText = `cursor: pointer; border-left: 4px solid ${task.projectId ? '#10b981' : '#f59e0b'}; transition: transform 0.2s; margin-bottom: 8px;`;
 
         let projectInfoHtml = '';
@@ -3273,7 +3274,7 @@ function renderMyTasks() {
         }
 
         const card = document.createElement('div');
-        card.className = 'kanban-card';
+        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #a855f7; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3329,7 +3330,7 @@ function renderMyTasks() {
           const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
           const card = document.createElement('div');
-          card.className = 'kanban-card';
+          card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
           card.style.cssText = `cursor: pointer; border-left: 4px solid #06b6d4; transition: transform 0.2s; margin-bottom: 8px;`;
 
           let projectInfoHtml = '';
@@ -3396,7 +3397,7 @@ function renderMyTasks() {
           const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
 
           const card = document.createElement('div');
-          card.className = 'kanban-card';
+          card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
           
           const isCompleted = task.status === 'completed';
           const borderLeftColor = isCompleted ? '#10b981' : '#a855f7';

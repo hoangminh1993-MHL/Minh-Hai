@@ -141,6 +141,11 @@ function renderTasksList() {
 
   filteredTasks.forEach(task => {
     const tr = document.createElement('tr');
+    const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
+    if (isOverdue) {
+      tr.style.backgroundColor = 'rgba(239, 68, 68, 0.08)';
+      tr.style.borderLeft = '3px solid #ef4444';
+    }
     
     // Dept badge
     const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Admin & Kế toán' };
