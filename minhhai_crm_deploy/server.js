@@ -123,6 +123,231 @@ async function saveState(state) {
   }
 }
 
+// Helper to download Google Sheet file as Buffer
+function downloadFile(url) {
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 303 || res.statusCode === 307 || res.statusCode === 308) {
+        downloadFile(res.headers.location).then(resolve).catch(reject);
+        return;
+      }
+      if (res.statusCode !== 200) {
+        reject(new Error(`Failed to download file: status code ${res.statusCode}`));
+        return;
+      }
+      const data = [];
+      res.on('data', (chunk) => data.push(chunk));
+      res.on('end', () => resolve(Buffer.concat(data)));
+    }).on('error', reject);
+  });
+}
+
+// Convert Excel serial date to YYYY-MM-DD
+function parseExcelDate(val) {
+  if (!val) return '';
+  if (!isNaN(val)) {
+    const date = new Date((val - 25569) * 86400 * 1000);
+    return date.toISOString().split('T')[0];
+  }
+  const parts = String(val).split(/[-/]/);
+  if (parts.length === 3) {
+    if (parts[0].length === 4) return parts.join('-');
+    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+  }
+  return String(val);
+}
+
+// Parse sheet and extract customer records
+function parseSheet(sheet, XLSX) {
+  const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+  if (!data || data.length === 0) return [];
+  
+  let headerRowIdx = -1;
+  let khColIdx = -1;
+  let cskhColIdx = -1;
+  let brandColIdx = -1;
+  let statusColIdx = -1;
+  let amountColIdx = -1;
+  let dateColIdx = -1;
+  
+  for (let r = 0; r < Math.min(data.length, 10); r++) {
+    const row = data[r];
+    if (!row) continue;
+    
+    let hasKH = false;
+    let hasAmount = false;
+    
+    for (let c = 0; c < row.length; c++) {
+      const val = String(row[c] || '').trim().toLowerCase();
+      if (val === 'kh' || val === 'khách hàng' || val === 'khách') {
+        hasKH = true;
+      }
+      if (val.indexOf('thu tiền hàng') >= 0 || val.indexOf('thu tiền') >= 0 || val === 'doanh thu') {
+        hasAmount = true;
+      }
+    }
+    
+    if (hasKH) {
+      headerRowIdx = r;
+      for (let c = 0; c < row.length; c++) {
+        const val = String(row[c] || '').trim().toLowerCase();
+        if (val === 'kh' || val === 'khách hàng' || val === 'khách') khColIdx = c;
+        else if (val === 't' || val === 'cskh' || val === 'nhân viên' || val === 'ctv') cskhColIdx = c;
+        else if (val === 'brand' || val === 'hệ thống') brandColIdx = c;
+        else if (val === 'trạng thái') statusColIdx = c;
+        else if (val.indexOf('thu tiền hàng') >= 0 || val.indexOf('thu tiền') >= 0 || val === 'doanh thu') amountColIdx = c;
+        else if (val === 'ngày' || val === 'ngay') dateColIdx = c;
+      }
+      break;
+    }
+  }
+  
+  if (headerRowIdx === -1 || khColIdx === -1) {
+    return [];
+  }
+  
+  const parsedRows = [];
+  for (let r = headerRowIdx + 1; r < data.length; r++) {
+    const row = data[r];
+    if (!row || !row[khColIdx]) continue;
+    
+    const rawKH = String(row[khColIdx] || '').trim();
+    if (!rawKH || rawKH === '0' || rawKH.toLowerCase() === 'chuyển từ' || rawKH.toLowerCase().indexOf('tổng cộng') >= 0) continue;
+    
+    const amountVal = parseFloat(String(row[amountColIdx] || '').replace(/[^\d.-]/g, '')) || 0;
+    const dateVal = row[dateColIdx] ? parseExcelDate(row[dateColIdx]) : '';
+    
+    parsedRows.push({
+      kh: rawKH,
+      cskh: cskhColIdx >= 0 ? String(row[cskhColIdx] || '').trim() : '',
+      brand: brandColIdx >= 0 ? String(row[brandColIdx] || '').trim() : '',
+      status: statusColIdx >= 0 ? String(row[statusColIdx] || '').trim() : '',
+      amount: amountVal,
+      date: dateVal
+    });
+  }
+  
+  return parsedRows;
+}
+
+// GET /api/customer-health/sync: Sync data from Google Sheet
+app.get('/api/customer-health/sync', async (req, res) => {
+  try {
+    let XLSX;
+    try {
+      XLSX = require('xlsx');
+    } catch (e) {
+      console.warn("xlsx library not available locally, returning mock customer health data.");
+      const state = await loadState();
+      state.customerHealthData = {
+        lastSyncTime: new Date().toISOString() + " (Simulated local data)",
+        monthlyTotals: { T4: 86400000, T5: 124500000, T6: 94800000, T7: 15398420 },
+        customers: [
+          { name: "OTV162 - Nam434", cskh: "Hiền", brand: "OTV", volumeT4: 4562000, volumeT5: 12000000, volumeT6: 17222000, volumeT7: 1676723, lastShipmentDate: "2026-07-11", status: "healthy" },
+          { name: "HPD551 - LinhAuth", cskh: "Phượng", brand: "HPD", volumeT4: 36795000, volumeT5: 68173000, volumeT6: 93646000, volumeT7: 1539842, lastShipmentDate: "2026-07-09", status: "warning" },
+          { name: "MH351 - Gia Phan", cskh: "TRANG", brand: "MHL", volumeT4: 554319, volumeT5: 8649600, volumeT6: 0, volumeT7: 0, lastShipmentDate: "2026-05-15", status: "danger" },
+          { name: "MH47 - Thảo MHL", cskh: "Thảo", brand: "MHL", volumeT4: 0, volumeT5: 0, volumeT6: 3886280, volumeT7: 0, lastShipmentDate: "2026-06-20", status: "warning" },
+          { name: "OTV999 - Dương Test", cskh: "Dương", brand: "OTV", volumeT4: 0, volumeT5: 0, volumeT6: 0, volumeT7: 0, lastShipmentDate: "2026-03-10", status: "lost" }
+        ]
+      };
+      await saveState(state);
+      return res.json(state.customerHealthData);
+    }
+
+    const url = 'https://docs.google.com/spreadsheets/d/1CRbubTwnm4zSrX17d7pmZIUZshvXnKjnnX6dg9fC2sg/export?format=xlsx';
+    console.log("Downloading spreadsheet from Google Sheets...");
+    const buffer = await downloadFile(url);
+    console.log("Parsing workbook...");
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    
+    const customers = {};
+    let totalT4 = 0, totalT5 = 0, totalT6 = 0, totalT7 = 0;
+    
+    const targetSheets = [
+      { name: 'T42026', key: 'T4' },
+      { name: 'T52026', key: 'T5' },
+      { name: 'T62026', key: 'T6' },
+      { name: 'T72026', key: 'T7' }
+    ];
+    
+    targetSheets.forEach(ts => {
+      const sheet = workbook.Sheets[ts.name];
+      if (!sheet) return;
+      
+      const parsedRows = parseSheet(sheet, XLSX);
+      parsedRows.forEach(row => {
+        const cKey = row.kh;
+        if (!customers[cKey]) {
+          customers[cKey] = {
+            name: cKey,
+            cskh: row.cskh || 'Chưa giao',
+            brand: row.brand || 'Khác',
+            volumeT4: 0,
+            volumeT5: 0,
+            volumeT6: 0,
+            volumeT7: 0,
+            lastShipmentDate: ''
+          };
+        }
+        
+        const c = customers[cKey];
+        
+        if (ts.key === 'T4') { c.volumeT4 += row.amount; totalT4 += row.amount; }
+        else if (ts.key === 'T5') { c.volumeT5 += row.amount; totalT5 += row.amount; }
+        else if (ts.key === 'T6') { c.volumeT6 += row.amount; totalT6 += row.amount; }
+        else if (ts.key === 'T7') { c.volumeT7 += row.amount; totalT7 += row.amount; }
+        
+        if (row.date && (!c.lastShipmentDate || row.date > c.lastShipmentDate)) {
+          c.lastShipmentDate = row.date;
+        }
+        
+        if (row.cskh) c.cskh = row.cskh;
+        if (row.brand) c.brand = row.brand;
+      });
+    });
+    
+    Object.values(customers).forEach(c => {
+      const volT7 = c.volumeT7 || 0;
+      const volT6 = c.volumeT6 || 0;
+      const volT5 = c.volumeT5 || 0;
+      const avgPrevious = (volT6 + volT5) / 2;
+      
+      if (volT7 > 0) {
+        if (avgPrevious > 0 && volT7 < avgPrevious * 0.7) {
+          c.status = 'warning';
+        } else {
+          c.status = 'healthy';
+        }
+      } else if (volT6 > 0) {
+        c.status = 'warning';
+      } else if (volT5 > 0) {
+        c.status = 'danger';
+      } else {
+        c.status = 'lost';
+      }
+    });
+    
+    const state = await loadState();
+    state.customerHealthData = {
+      lastSyncTime: new Date().toISOString(),
+      monthlyTotals: {
+        T4: Math.round(totalT4),
+        T5: Math.round(totalT5),
+        T6: Math.round(totalT6),
+        T7: Math.round(totalT7)
+      },
+      customers: Object.values(customers)
+    };
+    
+    await saveState(state);
+    res.json(state.customerHealthData);
+  } catch (err) {
+    console.error("Sync error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/state: Load entire CRM database
 app.get('/api/state', async (req, res) => {
   try {
@@ -138,6 +363,48 @@ app.post('/api/state', async (req, res) => {
   try {
     await saveState(req.body);
     res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/sync: Smart Delta Sync
+app.post('/api/sync', async (req, res) => {
+  try {
+    const syncData = req.body;
+    const currentState = await loadState();
+    
+    const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
+    
+    collections.forEach(key => {
+      if (!syncData[key]) return;
+      const { modified, deletedIds } = syncData[key];
+      
+      if (!currentState[key]) currentState[key] = [];
+      
+      // Handle deletions
+      if (deletedIds && deletedIds.length > 0) {
+        currentState[key] = currentState[key].filter(i => !deletedIds.includes(i.id || JSON.stringify(i)));
+      }
+      
+      // Handle modifications/additions
+      if (modified && modified.length > 0) {
+        modified.forEach(modItem => {
+          const id = modItem.id || JSON.stringify(modItem);
+          const idx = currentState[key].findIndex(i => (i.id || JSON.stringify(i)) === id);
+          if (idx !== -1) {
+            currentState[key][idx] = modItem;
+          } else {
+            currentState[key].push(modItem);
+          }
+        });
+      }
+    });
+    
+    currentState.lastUpdated = syncData.lastUpdated || Date.now();
+    await saveState(currentState);
+    
+    res.json({ success: true, lastUpdated: currentState.lastUpdated });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -403,6 +670,45 @@ app.post('/webhook', async (req, res) => {
   } else {
     res.sendStatus(404);
   }
+});
+
+// GET /privacy: Simple Privacy Policy page for Facebook App Review
+app.get('/privacy', (req, res) => {
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+      <meta charset="UTF-8">
+      <title>Chính Sách Quyền Riêng Tư - Minh Hải Logistics</title>
+      <style>
+        body { font-family: sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #333; }
+        h1 { color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+        h2 { color: #2563eb; margin-top: 30px; }
+      </style>
+    </head>
+    <body>
+      <h1>Chính Sách Quyền Riêng Tư</h1>
+      <p>Chào mừng bạn đến với hệ thống quản lý khách hàng của <strong>Minh Hải Logistics</strong>. Chúng tôi cam kết bảo vệ thông tin cá nhân và quyền riêng tư của khách hàng và người dùng.</p>
+      
+      <h2>1. Thu thập thông tin</h2>
+      <p>Chúng tôi chỉ thu thập thông tin khi bạn liên hệ trực tiếp với chúng tôi qua trang Fanpage Facebook (như tên tài khoản Facebook, ảnh đại diện công khai và nội dung tin nhắn gửi đi) để hỗ trợ phản hồi và chăm sóc khách hàng tốt nhất.</p>
+      
+      <h2>2. Sử dụng thông tin</h2>
+      <p>Thông tin thu thập được sử dụng nội bộ để:</p>
+      <ul>
+        <li>Hỗ trợ tư vấn dịch vụ vận chuyển và logistics.</li>
+        <li>Quản lý và giải quyết các yêu cầu, thắc mắc từ phía khách hàng.</li>
+        <li>Nâng cao chất lượng dịch vụ của Minh Hải Logistics.</li>
+      </ul>
+      
+      <h2>3. Bảo mật thông tin</h2>
+      <p>Chúng tôi áp dụng các biện pháp bảo mật tối ưu để bảo vệ thông tin của bạn khỏi bị truy cập, tiết lộ hoặc phá hủy trái phép. Chúng tôi tuyệt đối không bán hoặc chia sẻ thông tin khách hàng cho bên thứ ba vì bất kỳ mục đích nào.</p>
+      
+      <h2>4. Liên hệ</h2>
+      <p>Nếu bạn có bất kỳ câu hỏi nào về chính sách này, xin vui lòng liên hệ với chúng tôi qua địa chỉ email: <strong>mympro93@gmail.com</strong>.</p>
+    </body>
+    </html>
+  `);
 });
 
 // Start the server

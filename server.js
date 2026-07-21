@@ -368,6 +368,48 @@ app.post('/api/state', async (req, res) => {
   }
 });
 
+// POST /api/sync: Smart Delta Sync
+app.post('/api/sync', async (req, res) => {
+  try {
+    const syncData = req.body;
+    const currentState = await loadState();
+    
+    const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
+    
+    collections.forEach(key => {
+      if (!syncData[key]) return;
+      const { modified, deletedIds } = syncData[key];
+      
+      if (!currentState[key]) currentState[key] = [];
+      
+      // Handle deletions
+      if (deletedIds && deletedIds.length > 0) {
+        currentState[key] = currentState[key].filter(i => !deletedIds.includes(i.id || JSON.stringify(i)));
+      }
+      
+      // Handle modifications/additions
+      if (modified && modified.length > 0) {
+        modified.forEach(modItem => {
+          const id = modItem.id || JSON.stringify(modItem);
+          const idx = currentState[key].findIndex(i => (i.id || JSON.stringify(i)) === id);
+          if (idx !== -1) {
+            currentState[key][idx] = modItem;
+          } else {
+            currentState[key].push(modItem);
+          }
+        });
+      }
+    });
+    
+    currentState.lastUpdated = syncData.lastUpdated || Date.now();
+    await saveState(currentState);
+    
+    res.json({ success: true, lastUpdated: currentState.lastUpdated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/reset: Clear all leads, tasks, notifications, and logs to clean test state
 app.post('/api/reset', async (req, res) => {
   try {

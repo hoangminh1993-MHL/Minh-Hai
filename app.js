@@ -1,3 +1,4 @@
+window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -273,6 +274,7 @@ async function syncLoadState() {
       localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
       localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions));
       updateMyTasksBadge();
+      window.BaseState = JSON.parse(JSON.stringify(AppState));
       return;
     }
   } catch (err) {
@@ -343,15 +345,79 @@ async function saveState() {
   localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
   localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions || []));
   
-  // Sync to server API in background
-  try {
-    await fetch(getApiUrl('/api/state'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(AppState)
-    });
-  } catch (err) {
-    console.error('Không lưu được lên server API:', err);
+  // Sync to server API in background using Delta Sync
+  if (CONFIG.API_BASE) {
+    try {
+      if (!window.BaseState) {
+        // Fallback if no BaseState available
+        await fetch(getApiUrl('/api/state'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(AppState)
+        });
+        window.BaseState = JSON.parse(JSON.stringify(AppState));
+        updateMyTasksBadge();
+        return;
+      }
+
+      const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
+      const syncData = { lastUpdated: AppState.lastUpdated };
+      let hasChanges = false;
+
+      collections.forEach(key => {
+        const baseArr = window.BaseState[key] || [];
+        const currArr = AppState[key] || [];
+        
+        const baseMap = new Map();
+        baseArr.forEach(i => baseMap.set(i.id || JSON.stringify(i), JSON.stringify(i)));
+        
+        const modified = [];
+        currArr.forEach(i => {
+          const id = i.id || JSON.stringify(i);
+          if (baseMap.get(id) !== JSON.stringify(i)) {
+            modified.push(i);
+            hasChanges = true;
+          }
+        });
+        
+        const currMap = new Map();
+        currArr.forEach(i => currMap.set(i.id || JSON.stringify(i), true));
+        const deletedIds = [];
+        baseArr.forEach(i => {
+          const id = i.id || JSON.stringify(i);
+          if (!currMap.has(id)) {
+            deletedIds.push(id);
+            hasChanges = true;
+          }
+        });
+        
+        syncData[key] = { modified, deletedIds };
+      });
+
+      if (!hasChanges) {
+        updateMyTasksBadge();
+        return;
+      }
+
+      window.BaseState = JSON.parse(JSON.stringify(AppState));
+
+      const res = await fetch(getApiUrl('/api/sync'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(syncData)
+      });
+      
+      if (!res.ok) {
+         console.warn('Lỗi đồng bộ Delta Sync, gửi toàn bộ trạng thái...');
+         await fetch(getApiUrl('/api/state'), {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify(AppState)
+         });
+      }
+    } catch (err) {
+      console.error('Không lưu được lên server API:', err);
+    }
   }
   updateMyTasksBadge();
 }
@@ -451,6 +517,8 @@ function startStatePolling() {
           if (typeof renderMiniGames === 'function') {
             renderMiniGames();
           }
+
+          window.BaseState = JSON.parse(JSON.stringify(AppState));
         }
       }
     } catch (err) {
