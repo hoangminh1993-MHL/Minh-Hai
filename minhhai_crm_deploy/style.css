@@ -2203,5 +2203,120 @@ th.sort-header i {
   color: var(--text-secondary);
   line-height: 1.6;
 }
+/* ==================== RESPONSIVE DESIGN (MOBILE) ==================== */
+.btn-mobile-menu {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+}
+.mobile-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
 
+@media (max-width: 768px) {
+  /* Layout & Sidebar */
+  .btn-mobile-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 280px;
+  }
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+  body.sidebar-open .mobile-overlay {
+    display: block;
+    opacity: 1;
+  }
+  .main-content {
+    margin-left: 0;
+    padding: 16px;
+    gap: 20px;
+  }
+  
+  /* Topbar */
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  /* Grids & Cards */
+  .dashboard-grid, .stats-grid, .grid-3-col, .grid-2-col, .grid-4-col {
+    grid-template-columns: 1fr;
+  }
+  .pipeline-board {
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+  .pipeline-stage {
+    min-width: unset;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  /* Tables */
+  .table-wrapper, .table-responsive, .data-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+  
+  /* Modals */
+  .modal-content {
+    width: 95% !important;
+    max-width: 95% !important;
+    margin: 10px auto;
+    padding: 20px 16px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+  .modal-footer button {
+    width: 100%;
+  }
 
+  /* Form Elements */
+  input, select, textarea {
+    font-size: 16px !important; /* Prevent iOS Safari auto-zoom on focus */
+  }
+  .form-group.row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .form-group.row label {
+    width: 100%;
+  }
+  
+  /* Mini Games / Config */
+  .lottery-balls {
+    flex-wrap: wrap;
+  }
+  .caro-board {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}

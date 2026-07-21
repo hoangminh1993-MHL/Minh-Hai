@@ -355,7 +355,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.49';
+const CLIENT_VERSION = '20.50';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -408,46 +408,7 @@ function startStatePolling() {
           return;
         }
 
-        // Detect if anything changed
-        const oldLeadsCount = AppState.leads ? AppState.leads.length : 0;
-        const newLeadsCount = data.leads ? data.leads.length : 0;
-        const oldNotifsCount = AppState.notifications ? AppState.notifications.length : 0;
-        const newNotifsCount = data.notifications ? data.notifications.length : 0;
-        const oldTasksCount = AppState.tasks ? AppState.tasks.length : 0;
-        const newTasksCount = data.tasks ? data.tasks.length : 0;
-        
-        const oldFlowsCount = AppState.shipment_workflows ? AppState.shipment_workflows.length : 0;
-        const newFlowsCount = data.shipment_workflows ? data.shipment_workflows.length : 0;
-        const oldClientsCount = AppState.clients ? AppState.clients.length : 0;
-        const newClientsCount = data.clients ? data.clients.length : 0;
-        const oldProjectsCount = AppState.projects ? AppState.projects.length : 0;
-        const newProjectsCount = data.projects ? data.projects.length : 0;
-        const oldSingleCount = AppState.single_tasks ? AppState.single_tasks.length : 0;
-        const newSingleCount = data.single_tasks ? data.single_tasks.length : 0;
-
-        const usersPointsChanged = JSON.stringify((AppState.users || []).map(u => ({ id: u.id, points: u.points }))) !== JSON.stringify((data.users || []).map(u => ({ id: u.id, points: u.points })));
-        const suggestionsChanged = JSON.stringify(AppState.suggestions || []) !== JSON.stringify(data.suggestions || []);
-        const sausageLogsChanged = (AppState.sausageLogs || []).length !== (data.sausageLogs || []).length;
-
-        const caroChanged = JSON.stringify(AppState.active_caro_games || []) !== JSON.stringify(data.active_caro_games || []);
-        const lotteryChanged = JSON.stringify(AppState.daily_lottery_tickets || []) !== JSON.stringify(data.daily_lottery_tickets || []);
-        const betPoolsChanged = JSON.stringify(AppState.bet_pools || []) !== JSON.stringify(data.bet_pools || []);
-        
-        if (
-          newLeadsCount !== oldLeadsCount || 
-          newNotifsCount !== oldNotifsCount || 
-          newTasksCount !== oldTasksCount ||
-          newFlowsCount !== oldFlowsCount ||
-          newClientsCount !== oldClientsCount ||
-          newProjectsCount !== oldProjectsCount ||
-          newSingleCount !== oldSingleCount ||
-          caroChanged ||
-          lotteryChanged ||
-          betPoolsChanged ||
-          usersPointsChanged ||
-          suggestionsChanged ||
-          sausageLogsChanged
-        ) {
+        if (clientLastUpdated < serverLastUpdated || clientLastUpdated === 0) {
           console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
           AppState.lastUpdated = data.lastUpdated || 0;
           AppState.users = data.users;
