@@ -1,4 +1,4 @@
-window.BaseState = null;
+﻿window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -433,7 +433,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.54';
+const CLIENT_VERSION = '20.55';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3443,6 +3443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 });
+
 
 
 

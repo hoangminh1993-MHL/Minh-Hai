@@ -1,4 +1,4 @@
-// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
+﻿// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
 
 document.addEventListener('DOMContentLoaded', () => {
   initOpsEvents();
@@ -28,6 +28,8 @@ window.showStatsModal = function(type) {
       const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
 
       const item = {
+        type: 'workflow',
+        id: w.id,
         code: w.trackingCode || w.code || w.id,
         name: w.clientName || 'N/A',
         service: w.serviceType || 'N/A',
@@ -58,6 +60,8 @@ window.showStatsModal = function(type) {
         const createdDate = new Date(l.createdTime || l.date);
         
         const item = {
+          type: 'lead',
+          id: l.id,
           code: l.phone || l.id,
           name: l.name || 'N/A',
           service: 'Chính ngạch',
@@ -83,13 +87,13 @@ window.showStatsModal = function(type) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">Không có dữ liệu trong tháng này</td></tr>`;
     } else {
       tbody.innerHTML = items.map(i => `
-        <tr>
-          <td>${i.code}</td>
-          <td>${i.name}</td>
-          <td><span class="badge ${i.service && i.service.toLowerCase() === 'chính ngạch' ? 'badge-blue' : 'badge-gold'}">${i.service}</span><br><span style="font-size: 0.8em; color: #888;">${i.source}</span></td>
-          <td>${i.stage}</td>
-          <td>${i.date}</td>
-          <td>${i.val}</td>
+        <tr style="cursor:pointer;" onclick="openStatDetail('\${i.type}', '\${i.id}')">
+          <td>\</td>
+          <td>\</td>
+          <td><span class="badge \">\</span><br><span style="font-size: 0.8em; color: #888;">\</span></td>
+          <td>\</td>
+          <td>\</td>
+          <td>\</td>
         </tr>
       `).join('');
     }
@@ -566,42 +570,6 @@ function renderFounderDashboard() {
           <span class="stat-label">Đơn chờ thu nợ (Bước 10)</span>
           <h3 class="text-gold">${waitingDebt}</h3>
           <span class="stat-trend text-gold"><i class="fa-solid fa-receipt"></i> Đối soát kế toán</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Hàng thống kê Chính Ngạch & Khách cũ -->
-    <div class="stats-grid" style="margin-top: 15px;">
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
-        <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lô chính ngạch phát sinh</span>
-          <h3>${cnGenerated}</h3>
-          <span class="stat-trend trend-up">Cần báo giá (Tháng)</span>
-        </div>
-      </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_success')">
-        <div class="stat-icon bg-emerald"><i class="fa-solid fa-check-double"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lô chính ngạch chốt được</span>
-          <h3>${cnSuccess}</h3>
-          <span class="stat-trend trend-up">Cả khách mới & cũ (Tháng)</span>
-        </div>
-      </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_profit')">
-        <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lợi nhuận chính ngạch</span>
-          <h3>${cnProfit.toLocaleString()} đ</h3>
-          <span class="stat-trend trend-up">Đơn hàng CN (Tháng)</span>
-        </div>
-      </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('ops_added')">
-        <div class="stat-icon" style="background: #a855f7; color: white;"><i class="fa-solid fa-boxes-stacked"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lô hàng add vào CRM Khách cũ</span>
-          <h3>${totalOpsAdded}</h3>
-          <span class="stat-trend trend-up">Vận hành (Tháng)</span>
         </div>
       </div>
     </div>
@@ -3273,6 +3241,7 @@ function handleFlowAddStepComment() {
 }
 
 function renderMyTasks() {
+  renderOpsStats();
   const container = document.getElementById('view-my-tasks');
   if (!container) return;
 
@@ -3857,7 +3826,7 @@ window.openProjectDedicatedView = function(projId) {
       div.onclick = (e) => {
         // Prevent event bubbling so it doesn't try to open the task details while modal switching
         e.stopPropagation();
-        closeModal('modal-project-dedicated-view');
+        if (typeof navigateToView === 'function') { navigateToView('tasks-projects'); } else { document.getElementById('view-project-dedicated').style.display = 'none'; }
         if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
       };
       tasksContainer.appendChild(div);
@@ -3893,7 +3862,7 @@ window.openProjectDedicatedView = function(projId) {
   // Render discussion
   renderDedicatedProjectDiscussion(p);
 
-  openModal('modal-project-dedicated-view');
+  if (typeof navigateToView === 'function') { navigateToView('project-dedicated'); } else { document.getElementById('view-project-dedicated').style.display = 'flex'; }
 };
 
 window.handleQuickCompleteTask = function(event, taskId) {
@@ -3954,7 +3923,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddTask = document.getElementById('btn-dedicated-project-add-task');
   if (btnAddTask) {
     btnAddTask.onclick = () => {
-      closeModal('modal-project-dedicated-view');
+      if (typeof navigateToView === 'function') { navigateToView('tasks-projects'); } else { document.getElementById('view-project-dedicated').style.display = 'none'; }
       openGlobalAddOpsTaskModal(true);
       setTimeout(() => {
         const select = document.getElementById('ops-task-project');
@@ -4127,5 +4096,108 @@ window.toggleManagerVerify = function(flowId, checked) {
 
 
 
+
+
+
+
+function renderOpsStats() {
+  const container = document.getElementById('ops-stats-container');
+  if (!container) return;
+
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  let cnGenerated = 0;
+  let cnSuccess = 0;
+  let cnProfit = 0;
+  let totalOpsAdded = 0;
+
+  if (AppState.shipment_workflows) {
+    AppState.shipment_workflows.forEach(w => {
+      const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
+      const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
+      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+
+      if (isThisMonth) {
+        if (isChinhNgach) {
+          cnGenerated++;
+          cnProfit += (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0);
+        }
+        totalOpsAdded++;
+      }
+      if (isChinhNgach && w.stage >= 4 && w.stage !== 12 && isThisMonth) {
+        cnSuccess++;
+      }
+    });
+  }
+
+  if (AppState.leads) {
+    AppState.leads.forEach(l => {
+      if (l.stage === 'success') return;
+      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
+        const createdDate = new Date(l.createdTime || l.date);
+        if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
+          cnGenerated++;
+        }
+      }
+    });
+  }
+
+  container.innerHTML = \
+    <div class="stats-grid" style="margin-top: 15px; margin-bottom: 15px;">
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
+        <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lô chính ngạch phát sinh</span>
+          <h3>\</h3>
+          <span class="stat-trend trend-up">Cần báo giá (Tháng)</span>
+        </div>
+      </div>
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_success')">
+        <div class="stat-icon bg-emerald"><i class="fa-solid fa-check-double"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lô chính ngạch chốt được</span>
+          <h3>\</h3>
+          <span class="stat-trend trend-up">Từ khách mới & cũ (Tháng)</span>
+        </div>
+      </div>
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_profit')">
+        <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lợi nhuận chính ngạch</span>
+          <h3>\ đ</h3>
+          <span class="stat-trend trend-up">Đơn hàng CN (Tháng)</span>
+        </div>
+      </div>
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('ops_added')">
+        <div class="stat-icon" style="background: #a855f7; color: white;"><i class="fa-solid fa-boxes-stacked"></i></div>
+        <div class="stat-data">
+          <span class="stat-label">Lô hàng add vào CRM Khách cũ</span>
+          <h3>\</h3>
+          <span class="stat-trend trend-up">Vận hành (Tháng)</span>
+        </div>
+      </div>
+    </div>
+  \;
+}
+
+
+
+window.openStatDetail = function(type, id) {
+  closeModal('modal-dashboard-stats');
+  if (type === 'workflow') {
+    const flow = AppState.shipment_workflows.find(f => f.id === id);
+    if (flow) {
+      currentActiveFlowId = id;
+      currentActiveStepNum = flow.stage;
+      if (typeof renderFlowStepDetail === 'function') renderFlowStepDetail();
+      openModal('modal-flow-detail');
+    }
+  } else if (type === 'lead') {
+    const lead = AppState.leads.find(l => l.id === id);
+    if (lead) {
+      if (typeof openLeadDetailModal === 'function') openLeadDetailModal(id);
+    }
+  }
+};
 
 

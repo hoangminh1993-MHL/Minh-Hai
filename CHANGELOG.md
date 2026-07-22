@@ -1,5 +1,13 @@
-# Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
+﻿# Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v20.55] - 2026-07-23
+### Thêm mới (Added)
+- Chuyển Popup Chi tiết Dự án thành một trang riêng biệt (Dedicated View) với đầy đủ tính năng.
+- Thêm thanh cuộn (scrollbar) phụ phía trên Kanban board Vận hành giúp dễ dàng kéo ngang.
+
+### Thay đổi (Changed)
+- Di chuyển bảng thống kê các lô hàng Chính ngạch từ Dashboard Admin sang trang Vận hành.
+- Cho phép click trực tiếp vào danh sách trong popup Thống kê để mở nhanh thông tin Lô hàng hoặc Khách hàng tiềm năng.
 Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ thống Minh Hải CRM sẽ được tự động cập nhật và lưu trữ tại đây.
 
 ---
@@ -116,4 +124,5 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 ### Tính năng mới (Added)
 - **Cột "Việc Tôi Hỗ Trợ":** Thêm cột thứ 5 trong tab Công Việc Của Tôi để theo dõi các việc mà tài khoản hiện tại được gắn làm Người hỗ trợ.
 - **Tối ưu kéo thả:** Tự động vô hiệu hóa pointer-events trên các thẻ nền khi đang kéo thả để giải quyết triệt để hiện tượng giật lag, kéo phát ăn ngay.
+
 
