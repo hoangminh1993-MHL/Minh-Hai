@@ -1465,7 +1465,13 @@ function renderActiveStepPanel() {
   document.getElementById('flow-step-deadline').value = stepData.deadline || '';
 
   // Set notes
-  document.getElementById('flow-step-note').value = stepData.note || '';
+  const noteEl = document.getElementById('flow-step-note');
+  noteEl.value = stepData.note || '';
+  noteEl.onchange = autoSaveActiveStepData;
+
+  assigneeSelect.onchange = autoSaveActiveStepData;
+  const deadlineEl = document.getElementById('flow-step-deadline');
+  if (deadlineEl) deadlineEl.onchange = autoSaveActiveStepData;
 
   // ===== ALWAYS SHOW: Audit time section (Step 1 data) =====
   const auditGroup = document.getElementById('flow-step-time-audit-group');
@@ -1523,6 +1529,16 @@ function renderActiveStepPanel() {
     updateAuditMessage();
     msgTimeInput.oninput = updateAuditMessage;
     entryTimeInput.oninput = updateAuditMessage;
+    
+    msgTimeInput.onchange = autoSaveActiveStepData;
+    entryTimeInput.onchange = autoSaveActiveStepData;
+    
+    if (verifyChk) {
+      verifyChk.onchange = autoSaveActiveStepData;
+    }
+    if (evidenceUrlInput) {
+      evidenceUrlInput.onchange = autoSaveActiveStepData;
+    }
   }
 
   // ===== ALWAYS SHOW: Quote feedback section (Step 2 data) =====
@@ -1600,6 +1616,11 @@ function renderActiveStepPanel() {
       const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
       const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
       approvedCheckbox.disabled = !isAdminOrManager2;
+      
+      reasonSelect.addEventListener('change', autoSaveActiveStepData);
+      reasonOtherInput.onchange = autoSaveActiveStepData;
+      evidenceInput.onchange = autoSaveActiveStepData;
+      approvedCheckbox.onchange = autoSaveActiveStepData;
     } else {
       flowFailGroup.style.display = 'none';
     }
@@ -1705,7 +1726,7 @@ function renderActiveStepPanel() {
   renderActiveStepComments();
 }
 
-function handleSaveActiveStepData() {
+function autoSaveActiveStepData() {
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
   if (!flow) return;
 
@@ -1749,30 +1770,15 @@ function handleSaveActiveStepData() {
   if (flow.stage === 12) {
     const reasonSelect = document.getElementById('flow-step-fail-reason');
     const reasonVal = reasonSelect.value;
-    if (!reasonVal) {
-      showToast('Vui lòng chọn lý do thất bại!', 'warning');
-      return;
-    }
     
     let finalReason = reasonVal;
     if (reasonVal === 'Khác') {
-      const reasonOtherVal = document.getElementById('flow-step-fail-reason-other').value.trim();
-      if (!reasonOtherVal) {
-        showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
-        return;
-      }
-      finalReason = reasonOtherVal;
-    }
-    
-    const evidenceVal = document.getElementById('flow-step-fail-evidence').value.trim();
-    if (!evidenceVal) {
-      showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
-      return;
+      finalReason = document.getElementById('flow-step-fail-reason-other').value.trim();
     }
     
     flow.failReason = finalReason;
-    flow.failEvidence = evidenceVal;
-    flow.evidenceUrl = evidenceVal;
+    flow.failEvidence = document.getElementById('flow-step-fail-evidence').value.trim();
+    flow.evidenceUrl = flow.failEvidence;
 
     const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
     const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
@@ -1790,6 +1796,10 @@ function handleSaveActiveStepData() {
   }
 
   saveState();
+}
+
+function handleSaveActiveStepData() {
+  autoSaveActiveStepData();
   closeModal('modal-flow-detail');
   renderOpsWorkflows();
   showToast('Đã lưu thông tin bước xử lý!', 'success');
