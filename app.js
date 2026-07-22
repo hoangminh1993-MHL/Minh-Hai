@@ -233,7 +233,7 @@ function initLocalStorage() {
 
 async function syncLoadState() {
   try {
-    const res = await fetch(getApiUrl('/api/state'));
+    const res = await fetch(getApiUrl('/api/state'), { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       AppState.lastUpdated = data.lastUpdated || parseInt(localStorage.getItem('votr_last_updated')) || 0;
@@ -412,7 +412,8 @@ async function saveState() {
       const res = await fetch(getApiUrl('/api/sync'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(syncData)
+        body: JSON.stringify(syncData),
+        keepalive: true
       });
       
       if (!res.ok) {
@@ -429,7 +430,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.50';
+const CLIENT_VERSION = '20.51';
 
 async function checkCodeVersionUpdate() {
   try {
