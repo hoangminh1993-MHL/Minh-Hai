@@ -4,6 +4,12 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 
 ---
 
+## [v47.8] - 2026-07-22
+### Sửa lỗi (Fixed)
+- **Cơ chế sao lưu dữ liệu cục bộ (Database Fallback):** Bổ sung cơ chế chống lỗi đường truyền hoặc cơ sở dữ liệu trên máy chủ. Nếu máy chủ Supabase bị lỗi kết nối hoặc giới hạn băng thông, hệ thống sẽ tự động lưu dữ liệu thẳng vào ổ cứng cục bộ (`db.json`) thay vì hủy bỏ yêu cầu. Đảm bảo 100% dữ liệu đã bấm "Lưu Thông Tin" sẽ không bao giờ bị mất sau khi ấn F5 dù mạng lỗi.
+
+---
+
 ## [v47.7] - 2026-07-22
 ### Sửa lỗi (Fixed)
 - **Sửa lỗi mất dữ liệu khi F5:** Thêm thuộc tính `keepalive` vào các truy vấn tự động lưu trữ trên `app.js` để đảm bảo dữ liệu (đặc biệt là Bình luận, Checklist) vẫn được gửi ngầm lên máy chủ thành công ngay cả khi người dùng bấm F5 hoặc đóng trang quá nhanh. Ngăn chặn trình duyệt hủy bỏ yêu cầu đang lưu.

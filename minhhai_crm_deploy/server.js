@@ -114,7 +114,8 @@ async function saveState(state) {
         await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1)', [JSON.stringify(state)]);
       }
     } catch (err) {
-      console.error('Database save error:', err);
+      console.error('Database save error, falling back to db.json:', err);
+      fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(state, null, 2), 'utf8');
     } finally {
       await client.end().catch(() => {});
     }
