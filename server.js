@@ -378,6 +378,12 @@ app.post('/api/sync', async (req, res) => {
     
     collections.forEach(key => {
       if (!syncData[key]) return;
+      
+      if (syncData[key].isObject) {
+        currentState[key] = syncData[key].data;
+        return;
+      }
+
       const { modified, deletedIds } = syncData[key];
       
       if (!currentState[key]) currentState[key] = [];

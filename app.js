@@ -365,9 +365,17 @@ async function saveState() {
       let hasChanges = false;
 
       collections.forEach(key => {
-        const baseArr = window.BaseState[key] || [];
-        const currArr = AppState[key] || [];
+        const baseArr = window.BaseState[key] || (key === 'workflows' ? {} : []);
+        const currArr = AppState[key] || (key === 'workflows' ? {} : []);
         
+        if (!Array.isArray(currArr)) {
+          if (JSON.stringify(baseArr) !== JSON.stringify(currArr)) {
+            syncData[key] = { isObject: true, data: currArr };
+            hasChanges = true;
+          }
+          return;
+        }
+
         const baseMap = new Map();
         baseArr.forEach(i => baseMap.set(i.id || JSON.stringify(i), JSON.stringify(i)));
         
