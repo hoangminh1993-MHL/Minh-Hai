@@ -347,8 +347,8 @@ async function saveState() {
   
   // Sync to server API in background using Delta Sync
   if (CONFIG.API_BASE) {
-    if (window.syncStateTimeout) clearTimeout(window.syncStateTimeout);
-    window.syncStateTimeout = setTimeout(async () => {
+    if (!window.syncStateQueue) window.syncStateQueue = Promise.resolve();
+    window.syncStateQueue = window.syncStateQueue.then(async () => {
       try {
         if (!window.BaseState) {
           // Fallback if no BaseState available
@@ -429,11 +429,11 @@ async function saveState() {
       } catch (err) {
         console.error('Không lưu được lên server API:', err);
       }
-    }, 500); // 500ms debounce
+    });
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.53';
+const CLIENT_VERSION = '20.54';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3443,6 +3443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 });
+
 
 
 
