@@ -1799,6 +1799,24 @@ function autoSaveActiveStepData() {
 }
 
 function handleSaveActiveStepData() {
+  // Check for pending comment
+  const commentInput = document.getElementById('flow-step-new-comment');
+  if (commentInput && commentInput.value.trim()) {
+    handleFlowAddStepComment();
+  }
+
+  // Check for pending checklist item
+  const chkInput = document.getElementById('flow-step-new-chk');
+  if (chkInput && chkInput.value.trim()) {
+    handleFlowAddStepChecklistItem();
+  }
+
+  // Check for pending file link
+  const fileUrlInput = document.getElementById('flow-step-new-file-url');
+  if (fileUrlInput && fileUrlInput.value.trim()) {
+    handleFlowAddStepFile();
+  }
+
   autoSaveActiveStepData();
   closeModal('modal-flow-detail');
   renderOpsWorkflows();
