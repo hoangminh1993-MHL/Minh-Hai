@@ -354,7 +354,9 @@ app.get('/api/state', async (req, res) => {
   try {
     const state = await loadState();
     res.json(state);
-
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/state: Save entire CRM database
@@ -448,7 +450,9 @@ app.post('/api/reset', async (req, res) => {
     
     await saveState(state);
     res.json({ success: true, message: 'Database reset successfully!' });
-
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST /api/login: User authentication
