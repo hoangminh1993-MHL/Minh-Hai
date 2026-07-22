@@ -1,5 +1,10 @@
 ﻿# Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v20.56] - 2026-07-23
+### Sửa lỗi (Fixed)
+- Sửa lỗi cú pháp Javascript nghiêm trọng khiến toàn bộ bảng Kanban và báo cáo thống kê trong trang Vận hành (Khách cũ) bị mất hoàn toàn.
+- Sửa lỗi sinh ra nhiều thanh cuộn thừa trên các màn hình khác không cần thiết.
+- Khôi phục lại toàn bộ dữ liệu Vận Hành hiển thị bình thường.
 ## [v20.55] - 2026-07-23
 ### Thêm mới (Added)
 - Chuyển Popup Chi tiết Dự án thành một trang riêng biệt (Dedicated View) với đầy đủ tính năng.
@@ -124,5 +129,6 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 ### Tính năng mới (Added)
 - **Cột "Việc Tôi Hỗ Trợ":** Thêm cột thứ 5 trong tab Công Việc Của Tôi để theo dõi các việc mà tài khoản hiện tại được gắn làm Người hỗ trợ.
 - **Tối ưu kéo thả:** Tự động vô hiệu hóa pointer-events trên các thẻ nền khi đang kéo thả để giải quyết triệt để hiện tượng giật lag, kéo phát ăn ngay.
+
 
 

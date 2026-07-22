@@ -88,14 +88,14 @@ window.showStatsModal = function(type) {
     } else {
       tbody.innerHTML = items.map(i => `
         <tr style="cursor:pointer;" onclick="openStatDetail('\${i.type}', '\${i.id}')">
-          <td>\</td>
-          <td>\</td>
-          <td><span class="badge \">\</span><br><span style="font-size: 0.8em; color: #888;">\</span></td>
-          <td>\</td>
-          <td>\</td>
-          <td>\</td>
+          <td>\${i.code}</td>
+          <td>\${i.name}</td>
+          <td><span class="badge \${i.service && i.service.toLowerCase() === 'chính ngạch' ? 'badge-blue' : 'badge-gold'}\">\${i.service}</span><br><span style="font-size: 0.8em; color: #888;">\${i.source}</span></td>
+          <td>\${i.stage}</td>
+          <td>\${i.date}</td>
+          <td>\${i.val}</td>
         </tr>
-      `).join('');
+        ).join('');
     }
   }
 
@@ -645,6 +645,7 @@ function renderFounderDashboard() {
 
 // ==================== CRM KHÁCH CŨ & LÔ HÀNG (12 BƯỚC) ==================== //
 function renderOpsWorkflows() {
+    if (typeof renderOpsStats === 'function') renderOpsStats();
   // Sanitize checklists: only allow 'cập nhật tình trạng sau báo giá' in Step 2, clear all others
   if (AppState.shipment_workflows) {
     AppState.shipment_workflows.forEach(flow => {
@@ -3241,7 +3242,6 @@ function handleFlowAddStepComment() {
 }
 
 function renderMyTasks() {
-  renderOpsStats();
   const container = document.getElementById('view-my-tasks');
   if (!container) return;
 
@@ -4100,8 +4100,14 @@ window.toggleManagerVerify = function(flowId, checked) {
 
 
 
+
+
+
+
+
+
 function renderOpsStats() {
-  const container = document.getElementById('ops-stats-container');
+  const container = document.getElementById('ops-stats-container-real');
   if (!container) return;
 
   const currentYear = new Date().getFullYear();
@@ -4130,41 +4136,29 @@ function renderOpsStats() {
     });
   }
 
-  if (AppState.leads) {
-    AppState.leads.forEach(l => {
-      if (l.stage === 'success') return;
-      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
-        const createdDate = new Date(l.createdTime || l.date);
-        if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
-          cnGenerated++;
-        }
-      }
-    });
-  }
-
-  container.innerHTML = \
-    <div class="stats-grid" style="margin-top: 15px; margin-bottom: 15px;">
+  container.innerHTML = `
+    <div class="dashboard-grid grid-1-4">
       <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
         <div class="stat-data">
           <span class="stat-label">Lô chính ngạch phát sinh</span>
-          <h3>\</h3>
-          <span class="stat-trend trend-up">Cần báo giá (Tháng)</span>
+          <h3>${cnGenerated}</h3>
+          <span class="stat-trend trend-up">Tháng ${currentMonth + 1}/${currentYear}</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_success')">
-        <div class="stat-icon bg-emerald"><i class="fa-solid fa-check-double"></i></div>
+        <div class="stat-icon bg-green"><i class="fa-solid fa-check-double"></i></div>
         <div class="stat-data">
           <span class="stat-label">Lô chính ngạch chốt được</span>
-          <h3>\</h3>
-          <span class="stat-trend trend-up">Từ khách mới & cũ (Tháng)</span>
+          <h3>${cnSuccess}</h3>
+          <span class="stat-trend trend-up">Tỷ lệ: ${cnGenerated > 0 ? Math.round((cnSuccess/cnGenerated)*100) : 0}%</span>
         </div>
       </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_profit')">
+      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
         <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-data">
           <span class="stat-label">Lợi nhuận chính ngạch</span>
-          <h3>\ đ</h3>
+          <h3>${cnProfit.toLocaleString()} đ</h3>
           <span class="stat-trend trend-up">Đơn hàng CN (Tháng)</span>
         </div>
       </div>
@@ -4172,25 +4166,20 @@ function renderOpsStats() {
         <div class="stat-icon" style="background: #a855f7; color: white;"><i class="fa-solid fa-boxes-stacked"></i></div>
         <div class="stat-data">
           <span class="stat-label">Lô hàng add vào CRM Khách cũ</span>
-          <h3>\</h3>
+          <h3>${totalOpsAdded}</h3>
           <span class="stat-trend trend-up">Vận hành (Tháng)</span>
         </div>
       </div>
     </div>
-  \;
+  `;
 }
 
-
-
 window.openStatDetail = function(type, id) {
-  closeModal('modal-dashboard-stats');
+  closeModal('modal-stats-details'); // Close the stats list popup
   if (type === 'workflow') {
     const flow = AppState.shipment_workflows.find(f => f.id === id);
     if (flow) {
-      currentActiveFlowId = id;
-      currentActiveStepNum = flow.stage;
-      if (typeof renderFlowStepDetail === 'function') renderFlowStepDetail();
-      openModal('modal-flow-detail');
+      if (typeof openFlowDetailModal === 'function') openFlowDetailModal(id);
     }
   } else if (type === 'lead') {
     const lead = AppState.leads.find(l => l.id === id);
@@ -4201,3 +4190,28 @@ window.openStatDetail = function(type, id) {
 };
 
 
+// Sync Top Scrollbar in Ops Workflows
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    const topWrapper = document.getElementById('ops-top-scrollbar-wrapper');
+    const topContent = document.getElementById('ops-top-scrollbar-content');
+    const bottomWrapper = document.getElementById('ops-kanban-wrapper');
+    const bottomBoard = document.getElementById('ops-workflows-kanban');
+    
+    if (topWrapper && topContent && bottomWrapper && bottomBoard) {
+      const updateScrollbar = () => {
+        topContent.style.width = bottomBoard.scrollWidth + 'px';
+      };
+      
+      // We need to update whenever the ops workflows is rendered
+      // We can override renderOpsWorkflows or just use MutationObserver
+      const observer = new MutationObserver(updateScrollbar);
+      observer.observe(bottomBoard, { childList: true, subtree: true, characterData: true });
+      window.addEventListener('resize', updateScrollbar);
+      setTimeout(updateScrollbar, 500);
+      
+      topWrapper.addEventListener('scroll', () => { bottomWrapper.scrollLeft = topWrapper.scrollLeft; });
+      bottomWrapper.addEventListener('scroll', () => { topWrapper.scrollLeft = bottomWrapper.scrollLeft; });
+    }
+  }, 1000);
+});
