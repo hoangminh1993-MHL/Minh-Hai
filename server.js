@@ -405,6 +405,7 @@ app.post('/api/sync', async (req, res) => {
         if (modified && modified.length > 0) {
           modified.forEach(modItem => {
             const id = modItem.id || JSON.stringify(modItem);
+            console.log(`[SYNC] Updating item ${id} in ${key}`);
             const idx = currentState[key].findIndex(i => (i.id || JSON.stringify(i)) === id);
             if (idx !== -1) {
               currentState[key][idx] = modItem;
@@ -415,6 +416,7 @@ app.post('/api/sync', async (req, res) => {
         }
       });
       
+      console.log(`[SYNC] Saving state to DB`);
       currentState.lastUpdated = syncData.lastUpdated || Date.now();
       await saveState(currentState);
       

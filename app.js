@@ -346,7 +346,7 @@ async function saveState() {
   localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions || []));
   
   // Sync to server API in background using Delta Sync
-  if (CONFIG.API_BASE) {
+  if (true) {
     if (!window.syncStateQueue) window.syncStateQueue = Promise.resolve();
     window.syncStateQueue = window.syncStateQueue.then(async () => {
       try {
