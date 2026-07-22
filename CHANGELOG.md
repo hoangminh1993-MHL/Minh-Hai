@@ -18,6 +18,10 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 
 ---
 
+## [v47.7] - 2026-07-22
+### Sửa lỗi (Fixed)
+- **Lỗi mất dữ liệu:** Sửa lỗi mất bình luận và file đính kèm trong bảng popup chi tiết Lô hàng khi thao tác quá nhanh hoặc nhấn nút Lưu thông tin. Nguyên nhân do hệ thống gửi nhiều tín hiệu lưu đồng thời gây xung đột dữ liệu trên máy chủ. Đã được khắc phục bằng cách thiết lập hàng đợi (queue) và gộp tín hiệu (debounce).
+
 ## [v47.6] - 2026-07-18
 ### Sửa lỗi & Nâng cấp (Fixed & Improved)
 - **Thống kê Popup:** Sửa lỗi thiếu đơn hàng do sai khác chữ hoa/thường ở mục `serviceType` (ví dụ "Chính ngạch" vs "chính ngạch").

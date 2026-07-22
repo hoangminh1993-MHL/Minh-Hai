@@ -347,90 +347,93 @@ async function saveState() {
   
   // Sync to server API in background using Delta Sync
   if (CONFIG.API_BASE) {
-    try {
-      if (!window.BaseState) {
-        // Fallback if no BaseState available
-        await fetch(getApiUrl('/api/state'), {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(AppState)
-        });
-        window.BaseState = JSON.parse(JSON.stringify(AppState));
-        updateMyTasksBadge();
-        return;
-      }
-
-      const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
-      const syncData = { lastUpdated: AppState.lastUpdated };
-      let hasChanges = false;
-
-      collections.forEach(key => {
-        const baseArr = window.BaseState[key] || (key === 'workflows' ? {} : []);
-        const currArr = AppState[key] || (key === 'workflows' ? {} : []);
-        
-        if (!Array.isArray(currArr)) {
-          if (JSON.stringify(baseArr) !== JSON.stringify(currArr)) {
-            syncData[key] = { isObject: true, data: currArr };
-            hasChanges = true;
-          }
+    if (window.syncStateTimeout) clearTimeout(window.syncStateTimeout);
+    window.syncStateTimeout = setTimeout(async () => {
+      try {
+        if (!window.BaseState) {
+          // Fallback if no BaseState available
+          await fetch(getApiUrl('/api/state'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(AppState)
+          });
+          window.BaseState = JSON.parse(JSON.stringify(AppState));
+          updateMyTasksBadge();
           return;
         }
 
-        const baseMap = new Map();
-        baseArr.forEach(i => baseMap.set(i.id || JSON.stringify(i), JSON.stringify(i)));
-        
-        const modified = [];
-        currArr.forEach(i => {
-          const id = i.id || JSON.stringify(i);
-          if (baseMap.get(id) !== JSON.stringify(i)) {
-            modified.push(i);
-            hasChanges = true;
+        const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
+        const syncData = { lastUpdated: AppState.lastUpdated };
+        let hasChanges = false;
+
+        collections.forEach(key => {
+          const baseArr = window.BaseState[key] || (key === 'workflows' ? {} : []);
+          const currArr = AppState[key] || (key === 'workflows' ? {} : []);
+          
+          if (!Array.isArray(currArr)) {
+            if (JSON.stringify(baseArr) !== JSON.stringify(currArr)) {
+              syncData[key] = { isObject: true, data: currArr };
+              hasChanges = true;
+            }
+            return;
           }
+
+          const baseMap = new Map();
+          baseArr.forEach(i => baseMap.set(i.id || JSON.stringify(i), JSON.stringify(i)));
+          
+          const modified = [];
+          currArr.forEach(i => {
+            const id = i.id || JSON.stringify(i);
+            if (baseMap.get(id) !== JSON.stringify(i)) {
+              modified.push(i);
+              hasChanges = true;
+            }
+          });
+          
+          const currMap = new Map();
+          currArr.forEach(i => currMap.set(i.id || JSON.stringify(i), true));
+          const deletedIds = [];
+          baseArr.forEach(i => {
+            const id = i.id || JSON.stringify(i);
+            if (!currMap.has(id)) {
+              deletedIds.push(id);
+              hasChanges = true;
+            }
+          });
+          
+          syncData[key] = { modified, deletedIds };
+        });
+
+        if (!hasChanges) {
+          updateMyTasksBadge();
+          return;
+        }
+
+        window.BaseState = JSON.parse(JSON.stringify(AppState));
+
+        const res = await fetch(getApiUrl('/api/sync'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(syncData),
+          keepalive: true
         });
         
-        const currMap = new Map();
-        currArr.forEach(i => currMap.set(i.id || JSON.stringify(i), true));
-        const deletedIds = [];
-        baseArr.forEach(i => {
-          const id = i.id || JSON.stringify(i);
-          if (!currMap.has(id)) {
-            deletedIds.push(id);
-            hasChanges = true;
-          }
-        });
-        
-        syncData[key] = { modified, deletedIds };
-      });
-
-      if (!hasChanges) {
-        updateMyTasksBadge();
-        return;
+        if (!res.ok) {
+           console.warn('Lỗi đồng bộ Delta Sync, gửi toàn bộ trạng thái...');
+           await fetch(getApiUrl('/api/state'), {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify(AppState)
+           });
+        }
+      } catch (err) {
+        console.error('Không lưu được lên server API:', err);
       }
-
-      window.BaseState = JSON.parse(JSON.stringify(AppState));
-
-      const res = await fetch(getApiUrl('/api/sync'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(syncData),
-        keepalive: true
-      });
-      
-      if (!res.ok) {
-         console.warn('Lỗi đồng bộ Delta Sync, gửi toàn bộ trạng thái...');
-         await fetch(getApiUrl('/api/state'), {
-           method: 'POST',
-           headers: { 'Content-Type': 'application/json' },
-           body: JSON.stringify(AppState)
-         });
-      }
-    } catch (err) {
-      console.error('Không lưu được lên server API:', err);
-    }
+    }, 500); // 500ms debounce
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.52';
+const CLIENT_VERSION = '20.53';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3440,6 +3443,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 });
+
 
 
 
