@@ -426,7 +426,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.58';
+const CLIENT_VERSION = '20.59';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -555,7 +555,7 @@ function initSidebarRouter() {
 }
 
 function navigateToView(viewId, updateHash = true) {
-  const activeView = document.querySelector(`.app-view[id="view-${viewId}"]`);
+  const activeView = document.querySelector(.app-view[id="view-"]);
   if (!activeView) return;
 
   // Update hash
@@ -578,41 +578,6 @@ function navigateToView(viewId, updateHash = true) {
     view.style.display = 'none';
   });
 
-    const titles = {
-      dashboard: { main: 'Báo Cáo Tổng Quan', sub: 'Tổng quan doanh số chuyển đổi và hiệu suất công việc phòng ban.' },
-      crm: { main: 'Bảng CRM Khách Hàng', sub: 'Quản lý phễu chuyển đổi khách hàng 7 bước từ nhận thông tin đến chốt.' },
-      tasks: { main: 'Quản Lý Công Việc', sub: 'Giao việc, bám sát quy trình từng phòng ban và tích điểm Xúc Xích.' },
-      'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
-      settings: { main: 'Thiết Lập Hệ Thống', sub: 'Cấu hình liên kết Fanpage Facebook, quản lý kết nối API Server và dữ liệu hệ thống.' },
-      'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Quản lý tài khoản, phân quyền vai trò và hệ thống điểm thưởng của nhân sự.' },
-      clients: { main: 'Quản Lý Khách Hàng Cũ', sub: 'Tái khai thác và theo dõi lịch sử dịch vụ của khách hàng đã chốt.' },
-      'tasks-projects': { main: 'Dự Án Vận Hành & Phòng Ban', sub: 'Không gian làm việc chung, quản lý tài liệu và tiến độ theo dự án.' },
-      'project-dedicated': { main: 'Không Gian Dự Án', sub: 'Khu vực làm việc chuyên dụng cho dự án vận hành.' },
-      'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Bảng theo dõi và xử lý các đầu việc được giao cá nhân.' },
-      rewards: { main: 'Siêu Thị Đổi Thưởng', sub: 'Sử dụng điểm Xúc Xích tích lũy để đổi quà tặng hoặc nghỉ phép.' },
-      suggestions: { main: 'Góp ý & Đề xuất', sub: 'Hòm thư góp ý ẩn danh và đề xuất cải tiến hệ thống.' },
-      'mini-games': { main: 'Khu Giải Trí', sub: 'Cờ Caro, Vòng Quay May Mắn, Xổ Số Kiến Thiết - Kiếm thêm Xúc Xích!' }
-    };
-    if (titles[viewId]) {
-      document.getElementById('header-title').innerText = titles[viewId].main;
-      document.getElementById('header-subtitle').innerText = titles[viewId].sub;
-    }
-  
-    // Execute specific render logic
-    switch (viewId) {
-      case 'dashboard': renderDashboard(); break;
-      case 'crm': if (typeof renderCRMBoard === 'function') renderCRMBoard(); break;
-      case 'tasks': if (typeof renderTasksBoard === 'function') renderTasksBoard(); break;
-      case 'staff-management': if (typeof renderStaffManagement === 'function') renderStaffManagement(); break;
-      case 'clients': if (typeof renderClientsKanban === 'function') renderClientsKanban(); break;
-      case 'tasks-projects': if (typeof renderProjectsList === 'function') renderProjectsList(); break;
-      case 'project-dedicated': if (typeof openProjectDetails === 'function' && window.currentActiveProjectId) openProjectDetails(window.currentActiveProjectId); break;
-      case 'my-tasks': if (typeof renderMyTasksView === 'function') renderMyTasksView(); break;
-      case 'rewards': if (typeof renderRewardsShop === 'function') renderRewardsShop(); break;
-      case 'suggestions': if (typeof renderSuggestionsKanban === 'function') renderSuggestionsKanban(); break;
-      case 'mini-games': if (typeof renderMiniGames === 'function') renderMiniGames(); break;
-    }
-    
   activeView.style.display = 'block';
   setTimeout(() => {
     activeView.classList.add('active');
@@ -625,237 +590,35 @@ function navigateToView(viewId, updateHash = true) {
     tasks: { main: 'Quản Lý Công Việc', sub: 'Giao việc, bám sát quy trình từng phòng ban và tích điểm Xúc Xích.' },
     'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
     settings: { main: 'Thiết Lập Hệ Thống', sub: 'Cấu hình liên kết Fanpage Facebook, quản lý kết nối API Server và dữ liệu hệ thống.' },
-    rewards: { main: 'Đua Top Tích Xúc Xích', sub: 'Bảng thi đua xếp hạng thưởng dựa trên điểm hoàn thành công việc.' },
-    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Tạo tài khoản, phân quyền hệ thống cho cán bộ nhân viên Minh Hải Logistics.' },
-    'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
-    'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
-    'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
-    'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' },
-    'customer-health': { main: 'Sức Khỏe Khách Hàng', sub: 'Phân tích dữ liệu vận chuyển các tháng và cảnh báo nguy cơ sụt giảm sản lượng hoặc mất khách.' },
-    'mini-games': { main: 'Khu Vui Chơi & Giải Trí', sub: 'Đấu trí cờ caro cược điểm, chơi xổ số bao/đề 18h hàng ngày, và tổ chức bet kèo nội bộ.' },
-    'suggestions': { main: 'Ý Tưởng & Đề Xuất Quy Trình', sub: 'Nhận đóng góp ý kiến tối ưu quy trình và báo cáo lỗi phần mềm từ nhân sự.' }
+    'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Quản lý tài khoản, phân quyền vai trò và hệ thống điểm thưởng của nhân sự.' },
+    clients: { main: 'Quản Lý Khách Hàng Cũ', sub: 'Tái khai thác và theo dõi lịch sử dịch vụ của khách hàng đã chốt.' },
+    'tasks-projects': { main: 'Dự Án Vận Hành & Phòng Ban', sub: 'Không gian làm việc chung, quản lý tài liệu và tiến độ theo dự án.' },
+    'project-dedicated': { main: 'Không Gian Dự Án', sub: 'Khu vực làm việc chuyên dụng cho dự án vận hành.' },
+    'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Bảng theo dõi và xử lý các đầu việc được giao cá nhân.' },
+    rewards: { main: 'Siêu Thị Đổi Thưởng', sub: 'Sử dụng điểm Xúc Xích tích lũy để đổi quà tặng hoặc nghỉ phép.' },
+    suggestions: { main: 'Góp ý & Đề xuất', sub: 'Hòm thư góp ý ẩn danh và đề xuất cải tiến hệ thống.' },
+    'mini-games': { main: 'Khu Giải Trí', sub: 'Cờ Caro, Vòng Quay May Mắn, Xổ Số Kiến Thiết - Kiếm thêm Xúc Xích!' }
   };
-
+  
   if (titles[viewId]) {
-    document.getElementById('view-title').innerText = titles[viewId].main;
-    document.getElementById('view-description').innerText = titles[viewId].sub;
+    document.getElementById('header-title').innerText = titles[viewId].main;
+    document.getElementById('header-subtitle').innerText = titles[viewId].sub;
   }
 
-  // Trigger view specific rendering
-  if (viewId === 'dashboard') {
-    renderDashboard();
-  } else if (viewId === 'crm') {
-    renderCRMBoard();
-  } else if (viewId === 'tasks') {
-    renderTasksList();
-
-  } else if (viewId === 'crm-clients-workflows') {
-    if (typeof renderOpsWorkflows === 'function') renderOpsWorkflows();
-  } else if (viewId === 'tasks-single') {
-    if (typeof renderOpsSingleTasks === 'function') renderOpsSingleTasks();
-  } else if (viewId === 'tasks-projects') {
-    if (typeof renderOpsProjects === 'function') renderOpsProjects();
-  } else if (viewId === 'my-tasks') {
-    if (typeof renderMyTasks === 'function') renderMyTasks();
-  } else if (viewId === 'rewards') {
-    renderRewardsView();
-  } else if (viewId === 'customer-health') {
-    renderCustomerHealthView();
-  } else if (viewId === 'settings') {
-    renderFacebookConfig();
-    const apiInput = document.getElementById('settings-api-base-input');
-    if (apiInput) {
-      apiInput.value = localStorage.getItem('minhhai_custom_api_base') || '';
-    }
-  } else if (viewId === 'staff-management') {
-    renderStaffManagementTable();
-  } else if (viewId === 'mini-games') {
-    if (typeof renderMiniGames === 'function') renderMiniGames();
-  } else if (viewId === 'suggestions') {
-    if (typeof renderSuggestions === 'function') renderSuggestions();
+  // Execute specific render logic
+  switch (viewId) {
+    case 'dashboard': renderDashboard(); break;
+    case 'crm': if (typeof renderCRMBoard === 'function') renderCRMBoard(); break;
+    case 'tasks': if (typeof renderTasksBoard === 'function') renderTasksBoard(); break;
+    case 'staff-management': if (typeof renderStaffManagement === 'function') renderStaffManagement(); break;
+    case 'clients': if (typeof renderClientsKanban === 'function') renderClientsKanban(); break;
+    case 'tasks-projects': if (typeof renderProjectsList === 'function') renderProjectsList(); break;
+    case 'project-dedicated': if (typeof openProjectDetails === 'function' && window.currentActiveProjectId) openProjectDetails(window.currentActiveProjectId); break;
+    case 'my-tasks': if (typeof renderMyTasksView === 'function') renderMyTasksView(); break;
+    case 'rewards': if (typeof renderRewardsShop === 'function') renderRewardsShop(); break;
+    case 'suggestions': if (typeof renderSuggestionsKanban === 'function') renderSuggestionsKanban(); break;
+    case 'mini-games': if (typeof renderMiniGames === 'function') renderMiniGames(); break;
   }
-}
-
-function renderFacebookConfig() {
-  if (!AppState.fbConfig) {
-    AppState.fbConfig = { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
-  }
-  
-  const tokenInput = document.getElementById('fb-config-access-token');
-  if (tokenInput) {
-    tokenInput.value = AppState.fbConfig.accessToken || '';
-  }
-
-  const webhookUrlInput = document.getElementById('fb-config-webhook-url');
-  if (webhookUrlInput) {
-    const customApiBase = localStorage.getItem('minhhai_custom_api_base');
-    if (customApiBase) {
-      const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
-      webhookUrlInput.value = `${base}/webhook`;
-    } else {
-      const origin = window.location.origin;
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        webhookUrlInput.value = 'https://whgxg-116-107-238-198.free.pinggy.net/webhook';
-      } else {
-        webhookUrlInput.value = `${origin}/webhook`;
-      }
-    }
-  }
-
-  const copyWebhook = document.getElementById('btn-copy-webhook');
-  if (copyWebhook) {
-    copyWebhook.onclick = () => {
-      navigator.clipboard.writeText(webhookUrlInput.value);
-      showToast('Đã sao chép Webhook URL!', 'success');
-    };
-  }
-
-  const copyVerify = document.getElementById('btn-copy-verify');
-  if (copyVerify) {
-    copyVerify.onclick = () => {
-      navigator.clipboard.writeText(document.getElementById('fb-config-verify-token').value);
-      showToast('Đã sao chép Verify Token!', 'success');
-    };
-  }
-
-  const form = document.getElementById('form-fb-config');
-  if (form) {
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const tokenVal = document.getElementById('fb-config-access-token').value.trim();
-      AppState.fbConfig.accessToken = tokenVal;
-      await saveState();
-      showToast('Đã lưu cấu hình Fanpage thành công!', 'success');
-    };
-  }
-
-  const btnReset = document.getElementById('btn-reset-db');
-  if (btnReset) {
-    btnReset.onclick = async () => {
-      if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu nháp (khách hàng, công việc, thông báo, nhật ký xúc xích) để nhập test mới từ đầu không?')) {
-        return;
-      }
-      try {
-        const res = await fetch(getApiUrl('/api/reset'), { method: 'POST' });
-        const result = await res.json();
-        if (result.success) {
-          showToast('Đã xóa dữ liệu nháp thành công! Đang tải lại...', 'success');
-          setTimeout(() => window.location.reload(), 1500);
-        } else {
-          showToast('Có lỗi xảy ra: ' + result.error, 'error');
-        }
-      } catch (err) {
-        showToast('Không thể kết nối đến máy chủ!', 'error');
-      }
-    };
-  }
-
-  // Export Database
-  const btnExport = document.getElementById('btn-export-db');
-  if (btnExport) {
-    btnExport.onclick = () => {
-      try {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(AppState, null, 2));
-        const downloadAnchor = document.createElement('a');
-        downloadAnchor.setAttribute("href",     dataStr);
-        downloadAnchor.setAttribute("download", `minhhai_crm_backup_${new Date().toISOString().slice(0,10)}.json`);
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-        showToast('Đã xuất file sao lưu dữ liệu thành công!', 'success');
-      } catch (err) {
-        showToast('Lỗi khi xuất dữ liệu!', 'error');
-        console.error(err);
-      }
-    };
-  }
-
-  // Import Database
-  const inputImport = document.getElementById('input-import-db');
-  if (inputImport) {
-    inputImport.onchange = (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        try {
-          const parsed = JSON.parse(evt.target.result);
-          if (!parsed.users || !parsed.leads) {
-            showToast('Định dạng file sao lưu không hợp lệ!', 'error');
-            return;
-          }
-          if (!confirm('Bạn có chắc chắn muốn khôi phục dữ liệu từ file này? Dữ liệu hiện tại trên hệ thống sẽ bị ghi đè hoàn toàn.')) {
-            inputImport.value = '';
-            return;
-          }
-          
-          // Copy values to AppState
-          AppState.users = parsed.users || AppState.users;
-          AppState.leads = parsed.leads || AppState.leads;
-          AppState.tasks = parsed.tasks || AppState.tasks;
-          AppState.workflows = parsed.workflows || AppState.workflows;
-          AppState.sausageLogs = parsed.sausageLogs || AppState.sausageLogs;
-          AppState.notifications = parsed.notifications || AppState.notifications;
-          AppState.clients = parsed.clients || AppState.clients;
-          AppState.projects = parsed.projects || AppState.projects;
-          AppState.shipment_workflows = parsed.shipment_workflows || AppState.shipment_workflows;
-          AppState.single_tasks = parsed.single_tasks || AppState.single_tasks;
-          if (parsed.currentUserId) AppState.currentUserId = parsed.currentUserId;
-          
-          showToast('Đang đồng bộ dữ liệu lên máy chủ...', 'info');
-          await saveState();
-          showToast('Đồng bộ dữ liệu thành công! Đang tải lại...', 'success');
-          setTimeout(() => window.location.reload(), 1500);
-        } catch (err) {
-          showToast('Lỗi khi đọc file hoặc ghi đè dữ liệu!', 'error');
-          console.error(err);
-        }
-      };
-      reader.readAsText(file);
-    };
-  }
-}
-
-function initRoleSwitcher() {
-  const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
-  const selectorContainer = document.querySelector('.test-user-selector');
-  if (selectorContainer) {
-    if (sessionUser.role === 'admin' || sessionUser.role === 'manager') {
-      selectorContainer.style.display = 'flex';
-    } else {
-      selectorContainer.style.display = 'none';
-    }
-  }
-
-  const switcher = document.getElementById('user-switcher');
-  switcher.innerHTML = '';
-  
-  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
-  AppState.users.forEach(u => {
-    const opt = document.createElement('option');
-    opt.value = u.id;
-    const roleLabel = roleLabels[u.role] || u.role.toUpperCase();
-    opt.innerText = `${u.name} (${roleLabel})`;
-    if (u.id === AppState.currentUserId) {
-      opt.selected = true;
-    }
-    switcher.appendChild(opt);
-  });
-
-  switcher.addEventListener('change', (e) => {
-    AppState.currentUserId = e.target.value;
-    saveState();
-    
-    // Rerender user context
-    renderCurrentUser();
-    
-    // Rerender active view
-    const currentViewId = document.querySelector('.nav-item.active').getAttribute('data-view');
-    navigateToView(currentViewId, false);
-    
-    showToast(`Đã chuyển sang vai trò: ${getCurrentUser().name}`, 'info');
-  });
 }
 
 function getCurrentUser() {
