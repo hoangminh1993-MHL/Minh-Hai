@@ -810,7 +810,7 @@ function initRoleSwitcher() {
   const switcher = document.getElementById('user-switcher');
   switcher.innerHTML = '';
   
-  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
+  const roleLabels = { admin: 'Quản Trị', manager: 'Quản lý', staff: 'Nhân viên' };
   AppState.users.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.id;
@@ -1490,7 +1490,7 @@ function renderMiniLeaderboard() {
   // Sort users descending by points
   const sortedUsers = [...AppState.users].sort((a, b) => b.points - a.points).slice(0, 5);
 
-  const roleLabels = { admin: 'Admin', sales: 'Sales', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+  const roleLabels = { admin: 'Quản Trị', sales: 'Kinh Doanh', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi' };
   sortedUsers.forEach((u, index) => {
     const rank = index + 1;
     const div = document.createElement('div');
@@ -1685,7 +1685,7 @@ function renderLeaderboardData(subTab) {
     tbody.innerHTML = '';
     
     const sortedUsers = [...AppState.users].sort((a, b) => b.points - a.points);
-    const roleLabels = { admin: 'Admin', sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+    const roleLabels = { admin: 'Quản Trị', sales: 'Kinh Doanh & CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi' };
     
     sortedUsers.forEach((u, index) => {
       const rank = index + 1;
@@ -2567,7 +2567,7 @@ function renderStaffManagementTable() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
+  const roleLabels = { admin: 'Quản Trị', manager: 'Quản lý', staff: 'Nhân viên' };
   const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
 
   AppState.users.forEach(u => {

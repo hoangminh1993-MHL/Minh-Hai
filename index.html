@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <script>
@@ -127,7 +127,7 @@
         </div>
         <div class="user-info">
           <h4 id="current-user-name">Đang tải...</h4>
-          <span id="current-user-role-badge" class="role-badge badge-admin">Admin</span>
+          <span id="current-user-role-badge" class="role-badge badge-admin">Quản Trị Viên</span>
         </div>
         <div class="user-sausage-points" title="Số dư Xúc xích hiện tại">
           <i class="fa-solid fa-hotdog points-icon"></i>
@@ -594,8 +594,8 @@
             <div class="task-filters">
               <div class="filter-group" style="display: none;">
                 <button class="btn btn-filter active" data-dept="all">Tất cả phòng ban</button>
-                <button class="btn btn-filter" data-dept="admin">Admin</button>
-                <button class="btn btn-filter" data-dept="sales">Sales & CSKH</button>
+                <button class="btn btn-filter" data-dept="admin">Quản Trị Viên</button>
+                <button class="btn btn-filter" data-dept="sales">Kinh Doanh & CSKH</button>
                 <button class="btn btn-filter" data-dept="sourcing">Sourcing (Đặt hàng)</button>
                 <button class="btn btn-filter" data-dept="warehouse">Kho hàng</button>
               </div>
@@ -704,7 +704,7 @@
                     </div>
 
                     <div class="form-group" style="margin: 0;">
-                      <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Verify Token</label>
+                      <label style="font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block;">Mã Xác Thực (Verify Token)</label>
                       <div style="display: flex; gap: 8px; align-items: center;">
                         <input type="text" class="form-control" readonly value="minh_hai_verify_token_123" id="fb-config-verify-token" style="background-color: rgba(255,255,255,0.02); font-size: 12px;">
                         <button type="button" class="btn btn-outline btn-sm" id="btn-copy-verify" title="Sao chép" style="height: 38px;"><i class="fa-solid fa-copy"></i></button>
@@ -791,10 +791,10 @@
                   <h4 style="color: var(--color-primary); font-weight:600; margin-bottom: 4px;">Bước 4: Cấu hình Webhooks trên Facebook</h4>
                   <p>Ở mục Webhooks của Messenger, nhấn <strong>Configure</strong> và nhập:</p>
                   <ul style="margin-left: 16px; margin-top: 4px;">
-                    <li><strong>Callback URL</strong>: Link ngrok của bạn kèm đuôi <code style="font-family: monospace;">/webhook</code></li>
-                    <li><strong>Verify Token</strong>: <code style="font-family: monospace;">minh_hai_verify_token_123</code></li>
+                    <li><strong>Đường Dẫn Callback</strong>: Link ngrok của bạn kèm đuôi <code style="font-family: monospace;">/webhook</code></li>
+                    <li><strong>Mã Xác Thực (Verify Token)</strong>: <code style="font-family: monospace;">minh_hai_verify_token_123</code></li>
                   </ul>
-                  <p style="margin-top:6px;">Bấm <strong>Verify and Save</strong>. Sau đó Đăng ký (Subscribe) sự kiện <strong>messages</strong>.</p>
+                  <p style="margin-top:6px;">Bấm <strong>Xác Thực và Lưu</strong>. Sau đó Đăng ký (Subscribe) sự kiện <strong>messages</strong>.</p>
                 </div>
               </div>
             </div>
@@ -1253,7 +1253,7 @@
               <option value="ký gửi">Ký gửi</option>
               <option value="chính ngạch">Chính ngạch</option>
               <option value="hàng lô">Hàng lô</option>
-              <option value="sourcing">Sourcing</option>
+              <option value="sourcing">Đặt Hàng</option>
             </select>
 
             <select id="ops-flow-filter-assignee" class="form-control" style="min-width: 185px; width: auto;">
@@ -1393,8 +1393,8 @@
             
             <select id="tasks-single-filter-dept" class="form-control" style="max-width: 140px;">
               <option value="all">-- Phòng ban --</option>
-              <option value="sales">Sales & CSKH</option>
-              <option value="sourcing">Sourcing</option>
+              <option value="sales">Kinh Doanh & CSKH</option>
+              <option value="sourcing">Đặt Hàng</option>
               <option value="warehouse">Kho bãi</option>
               <option value="admin">Kế toán & Admin</option>
             </select>
@@ -1544,7 +1544,7 @@
                       <h3 id="active-project-name" style="font-size: 18px; font-weight: 600; margin: 0; color: #f8fafc;">Tên Dự Án</h3>
                     </div>
                     <div style="display: flex; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--text-muted);">
-                      <span><i class="fa-solid fa-user-tie"></i> Quản lý: <strong id="active-project-manager" style="color: #94a3b8;">Admin</strong></span>
+                      <span><i class="fa-solid fa-user-tie"></i> Quản lý: <strong id="active-project-manager" style="color: #94a3b8;">Quản Trị Viên</strong></span>
                       <span style="color: rgba(255,255,255,0.2);">|</span>
                       <span><i class="fa-solid fa-users"></i> Thành viên: <strong id="active-project-members" style="color: #94a3b8;">...</strong></span>
                     </div>
@@ -1721,7 +1721,7 @@
                 <option value="ký gửi">Ký gửi</option>
                 <option value="chính ngạch" selected>Chính ngạch</option>
                 <option value="hàng lô">Hàng lô</option>
-                <option value="sourcing">Sourcing</option>
+                <option value="sourcing">Đặt Hàng</option>
               </select>
             </div>
           </div>
