@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v20.75';
+  const CURRENT_APP_VER = 'v20.76';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     ['votr_users', 'votr_leads', 'votr_tasks', 'votr_workflows', 'votr_logs', 'votr_notifs', 'votr_clients_db', 'votr_projects_db', 'votr_shipment_workflows_db', 'votr_single_tasks_db', 'votr_suggestions_db', 'votr_last_updated'].forEach(k => localStorage.removeItem(k));
@@ -440,7 +440,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.75';
+const CLIENT_VERSION = '20.76';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -810,7 +810,7 @@ function initRoleSwitcher() {
   const switcher = document.getElementById('user-switcher');
   switcher.innerHTML = '';
   
-  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
+  const roleLabels = { admin: 'Quản Trị', manager: 'Quản lý', staff: 'Nhân viên' };
   AppState.users.forEach(u => {
     const opt = document.createElement('option');
     opt.value = u.id;
@@ -1490,7 +1490,7 @@ function renderMiniLeaderboard() {
   // Sort users descending by points
   const sortedUsers = [...AppState.users].sort((a, b) => b.points - a.points).slice(0, 5);
 
-  const roleLabels = { admin: 'Admin', sales: 'Sales', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+  const roleLabels = { admin: 'Quản Trị', sales: 'Kinh Doanh', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi' };
   sortedUsers.forEach((u, index) => {
     const rank = index + 1;
     const div = document.createElement('div');
@@ -1685,7 +1685,7 @@ function renderLeaderboardData(subTab) {
     tbody.innerHTML = '';
     
     const sortedUsers = [...AppState.users].sort((a, b) => b.points - a.points);
-    const roleLabels = { admin: 'Admin', sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi' };
+    const roleLabels = { admin: 'Quản Trị', sales: 'Kinh Doanh & CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi' };
     
     sortedUsers.forEach((u, index) => {
       const rank = index + 1;
@@ -2567,7 +2567,7 @@ function renderStaffManagementTable() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  const roleLabels = { admin: 'Admin', manager: 'Quản lý', staff: 'Nhân viên' };
+  const roleLabels = { admin: 'Quản Trị', manager: 'Quản lý', staff: 'Nhân viên' };
   const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
 
   AppState.users.forEach(u => {

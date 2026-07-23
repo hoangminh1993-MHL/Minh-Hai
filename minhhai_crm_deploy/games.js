@@ -665,11 +665,10 @@ function initLotteryGame() {
 }
 
 function updateLotteryCostText() {
-  const typeSelect = document.getElementById('lottery-type-select');
+  const type = document.getElementById('lottery-type-select').value;
   const pointsInput = document.getElementById('lottery-points-input');
   const warning = document.getElementById('lottery-cost-warning');
-  if (!typeSelect || !pointsInput || !warning) return;
-  const type = typeSelect.value;
+  if (!pointsInput || !warning) return;
 
   const pts = parseInt(pointsInput.value) || 10;
   if (type === 'de') {
@@ -1083,7 +1082,7 @@ function renderBetPools() {
       const lobbyCard = document.createElement('div');
       lobbyCard.style.cssText = 'background:#1f2937; border:1px solid var(--border-color); border-radius:10px; padding:15px; display:flex; flex-direction:column; gap:12px;';
       
-      const isExpired = parseSafeDate(b.deadline) < new Date();
+      const isExpired = new Date(b.deadline) < new Date();
       const timeText = isExpired ? '<span style="color:#ef4444; font-weight:bold;">Đã hết hạn đặt cược</span>' : `Hạn cược: ${b.deadline.replace('T', ' ')}`;
 
       // Calculate totals

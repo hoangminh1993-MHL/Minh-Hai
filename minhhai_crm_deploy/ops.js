@@ -620,7 +620,7 @@ function renderFounderDashboard() {
     html += `<tr><td colspan="3" class="text-center text-muted" style="padding:15px;">Tuyệt vời! Không có nhân sự nào bị trễ việc.</td></tr>`;
   } else {
     sortedUsers.slice(0, 5).forEach(u => {
-      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán/Admin' };
+      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi', admin: 'Kế toán/Admin' };
       html += `
         <tr>
           <td><strong>${u.name}</strong></td>
@@ -2124,7 +2124,7 @@ function renderOpsSingleTasks() {
         valA = a.title || '';
         valB = b.title || '';
       } else if (currentSortField === 'dept') {
-        const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
+        const deptLabels = { sales: 'Kinh Doanh & CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi', admin: 'Kế Toán & Quản Trị' };
         valA = deptLabels[a.dept] || '';
         valB = deptLabels[b.dept] || '';
       } else if (currentSortField === 'assignee') {
@@ -2187,7 +2187,7 @@ function renderSingleTasksList(tasks) {
     return;
   }
 
-  const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
+  const deptLabels = { sales: 'Kinh Doanh & CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi', admin: 'Kế Toán & Quản Trị' };
   const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
   const priorityBadges = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
   const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };

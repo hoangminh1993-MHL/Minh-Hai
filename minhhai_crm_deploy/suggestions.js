@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSuggestions();
 });
 
-// AppState references & initializations
 function initSuggestions() {
   // Ensure AppState array exists
   if (!AppState.suggestions) AppState.suggestions = [];
