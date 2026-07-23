@@ -24,7 +24,7 @@ async function loadState() {
   try {
     const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
     localState = JSON.parse(localStateRaw);
-    localState.dbVersion = '20.70';
+    localState.dbVersion = '20.71';
   } catch (e) {
     console.error('Error reading db.json:', e);
   }
@@ -41,8 +41,8 @@ async function loadState() {
       if (res.rows.length > 0) {
         let dbState = {};
         try { dbState = JSON.parse(res.rows[0].state_json); } catch (e) {}
-        if (!dbState || dbState.dbVersion !== '20.70') {
-          console.log('Force updating Postgres DB state with clean db.json v20.70...');
+        if (!dbState || dbState.dbVersion !== '20.71') {
+          console.log('Force updating Postgres DB state with clean db.json v20.71...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, ) ON CONFLICT (id) DO UPDATE SET state_json = ', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -64,7 +64,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.70';
+  newState.dbVersion = '20.71';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
