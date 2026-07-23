@@ -433,7 +433,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.63';
+const CLIENT_VERSION = '20.64';
 
 async function checkCodeVersionUpdate() {
   try {

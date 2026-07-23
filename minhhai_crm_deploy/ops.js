@@ -3734,8 +3734,8 @@ window.openProjectDedicatedView = function(projId) {
 
   currentActiveProjectId = projId;
 
-  // Set titles
-  document.getElementById('dedicated-project-name').innerText = p.name;
+  const nameEl = document.getElementById('active-project-name') || document.getElementById('dedicated-project-name');
+  if (nameEl) nameEl.innerText = p.name;
   
   const manager = AppState.users.find(u => u.id === p.managerId);
   const managerName = manager ? manager.name : 'Chưa giao';
@@ -3744,10 +3744,22 @@ window.openProjectDedicatedView = function(projId) {
     const u = AppState.users.find(usr => usr.id === mid);
     return u ? u.name : null;
   }).filter(Boolean).join(', ') : '';
+
+  const managerEl = document.getElementById('active-project-manager');
+  if (managerEl) managerEl.innerText = managerName;
+
+  const membersEl = document.getElementById('active-project-members');
+  if (membersEl) membersEl.innerText = membersNames || 'Không có';
   
-  document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
+  const statusEl = document.getElementById('active-project-status');
+  if (statusEl) statusEl.innerText = p.status || 'Đang chuẩn bị';
+
+  const typeEl = document.getElementById('active-project-type');
+  if (typeEl) typeEl.innerText = `Loại: \`;
   
-  // Reset description editing mode views
+  const metaEl = document.getElementById('dedicated-project-meta');
+  if (metaEl) metaEl.innerText = `Quản lý: \ | Thành viên: \`;
+  
   const viewMode = document.getElementById('project-desc-view-mode');
   const editMode = document.getElementById('project-desc-edit-mode');
   const btnEditDesc = document.getElementById('btn-edit-project-desc');
@@ -3755,41 +3767,24 @@ window.openProjectDedicatedView = function(projId) {
   if (editMode) editMode.style.display = 'none';
   if (btnEditDesc) btnEditDesc.style.display = '';
 
-  document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
+  const descEl = document.getElementById('dedicated-project-desc');
+  if (descEl) descEl.innerText = (p.desc || 'Không có mô tả chi tiết.') + (p.notes ? \nLưu ý: \ : '');
 
-  // Calculate and update progress bar
   const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
   const totalTasks = projTasks.length;
   const completedTasks = projTasks.filter(t => t.status === 'completed').length;
   const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
   const percentEl = document.getElementById('dedicated-project-progress-percent');
-  if (percentEl) percentEl.innerText = `${percent}%`;
+  if (percentEl) percentEl.innerText = \%;
   
   const barEl = document.getElementById('dedicated-project-progress-bar');
-  if (barEl) barEl.style.width = `${percent}%`;
+  if (barEl) barEl.style.width = \%;
 
-  // Render tasks
-  const tasksContainer = document.getElementById('dedicated-project-tasks-list');
-  tasksContainer.innerHTML = '';
-  if (projTasks.length === 0) {
-    tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">Chưa có công việc nào liên kết với dự án này.</span>`;
-  } else {
-    projTasks.forEach(task => {
-      const div = document.createElement('div');
-      div.className = 'mini-task-item';
-      div.style.cssText = 'padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 6px;';
-      
-      const statusLabels = { 
-        todo: 'Chưa làm', 
-        pending: 'Chưa làm',
-        doing: 'Đang làm', 
-        waiting: 'Chờ phản hồi',
-        checking: 'Chờ duyệt',
-        completed: 'Hoàn thành', 
-        overdue: 'Quá hạn', 
-        canceled: 'Đã hủy' 
-      };
+  if (typeof renderDedicatedProjectTasks === 'function') renderDedicatedProjectTasks(p);
+  if (typeof renderDedicatedProjectDocs === 'function') renderDedicatedProjectDocs(p);
+  if (typeof renderDedicatedProjectDiscussion === 'function') renderDedicatedProjectDiscussion(p);
+};
       const statusColors = { 
         todo: 'bg-blue',
         pending: 'bg-gray', 
