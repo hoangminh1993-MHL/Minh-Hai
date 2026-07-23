@@ -3755,10 +3755,10 @@ window.openProjectDedicatedView = function(projId) {
   if (statusEl) statusEl.innerText = p.status || 'Đang chuẩn bị';
 
   const typeEl = document.getElementById('active-project-type');
-  if (typeEl) typeEl.innerText = `Loại: \`;
+  if (typeEl) typeEl.innerText = 'Loại: ' + (p.type || 'Phòng ban');
   
   const metaEl = document.getElementById('dedicated-project-meta');
-  if (metaEl) metaEl.innerText = `Quản lý: \ | Thành viên: \`;
+  if (metaEl) metaEl.innerText = 'Quản lý: ' + managerName + ' | Thành viên: ' + (membersNames || 'Không có');
   
   const viewMode = document.getElementById('project-desc-view-mode');
   const editMode = document.getElementById('project-desc-edit-mode');
