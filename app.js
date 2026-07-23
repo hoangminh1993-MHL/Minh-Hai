@@ -1,3 +1,10 @@
+  // Auto-purge stale cache when client version changes
+  const CURRENT_APP_VER = 'v20.67';
+  if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
+    console.log('New version detected! Purging stale local cache...');
+    ['votr_users', 'votr_leads', 'votr_tasks', 'votr_workflows', 'votr_logs', 'votr_notifs', 'votr_clients_db', 'votr_projects_db', 'votr_shipment_workflows_db', 'votr_single_tasks_db', 'votr_suggestions_db', 'votr_last_updated'].forEach(k => localStorage.removeItem(k));
+    localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
+  }
 window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
@@ -433,7 +440,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.61';
+const CLIENT_VERSION = '20.67';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3443,6 +3450,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   });
 });
+
 
 
 
