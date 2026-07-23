@@ -665,10 +665,11 @@ function initLotteryGame() {
 }
 
 function updateLotteryCostText() {
-  const type = document.getElementById('lottery-type-select').value;
+  const typeSelect = document.getElementById('lottery-type-select');
   const pointsInput = document.getElementById('lottery-points-input');
   const warning = document.getElementById('lottery-cost-warning');
-  if (!pointsInput || !warning) return;
+  if (!typeSelect || !pointsInput || !warning) return;
+  const type = typeSelect.value;
 
   const pts = parseInt(pointsInput.value) || 10;
   if (type === 'de') {

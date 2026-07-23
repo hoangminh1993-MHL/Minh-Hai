@@ -1,4 +1,4 @@
-﻿// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
+// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
 
 document.addEventListener('DOMContentLoaded', () => {
   initOpsEvents();
@@ -14,8 +14,8 @@ window.showStatsModal = function(type) {
 
   const getWorkflowStageName = (stage) => {
     const stepNames = [
-      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-      "Shop gửi hàng", "Kho Trung Quốc", "Hàng về VN", "Giao hàng", "Thu nợ", "Hoàn thành", "Huỷ"
+      "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+      "Shop gá»­i hÃ ng", "Kho Trung Quá»‘c", "HÃ ng vá» VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n thÃ nh", "Huá»·"
     ];
     return stepNames[stage - 1] || 'N/A';
   };
@@ -25,7 +25,7 @@ window.showStatsModal = function(type) {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
       
-      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chÃ­nh ngáº¡ch');
 
       const item = {
         type: 'workflow',
@@ -33,10 +33,10 @@ window.showStatsModal = function(type) {
         code: w.trackingCode || w.code || w.id,
         name: w.clientName || 'N/A',
         service: w.serviceType || 'N/A',
-        source: 'Vận hành',
+        source: 'Váº­n hÃ nh',
         stage: getWorkflowStageName(w.stage),
         date: createdDate.toLocaleDateString('vi-VN'),
-        val: (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0).toLocaleString() + ' đ'
+        val: (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0).toLocaleString() + ' Ä‘'
       };
 
       if (isThisMonth) {
@@ -53,10 +53,10 @@ window.showStatsModal = function(type) {
 
   if (AppState.leads) {
     AppState.leads.forEach(l => {
-      // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows), tránh đếm trùng
+      // Bá» qua lead Ä‘Ã£ thÃ nh cÃ´ng vÃ¬ nÃ³ Ä‘Ã£ Ä‘Æ°á»£c chuyá»ƒn sang Váº­n HÃ nh (shipment_workflows), trÃ¡nh Ä‘áº¿m trÃ¹ng
       if (l.stage === 'success') return; 
 
-      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
+      if (l.note && (l.note.toLowerCase().includes('chÃ­nh ngáº¡ch') || /\bcn\b/i.test(l.note))) {
         const createdDate = new Date(l.createdTime || l.date);
         
         const item = {
@@ -64,11 +64,11 @@ window.showStatsModal = function(type) {
           id: l.id,
           code: l.phone || l.id,
           name: l.name || 'N/A',
-          service: 'Chính ngạch',
-          source: 'CRM Khách mới',
-          stage: l.stage === 'success' ? 'Thành công' : (l.stage === 'failed' ? 'Thất bại' : 'Tiềm năng'),
+          service: 'ChÃ­nh ngáº¡ch',
+          source: 'CRM KhÃ¡ch má»›i',
+          stage: l.stage === 'success' ? 'ThÃ nh cÃ´ng' : (l.stage === 'failed' ? 'Tháº¥t báº¡i' : 'Tiá»m nÄƒng'),
           date: createdDate.toLocaleDateString('vi-VN'),
-          val: l.valTotal ? parseFloat(l.valTotal).toLocaleString() + ' đ' : '-'
+          val: l.valTotal ? parseFloat(l.valTotal).toLocaleString() + ' Ä‘' : '-'
         };
 
         if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
@@ -76,7 +76,7 @@ window.showStatsModal = function(type) {
             items.push(item);
           }
         }
-        // Không push vào cn_success vì l.stage === 'success' đã bị loại ở trên để tránh đếm trùng
+        // KhÃ´ng push vÃ o cn_success vÃ¬ l.stage === 'success' Ä‘Ã£ bá»‹ loáº¡i á»Ÿ trÃªn Ä‘á»ƒ trÃ¡nh Ä‘áº¿m trÃ¹ng
       }
     });
   }
@@ -84,29 +84,29 @@ window.showStatsModal = function(type) {
   const tbody = document.getElementById('modal-stats-tbody');
   if (tbody) {
     if (items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">Không có dữ liệu trong tháng này</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">KhÃ´ng cÃ³ dá»¯ liá»‡u trong thÃ¡ng nÃ y</td></tr>`;
     } else {
       tbody.innerHTML = items.map(i => `
         <tr style="cursor:pointer;" onclick="openStatDetail('\${i.type}', '\${i.id}')">
           <td>\${i.code}</td>
           <td>\${i.name}</td>
-          <td><span class="badge \${i.service && i.service.toLowerCase() === 'chính ngạch' ? 'badge-blue' : 'badge-gold'}\">\${i.service}</span><br><span style="font-size: 0.8em; color: #888;">\${i.source}</span></td>
+          <td><span class="badge \${i.service && i.service.toLowerCase() === 'chÃ­nh ngáº¡ch' ? 'badge-blue' : 'badge-gold'}\">\${i.service}</span><br><span style="font-size: 0.8em; color: #888;">\${i.source}</span></td>
           <td>\${i.stage}</td>
           <td>\${i.date}</td>
           <td>\${i.val}</td>
         </tr>
-        `).join('');
+      `).join('');
     }
   }
 
   const titles = {
-    'cn_generated': 'Danh sách lô chính ngạch phát sinh',
-    'cn_success': 'Danh sách lô chính ngạch chốt được',
-    'cn_profit': 'Danh sách lô hàng tính lợi nhuận',
-    'ops_added': 'Danh sách lô hàng vận hành mới'
+    'cn_generated': 'Danh sÃ¡ch lÃ´ chÃ­nh ngáº¡ch phÃ¡t sinh',
+    'cn_success': 'Danh sÃ¡ch lÃ´ chÃ­nh ngáº¡ch chá»‘t Ä‘Æ°á»£c',
+    'cn_profit': 'Danh sÃ¡ch lÃ´ hÃ ng tÃ­nh lá»£i nhuáº­n',
+    'ops_added': 'Danh sÃ¡ch lÃ´ hÃ ng váº­n hÃ nh má»›i'
   };
   const titleEl = document.getElementById('modal-stats-title');
-  if (titleEl) titleEl.innerText = titles[type] || 'Chi tiết';
+  if (titleEl) titleEl.innerText = titles[type] || 'Chi tiáº¿t';
 
   const modal = document.getElementById('modal-stats-details');
   if (modal) {
@@ -137,7 +137,7 @@ function initOpsEvents() {
     };
   }
 
-  // --- CRM Khách Cũ & Lô Hàng events ---
+  // --- CRM KhÃ¡ch CÅ© & LÃ´ HÃ ng events ---
   const btnAddFlowModal = document.getElementById('btn-add-flow-modal');
   if (btnAddFlowModal) {
     btnAddFlowModal.onclick = () => {
@@ -316,7 +316,7 @@ function initOpsEvents() {
       document.getElementById('ops-task-detail-desc').style.display = 'none';
       btnEditDesc.style.display = 'none';
       document.getElementById('ops-task-detail-edit-desc-group').style.display = 'flex';
-      document.getElementById('ops-task-detail-desc-input').value = descText === 'Không có mô tả chi tiết.' ? '' : descText;
+      document.getElementById('ops-task-detail-desc-input').value = descText === 'KhÃ´ng cÃ³ mÃ´ táº£ chi tiáº¿t.' ? '' : descText;
     };
   }
 
@@ -338,19 +338,19 @@ function initOpsEvents() {
         task.desc = newVal;
         saveState();
         
-        document.getElementById('ops-task-detail-desc').innerText = newVal || 'Không có mô tả chi tiết.';
+        document.getElementById('ops-task-detail-desc').innerText = newVal || 'KhÃ´ng cÃ³ mÃ´ táº£ chi tiáº¿t.';
         document.getElementById('ops-task-detail-desc').style.display = 'block';
         if (btnEditDesc) btnEditDesc.style.display = 'inline-block';
         document.getElementById('ops-task-detail-edit-desc-group').style.display = 'none';
         
         renderOpsSingleTasks();
         
-        // Also update CRM board if the task belongs to a CRM Khách Mới lead
+        // Also update CRM board if the task belongs to a CRM KhÃ¡ch Má»›i lead
         if (task.clientId && task.clientId.startsWith('lead-')) {
           const lead = AppState.leads && AppState.leads.find(l => l.id === task.clientId);
           if (lead) {
-            if (task.title.includes('Tình trạng KH sau báo giá')) {
-              const cleanFeedback = newVal.replace('Tình trạng khách hàng sau báo giá: ', '').replace('Tình trạng khách hàng: ', '');
+            if (task.title.includes('TÃ¬nh tráº¡ng KH sau bÃ¡o giÃ¡')) {
+              const cleanFeedback = newVal.replace('TÃ¬nh tráº¡ng khÃ¡ch hÃ ng sau bÃ¡o giÃ¡: ', '').replace('TÃ¬nh tráº¡ng khÃ¡ch hÃ ng: ', '');
               lead.quoteFeedback = cleanFeedback;
               saveState();
               if (typeof renderCRMBoard === 'function') renderCRMBoard();
@@ -358,7 +358,7 @@ function initOpsEvents() {
           }
         }
         
-        showToast('Đã cập nhật mô tả công việc!', 'success');
+        showToast('ÄÃ£ cáº­p nháº­t mÃ´ táº£ cÃ´ng viá»‡c!', 'success');
       }
     };
   }
@@ -440,8 +440,8 @@ function setupFounderDashboardTabs() {
   tabWrapper.className = 'dashboard-tabs';
   tabWrapper.style.cssText = 'display:flex; gap:12px; margin-bottom:20px; border-bottom:1px solid var(--border-color); padding-bottom:8px;';
   tabWrapper.innerHTML = `
-    <button class="dashboard-tab-btn active project-tab-btn" data-tab="crm" style="font-size: 15px;">CRM Khách Mới</button>
-    <button class="dashboard-tab-btn project-tab-btn" data-tab="ops" style="font-size: 15px;">Vận Hành & Khách Cũ (Founder)</button>
+    <button class="dashboard-tab-btn active project-tab-btn" data-tab="crm" style="font-size: 15px;">CRM KhÃ¡ch Má»›i</button>
+    <button class="dashboard-tab-btn project-tab-btn" data-tab="ops" style="font-size: 15px;">Váº­n HÃ nh & KhÃ¡ch CÅ© (Founder)</button>
   `;
 
   const topHeader = dashContainer.firstElementChild;
@@ -485,17 +485,17 @@ function renderFounderDashboard() {
   const container = document.getElementById('ops-dashboard-content');
   if (!container) return;
 
-  const activeSingleTasks = (AppState.single_tasks || []).filter(t => !(t.title && t.title.includes('Tình trạng KH sau báo giá')));
+  const activeSingleTasks = (AppState.single_tasks || []).filter(t => !(t.title && t.title.includes('TÃ¬nh tráº¡ng KH sau bÃ¡o giÃ¡')));
   const totalTasks = activeSingleTasks.length;
   const overdueTasks = activeSingleTasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
   const completedTodayTasks = activeSingleTasks.filter(t => t.status === 'completed').length; // Simplification for today
 
-  const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: Báo giá
-  const waitingShop = AppState.shipment_workflows.filter(w => w.stage === 6).length; // Step 6: Shop gửi hàng
-  const arrivingCn = AppState.shipment_workflows.filter(w => w.stage === 7).length; // Step 7: Kho Trung Quốc
-  const waitingDebt = AppState.shipment_workflows.filter(w => w.stage === 10).length; // Step 10: Thu nợ
+  const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: BÃ¡o giÃ¡
+  const waitingShop = AppState.shipment_workflows.filter(w => w.stage === 6).length; // Step 6: Shop gá»­i hÃ ng
+  const arrivingCn = AppState.shipment_workflows.filter(w => w.stage === 7).length; // Step 7: Kho Trung Quá»‘c
+  const waitingDebt = AppState.shipment_workflows.filter(w => w.stage === 10).length; // Step 10: Thu ná»£
 
-  // ---------------- Compute Chính Ngạch & Ops stats ---------------- //
+  // ---------------- Compute ChÃ­nh Ngáº¡ch & Ops stats ---------------- //
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
   let cnGenerated = 0;
@@ -507,7 +507,7 @@ function renderFounderDashboard() {
     AppState.shipment_workflows.forEach(w => {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chÃ­nh ngáº¡ch');
 
       if (isThisMonth) {
         if (isChinhNgach) {
@@ -524,10 +524,10 @@ function renderFounderDashboard() {
 
   if (AppState.leads) {
     AppState.leads.forEach(l => {
-      // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows)
+      // Bá» qua lead Ä‘Ã£ thÃ nh cÃ´ng vÃ¬ nÃ³ Ä‘Ã£ Ä‘Æ°á»£c chuyá»ƒn sang Váº­n HÃ nh (shipment_workflows)
       if (l.stage === 'success') return;
 
-      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
+      if (l.note && (l.note.toLowerCase().includes('chÃ­nh ngáº¡ch') || /\bcn\b/i.test(l.note))) {
         const createdDate = new Date(l.createdTime || l.date);
         if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
           cnGenerated++;
@@ -543,33 +543,33 @@ function renderFounderDashboard() {
       <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'all'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Tổng task đang mở</span>
+          <span class="stat-label">Tá»•ng task Ä‘ang má»Ÿ</span>
           <h3>${activeSingleTasks.filter(t => t.status !== 'completed').length}</h3>
-          <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
+          <span class="stat-trend trend-up">Tá»•ng sá»‘: ${totalTasks} viá»‡c</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'all'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
         <div class="stat-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Công việc quá hạn</span>
+          <span class="stat-label">CÃ´ng viá»‡c quÃ¡ háº¡n</span>
           <h3 class="text-rose">${overdueTasks}</h3>
-          <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cần xử lý gấp!</span>
+          <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cáº§n xá»­ lÃ½ gáº¥p!</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'completed'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
         <div class="stat-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Việc đã hoàn thành</span>
+          <span class="stat-label">Viá»‡c Ä‘Ã£ hoÃ n thÃ nh</span>
           <h3>${completedTodayTasks}</h3>
-          <span class="stat-trend trend-up">Vận hành nội bộ</span>
+          <span class="stat-trend trend-up">Váº­n hÃ nh ná»™i bá»™</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('crm-clients-workflows');">
         <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Đơn chờ thu nợ (Bước 10)</span>
+          <span class="stat-label">ÄÆ¡n chá» thu ná»£ (BÆ°á»›c 10)</span>
           <h3 class="text-gold">${waitingDebt}</h3>
-          <span class="stat-trend text-gold"><i class="fa-solid fa-receipt"></i> Đối soát kế toán</span>
+          <span class="stat-trend text-gold"><i class="fa-solid fa-receipt"></i> Äá»‘i soÃ¡t káº¿ toÃ¡n</span>
         </div>
       </div>
     </div>
@@ -577,25 +577,25 @@ function renderFounderDashboard() {
     <!-- Second row metrics -->
     <div class="dashboard-grid" style="margin-top: 24px;">
       <div class="dashboard-card">
-        <div class="card-header"><h3>Thống Kê Trạng Thái Lô Hàng Vận Hành</h3></div>
+        <div class="card-header"><h3>Thá»‘ng KÃª Tráº¡ng ThÃ¡i LÃ´ HÃ ng Váº­n HÃ nh</h3></div>
         <div class="card-body" style="display:flex; flex-direction:column; gap:10px;">
-          <div style="display:flex; justify-content:space-between;"><span>Lô hàng đang báo giá (Bước 2):</span><strong>${billingPending}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Chờ shop Trung Quốc phát hàng (Bước 6):</span><strong>${waitingShop}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Hàng đang tại kho Trung Quốc (Bước 7):</span><strong>${arrivingCn}</strong></div>
-          <div style="display:flex; justify-content:space-between;"><span>Đang thu nợ khách hàng (Bước 10):</span><strong>${waitingDebt}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>LÃ´ hÃ ng Ä‘ang bÃ¡o giÃ¡ (BÆ°á»›c 2):</span><strong>${billingPending}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Chá» shop Trung Quá»‘c phÃ¡t hÃ ng (BÆ°á»›c 6):</span><strong>${waitingShop}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>HÃ ng Ä‘ang táº¡i kho Trung Quá»‘c (BÆ°á»›c 7):</span><strong>${arrivingCn}</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>Äang thu ná»£ khÃ¡ch hÃ ng (BÆ°á»›c 10):</span><strong>${waitingDebt}</strong></div>
         </div>
       </div>
 
       <div class="dashboard-card">
-        <div class="card-header"><h3>Phòng Ban & Nhân Sự Chậm Việc</h3></div>
+        <div class="card-header"><h3>PhÃ²ng Ban & NhÃ¢n Sá»± Cháº­m Viá»‡c</h3></div>
         <div class="card-body" style="padding:0;">
           <div class="leaderboard-table-wrapper" style="margin:0; border:none; border-radius:0;">
             <table class="leaderboard-table" style="min-width:100%;">
               <thead>
                 <tr>
-                  <th>Nhân sự</th>
-                  <th class="text-center">Số task quá hạn</th>
-                  <th>Phòng ban</th>
+                  <th>NhÃ¢n sá»±</th>
+                  <th class="text-center">Sá»‘ task quÃ¡ háº¡n</th>
+                  <th>PhÃ²ng ban</th>
                 </tr>
               </thead>
               <tbody>
@@ -617,10 +617,10 @@ function renderFounderDashboard() {
     .sort((a,b) => b.count - a.count);
 
   if (sortedUsers.length === 0) {
-    html += `<tr><td colspan="3" class="text-center text-muted" style="padding:15px;">Tuyệt vời! Không có nhân sự nào bị trễ việc.</td></tr>`;
+    html += `<tr><td colspan="3" class="text-center text-muted" style="padding:15px;">Tuyá»‡t vá»i! KhÃ´ng cÃ³ nhÃ¢n sá»± nÃ o bá»‹ trá»… viá»‡c.</td></tr>`;
   } else {
     sortedUsers.slice(0, 5).forEach(u => {
-      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán/Admin' };
+      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Sourcing', warehouse: 'Kho bÃ£i', admin: 'Káº¿ toÃ¡n/Admin' };
       html += `
         <tr>
           <td><strong>${u.name}</strong></td>
@@ -643,18 +643,18 @@ function renderFounderDashboard() {
   container.innerHTML = html;
 }
 
-// ==================== CRM KHÁCH CŨ & LÔ HÀNG (12 BƯỚC) ==================== //
+// ==================== CRM KHÃCH CÅ¨ & LÃ” HÃ€NG (12 BÆ¯á»šC) ==================== //
 function renderOpsWorkflows() {
     if (typeof renderOpsStats === 'function') renderOpsStats();
-  // Sanitize checklists: only allow 'cập nhật tình trạng sau báo giá' in Step 2, clear all others
+  // Sanitize checklists: only allow 'cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡' in Step 2, clear all others
   if (AppState.shipment_workflows) {
     AppState.shipment_workflows.forEach(flow => {
       if (flow.steps) {
         flow.steps.forEach(s => {
           if (s.stepNum === 2) {
-            s.checklist = s.checklist ? s.checklist.filter(c => c.text === "cập nhật tình trạng sau báo giá") : [];
+            s.checklist = s.checklist ? s.checklist.filter(c => c.text === "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡") : [];
             if (s.checklist.length === 0) {
-              s.checklist.push({ text: "cập nhật tình trạng sau báo giá", done: false, required: true });
+              s.checklist.push({ text: "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡", done: false, required: true });
             }
           } else {
             s.checklist = [];
@@ -674,8 +674,8 @@ function renderOpsWorkflows() {
   const overdueVal = document.getElementById('ops-flow-filter-overdue').checked;
 
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+    "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t", "Tháº¥t báº¡i"
   ];
 
   // 12 steps arrays
@@ -802,10 +802,10 @@ function renderOpsWorkflows() {
       const iconSpan = header.querySelector('.sort-icon');
       if (iconSpan) {
         if (field === opsSortField) {
-          iconSpan.innerHTML = opsSortOrder === 'asc' ? ' ▲' : ' ▼';
+          iconSpan.innerHTML = opsSortOrder === 'asc' ? ' â–²' : ' â–¼';
           iconSpan.style.opacity = '1';
         } else {
-          iconSpan.innerHTML = ' ⇅';
+          iconSpan.innerHTML = ' â‡…';
           iconSpan.style.opacity = '0.3';
         }
       }
@@ -815,12 +815,12 @@ function renderOpsWorkflows() {
     if (listBody) {
       listBody.innerHTML = '';
       if (filteredFlows.length === 0) {
-        listBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy lô hàng nào.</td></tr>`;
+        listBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">KhÃ´ng tÃ¬m tháº¥y lÃ´ hÃ ng nÃ o.</td></tr>`;
       } else {
         filteredFlows.forEach(flow => {
           const client = AppState.clients.find(c => c.id === flow.clientId) || {};
           const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
-          const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
+          const assigneeName = assigneeUser ? assigneeUser.name : 'ChÆ°a giao';
           
           let slaBadge = '<span class="text-muted" style="font-size:11.5px; font-style:italic;">--</span>';
           if (flow.customerMsgTime && flow.infoEntryTime) {
@@ -831,24 +831,24 @@ function renderOpsWorkflows() {
               const mins = diffMins % 60;
               const timeText = hours > 0 ? `${hours}h${mins}m` : `${mins}m`;
               if (diffMins <= 120) {
-                slaBadge = `<span class="badge" style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-check"></i> Đạt (${timeText})</span>`;
+                slaBadge = `<span class="badge" style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-check"></i> Äáº¡t (${timeText})</span>`;
               } else {
-                slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Muộn (${timeText})</span>`;
+                slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Muá»™n (${timeText})</span>`;
               }
             } else {
-              slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-xmark"></i> Lỗi thời gian</span>`;
+              slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-xmark"></i> Lá»—i thá»i gian</span>`;
             }
           } else if (flow.stage === 1) {
-            slaBadge = `<span class="badge" style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Chờ nhập thời gian</span>`;
+            slaBadge = `<span class="badge" style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Chá» nháº­p thá»i gian</span>`;
           }
           
-          const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
-          const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Bước ${flow.stage}: ${currentStepName}</span>`;
+          const currentStepName = stepNames[flow.stage - 1] || 'KhÃ´ng rÃµ';
+          const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">BÆ°á»›c ${flow.stage}: ${currentStepName}</span>`;
           
           const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
           const deadlineBadge = isOverdue
-            ? `<span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Trễ hạn</span>`
-            : `<span style="color:var(--text-secondary);">${flow.deadline || 'Chưa đặt'}</span>`;
+            ? `<span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Trá»… háº¡n</span>`
+            : `<span style="color:var(--text-secondary);">${flow.deadline || 'ChÆ°a Ä‘áº·t'}</span>`;
             
           const tr = document.createElement('tr');
           tr.style.borderBottom = '1px solid var(--border-color)';
@@ -860,19 +860,19 @@ function renderOpsWorkflows() {
           tr.innerHTML = `
             <td style="padding: 12px 10px;">
               <div style="font-weight: bold; color: var(--color-primary);">${flow.name}</div>
-              <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Dịch vụ: ${flow.serviceType || 'Chưa rõ'}</div>
-              ${flow.failReason ? `<div style="font-size: 10px; color: #f87171; margin-top: 2px;"><i class="fa-solid fa-triangle-exclamation"></i> Lý do hỏng: ${flow.failReason}</div>` : ''}
+              <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Dá»‹ch vá»¥: ${flow.serviceType || 'ChÆ°a rÃµ'}</div>
+              ${flow.failReason ? `<div style="font-size: 10px; color: #f87171; margin-top: 2px;"><i class="fa-solid fa-triangle-exclamation"></i> LÃ½ do há»ng: ${flow.failReason}</div>` : ''}
             </td>
             <td style="padding: 12px 10px;">
-              <div style="font-weight: 600;">${client.name || 'Vô danh'}</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Mã KH: ${client.code || '--'}</div>
+              <div style="font-weight: 600;">${client.name || 'VÃ´ danh'}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">MÃ£ KH: ${client.code || '--'}</div>
             </td>
             <td style="padding: 12px 10px; color: var(--text-secondary);">${assigneeName}</td>
             <td style="padding: 12px 10px;">${stepBadge}</td>
             <td style="padding: 12px 10px;">${slaBadge}</td>
             <td style="padding: 12px 10px;">${deadlineBadge}</td>
             <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
-              <button class="btn btn-sm btn-outline" onclick="openFlowDetailModal('${flow.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
+              <button class="btn btn-sm btn-outline" onclick="openFlowDetailModal('${flow.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiáº¿t</button>
             </td>
           `;
           listBody.appendChild(tr);
@@ -938,11 +938,11 @@ function renderOpsWorkflows() {
       card.setAttribute('data-id', flow.id);
       
       const salesUser = AppState.users.find(u => u.id === flow.cskhId);
-      const salesName = salesUser ? salesUser.name.split(' ').pop() : 'Chưa giao';
+      const salesName = salesUser ? salesUser.name.split(' ').pop() : 'ChÆ°a giao';
       const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
-      const assigneeName = assigneeUser ? assigneeUser.name.split(' ').pop() : 'Chưa giao';
+      const assigneeName = assigneeUser ? assigneeUser.name.split(' ').pop() : 'ChÆ°a giao';
 
-      const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="Quá hạn chót lô hàng!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` : '';
+      const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="QuÃ¡ háº¡n chÃ³t lÃ´ hÃ ng!"><i class="fa-solid fa-triangle-exclamation"></i> QuÃ¡ háº¡n</div>` : '';
 
       // Highlight if updated today
       const now = new Date();
@@ -954,11 +954,11 @@ function renderOpsWorkflows() {
 
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.name || 'Vô danh'} - ${flow.name}</span>
+          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.name || 'VÃ´ danh'} - ${flow.name}</span>
           <span class="badge bg-blue" style="font-size:9px; padding:2px 4px; white-space: nowrap; margin-left: 4px;">${flow.serviceType}</span>
         </div>
         <div class="card-client-name" style="margin-top:6px; font-size:13.5px;">${flow.name}</div>
-        <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
+        <div class="card-desc" style="font-size:11.5px; opacity:0.8;">KhÃ¡ch: ${client.name || 'KhÃ´ng rÃµ'}</div>
         ${(() => {
           if (flow.customerMsgTime && flow.infoEntryTime) {
             const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
@@ -974,11 +974,11 @@ function renderOpsWorkflows() {
               
               const color = isOk ? '#34d399' : '#ef4444';
               const icon = isOk ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
-              const labelText = isOk ? `Phản hồi đạt: ${timeText}` : `Phản hồi trễ: ${timeText} (>2h)`;
+              const labelText = isOk ? `Pháº£n há»“i Ä‘áº¡t: ${timeText}` : `Pháº£n há»“i trá»…: ${timeText} (>2h)`;
               
               const evidenceLink = flow.evidenceUrl ? `
                 <a href="${flow.evidenceUrl}" target="_blank" style="color: #38bdf8; font-size: 9.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;" onclick="event.stopPropagation();">
-                  <i class="fa-solid fa-image"></i> Bằng chứng
+                  <i class="fa-solid fa-image"></i> Báº±ng chá»©ng
                 </a>
               ` : '';
               
@@ -989,9 +989,9 @@ function renderOpsWorkflows() {
                   </div>
                   <div style="display: flex; align-items: center; gap: 6px;">
                     ${evidenceLink}
-                    <label style="display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; user-select: none;" onclick="event.stopPropagation();" ${!isAdminOrManager ? 'title="Chỉ Quản lý mới có quyền duyệt"' : ''}>
+                    <label style="display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; user-select: none;" onclick="event.stopPropagation();" ${!isAdminOrManager ? 'title="Chá»‰ Quáº£n lÃ½ má»›i cÃ³ quyá»n duyá»‡t"' : ''}>
                       <input type="checkbox" onchange="window.toggleManagerVerify('${flow.id}', this.checked)" ${flow.managerVerified ? 'checked' : ''} ${!isAdminOrManager ? 'disabled' : ''} style="cursor: pointer; width: 11px; height: 11px; margin: 0;">
-                      <span style="font-size: 9.5px; color: ${flow.managerVerified ? '#34d399' : '#9ca3af'}; font-weight: bold;">Duyệt</span>
+                      <span style="font-size: 9.5px; color: ${flow.managerVerified ? '#34d399' : '#9ca3af'}; font-weight: bold;">Duyá»‡t</span>
                     </label>
                   </div>
                 </div>
@@ -1002,39 +1002,39 @@ function renderOpsWorkflows() {
         })() || ''}
         ${overdueBadge}
         <div style="font-size: 10.2px; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 4px;">
-          <i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Chưa thiết lập'}
+          <i class="fa-solid fa-calendar-xmark"></i> Háº¡n: ${flow.deadline || 'ChÆ°a thiáº¿t láº­p'}
         </div>
         ${flow.failReason ? `
           <div style="margin-top: 6px; padding: 4px 6px; background: rgba(239, 68, 68, 0.12); border: 1px dashed rgba(239, 68, 68, 0.25); border-radius: 4px; font-size: 10.5px; color: #f87171; line-height: 1.3;">
-            <i class="fa-solid fa-triangle-exclamation"></i> <strong>Lý do hỏng:</strong> ${flow.failReason}
+            <i class="fa-solid fa-triangle-exclamation"></i> <strong>LÃ½ do há»ng:</strong> ${flow.failReason}
           </div>
         ` : ''}
         <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; flex-direction:column; gap:2px; font-size:10px; color:var(--text-muted);">
-            <span><i class="fa-solid fa-user-gear"></i> Phụ trách: ${assigneeName}</span>
+            <span><i class="fa-solid fa-user-gear"></i> Phá»¥ trÃ¡ch: ${assigneeName}</span>
             <span><i class="fa-solid fa-headset"></i> CSKH: ${salesName}</span>
           </div>
-          <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
+          <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0Ä‘'}</strong>
         </div>
         <div style="font-size: 10px; color: ${timeColor}; font-weight: ${timeFontWeight}; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;">
-          <i class="fa-solid fa-rotate"></i> Cập nhật: ${lastHistoryTime}
+          <i class="fa-solid fa-rotate"></i> Cáº­p nháº­t: ${lastHistoryTime}
         </div>
         <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
-          <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển:</span>
+          <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyá»ƒn:</span>
           <select class="card-stage-select" style="font-size: 10px; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-            <option value="" disabled selected>Chọn...</option>
-            <option value="1" ${flow.stage === 1 ? 'disabled' : ''}>1. Nhận thông tin</option>
-            <option value="2" ${flow.stage === 2 ? 'disabled' : ''}>2. Báo giá</option>
-            <option value="3" ${flow.stage === 3 ? 'disabled' : ''}>3. Thương lượng</option>
-            <option value="4" ${flow.stage === 4 ? 'disabled' : ''}>4. Thành công</option>
-            <option value="5" ${flow.stage === 5 ? 'disabled' : ''}>5. Mua hàng</option>
-            <option value="6" ${flow.stage === 6 ? 'disabled' : ''}>6. Shop gửi</option>
-            <option value="7" ${flow.stage === 7 ? 'disabled' : ''}>7. Về TQ</option>
-            <option value="8" ${flow.stage === 8 ? 'disabled' : ''}>8. Về VN</option>
-            <option value="9" ${flow.stage === 9 ? 'disabled' : ''}>9. Giao hàng</option>
-            <option value="10" ${flow.stage === 10 ? 'disabled' : ''}>10. Thu nợ</option>
-            <option value="11" ${flow.stage === 11 ? 'disabled' : ''}>11. Hoàn tất</option>
-            <option value="12" ${flow.stage === 12 ? 'disabled' : ''}>12. Thất bại</option>
+            <option value="" disabled selected>Chá»n...</option>
+            <option value="1" ${flow.stage === 1 ? 'disabled' : ''}>1. Nháº­n thÃ´ng tin</option>
+            <option value="2" ${flow.stage === 2 ? 'disabled' : ''}>2. BÃ¡o giÃ¡</option>
+            <option value="3" ${flow.stage === 3 ? 'disabled' : ''}>3. ThÆ°Æ¡ng lÆ°á»£ng</option>
+            <option value="4" ${flow.stage === 4 ? 'disabled' : ''}>4. ThÃ nh cÃ´ng</option>
+            <option value="5" ${flow.stage === 5 ? 'disabled' : ''}>5. Mua hÃ ng</option>
+            <option value="6" ${flow.stage === 6 ? 'disabled' : ''}>6. Shop gá»­i</option>
+            <option value="7" ${flow.stage === 7 ? 'disabled' : ''}>7. Vá» TQ</option>
+            <option value="8" ${flow.stage === 8 ? 'disabled' : ''}>8. Vá» VN</option>
+            <option value="9" ${flow.stage === 9 ? 'disabled' : ''}>9. Giao hÃ ng</option>
+            <option value="10" ${flow.stage === 10 ? 'disabled' : ''}>10. Thu ná»£</option>
+            <option value="11" ${flow.stage === 11 ? 'disabled' : ''}>11. HoÃ n táº¥t</option>
+            <option value="12" ${flow.stage === 12 ? 'disabled' : ''}>12. Tháº¥t báº¡i</option>
           </select>
         </div>
       `;
@@ -1086,8 +1086,8 @@ function ensureTwelveSteps(flow) {
   if (!flow.steps) flow.steps = [];
   if (flow.steps.length < 12) {
     const defaultStepNames = [
-      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-      "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+      "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+      "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t", "Tháº¥t báº¡i"
     ];
     for (let i = flow.steps.length + 1; i <= 12; i++) {
       flow.steps.push({
@@ -1112,37 +1112,37 @@ function handleFlowMoveAttempt(flowId, targetStage) {
   const currentStage = flow.stage;
   if (currentStage === targetStage) return;
 
-  // Validate files when transitioning to Báo giá (Step 2)
+  // Validate files when transitioning to BÃ¡o giÃ¡ (Step 2)
   if (targetStage === 2) {
     const files = flow.files || [];
     const hasImage = files.some(f => 
       /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
-      f.name.toLowerCase().includes('ảnh') || 
-      f.name.toLowerCase().includes('hình') ||
+      f.name.toLowerCase().includes('áº£nh') || 
+      f.name.toLowerCase().includes('hÃ¬nh') ||
       f.name.toLowerCase().includes('image') ||
       f.name.toLowerCase().includes('img')
     );
     if (!hasImage) {
-      alert("Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!");
+      alert("Äá»ƒ chuyá»ƒn sang bÆ°á»›c BÃ¡o giÃ¡, báº¡n báº¯t buá»™c pháº£i chÃ¨n HÃ¬nh áº£nh bÃ¡o giÃ¡ vÃ o má»¥c tÃ i liá»‡u Ä‘Ã­nh kÃ¨m!");
       return;
     }
   }
-  // Validate quote feedback when transitioning from Báo giá (Step 2) to Step 3 (Thương lượng) or higher
+  // Validate quote feedback when transitioning from BÃ¡o giÃ¡ (Step 2) to Step 3 (ThÆ°Æ¡ng lÆ°á»£ng) or higher
   if (currentStage === 2 && targetStage >= 3) {
     const feedback = (flow.quoteFeedback || '').trim();
     if (feedback.length < 3) {
-      alert("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 2!");
+      alert("Báº¡n báº¯t buá»™c pháº£i nháº­p rÃµ TÃ¬nh tráº¡ng khÃ¡ch hÃ ng sau bÃ¡o giÃ¡ vÃ o Ã´ nháº­p liá»‡u á»Ÿ BÆ°á»›c 2!");
       return;
     }
   }
-  // If moving to Thất bại (stage 12), require fail reason + evidence
+  // If moving to Tháº¥t báº¡i (stage 12), require fail reason + evidence
   if (targetStage === 12) {
     const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
     const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
     if (!isAdminOrManager) {
-      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      showToast("Chá»‰ tÃ i khoáº£n Admin hoáº·c Quáº£n lÃ½ má»›i cÃ³ quyá»n chuyá»ƒn sang Tháº¥t báº¡i! CSKH chá»‰ Ä‘Æ°á»£c phÃ©p chuyá»ƒn sang cá»™t ThÆ°Æ¡ng lÆ°á»£ng.", "warning");
       
-      // Automatically redirect to Step 3: Thương lượng instead of Step 12: Thất bại
+      // Automatically redirect to Step 3: ThÆ°Æ¡ng lÆ°á»£ng instead of Step 12: Tháº¥t báº¡i
       executeFlowMove(flow, 3);
       flow.failReason = null;
       flow.failEvidence = null;
@@ -1163,16 +1163,16 @@ function handleFlowMoveAttempt(flowId, targetStage) {
     
     failPromptCallback = (reason, evidence) => {
       const allowedFailReasons = [
-        "Không đủ năng lực xử lý hàng",
-        "Hàng khó từ chối",
-        "Khách lẻ, hàng khó => chủ động từ chối",
-        "Không tìm được hàng cho KH"
+        "KhÃ´ng Ä‘á»§ nÄƒng lá»±c xá»­ lÃ½ hÃ ng",
+        "HÃ ng khÃ³ tá»« chá»‘i",
+        "KhÃ¡ch láº», hÃ ng khÃ³ => chá»§ Ä‘á»™ng tá»« chá»‘i",
+        "KhÃ´ng tÃ¬m Ä‘Æ°á»£c hÃ ng cho KH"
       ];
       
       const isNegotiationReason = !allowedFailReasons.includes(reason);
       
       if (isNegotiationReason) {
-        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển lô hàng sang cột Thương lượng.", "info");
+        showToast("LÃ½ do nÃ y thuá»™c khÃ¢u ThÆ°Æ¡ng lÆ°á»£ng! Há»‡ thá»‘ng Ä‘Ã£ chuyá»ƒn lÃ´ hÃ ng sang cá»™t ThÆ°Æ¡ng lÆ°á»£ng.", "info");
         executeFlowMove(flow, 3);
         flow.failReason = null;
         flow.failEvidence = null;
@@ -1188,7 +1188,7 @@ function handleFlowMoveAttempt(flowId, targetStage) {
       executeFlowMove(flow, 12);
       saveState();
       renderOpsWorkflows();
-      addNotification('Lô hàng thất bại', `Lô hàng ${flow.name} đã chuyển sang Thất bại: ${reason}`, 'warning');
+      addNotification('LÃ´ hÃ ng tháº¥t báº¡i', `LÃ´ hÃ ng ${flow.name} Ä‘Ã£ chuyá»ƒn sang Tháº¥t báº¡i: ${reason}`, 'warning');
     };
     return;
   }
@@ -1218,10 +1218,10 @@ function handleFlowMoveAttempt(flowId, targetStage) {
         
         // Listen to change
         itemDiv.querySelector('input').onchange = (e) => {
-          if (item.text === "cập nhật tình trạng sau báo giá" && e.target.checked) {
+          if (item.text === "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡" && e.target.checked) {
             const feedback = (flow.quoteFeedback || '').trim();
             if (feedback.length < 3) {
-              alert("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 2!");
+              alert("Báº¡n báº¯t buá»™c pháº£i nháº­p rÃµ TÃ¬nh tráº¡ng khÃ¡ch hÃ ng sau bÃ¡o giÃ¡ vÃ o Ã´ nháº­p liá»‡u á»Ÿ BÆ°á»›c 2!");
               e.target.checked = false;
               return;
             }
@@ -1268,8 +1268,8 @@ function handleConfirmedFlowMove() {
 function executeFlowMove(flow, targetStage) {
   ensureTwelveSteps(flow);
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+    "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t", "Tháº¥t báº¡i"
   ];
   const oldStage = flow.stage;
   flow.stage = targetStage;
@@ -1281,11 +1281,11 @@ function executeFlowMove(flow, targetStage) {
     else s.status = 'todo';
   });
 
-  // When moving to Thất bại, set failApproved = false
+  // When moving to Tháº¥t báº¡i, set failApproved = false
   if (targetStage === 12) {
     flow.failApproved = false;
   }
-  // When moving away from Thất bại, clear fail fields
+  // When moving away from Tháº¥t báº¡i, clear fail fields
   if (oldStage === 12 && targetStage !== 12) {
     flow.failReason = null;
     flow.failEvidence = null;
@@ -1310,11 +1310,11 @@ function executeFlowMove(flow, targetStage) {
     }
   }
 
-  flow.history.push(`${dateStr}: Di chuyển từ bước ${oldStage} sang ${targetStage} (${stepNames[targetStage - 1]})`);
+  flow.history.push(`${dateStr}: Di chuyá»ƒn tá»« bÆ°á»›c ${oldStage} sang ${targetStage} (${stepNames[targetStage - 1]})`);
 
   saveState();
   renderOpsWorkflows();
-  addNotification('Cập nhật Lô Hàng 🚚', `Đã chuyển lô hàng "${flow.name}" sang bước: ${stepNames[targetStage - 1]}`, 'success');
+  addNotification('Cáº­p nháº­t LÃ´ HÃ ng ðŸšš', `ÄÃ£ chuyá»ƒn lÃ´ hÃ ng "${flow.name}" sang bÆ°á»›c: ${stepNames[targetStage - 1]}`, 'success');
 }
 
 // Open detail modal for 12 steps workflow
@@ -1331,7 +1331,7 @@ function openFlowDetailModal(flowId) {
 
   document.getElementById('flow-detail-title').innerText = flow.name;
   const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-  document.getElementById('flow-detail-subtitle').innerText = `${flow.serviceType.toUpperCase()} - Khách: ${client.name || 'Không rõ'} (${client.code || 'KH CŨ'})`;
+  document.getElementById('flow-detail-subtitle').innerText = `${flow.serviceType.toUpperCase()} - KhÃ¡ch: ${client.name || 'KhÃ´ng rÃµ'} (${client.code || 'KH CÅ¨'})`;
 
   const stageSelect = document.getElementById('modal-flow-stage-select');
   if (stageSelect) {
@@ -1353,8 +1353,8 @@ function openFlowDetailModal(flowId) {
   timeline.innerHTML = '';
   
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+    "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t", "Tháº¥t báº¡i"
   ];
 
   for (let i = 1; i <= 12; i++) {
@@ -1381,12 +1381,12 @@ function openFlowDetailModal(flowId) {
 
   // Handle Delete flow button
   document.getElementById('btn-flow-delete').onclick = () => {
-    if (confirm(`Bạn chắc chắn muốn xóa lô hàng "${flow.name}"?`)) {
+    if (confirm(`Báº¡n cháº¯c cháº¯n muá»‘n xÃ³a lÃ´ hÃ ng "${flow.name}"?`)) {
       AppState.shipment_workflows = AppState.shipment_workflows.filter(f => f.id !== flowId);
       saveState();
       closeModal('modal-flow-detail');
       renderOpsWorkflows();
-      addNotification('Xóa Lô Hàng', `Đã xóa lô hàng thành công.`, 'warning');
+      addNotification('XÃ³a LÃ´ HÃ ng', `ÄÃ£ xÃ³a lÃ´ hÃ ng thÃ nh cÃ´ng.`, 'warning');
     }
   };
 
@@ -1413,11 +1413,11 @@ function renderActiveStepPanel() {
   if (!stepData) return;
 
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+    "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t", "Tháº¥t báº¡i"
   ];
 
-  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1] || 'Thất bại'}`;
+  document.getElementById('flow-step-panel-title').innerText = `BÆ°á»›c ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1] || 'Tháº¥t báº¡i'}`;
 
   // Populate users
   const assigneeSelect = document.getElementById('flow-step-assignee');
@@ -1465,15 +1465,15 @@ function renderActiveStepPanel() {
           const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
           const isOk = diffMin <= 120;
           if (isOk) {
-            auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
+            auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Äáº¡t: pháº£n há»“i trong ${timeText} (dÆ°á»›i 2 tiáº¿ng)</span>`;
           } else {
-            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
+            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> KhÃ´ng Äáº¡t: pháº£n há»“i trong ${timeText} (vÆ°á»£t quÃ¡ 2 tiáº¿ng)</span>`;
           }
         } else {
-          auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
+          auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lá»—i: Thá»i gian nháº­p nhá» hÆ¡n thá»i gian khÃ¡ch nháº¯n!</span>`;
         }
       } else {
-        auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
+        auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nháº­p Ä‘áº§y Ä‘á»§ thÃ´ng tin thá»i gian Ä‘á»ƒ kiá»ƒm tra.</span>`;
       }
     };
     
@@ -1484,7 +1484,7 @@ function renderActiveStepPanel() {
       verifyChk.checked = !!flow.managerVerified;
       verifyChk.disabled = !isAdminOrManager;
       if (!isAdminOrManager) {
-        verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+        verifyChk.parentElement.setAttribute('title', 'Chá»‰ Quáº£n lÃ½ má»›i cÃ³ quyá»n duyá»‡t');
       } else {
         verifyChk.parentElement.removeAttribute('title');
       }
@@ -1522,7 +1522,7 @@ function renderActiveStepPanel() {
         flow.quoteFeedback = val;
         const step2 = flow.steps.find(s => s.stepNum === 2);
         if (step2) {
-          const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+          const item = step2.checklist.find(c => c.text === "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡");
           if (item) {
             item.done = val.trim().length >= 3;
           }
@@ -1547,21 +1547,21 @@ function renderActiveStepPanel() {
       
       const storedReason = flow.failReason || '';
       const stdReasons = [
-        'Giá dịch vụ cao',
-        'Thời gian vận chuyển lâu',
-        'Không cạnh tranh được với đại lý VN',
-        'Trả lời chậm',
-        'Hàng khó từ chối',
-        'Không đủ năng lực xử lý hàng',
-        'Không cạnh tranh được giá dịch vụ với đối thủ',
-        'Không tìm được hàng cho KH',
-        'Khách lẻ, hàng khó => chủ động từ chối',
-        'Khách hàng ko quan tâm',
-        'Do AI tư vấn chưa tốt'
+        'GiÃ¡ dá»‹ch vá»¥ cao',
+        'Thá»i gian váº­n chuyá»ƒn lÃ¢u',
+        'KhÃ´ng cáº¡nh tranh Ä‘Æ°á»£c vá»›i Ä‘áº¡i lÃ½ VN',
+        'Tráº£ lá»i cháº­m',
+        'HÃ ng khÃ³ tá»« chá»‘i',
+        'KhÃ´ng Ä‘á»§ nÄƒng lá»±c xá»­ lÃ½ hÃ ng',
+        'KhÃ´ng cáº¡nh tranh Ä‘Æ°á»£c giÃ¡ dá»‹ch vá»¥ vá»›i Ä‘á»‘i thá»§',
+        'KhÃ´ng tÃ¬m Ä‘Æ°á»£c hÃ ng cho KH',
+        'KhÃ¡ch láº», hÃ ng khÃ³ => chá»§ Ä‘á»™ng tá»« chá»‘i',
+        'KhÃ¡ch hÃ ng ko quan tÃ¢m',
+        'Do AI tÆ° váº¥n chÆ°a tá»‘t'
       ];
       
       if (storedReason && !stdReasons.includes(storedReason)) {
-        reasonSelect.value = 'Khác';
+        reasonSelect.value = 'KhÃ¡c';
         reasonOtherGroup.style.display = 'block';
         reasonOtherInput.value = storedReason;
       } else {
@@ -1571,7 +1571,7 @@ function renderActiveStepPanel() {
       }
 
       reasonSelect.onchange = (e) => {
-        if (e.target.value === 'Khác') {
+        if (e.target.value === 'KhÃ¡c') {
           reasonOtherGroup.style.display = 'block';
         } else {
           reasonOtherGroup.style.display = 'none';
@@ -1600,7 +1600,7 @@ function renderActiveStepPanel() {
   chkContainer.innerHTML = '';
   if (stepData.checklist && stepData.checklist.length > 0) {
     stepData.checklist.forEach((item, idx) => {
-      if (item.text === "cập nhật tình trạng sau báo giá") return;
+      if (item.text === "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡") return;
       
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px;';
@@ -1635,7 +1635,7 @@ function renderActiveStepPanel() {
 
   // Handle empty state
   if (chkContainer.innerHTML === '') {
-    chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
+    chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">KhÃ´ng cÃ³ checklist.</span>`;
   }
 
   // Render step files
@@ -1652,7 +1652,7 @@ function renderActiveStepPanel() {
       const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
                       file.url.toLowerCase().includes('drive.google.com') || 
                       file.url.toLowerCase().includes('googleusercontent.com') ||
-                      nameLower.includes('ảnh') || 
+                      nameLower.includes('áº£nh') || 
                       nameLower.includes('anh') || 
                       nameLower.includes('image') || 
                       nameLower.includes('png') || 
@@ -1676,7 +1676,7 @@ function renderActiveStepPanel() {
         }
       }
 
-      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="áº£nh hÃ ng hÃ³a" />` : '';
 
       row.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -1688,7 +1688,7 @@ function renderActiveStepPanel() {
       filesContainer.appendChild(row);
     });
   } else {
-    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
+    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">ChÆ°a cÃ³ tÃ i liá»‡u nÃ o.</span>`;
   }
 
   // Render comments
@@ -1728,20 +1728,20 @@ function autoSaveActiveStepData() {
     flow.quoteFeedback = quoteFeedbackEl.value;
     const step2 = flow.steps.find(s => s.stepNum === 2);
     if (step2) {
-      const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+      const item = step2.checklist.find(c => c.text === "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡");
       if (item) {
         item.done = quoteFeedbackEl.value.trim().length >= 3;
       }
     }
   }
 
-  // Save fail reason, evidence and manager approval if flow is at step 12 (Thất bại)
+  // Save fail reason, evidence and manager approval if flow is at step 12 (Tháº¥t báº¡i)
   if (flow.stage === 12) {
     const reasonSelect = document.getElementById('flow-step-fail-reason');
     const reasonVal = reasonSelect.value;
     
     let finalReason = reasonVal;
-    if (reasonVal === 'Khác') {
+    if (reasonVal === 'KhÃ¡c') {
       finalReason = document.getElementById('flow-step-fail-reason-other').value.trim();
     }
     
@@ -1789,7 +1789,7 @@ function handleSaveActiveStepData() {
   autoSaveActiveStepData();
   closeModal('modal-flow-detail');
   renderOpsWorkflows();
-  showToast('Đã lưu thông tin bước xử lý!', 'success');
+  showToast('ÄÃ£ lÆ°u thÃ´ng tin bÆ°á»›c xá»­ lÃ½!', 'success');
 }
 
 function handleFlowAddStepChecklistItem() {
@@ -1818,11 +1818,11 @@ function handleFlowAddStepFile() {
   const url = urlInput.value.trim();
   
   if (!url) {
-    alert("Vui lòng nhập đường dẫn liên kết URL!");
+    alert("Vui lÃ²ng nháº­p Ä‘Æ°á»ng dáº«n liÃªn káº¿t URL!");
     return;
   }
   if (!name) {
-    name = "Tài liệu đính kèm";
+    name = "TÃ i liá»‡u Ä‘Ã­nh kÃ¨m";
   }
 
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
@@ -1883,7 +1883,7 @@ function handleAddFlowSubmit(e) {
         source: lead.source,
         cskhId: lead.salesId || 'usr-admin',
         managerId: 'usr-admin',
-        note: 'Khách hàng tạo từ Lead qua Lô hàng',
+        note: 'KhÃ¡ch hÃ ng táº¡o tá»« Lead qua LÃ´ hÃ ng',
         createdTime: lead.createdTime ? lead.createdTime.split(' ')[0] : (lead.date || new Date().toISOString().split('T')[0])
       };
       AppState.clients.push(newClient);
@@ -1897,7 +1897,7 @@ function handleAddFlowSubmit(e) {
     const cSocial = document.getElementById('flow-client-social').value.trim();
 
     if (!cName) {
-      alert('Vui lòng nhập tên khách hàng mới!');
+      alert('Vui lÃ²ng nháº­p tÃªn khÃ¡ch hÃ ng má»›i!');
       return;
     }
 
@@ -1912,10 +1912,10 @@ function handleAddFlowSubmit(e) {
       social: cSocial,
       type: serviceType,
       tier: 'VIP 5', // default lowest VIP
-      source: 'tự sales',
+      source: 'tá»± sales',
       cskhId: document.getElementById('flow-cskh').value || 'usr-admin',
       managerId: 'usr-admin',
-      note: 'Khách hàng mới tạo qua Lô hàng',
+      note: 'KhÃ¡ch hÃ ng má»›i táº¡o qua LÃ´ hÃ ng',
       createdTime: new Date().toISOString().split('T')[0]
     };
 
@@ -1926,9 +1926,9 @@ function handleAddFlowSubmit(e) {
   // Pre-generate 12 steps templates
   const flowSteps = [];
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop Trung Quốc gửi hàng", "Về đến kho Trung Quốc", "Về đến kho Hà Nội/Hải Phòng",
-    "Giao hàng cho khách", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+    "Shop Trung Quá»‘c gá»­i hÃ ng", "Vá» Ä‘áº¿n kho Trung Quá»‘c", "Vá» Ä‘áº¿n kho HÃ  Ná»™i/Háº£i PhÃ²ng",
+    "Giao hÃ ng cho khÃ¡ch", "Thu ná»£", "HoÃ n táº¥t", "Tháº¥t báº¡i"
   ];
   
   for (let i = 1; i <= 12; i++) {
@@ -1938,7 +1938,7 @@ function handleAddFlowSubmit(e) {
     let stepChecklist = [];
     if (i === 2) {
       stepChecklist = [
-        { text: "cập nhật tình trạng sau báo giá", done: false, required: true }
+        { text: "cáº­p nháº­t tÃ¬nh tráº¡ng sau bÃ¡o giÃ¡", done: false, required: true }
       ];
     }
 
@@ -1970,8 +1970,8 @@ function handleAddFlowSubmit(e) {
     cskhId: document.getElementById('flow-cskh').value,
     quoterId: document.getElementById('flow-cskh').value,
     buyerId: document.getElementById('flow-buyer').value,
-    warehouseCn: document.getElementById('flow-warehouse-cn').value.trim() || 'Bằng Tường',
-    warehouseVn: document.getElementById('flow-warehouse-vn').value.trim() || 'Hà Nội',
+    warehouseCn: document.getElementById('flow-warehouse-cn').value.trim() || 'Báº±ng TÆ°á»ng',
+    warehouseVn: document.getElementById('flow-warehouse-vn').value.trim() || 'HÃ  Ná»™i',
     stage: 1,
     valTotal: parseInt(document.getElementById('flow-val-total').value) || 0,
     revenue: parseInt(document.getElementById('flow-revenue').value) || 0,
@@ -1983,7 +1983,7 @@ function handleAddFlowSubmit(e) {
     evidenceUrl: evidenceUrl,
     files: [],
     riskNote: document.getElementById('flow-risk').value.trim(),
-    history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo quy trình lô hàng`],
+    history: [`${new Date().toISOString().split('T')[0]}: Khá»Ÿi táº¡o quy trÃ¬nh lÃ´ hÃ ng`],
     steps: flowSteps
   };
 
@@ -1992,7 +1992,7 @@ function handleAddFlowSubmit(e) {
   closeModal('modal-add-ops-flow');
   document.getElementById('form-add-ops-flow').reset();
   renderOpsWorkflows();
-  addNotification('Lô Hàng Mới 🚚', `Đã khởi tạo quy trình vận chuyển "${name}" thành công!`, 'success');
+  addNotification('LÃ´ HÃ ng Má»›i ðŸšš', `ÄÃ£ khá»Ÿi táº¡o quy trÃ¬nh váº­n chuyá»ƒn "${name}" thÃ nh cÃ´ng!`, 'success');
 }
 
 function populateFlowUserDropdowns() {
@@ -2016,7 +2016,7 @@ function populateFlowClientDropdown() {
   const select = document.getElementById('flow-client-select');
   if (!select) return;
   
-  select.innerHTML = '<option value="new">-- Tạo Khách Hàng Mới --</option>';
+  select.innerHTML = '<option value="new">-- Táº¡o KhÃ¡ch HÃ ng Má»›i --</option>';
   
   // List Facebook Leads first (prefixed with 'lead-')
   if (AppState.leads) {
@@ -2057,10 +2057,10 @@ function exportWorkflowsToCSV() {
   AppState.shipment_workflows.forEach(w => {
     const client = AppState.clients.find(c => c.id === w.clientId) || {};
     const stepNames = [
-      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-      "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+      "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+      "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t"
     ];
-    const currentStepName = stepNames[w.stage - 1] || "Không rõ";
+    const currentStepName = stepNames[w.stage - 1] || "KhÃ´ng rÃµ";
     csvContent += `"${client.code || ''}","${client.name || ''}","${w.name}","${w.serviceType}","${currentStepName}",${w.valTotal},${w.revenue},${w.debt},"${w.deadline || ''}"\n`;
   });
 
@@ -2071,11 +2071,11 @@ function exportWorkflowsToCSV() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  showToast('Đã xuất báo cáo CSV thành công!', 'success');
+  showToast('ÄÃ£ xuáº¥t bÃ¡o cÃ¡o CSV thÃ nh cÃ´ng!', 'success');
 }
 
 
-// ==================== CÔNG VIỆC ĐƠN LẺ LOGIC ==================== //
+// ==================== CÃ”NG VIá»†C ÄÆ N Láºº LOGIC ==================== //
 function switchSingleTaskLayout(layout) {
   currentSingleTaskLayout = layout;
   
@@ -2103,7 +2103,7 @@ function renderOpsSingleTasks() {
   const statusVal = statusEl ? statusEl.value : 'all';
 
   let filtered = AppState.single_tasks.filter(t => {
-    if (t.title && t.title.includes('Tình trạng KH sau báo giá')) return false;
+    if (t.title && t.title.includes('TÃ¬nh tráº¡ng KH sau bÃ¡o giÃ¡')) return false;
 
     const matchesSearch = t.title.toLowerCase().includes(searchVal) || (t.desc && t.desc.toLowerCase().includes(searchVal));
     if (!matchesSearch) return false;
@@ -2124,7 +2124,7 @@ function renderOpsSingleTasks() {
         valA = a.title || '';
         valB = b.title || '';
       } else if (currentSortField === 'dept') {
-        const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
+        const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bÃ£i', admin: 'Káº¿ toÃ¡n & Admin' };
         valA = deptLabels[a.dept] || '';
         valB = deptLabels[b.dept] || '';
       } else if (currentSortField === 'assignee') {
@@ -2135,8 +2135,8 @@ function renderOpsSingleTasks() {
       } else if (currentSortField === 'helper') {
         const userA = AppState.users.find(u => u.id === a.helperId);
         const userB = AppState.users.find(u => u.id === b.helperId);
-        valA = userA ? userA.name : 'Không';
-        valB = userB ? userB.name : 'Không';
+        valA = userA ? userA.name : 'KhÃ´ng';
+        valB = userB ? userB.name : 'KhÃ´ng';
       } else if (currentSortField === 'priority') {
         const priorityOrder = { low: 1, normal: 2, high: 3, urgent: 4 };
         valA = priorityOrder[a.priority] || 0;
@@ -2145,7 +2145,7 @@ function renderOpsSingleTasks() {
         valA = a.deadline ? new Date(a.deadline).getTime() : 0;
         valB = b.deadline ? new Date(b.deadline).getTime() : 0;
       } else if (currentSortField === 'status') {
-        const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
+        const statusLabels = { todo: 'ChÆ°a lÃ m', doing: 'Äang lÃ m', waiting: 'Chá» pháº£n há»“i', completed: 'HoÃ n thÃ nh', overdue: 'QuÃ¡ háº¡n', canceled: 'ÄÃ£ há»§y' };
         valA = statusLabels[a.status] || '';
         valB = statusLabels[b.status] || '';
       }
@@ -2183,14 +2183,14 @@ function renderSingleTasksList(tasks) {
   tbody.innerHTML = '';
 
   if (tasks.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-list-check empty-state-icon"></i><span>Không có công việc nào trùng khớp.</span></div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fa-solid fa-list-check empty-state-icon"></i><span>KhÃ´ng cÃ³ cÃ´ng viá»‡c nÃ o trÃ¹ng khá»›p.</span></div></td></tr>`;
     return;
   }
 
-  const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
-  const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
+  const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bÃ£i', admin: 'Káº¿ toÃ¡n & Admin' };
+  const priorityLabels = { low: 'Tháº¥p', normal: 'BÃ¬nh thÆ°á»ng', high: 'Cao', urgent: 'Kháº©n cáº¥p' };
   const priorityBadges = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
-  const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
+  const statusLabels = { todo: 'ChÆ°a lÃ m', doing: 'Äang lÃ m', waiting: 'Chá» pháº£n há»“i', completed: 'HoÃ n thÃ nh', overdue: 'QuÃ¡ háº¡n', canceled: 'ÄÃ£ há»§y' };
   const statusBadges = { todo: 'bg-blue', doing: 'bg-orange', waiting: 'bg-purple', completed: 'bg-emerald', overdue: 'bg-rose', canceled: 'bg-gray' };
 
   tasks.forEach(t => {
@@ -2207,13 +2207,13 @@ function renderSingleTasksList(tasks) {
     tr.innerHTML = `
       <td><strong>${t.title}</strong></td>
       <td><span class="badge bg-gray">${deptLabels[t.dept] || t.dept}</span></td>
-      <td>${assignee ? assignee.name : 'Chưa giao'}</td>
-      <td>${helper ? helper.name : 'Không'}</td>
+      <td>${assignee ? assignee.name : 'ChÆ°a giao'}</td>
+      <td>${helper ? helper.name : 'KhÃ´ng'}</td>
       <td><span class="badge ${priorityBadges[t.priority]}">${priorityLabels[t.priority]}</span></td>
-      <td class="${timeHighlight}">${t.deadline || 'Chưa đặt'}</td>
+      <td class="${timeHighlight}">${t.deadline || 'ChÆ°a Ä‘áº·t'}</td>
       <td><span class="badge ${statusBadges[t.status]}">${statusLabels[t.status]}</span></td>
       <td class="text-center">
-        <button class="btn btn-sm btn-outline" onclick="openOpsTaskDetail('${t.id}')">Chi tiết</button>
+        <button class="btn btn-sm btn-outline" onclick="openOpsTaskDetail('${t.id}')">Chi tiáº¿t</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -2246,9 +2246,9 @@ function renderSingleTasksBoard(tasks) {
           </button>
         ` : ''}
       </div>
-      <div class="card-desc" style="margin-top:4px;">${t.desc || 'Không có mô tả.'}</div>
+      <div class="card-desc" style="margin-top:4px;">${t.desc || 'KhÃ´ng cÃ³ mÃ´ táº£.'}</div>
       <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> ${assignee ? assignee.name.split(' ').pop() : 'Chưa giao'}</span>
+        <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> ${assignee ? assignee.name.split(' ').pop() : 'ChÆ°a giao'}</span>
         <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> ${t.deadline}</span>
       </div>
     `;
@@ -2306,7 +2306,7 @@ function renderSingleTasksBoard(tasks) {
         
         saveState();
         renderOpsSingleTasks();
-        addNotification('Cập nhật Công việc 📝', `Đã chuyển công việc "${task.title}" sang cột ${status.toUpperCase()}`, 'info');
+        addNotification('Cáº­p nháº­t CÃ´ng viá»‡c ðŸ“', `ÄÃ£ chuyá»ƒn cÃ´ng viá»‡c "${task.title}" sang cá»™t ${status.toUpperCase()}`, 'info');
       }
     });
   });
@@ -2317,7 +2317,7 @@ function renderSingleTasksCalendar(tasks) {
   grid.innerHTML = '';
 
   const monthYearLabel = document.getElementById('calendar-month-year');
-  const monthNames = ["Tháng 01", "Tháng 02", "Tháng 03", "Tháng 04", "Tháng 05", "Tháng 06", "Tháng 07", "Tháng 08", "Tháng 09", "Tháng 10", "Tháng 11", "Tháng 12"];
+  const monthNames = ["ThÃ¡ng 01", "ThÃ¡ng 02", "ThÃ¡ng 03", "ThÃ¡ng 04", "ThÃ¡ng 05", "ThÃ¡ng 06", "ThÃ¡ng 07", "ThÃ¡ng 08", "ThÃ¡ng 09", "ThÃ¡ng 10", "ThÃ¡ng 11", "ThÃ¡ng 12"];
   monthYearLabel.innerText = `${monthNames[currentCalendarMonth]} / ${currentCalendarYear}`;
 
   // First day of currentCalendarMonth
@@ -2413,25 +2413,25 @@ window.openOpsTaskDetail = function(taskId) {
   const projectTextEl = document.getElementById('ops-task-detail-project-text');
   if (projectTextEl) {
     const project = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
-    projectTextEl.innerText = project ? ` | Dự án: ${project.name}` : '';
+    projectTextEl.innerText = project ? ` | Dá»± Ã¡n: ${project.name}` : '';
   }
 
   // Populate assignee select dropdown
   const assigneeSelect = document.getElementById('ops-task-detail-assignee');
   if (assigneeSelect) {
-    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>``).join('');
+    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
     assigneeSelect.value = task.assigneeId || '';
   }
 
   // Populate helper select dropdown
   const helperSelect = document.getElementById('ops-task-detail-helper');
   if (helperSelect) {
-    helperSelect.innerHTML = `<option value="">Không có hỗ trợ</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>``).join('');
+    helperSelect.innerHTML = `<option value="">KhÃ´ng cÃ³ há»— trá»£</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
     helperSelect.value = task.helperId || '';
   }
   
   document.getElementById('ops-task-detail-deadline').value = task.deadline ? window.formatDateTimeLocal(task.deadline) : '';
-  document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
+  document.getElementById('ops-task-detail-desc').innerText = task.desc || 'KhÃ´ng cÃ³ mÃ´ táº£ chi tiáº¿t.';
 
   document.getElementById('ops-task-detail-desc').style.display = 'block';
   const editBtn = document.getElementById('btn-ops-task-detail-edit-desc');
@@ -2440,7 +2440,7 @@ window.openOpsTaskDetail = function(taskId) {
   if (editGroup) editGroup.style.display = 'none';
 
   // Priority badge
-  const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
+  const priorityLabels = { low: 'Tháº¥p', normal: 'BÃ¬nh thÆ°á»ng', high: 'Cao', urgent: 'Kháº©n cáº¥p' };
   const priorityColors = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
   const badge = document.getElementById('ops-task-detail-priority-badge');
   badge.className = `badge ${priorityColors[task.priority]}`;
@@ -2449,12 +2449,12 @@ window.openOpsTaskDetail = function(taskId) {
   // Status dropdown populate
   const statusSelect = document.getElementById('ops-task-detail-status');
   statusSelect.innerHTML = `
-    <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>Chưa làm</option>
-    <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Đang làm</option>
-    <option value="waiting" ${task.status === 'waiting' ? 'selected' : ''}>Chờ phản hồi</option>
-    <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Hoàn thành</option>
-    <option value="overdue" ${task.status === 'overdue' ? 'selected' : ''}>Quá hạn</option>
-    <option value="canceled" ${task.status === 'canceled' ? 'selected' : ''}>Đã hủy</option>
+    <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>ChÆ°a lÃ m</option>
+    <option value="doing" ${task.status === 'doing' ? 'selected' : ''}>Äang lÃ m</option>
+    <option value="waiting" ${task.status === 'waiting' ? 'selected' : ''}>Chá» pháº£n há»“i</option>
+    <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>HoÃ n thÃ nh</option>
+    <option value="overdue" ${task.status === 'overdue' ? 'selected' : ''}>QuÃ¡ háº¡n</option>
+    <option value="canceled" ${task.status === 'canceled' ? 'selected' : ''}>ÄÃ£ há»§y</option>
   `;
 
   renderOpsTaskSubchecklist();
@@ -2503,7 +2503,7 @@ function renderOpsTaskSubchecklist() {
       container.appendChild(row);
     });
   } else {
-    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa tạo checklist con.</span>`;
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">ChÆ°a táº¡o checklist con.</span>`;
   }
 }
 
@@ -2540,7 +2540,7 @@ function renderOpsTaskFiles() {
       container.appendChild(row);
     });
   } else {
-    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm.</span>`;
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">ChÆ°a cÃ³ tÃ i liá»‡u Ä‘Ã­nh kÃ¨m.</span>`;
   }
 }
 
@@ -2559,11 +2559,11 @@ function handleAddTaskFile() {
   let name = nameInput.value.trim();
   const url = urlInput.value.trim();
   if (!url) {
-    showToast("Vui lòng nhập đường dẫn liên kết URL!", "warning");
+    showToast("Vui lÃ²ng nháº­p Ä‘Æ°á»ng dáº«n liÃªn káº¿t URL!", "warning");
     return;
   }
   if (!name) {
-    name = "Tài liệu đính kèm";
+    name = "TÃ i liá»‡u Ä‘Ã­nh kÃ¨m";
   }
 
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
@@ -2605,7 +2605,7 @@ function renderOpsTaskComments() {
     // Scroll to bottom
     container.scrollTop = container.scrollHeight;
   } else {
-    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào.</span>`;
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">ChÆ°a cÃ³ tháº£o luáº­n nÃ o.</span>`;
   }
 }
 
@@ -2617,7 +2617,7 @@ function handleAddTaskComment() {
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
   if (task) {
     if (!task.comments) task.comments = [];
-    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân viên' };
+    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'NhÃ¢n viÃªn' };
     
     const now = new Date();
     const dateStr = `${now.getHours()}:${now.getMinutes()} ${now.getDate()}/${now.getMonth() + 1}`;
@@ -2677,16 +2677,16 @@ function handleSaveTaskDetails() {
   closeModal('modal-ops-task-detail');
   renderOpsSingleTasks();
   if (typeof renderMyTasks === 'function') renderMyTasks();
-  showToast('Đã cập nhật thông tin công việc!', 'success');
+  showToast('ÄÃ£ cáº­p nháº­t thÃ´ng tin cÃ´ng viá»‡c!', 'success');
 }
 
 function handleDeleteTask() {
-  if (confirm('Bạn có thực sự muốn xóa công việc này?')) {
+  if (confirm('Báº¡n cÃ³ thá»±c sá»± muá»‘n xÃ³a cÃ´ng viá»‡c nÃ y?')) {
     AppState.single_tasks = AppState.single_tasks.filter(t => t.id !== currentActiveTaskId);
     saveState();
     closeModal('modal-ops-task-detail');
     renderOpsSingleTasks();
-    showToast('Đã xóa công việc.', 'info');
+    showToast('ÄÃ£ xÃ³a cÃ´ng viá»‡c.', 'info');
   }
 }
 
@@ -2733,7 +2733,7 @@ function handleAddSingleTaskSubmit(e) {
     checklist: [],
     attachments: [],
     comments: [],
-    history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo công việc đơn lẻ`]
+    history: [`${new Date().toISOString().split('T')[0]}: Khá»Ÿi táº¡o cÃ´ng viá»‡c Ä‘Æ¡n láº»`]
   };
 
   AppState.single_tasks.push(newTask);
@@ -2752,7 +2752,7 @@ function handleAddSingleTaskSubmit(e) {
     }
   }
 
-  addNotification('Giao Việc 📝', `Đã giao công việc mới: "${title}" cho nhân viên phụ trách.`, 'success');
+  addNotification('Giao Viá»‡c ðŸ“', `ÄÃ£ giao cÃ´ng viá»‡c má»›i: "${title}" cho nhÃ¢n viÃªn phá»¥ trÃ¡ch.`, 'success');
 }
 
 function populateTaskUserDropdowns() {
@@ -2763,7 +2763,7 @@ function populateTaskUserDropdowns() {
     select.innerHTML = '';
     
     if (id === 'ops-task-helper') {
-      select.innerHTML = '<option value="">-- Không có --</option>';
+      select.innerHTML = '<option value="">-- KhÃ´ng cÃ³ --</option>';
     }
 
     users.forEach(u => {
@@ -2778,7 +2778,7 @@ function populateTaskUserDropdowns() {
 function populateTaskProjectAndClientDropdowns() {
   const projSelect = document.getElementById('ops-task-project');
   if (projSelect) {
-    projSelect.innerHTML = '<option value="">-- Không ghim dự án --</option>';
+    projSelect.innerHTML = '<option value="">-- KhÃ´ng ghim dá»± Ã¡n --</option>';
     AppState.projects.forEach(p => {
       const opt = document.createElement('option');
       opt.value = p.id;
@@ -2789,11 +2789,11 @@ function populateTaskProjectAndClientDropdowns() {
 
   const clientSelect = document.getElementById('ops-task-client');
   if (clientSelect) {
-    clientSelect.innerHTML = '<option value="">-- Không liên kết --</option>';
+    clientSelect.innerHTML = '<option value="">-- KhÃ´ng liÃªn káº¿t --</option>';
     
     // Group Clients
     const groupClients = document.createElement('optgroup');
-    groupClients.label = 'Khách Hàng Cũ';
+    groupClients.label = 'KhÃ¡ch HÃ ng CÅ©';
     AppState.clients.forEach(c => {
       const opt = document.createElement('option');
       opt.value = c.id;
@@ -2804,7 +2804,7 @@ function populateTaskProjectAndClientDropdowns() {
 
     // Group Workflows
     const groupFlows = document.createElement('optgroup');
-    groupFlows.label = 'Quy Trình Lô Hàng';
+    groupFlows.label = 'Quy TrÃ¬nh LÃ´ HÃ ng';
     AppState.shipment_workflows.forEach(w => {
       const opt = document.createElement('option');
       opt.value = w.id;
@@ -2827,14 +2827,14 @@ function populateTasksFiltersOnce() {
 }
 
 
-// ==================== DỰ ÁN VẬN HÀNH LOGIC ==================== //
+// ==================== Dá»° ÃN Váº¬N HÃ€NH LOGIC ==================== //
 function renderOpsProjects() {
   const listContainer = document.getElementById('projects-list-container');
   if (!listContainer) return;
   listContainer.innerHTML = '';
 
   if (AppState.projects.length === 0) {
-    listContainer.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">Chưa có dự án nào.</span>`;
+    listContainer.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">ChÆ°a cÃ³ dá»± Ã¡n nÃ o.</span>`;
     return;
   }
 
@@ -2843,14 +2843,14 @@ function renderOpsProjects() {
     card.className = `dashboard-card project-card-item ${currentActiveProjectId === p.id ? 'active' : ''}`;
     card.style.cssText = `cursor:pointer; border: 1px solid ${currentActiveProjectId === p.id ? 'var(--color-primary)' : 'var(--border-color)'}; padding:12px;`;
     
-    const manager = AppState.users.find(u => u.id === p.managerId) || { name: 'Chưa giao' };
+    const manager = AppState.users.find(u => u.id === p.managerId) || { name: 'ChÆ°a giao' };
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <strong>${p.name}</strong>
         <span class="badge bg-blue" style="font-size:9.5px;">${p.type}</span>
       </div>
-      <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Quản lý: ${manager.name} | Thành viên: ${p.members ? p.members.length : 0}</div>
+      <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Quáº£n lÃ½: ${manager.name} | ThÃ nh viÃªn: ${p.members ? p.members.length : 0}</div>
     `;
 
     card.onclick = () => {
@@ -2874,9 +2874,9 @@ function openProjectDetails(projId) {
   container.style.display = 'block';
 
   document.getElementById('active-project-name').innerText = p.name;
-  document.getElementById('active-project-type').innerText = `Loại: ${p.type.toUpperCase()}`;
+  document.getElementById('active-project-type').innerText = `Loáº¡i: ${p.type.toUpperCase()}`;
   
-  const statusLabels = { preparing: 'Đang chuẩn bị', doing: 'Đang thực hiện', paused: 'Tạm dừng', completed: 'Hoàn thành', canceled: 'Đã hủy' };
+  const statusLabels = { preparing: 'Äang chuáº©n bá»‹', doing: 'Äang thá»±c hiá»‡n', paused: 'Táº¡m dá»«ng', completed: 'HoÃ n thÃ nh', canceled: 'ÄÃ£ há»§y' };
   const statusColors = { preparing: 'bg-gray', doing: 'bg-blue', paused: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
   const statusBadge = document.getElementById('active-project-status');
   statusBadge.className = `badge ${statusColors[p.status]}`;
@@ -2903,17 +2903,17 @@ function switchProjectTab(tab) {
   if (!proj) return;
 
   if (tab === 'overview') {
-    document.getElementById('active-project-desc').innerText = proj.desc || 'Không có mô tả chi tiết.';
+    document.getElementById('active-project-desc').innerText = proj.desc || 'KhÃ´ng cÃ³ mÃ´ táº£ chi tiáº¿t.';
     const manager = AppState.users.find(u => u.id === proj.managerId);
-    document.getElementById('active-project-manager').innerText = manager ? manager.name : 'Chưa giao';
+    document.getElementById('active-project-manager').innerText = manager ? manager.name : 'ChÆ°a giao';
     
     const membersNames = proj.members ? proj.members.map(mid => {
       const u = AppState.users.find(usr => usr.id === mid);
       return u ? u.name : null;
     }).filter(Boolean).join(', ') : '';
-    document.getElementById('active-project-members').innerText = membersNames || 'Không có thành viên phụ';
+    document.getElementById('active-project-members').innerText = membersNames || 'KhÃ´ng cÃ³ thÃ nh viÃªn phá»¥';
     
-    document.getElementById('active-project-notes').innerText = proj.notes || 'Không có ghi chú quan trọng.';
+    document.getElementById('active-project-notes').innerText = proj.notes || 'KhÃ´ng cÃ³ ghi chÃº quan trá»ng.';
 
     // Populate quick view tasks inside overview tab
     const overviewTasksList = document.getElementById('project-overview-tasks-list');
@@ -2921,14 +2921,14 @@ function switchProjectTab(tab) {
       overviewTasksList.innerHTML = '';
       const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === proj.id);
       if (projTasks.length === 0) {
-        overviewTasksList.innerHTML = `<span class="text-muted" style="font-size: 11.5px; font-style: italic;">Chưa có công việc nào liên kết với dự án này.</span>`;
+        overviewTasksList.innerHTML = `<span class="text-muted" style="font-size: 11.5px; font-style: italic;">ChÆ°a cÃ³ cÃ´ng viá»‡c nÃ o liÃªn káº¿t vá»›i dá»± Ã¡n nÃ y.</span>`;
       } else {
         projTasks.forEach(task => {
           const div = document.createElement('div');
           div.className = 'mini-task-item';
           div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 11.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;';
           
-          const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
+          const statusLabels = { pending: 'ChÆ°a lÃ m', doing: 'Äang lÃ m', checking: 'Chá» duyá»‡t', completed: 'HoÃ n thÃ nh', canceled: 'ÄÃ£ há»§y' };
           const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
           
           div.innerHTML = `
@@ -2937,7 +2937,7 @@ function switchProjectTab(tab) {
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               <span class="badge ${statusColors[task.status] || ''}" style="font-size:9px;">${statusLabels[task.status] || task.status}</span>
-              <span style="font-size: 9.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
+              <span style="font-size: 9.5px; color: var(--text-muted);">${task.deadline || 'Háº¡n: -'}</span>
             </div>
           `;
           div.onclick = () => {
@@ -2953,7 +2953,7 @@ function switchProjectTab(tab) {
     if (overviewDocsList) {
       overviewDocsList.innerHTML = '';
       if (!proj.documents || proj.documents.length === 0) {
-        overviewDocsList.innerHTML = `<span class="text-muted" style="font-size: 11.5px; font-style: italic;">Chưa ghim tài liệu hoặc liên kết nào.</span>`;
+        overviewDocsList.innerHTML = `<span class="text-muted" style="font-size: 11.5px; font-style: italic;">ChÆ°a ghim tÃ i liá»‡u hoáº·c liÃªn káº¿t nÃ o.</span>`;
       } else {
         proj.documents.forEach(doc => {
           const div = document.createElement('div');
@@ -2965,7 +2965,7 @@ function switchProjectTab(tab) {
               ${doc.note ? `<span style="font-size:10.5px; opacity:0.8; margin-left:6px;">(${doc.note})</span>` : ''}
             </div>
             <a href="${doc.url}" target="_blank" style="font-size:11px; color:var(--color-primary); font-weight:bold; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
-              <i class="fa-solid fa-square-share-nodes"></i> Mở link
+              <i class="fa-solid fa-square-share-nodes"></i> Má»Ÿ link
             </a>
           `;
           overviewDocsList.appendChild(div);
@@ -2986,7 +2986,7 @@ function renderProjectDocsTab(proj) {
   tbody.innerHTML = '';
 
   if (!proj.documents || proj.documents.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" style="padding:15px; font-style:italic;">Chưa ghim tài liệu hoặc link Google Drive nào.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted" style="padding:15px; font-style:italic;">ChÆ°a ghim tÃ i liá»‡u hoáº·c link Google Drive nÃ o.</td></tr>`;
     return;
   }
 
@@ -2994,10 +2994,10 @@ function renderProjectDocsTab(proj) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${doc.name}</strong></td>
-      <td><a href="${doc.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-square-share-nodes"></i> Mở liên kết</a></td>
-      <td>${doc.note || 'Không có'}</td>
+      <td><a href="${doc.url}" target="_blank" style="color:var(--color-primary);"><i class="fa-solid fa-square-share-nodes"></i> Má»Ÿ liÃªn káº¿t</a></td>
+      <td>${doc.note || 'KhÃ´ng cÃ³'}</td>
       <td class="text-center">
-        <button class="btn btn-sm btn-outline text-rose" onclick="handleDeleteProjectDoc(${idx})"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+        <button class="btn btn-sm btn-outline text-rose" onclick="handleDeleteProjectDoc(${idx})"><i class="fa-solid fa-trash-can"></i> XÃ³a</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -3034,7 +3034,7 @@ function handleProjectAddDocSubmit(e) {
       openProjectDedicatedView(proj.id);
     }
 
-    showToast('Đã ghim tài liệu thành công!', 'success');
+    showToast('ÄÃ£ ghim tÃ i liá»‡u thÃ nh cÃ´ng!', 'success');
   }
 }
 
@@ -3045,13 +3045,13 @@ function renderProjectTasksTab(projId) {
   const projectTasks = AppState.single_tasks.filter(t => t.projectId === projId);
 
   if (projectTasks.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:15px; font-style:italic;">Chưa có công việc nào liên kết với dự án này.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted" style="padding:15px; font-style:italic;">ChÆ°a cÃ³ cÃ´ng viá»‡c nÃ o liÃªn káº¿t vá»›i dá»± Ã¡n nÃ y.</td></tr>`;
     return;
   }
 
-  const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
+  const priorityLabels = { low: 'Tháº¥p', normal: 'BÃ¬nh thÆ°á»ng', high: 'Cao', urgent: 'Kháº©n cáº¥p' };
   const priorityColors = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
-  const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
+  const statusLabels = { todo: 'ChÆ°a lÃ m', doing: 'Äang lÃ m', waiting: 'Chá» pháº£n há»“i', completed: 'HoÃ n thÃ nh', overdue: 'QuÃ¡ háº¡n', canceled: 'ÄÃ£ há»§y' };
   const statusColors = { todo: 'bg-blue', doing: 'bg-orange', waiting: 'bg-purple', completed: 'bg-emerald', overdue: 'bg-rose', canceled: 'bg-gray' };
 
   projectTasks.forEach(t => {
@@ -3060,9 +3060,9 @@ function renderProjectTasksTab(projId) {
     tr.style.cursor = 'pointer';
     tr.innerHTML = `
       <td><strong>${t.title}</strong></td>
-      <td>${assignee ? assignee.name : 'Chưa giao'}</td>
+      <td>${assignee ? assignee.name : 'ChÆ°a giao'}</td>
       <td><span class="badge ${priorityColors[t.priority]}">${priorityLabels[t.priority]}</span></td>
-      <td>${t.deadline || 'Chưa đặt'}</td>
+      <td>${t.deadline || 'ChÆ°a Ä‘áº·t'}</td>
       <td><span class="badge ${statusColors[t.status]}">${statusLabels[t.status]}</span></td>
     `;
     tr.onclick = () => openOpsTaskDetail(t.id);
@@ -3089,7 +3089,7 @@ function renderProjectDiscussionTab(proj) {
     });
     container.scrollTop = container.scrollHeight;
   } else {
-    container.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">Bắt đầu cuộc thảo luận chung cho nhóm dự án...</span>`;
+    container.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">Báº¯t Ä‘áº§u cuá»™c tháº£o luáº­n chung cho nhÃ³m dá»± Ã¡n...</span>`;
   }
 }
 
@@ -3102,7 +3102,7 @@ function handleProjectChatSubmit(e) {
   const proj = AppState.projects.find(p => p.id === currentActiveProjectId);
   if (proj) {
     if (!proj.discussions) proj.discussions = [];
-    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân viên' };
+    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'NhÃ¢n viÃªn' };
     
     const now = new Date();
     const dateStr = `${now.getHours()}:${now.getMinutes()} ${now.getDate()}/${now.getMonth() + 1}`;
@@ -3141,7 +3141,7 @@ function handleAddProjectSubmit(e) {
     managerId: managerId,
     members: members,
     status: 'preparing',
-    notes: notes || 'Không có',
+    notes: notes || 'KhÃ´ng cÃ³',
     documents: [],
     discussions: [],
     history: []
@@ -3153,7 +3153,7 @@ function handleAddProjectSubmit(e) {
   document.getElementById('form-add-ops-project').reset();
   
   renderOpsProjects();
-  addNotification('Dự Án Mới 📂', `Đã tạo dự án/phòng ban mới: "${name}" thành công.`, 'success');
+  addNotification('Dá»± Ãn Má»›i ðŸ“‚', `ÄÃ£ táº¡o dá»± Ã¡n/phÃ²ng ban má»›i: "${name}" thÃ nh cÃ´ng.`, 'success');
 }
 
 function populateProjectManagerDropdown() {
@@ -3209,7 +3209,7 @@ function renderActiveStepComments() {
     });
     container.scrollTop = container.scrollHeight;
   } else {
-    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào ở bước này.</span>`;
+    container.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">ChÆ°a cÃ³ tháº£o luáº­n nÃ o á»Ÿ bÆ°á»›c nÃ y.</span>`;
   }
 }
 
@@ -3224,7 +3224,7 @@ function handleFlowAddStepComment() {
   const stepData = flow.steps.find(s => s.stepNum === currentActiveStepNum);
   if (stepData) {
     if (!stepData.comments) stepData.comments = [];
-    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân sự' };
+    const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'NhÃ¢n sá»±' };
     
     const now = new Date();
     const dateStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')} ${now.getDate()}/${now.getMonth() + 1}`;
@@ -3261,8 +3261,8 @@ function renderMyTasks() {
 
   // Step names translation mapping
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
+    "Nháº­n thÃ´ng tin", "BÃ¡o giÃ¡", "ThÆ°Æ¡ng lÆ°á»£ng", "ThÃ nh cÃ´ng", "Mua hÃ ng",
+    "Shop gá»­i hÃ ng", "Vá» kho TQ", "Vá» kho VN", "Giao hÃ ng", "Thu ná»£", "HoÃ n táº¥t"
   ];
 
   let flowsCount = 0;
@@ -3286,14 +3286,14 @@ function renderMyTasks() {
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #3b82f6; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:10px; font-weight:bold; color:#3b82f6;">${client.code || 'KH CŨ'}</span>
-            <span class="badge bg-blue" style="font-size:9px; padding:2px 4px;">Bước ${flow.stage}</span>
+            <span style="font-size:10px; font-weight:bold; color:#3b82f6;">${client.code || 'KH CÅ¨'}</span>
+            <span class="badge bg-blue" style="font-size:9px; padding:2px 4px;">BÆ°á»›c ${flow.stage}</span>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${flow.name}</div>
-          <div style="font-size:11px; opacity:0.8; margin-top:4px;">Khâu: <strong>${stepNames[flow.stage - 1]}</strong></div>
-          <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
+          <div style="font-size:11px; opacity:0.8; margin-top:4px;">KhÃ¢u: <strong>${stepNames[flow.stage - 1]}</strong></div>
+          <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} viá»‡c</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Không có'}</span>
+            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Háº¡n: ${flow.deadline || 'KhÃ´ng cÃ³'}</span>
           </div>
         `;
         card.onclick = () => {
@@ -3304,18 +3304,18 @@ function renderMyTasks() {
     });
   }
 
-  // 2. CRM Leads (Khách Hàng Mới) assigned to user
+  // 2. CRM Leads (KhÃ¡ch HÃ ng Má»›i) assigned to user
   if (AppState.leads) {
     AppState.leads.forEach(lead => {
       if (lead.salesId === userId && lead.stage !== 'success' && lead.stage !== 'failed') {
         flowsCount++;
         
         const stageLabels = {
-          receive_info: "Nhận thông tin",
-          get_phone: "Lấy SĐT/Wechat",
-          explore_info: "Khai thác thông tin",
-          quotation: "Báo giá",
-          negotiating: "Thương lượng"
+          receive_info: "Nháº­n thÃ´ng tin",
+          get_phone: "Láº¥y SÄT/Wechat",
+          explore_info: "Khai thÃ¡c thÃ´ng tin",
+          quotation: "BÃ¡o giÃ¡",
+          negotiating: "ThÆ°Æ¡ng lÆ°á»£ng"
         };
 
         const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
@@ -3324,15 +3324,15 @@ function renderMyTasks() {
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #8b5cf6; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:10px; font-weight:bold; color:#8b5cf6;">CRM KHÁCH MỚI</span>
+            <span style="font-size:10px; font-weight:bold; color:#8b5cf6;">CRM KHÃCH Má»šI</span>
             <span class="badge" style="font-size:9px; padding:2px 4px; background:#8b5cf6; color:white;">${stageLabels[lead.stage] || lead.stage}</span>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${lead.name}</div>
-          <div class="card-desc" style="font-size:11px; opacity:0.8; margin-top:4px;">SĐT: ${lead.phone || 'Chưa có'}</div>
-          <div style="font-size:11px; margin-top:4px; max-height:36px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Nhu cầu: ${lead.note || 'Không có'}</div>
+          <div class="card-desc" style="font-size:11px; opacity:0.8; margin-top:4px;">SÄT: ${lead.phone || 'ChÆ°a cÃ³'}</div>
+          <div style="font-size:11px; margin-top:4px; max-height:36px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">Nhu cáº§u: ${lead.note || 'KhÃ´ng cÃ³'}</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-            <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> Ngày tạo: ${lead.date || ''}</span>
-            <strong style="font-size:11px; color:#34d399;">${lead.valVnd > 0 ? formatVnd(lead.valVnd) : '0đ'}</strong>
+            <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> NgÃ y táº¡o: ${lead.date || ''}</span>
+            <strong style="font-size:11px; color:#34d399;">${lead.valVnd > 0 ? formatVnd(lead.valVnd) : '0Ä‘'}</strong>
           </div>
         `;
         card.onclick = () => {
@@ -3347,7 +3347,7 @@ function renderMyTasks() {
 
   document.getElementById('my-flows-count').innerText = flowsCount;
   if (flowsCount === 0) {
-    myFlowsList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có lô hàng hay Lead khách mới nào chờ bạn xử lý.</span>`;
+    myFlowsList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyá»‡t vá»i! KhÃ´ng cÃ³ lÃ´ hÃ ng hay Lead khÃ¡ch má»›i nÃ o chá» báº¡n xá»­ lÃ½.</span>`;
   }
 
   // 3. Single Tasks & Project Tasks
@@ -3356,13 +3356,13 @@ function renderMyTasks() {
 
   if (AppState.single_tasks) {
     AppState.single_tasks.forEach(task => {
-      if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
+      if (task.title && task.title.includes('TÃ¬nh tráº¡ng KH sau bÃ¡o giÃ¡')) return;
 
       if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
         const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
         const chkTotal = task.checklist ? task.checklist.length : 0;
         
-        const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
+        const pLabels = { low: 'Tháº¥p', normal: 'ThÆ°á»ng', high: 'Cao', urgent: 'Kháº©n cáº¥p' };
         const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
 
         const isOverdue = task.deadline && new Date(task.deadline) < new Date();
@@ -3375,13 +3375,13 @@ function renderMyTasks() {
         if (task.projectId) {
           const proj = (AppState.projects || []).find(p => p.id === task.projectId);
           if (proj) {
-            projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+            projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dá»± Ã¡n: ${proj.name}</div>`;
           }
         }
 
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
+            <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Æ¯u tiÃªn: ${pLabels[task.priority] || 'BÃ¬nh thÆ°á»ng'}</span>
             <div style="display:flex; align-items:center; gap:6px;">
               <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
               <button class="btn btn-xs btn-success" style="padding: 1px 4px; font-size: 9px; line-height: 1; border: none; border-radius: 4px; color: white; background: #10b981; cursor: pointer;" onclick="event.stopPropagation(); window.quickCompleteTask('${task.id}')">
@@ -3391,9 +3391,9 @@ function renderMyTasks() {
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
           ${projectInfoHtml}
-          <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
+          <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} viá»‡c</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
+            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Háº¡n: ${task.deadline || 'KhÃ´ng cÃ³'}</span>
           </div>
         `;
         
@@ -3414,7 +3414,7 @@ function renderMyTasks() {
     });
   }
 
-  // 4. CRM Tasks (Công việc CRM khách hàng mới)
+  // 4. CRM Tasks (CÃ´ng viá»‡c CRM khÃ¡ch hÃ ng má»›i)
   if (AppState.tasks) {
     AppState.tasks.forEach(task => {
       if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled') {
@@ -3430,7 +3430,7 @@ function renderMyTasks() {
         if (steps.length > 0) {
           stepSelectHtml = `
             <div style="margin-top: 8px;" onclick="event.stopPropagation();">
-              <label style="font-size: 10px; color: var(--text-muted); font-weight: bold;">Khâu xử lý:</label>
+              <label style="font-size: 10px; color: var(--text-muted); font-weight: bold;">KhÃ¢u xá»­ lÃ½:</label>
               <select class="form-control" style="font-size: 11px; height: 26px; padding: 2px 6px; margin-top: 2px;" onchange="handleMyCrmTaskStepChange('${task.id}', this.value)">
                 ${steps.map((st, idx) => `
                   <option value="${idx}" ${idx === currentStepIdx ? 'selected' : ''}>${idx + 1}. ${st}</option>
@@ -3444,12 +3444,12 @@ function renderMyTasks() {
         if (task.status === 'checking') {
           const user = AppState.users.find(u => u.id === userId) || {};
           if (user.role === 'admin') {
-            actionBtnHtml = `<button class="btn btn-xs btn-primary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); handleMyCrmTaskApprove('${task.id}')"><i class="fa-solid fa-circle-check"></i> Duyệt thưởng</button>`;
+            actionBtnHtml = `<button class="btn btn-xs btn-primary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); handleMyCrmTaskApprove('${task.id}')"><i class="fa-solid fa-circle-check"></i> Duyá»‡t thÆ°á»Ÿng</button>`;
           } else {
-            actionBtnHtml = `<div style="font-size:10px; color:var(--text-muted); margin-top:6px; font-style:italic;"><i class="fa-solid fa-hourglass-start"></i> Đang chờ duyệt...</div>`;
+            actionBtnHtml = `<div style="font-size:10px; color:var(--text-muted); margin-top:6px; font-style:italic;"><i class="fa-solid fa-hourglass-start"></i> Äang chá» duyá»‡t...</div>`;
           }
         } else {
-          actionBtnHtml = `<button class="btn btn-xs btn-secondary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); handleMyCrmTaskSubmit('${task.id}')"><i class="fa-solid fa-share-from-square"></i> Nộp kết quả</button>`;
+          actionBtnHtml = `<button class="btn btn-xs btn-secondary" style="margin-top:8px; width:100%;" onclick="event.stopPropagation(); handleMyCrmTaskSubmit('${task.id}')"><i class="fa-solid fa-share-from-square"></i> Ná»™p káº¿t quáº£</button>`;
         }
 
         const card = document.createElement('div');
@@ -3457,16 +3457,16 @@ function renderMyTasks() {
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #a855f7; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:10px; font-weight:bold; color:#a855f7;">CRM KHÁCH MỚI (TASK)</span>
-            <span class="badge" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white;">${task.status === 'checking' ? 'Chờ duyệt' : 'Chưa xong'}</span>
+            <span style="font-size:10px; font-weight:bold; color:#a855f7;">CRM KHÃCH Má»šI (TASK)</span>
+            <span class="badge" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white;">${task.status === 'checking' ? 'Chá» duyá»‡t' : 'ChÆ°a xong'}</span>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
-          <div style="font-size:11px; opacity:0.8; margin-top:4px;">Chi tiết: ${task.desc || 'Không có'}</div>
+          <div style="font-size:11px; opacity:0.8; margin-top:4px;">Chi tiáº¿t: ${task.desc || 'KhÃ´ng cÃ³'}</div>
           ${stepSelectHtml}
           ${actionBtnHtml}
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không giới hạn'}</span>
-            <span style="font-size:10px; color:#f59e0b;"><i class="fa-solid fa-cookie"></i> +${task.points} Xúc xích</span>
+            <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Háº¡n: ${task.deadline || 'KhÃ´ng giá»›i háº¡n'}</span>
+            <span style="font-size:10px; color:#f59e0b;"><i class="fa-solid fa-cookie"></i> +${task.points} XÃºc xÃ­ch</span>
           </div>
         `;
         
@@ -3481,21 +3481,21 @@ function renderMyTasks() {
 
   document.getElementById('my-single-tasks-count').innerText = singleCount;
   if (singleCount === 0) {
-    mySingleTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có nhiệm vụ đơn lẻ nào cần làm.</span>`;
+    mySingleTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyá»‡t vá»i! KhÃ´ng cÃ³ nhiá»‡m vá»¥ Ä‘Æ¡n láº» nÃ o cáº§n lÃ m.</span>`;
   }
 
   document.getElementById('my-project-tasks-count').innerText = projectCount;
   if (projectCount === 0) {
-    myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có việc dự án VIP nào cần làm.</span>`;
+    myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyá»‡t vá»i! KhÃ´ng cÃ³ viá»‡c dá»± Ã¡n VIP nÃ o cáº§n lÃ m.</span>`;
   }
 
-  // 5. Tasks I assist (Việc Tôi Hỗ Trợ)
+  // 5. Tasks I assist (Viá»‡c TÃ´i Há»— Trá»£)
   let helperCount = 0;
   if (myHelperTasksList) {
     myHelperTasksList.innerHTML = '';
     if (AppState.single_tasks) {
       AppState.single_tasks.forEach(task => {
-        if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
+        if (task.title && task.title.includes('TÃ¬nh tráº¡ng KH sau bÃ¡o giÃ¡')) return;
 
         // Show tasks where current user is the helper, and not completed/canceled/archived
         if (task.helperId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
@@ -3503,7 +3503,7 @@ function renderMyTasks() {
           const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
           const chkTotal = task.checklist ? task.checklist.length : 0;
           
-          const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
+          const pLabels = { low: 'Tháº¥p', normal: 'ThÆ°á»ng', high: 'Cao', urgent: 'Kháº©n cáº¥p' };
           const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
 
           const isOverdue = task.deadline && new Date(task.deadline) < new Date();
@@ -3516,26 +3516,26 @@ function renderMyTasks() {
           if (task.projectId) {
             const proj = (AppState.projects || []).find(p => p.id === task.projectId);
             if (proj) {
-              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dá»± Ã¡n: ${proj.name}</div>`;
             }
           }
 
           const assignee = AppState.users.find(u => u.id === task.assigneeId);
-          const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
+          const assigneeName = assignee ? assignee.name : (task.dept ? `PhÃ²ng ${task.dept.toUpperCase()}` : 'ChÆ°a giao');
 
           card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
+              <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Æ¯u tiÃªn: ${pLabels[task.priority] || 'BÃ¬nh thÆ°á»ng'}</span>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span style="font-size:9.5px; color:var(--text-muted); font-weight:bold;">${task.dept.toUpperCase()}</span>
               </div>
             </div>
             <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
             ${projectInfoHtml}
-            <div style="font-size:11px; margin-top:4px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
-            <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
+            <div style="font-size:11px; margin-top:4px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phá»¥ trÃ¡ch: <strong>${assigneeName}</strong></div>
+            <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} viá»‡c</div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
+              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Háº¡n: ${task.deadline || 'KhÃ´ng cÃ³'}</span>
             </div>
           `;
           
@@ -3553,11 +3553,11 @@ function renderMyTasks() {
       helperCountLabel.innerText = helperCount;
     }
     if (helperCount === 0) {
-      myHelperTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có công việc nào bạn hỗ trợ đang chờ.</span>`;
+      myHelperTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyá»‡t vá»i! KhÃ´ng cÃ³ cÃ´ng viá»‡c nÃ o báº¡n há»— trá»£ Ä‘ang chá».</span>`;
     }
   }
 
-  // 6. Tasks I assigned to others (Việc Tôi Đã Giao)
+  // 6. Tasks I assigned to others (Viá»‡c TÃ´i ÄÃ£ Giao)
   const myAssignedTasksList = document.getElementById('my-assigned-tasks-list');
   let assignedCount = 0;
   if (myAssignedTasksList) {
@@ -3565,13 +3565,13 @@ function renderMyTasks() {
     
     if (AppState.single_tasks) {
       AppState.single_tasks.forEach(task => {
-        if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
+        if (task.title && task.title.includes('TÃ¬nh tráº¡ng KH sau bÃ¡o giÃ¡')) return;
 
         // Show tasks where current user is the creator but NOT the assignee, and not archived
         if (task.creatorId === userId && task.assigneeId !== userId && task.status !== 'archived') {
           assignedCount++;
           const assignee = AppState.users.find(u => u.id === task.assigneeId);
-          const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
+          const assigneeName = assignee ? assignee.name : (task.dept ? `PhÃ²ng ${task.dept.toUpperCase()}` : 'ChÆ°a giao');
 
           const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
 
@@ -3587,20 +3587,20 @@ function renderMyTasks() {
           if (task.projectId) {
             const proj = (AppState.projects || []).find(p => p.id === task.projectId);
             if (proj) {
-              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
+              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dá»± Ã¡n: ${proj.name}</div>`;
             }
           }
 
-          const statusLabel = isCompleted ? '<span class="badge bg-emerald" style="font-size:9px; padding:2px 4px; font-weight:bold;">Đã hoàn thành</span>' : '<span class="badge bg-purple" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white; font-weight:bold;">Đang làm</span>';
+          const statusLabel = isCompleted ? '<span class="badge bg-emerald" style="font-size:9px; padding:2px 4px; font-weight:bold;">ÄÃ£ hoÃ n thÃ nh</span>' : '<span class="badge bg-purple" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white; font-weight:bold;">Äang lÃ m</span>';
 
-          // Completed tasks show a green check icon next to title and have a button to "Acknowledge & Close" (Đã xem & Đóng)
+          // Completed tasks show a green check icon next to title and have a button to "Acknowledge & Close" (ÄÃ£ xem & ÄÃ³ng)
           let titleHtml = '';
           let archiveBtnHtml = '';
           if (isCompleted) {
             titleHtml = `<div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; color:#10b981; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check text-success"></i> ${task.title}</div>`;
             archiveBtnHtml = `
               <button class="btn btn-xs btn-outline" style="margin-top: 10px; width: 100%; border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); font-weight: bold; height: 28px; font-size:11px;" onclick="event.stopPropagation(); window.archiveAssignedTask('${task.id}')">
-                <i class="fa-solid fa-eye"></i> Đã xem & Đóng việc
+                <i class="fa-solid fa-eye"></i> ÄÃ£ xem & ÄÃ³ng viá»‡c
               </button>
             `;
           } else {
@@ -3616,9 +3616,9 @@ function renderMyTasks() {
             </div>
             ${titleHtml}
             ${projectInfoHtml}
-            <div style="font-size:11px; margin-top:6px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+            <div style="font-size:11px; margin-top:6px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phá»¥ trÃ¡ch: <strong>${assigneeName}</strong></div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
+              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Háº¡n: ${task.deadline || 'KhÃ´ng cÃ³'}</span>
             </div>
             ${archiveBtnHtml}
           `;
@@ -3638,7 +3638,7 @@ function renderMyTasks() {
       assignedCountLabel.innerText = assignedCount;
     }
     if (assignedCount === 0) {
-      myAssignedTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Bạn chưa giao công việc nào cho người khác.</span>`;
+      myAssignedTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Báº¡n chÆ°a giao cÃ´ng viá»‡c nÃ o cho ngÆ°á»i khÃ¡c.</span>`;
     }
   }
 }
@@ -3654,17 +3654,17 @@ window.handleMyCrmTaskStepChange = function(taskId, stepIdxVal) {
   task.status = 'doing';
 
   if (stepIdx === steps.length - 1) {
-    if (confirm(`Bạn đã chọn bước cuối cùng: "${steps[stepIdx]}". Bạn có muốn NỘP KẾT QUẢ công việc này lên Quản lý để duyệt nhận ${task.points} Xúc xích không?`)) {
+    if (confirm(`Báº¡n Ä‘Ã£ chá»n bÆ°á»›c cuá»‘i cÃ¹ng: "${steps[stepIdx]}". Báº¡n cÃ³ muá»‘n Ná»˜P Káº¾T QUáº¢ cÃ´ng viá»‡c nÃ y lÃªn Quáº£n lÃ½ Ä‘á»ƒ duyá»‡t nháº­n ${task.points} XÃºc xÃ­ch khÃ´ng?`)) {
       task.status = 'checking';
-      const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân sự' };
-      addNotification('Chờ duyệt công việc', `${user.name} đã hoàn thành và nộp công việc: ${task.title}`, 'info');
+      const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'NhÃ¢n sá»±' };
+      addNotification('Chá» duyá»‡t cÃ´ng viá»‡c', `${user.name} Ä‘Ã£ hoÃ n thÃ nh vÃ  ná»™p cÃ´ng viá»‡c: ${task.title}`, 'info');
     }
   }
 
   saveState();
   if (typeof renderTasksList === 'function') renderTasksList();
   renderMyTasks();
-  showToast(`Đã cập nhật tiến độ công việc đến bước: ${steps[stepIdx]}`, 'success');
+  showToast(`ÄÃ£ cáº­p nháº­t tiáº¿n Ä‘á»™ cÃ´ng viá»‡c Ä‘áº¿n bÆ°á»›c: ${steps[stepIdx]}`, 'success');
 };
 
 window.handleMyCrmTaskSubmit = function(taskId) {
@@ -3708,7 +3708,7 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
   const projectSelect = document.getElementById('ops-task-project');
 
   if (isProjectTask) {
-    if (titleHeader) titleHeader.innerText = 'Tạo Công Việc Trong Dự Án';
+    if (titleHeader) titleHeader.innerText = 'Táº¡o CÃ´ng Viá»‡c Trong Dá»± Ãn';
     if (projectSelect) {
       projectSelect.required = true;
       projectSelect.style.border = '2px solid #f59e0b';
@@ -3717,7 +3717,7 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
       }
     }
   } else {
-    if (titleHeader) titleHeader.innerText = 'Giao Việc Đơn Lẻ Mới';
+    if (titleHeader) titleHeader.innerText = 'Giao Viá»‡c ÄÆ¡n Láº» Má»›i';
     if (projectSelect) {
       projectSelect.required = false;
       projectSelect.style.border = '';
@@ -3738,14 +3738,14 @@ window.openProjectDedicatedView = function(projId) {
   document.getElementById('dedicated-project-name').innerText = p.name;
   
   const manager = AppState.users.find(u => u.id === p.managerId);
-  const managerName = manager ? manager.name : 'Chưa giao';
+  const managerName = manager ? manager.name : 'ChÆ°a giao';
   
   const membersNames = p.members ? p.members.map(mid => {
     const u = AppState.users.find(usr => usr.id === mid);
     return u ? u.name : null;
   }).filter(Boolean).join(', ') : '';
   
-  document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
+  document.getElementById('dedicated-project-meta').innerText = `Quáº£n lÃ½: ${managerName} | ThÃ nh viÃªn: ${membersNames || 'KhÃ´ng cÃ³'}`;
   
   // Reset description editing mode views
   const viewMode = document.getElementById('project-desc-view-mode');
@@ -3755,7 +3755,7 @@ window.openProjectDedicatedView = function(projId) {
   if (editMode) editMode.style.display = 'none';
   if (btnEditDesc) btnEditDesc.style.display = '';
 
-  document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
+  document.getElementById('dedicated-project-desc').innerText = (p.desc || 'KhÃ´ng cÃ³ mÃ´ táº£ chi tiáº¿t.') + '\n' + (p.notes ? `LÆ°u Ã½: ${p.notes}` : '');
 
   // Calculate and update progress bar
   const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
@@ -3773,7 +3773,7 @@ window.openProjectDedicatedView = function(projId) {
   const tasksContainer = document.getElementById('dedicated-project-tasks-list');
   tasksContainer.innerHTML = '';
   if (projTasks.length === 0) {
-    tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">Chưa có công việc nào liên kết với dự án này.</span>`;
+    tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">ChÆ°a cÃ³ cÃ´ng viá»‡c nÃ o liÃªn káº¿t vá»›i dá»± Ã¡n nÃ y.</span>`;
   } else {
     projTasks.forEach(task => {
       const div = document.createElement('div');
@@ -3781,14 +3781,14 @@ window.openProjectDedicatedView = function(projId) {
       div.style.cssText = 'padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 6px;';
       
       const statusLabels = { 
-        todo: 'Chưa làm', 
-        pending: 'Chưa làm',
-        doing: 'Đang làm', 
-        waiting: 'Chờ phản hồi',
-        checking: 'Chờ duyệt',
-        completed: 'Hoàn thành', 
-        overdue: 'Quá hạn', 
-        canceled: 'Đã hủy' 
+        todo: 'ChÆ°a lÃ m', 
+        pending: 'ChÆ°a lÃ m',
+        doing: 'Äang lÃ m', 
+        waiting: 'Chá» pháº£n há»“i',
+        checking: 'Chá» duyá»‡t',
+        completed: 'HoÃ n thÃ nh', 
+        overdue: 'QuÃ¡ háº¡n', 
+        canceled: 'ÄÃ£ há»§y' 
       };
       const statusColors = { 
         todo: 'bg-blue',
@@ -3809,18 +3809,18 @@ window.openProjectDedicatedView = function(projId) {
       `;
 
       const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
-      const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
+      const assigneeName = assigneeUser ? assigneeUser.name : 'ChÆ°a giao';
 
       div.innerHTML = `
         <div>
           <strong>${task.title}</strong>
-          <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
-          <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+          <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'KhÃ´ng cÃ³ mÃ´ táº£'}</div>
+          <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phá»¥ trÃ¡ch: <strong>${assigneeName}</strong></div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           ${completeButton}
           <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
-          <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
+          <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Háº¡n: -'}</span>
         </div>
       `;
       div.onclick = (e) => {
@@ -3837,7 +3837,7 @@ window.openProjectDedicatedView = function(projId) {
   const docsContainer = document.getElementById('dedicated-project-docs-list');
   docsContainer.innerHTML = '';
   if (!p.documents || p.documents.length === 0) {
-    docsContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">Chưa ghim tài liệu hoặc liên kết nào.</span>`;
+    docsContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">ChÆ°a ghim tÃ i liá»‡u hoáº·c liÃªn káº¿t nÃ o.</span>`;
   } else {
     p.documents.forEach((doc, idx) => {
       const div = document.createElement('div');
@@ -3850,9 +3850,9 @@ window.openProjectDedicatedView = function(projId) {
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
           <a href="${doc.url}" target="_blank" style="font-size:11.5px; color:var(--color-primary); font-weight:bold; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
-            <i class="fa-solid fa-square-share-nodes"></i> Mở link
+            <i class="fa-solid fa-square-share-nodes"></i> Má»Ÿ link
           </a>
-          <button class="btn btn-xs btn-link text-rose" onclick="handleDeleteDedicatedProjectDoc(${idx})" style="padding:0; border:none; background:none; font-size: 11px;"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          <button class="btn btn-xs btn-link text-rose" onclick="handleDeleteDedicatedProjectDoc(${idx})" style="padding:0; border:none; background:none; font-size: 11px;"><i class="fa-solid fa-trash-can"></i> XÃ³a</button>
         </div>
       `;
       docsContainer.appendChild(div);
@@ -3879,7 +3879,7 @@ window.handleQuickCompleteTask = function(event, taskId) {
       window.awardPointsForCompletedTask(task);
     }
     saveState();
-    showToast('Đã đánh dấu hoàn thành công việc!', 'success');
+    showToast('ÄÃ£ Ä‘Ã¡nh dáº¥u hoÃ n thÃ nh cÃ´ng viá»‡c!', 'success');
     openProjectDedicatedView(currentActiveProjectId);
   }
 };
@@ -3899,7 +3899,7 @@ function renderDedicatedProjectDiscussion(p) {
   container.innerHTML = '';
   
   if (!p.comments || p.comments.length === 0) {
-    container.innerHTML = `<span class="text-muted" style="font-size: 11px; font-style: italic;">Chưa có trao đổi nào. Hãy bắt đầu cuộc hội thoại!</span>`;
+    container.innerHTML = `<span class="text-muted" style="font-size: 11px; font-style: italic;">ChÆ°a cÃ³ trao Ä‘á»•i nÃ o. HÃ£y báº¯t Ä‘áº§u cuá»™c há»™i thoáº¡i!</span>`;
   } else {
     p.comments.forEach(c => {
       const div = document.createElement('div');
@@ -3952,7 +3952,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
       if (p) {
         if (!p.comments) p.comments = [];
-        const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'Nhân sự' };
+        const user = AppState.users.find(u => u.id === AppState.currentUserId) || { name: 'NhÃ¢n sá»±' };
         p.comments.push({
           author: user.name,
           text: text,
@@ -3998,7 +3998,7 @@ document.addEventListener('DOMContentLoaded', () => {
         p.desc = document.getElementById('edit-project-desc-input').value.trim();
         p.notes = document.getElementById('edit-project-notes-input').value.trim();
         saveState();
-        showToast('Đã lưu thông tin dự án!', 'success');
+        showToast('ÄÃ£ lÆ°u thÃ´ng tin dá»± Ã¡n!', 'success');
         
         // Refresh view
         openProjectDedicatedView(p.id);
@@ -4028,7 +4028,7 @@ window.quickCompleteTask = function(taskId) {
   if (typeof renderMyTasks === 'function') renderMyTasks();
   if (typeof renderOpsBoard === 'function') renderOpsBoard();
   
-  showToast('Đã hoàn thành công việc!', 'success');
+  showToast('ÄÃ£ hoÃ n thÃ nh cÃ´ng viá»‡c!', 'success');
 };
 
 let currentSortField = null;
@@ -4070,7 +4070,7 @@ window.archiveAssignedTask = function(taskId) {
     task.status = 'archived';
     saveState();
     if (typeof renderMyTasks === 'function') renderMyTasks();
-    showToast('Đã đóng công việc và lưu trữ thành công.', 'success');
+    showToast('ÄÃ£ Ä‘Ã³ng cÃ´ng viá»‡c vÃ  lÆ°u trá»¯ thÃ nh cÃ´ng.', 'success');
   }
 };
 
@@ -4082,7 +4082,7 @@ window.toggleManagerVerify = function(flowId, checked) {
   const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
 
   if (!isAdminOrManager) {
-    showToast('Chỉ Quản lý mới có quyền duyệt thời gian!', 'warning');
+    showToast('Chá»‰ Quáº£n lÃ½ má»›i cÃ³ quyá»n duyá»‡t thá»i gian!', 'warning');
     renderOpsWorkflows();
     return;
   }
@@ -4090,7 +4090,7 @@ window.toggleManagerVerify = function(flowId, checked) {
   flow.managerVerified = !!checked;
   saveState();
   renderOpsWorkflows();
-  showToast(flow.managerVerified ? 'Đã duyệt thời gian phản hồi!' : 'Đã hủy duyệt thời gian phản hồi!', 'success');
+  showToast(flow.managerVerified ? 'ÄÃ£ duyá»‡t thá»i gian pháº£n há»“i!' : 'ÄÃ£ há»§y duyá»‡t thá»i gian pháº£n há»“i!', 'success');
 };
 
 
@@ -4121,7 +4121,7 @@ function renderOpsStats() {
     AppState.shipment_workflows.forEach(w => {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chÃ­nh ngáº¡ch');
 
       if (isThisMonth) {
         if (isChinhNgach) {
@@ -4141,33 +4141,33 @@ function renderOpsStats() {
       <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Lô chính ngạch phát sinh</span>
+          <span class="stat-label">LÃ´ chÃ­nh ngáº¡ch phÃ¡t sinh</span>
           <h3>${cnGenerated}</h3>
-          <span class="stat-trend trend-up">Tháng ${currentMonth + 1}/${currentYear}</span>
+          <span class="stat-trend trend-up">ThÃ¡ng ${currentMonth + 1}/${currentYear}</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_success')">
         <div class="stat-icon bg-green"><i class="fa-solid fa-check-double"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Lô chính ngạch chốt được</span>
+          <span class="stat-label">LÃ´ chÃ­nh ngáº¡ch chá»‘t Ä‘Æ°á»£c</span>
           <h3>${cnSuccess}</h3>
-          <span class="stat-trend trend-up">Tỷ lệ: ${cnGenerated > 0 ? Math.round((cnSuccess/cnGenerated)*100) : 0}%</span>
+          <span class="stat-trend trend-up">Tá»· lá»‡: ${cnGenerated > 0 ? Math.round((cnSuccess/cnGenerated)*100) : 0}%</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
         <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Lợi nhuận chính ngạch</span>
-          <h3>${cnProfit.toLocaleString()} đ</h3>
-          <span class="stat-trend trend-up">Đơn hàng CN (Tháng)</span>
+          <span class="stat-label">Lá»£i nhuáº­n chÃ­nh ngáº¡ch</span>
+          <h3>${cnProfit.toLocaleString()} Ä‘</h3>
+          <span class="stat-trend trend-up">ÄÆ¡n hÃ ng CN (ThÃ¡ng)</span>
         </div>
       </div>
       <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('ops_added')">
         <div class="stat-icon" style="background: #a855f7; color: white;"><i class="fa-solid fa-boxes-stacked"></i></div>
         <div class="stat-data">
-          <span class="stat-label">Lô hàng add vào CRM Khách cũ</span>
+          <span class="stat-label">LÃ´ hÃ ng add vÃ o CRM KhÃ¡ch cÅ©</span>
           <h3>${totalOpsAdded}</h3>
-          <span class="stat-trend trend-up">Vận hành (Tháng)</span>
+          <span class="stat-trend trend-up">Váº­n hÃ nh (ThÃ¡ng)</span>
         </div>
       </div>
     </div>
