@@ -2419,14 +2419,14 @@ window.openOpsTaskDetail = function(taskId) {
   // Populate assignee select dropdown
   const assigneeSelect = document.getElementById('ops-task-detail-assignee');
   if (assigneeSelect) {
-    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>``).join('');
+    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
     assigneeSelect.value = task.assigneeId || '';
   }
 
   // Populate helper select dropdown
   const helperSelect = document.getElementById('ops-task-detail-helper');
   if (helperSelect) {
-    helperSelect.innerHTML = `<option value="">Không có hỗ trợ</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>``).join('');
+    helperSelect.innerHTML = `<option value="">Không có hỗ trợ</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
     helperSelect.value = task.helperId || '';
   }
   
