@@ -87,15 +87,15 @@ window.showStatsModal = function(type) {
       tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">Không có dữ liệu trong tháng này</td></tr>`;
     } else {
       tbody.innerHTML = items.map(i => `
-        <tr style="cursor:pointer;" onclick="openStatDetail('\${i.type}', '\${i.id}')">
-          <td>\${i.code}</td>
-          <td>\${i.name}</td>
-          <td><span class="badge \${(i.service && (i.service.toLowerCase().includes('ch') || i.service.toLowerCase().includes('chính'))) ? 'badge-blue' : 'badge-gold'}\">\${i.service}</span><br><span style="font-size: 0.8em; color: #888;">\${i.source}</span></td>
-          <td>\${i.stage}</td>
-          <td>\${i.date}</td>
-          <td>\${i.val}</td>
+        <tr style="cursor:pointer;" onclick="openStatDetail('${i.type}', '${i.id}')">
+          <td>${i.code}</td>
+          <td>${i.name}</td>
+          <td><span class="badge ${(i.service && (i.service.toLowerCase().includes('ch') || i.service.toLowerCase().includes('chính'))) ? 'badge-blue' : 'badge-gold'}">${i.service}</span><br><span style="font-size: 0.8em; color: #888;">${i.source}</span></td>
+          <td>${i.stage}</td>
+          <td>${i.date}</td>
+          <td>${i.val}</td>
         </tr>
-        `).join('');
+      `).join('');
     }
   }
 
