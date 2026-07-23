@@ -20,6 +20,10 @@ const DATABASE_URL = process.env.DATABASE_URL;
 
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
+  const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
+  const localState = JSON.parse(localStateRaw);
+  localState.dbVersion = '20.67';
+
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -27,73 +31,30 @@ async function loadState() {
     });
     try {
       await client.connect();
-      // Ensure table exists
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
       const res = await client.query('SELECT state_json FROM app_state WHERE id = 1');
       if (res.rows.length > 0) {
-        const dbState = JSON.parse(res.rows[0].state_json);
-        
-        // Auto-sync users list and new operational fields from local db.json if missing in database state
-        try {
-          const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
-          const localState = JSON.parse(localStateRaw);
-          let needsUpdate = false;
-
-          // Check if users need sync
-          const hasNewUsers = localState.users && (!dbState.users || dbState.users.length !== localState.users.length || !dbState.users.some(u => u.username === 'hoangminh'));
-          if (hasNewUsers) {
-            console.log('Syncing updated users list from db.json to Supabase...');
-            if (!dbState.users) dbState.users = [];
-            localState.users.forEach(localUser => {
-              const existingUser = dbState.users.find(u => u.id === localUser.id || u.username === localUser.username);
-              if (existingUser) {
-                existingUser.name = localUser.name;
-                existingUser.role = localUser.role;
-                existingUser.dept = localUser.dept;
-                existingUser.avatar = localUser.avatar || existingUser.avatar;
-                if (localUser.password) existingUser.password = localUser.password;
-              } else {
-                dbState.users.push(localUser);
-              }
-            });
-            needsUpdate = true;
-          }
-
-          // Check if new operational tables need sync (v18)
-          const opFields = ['clients', 'projects', 'shipment_workflows', 'single_tasks'];
-          opFields.forEach(field => {
-            if (localState[field] && (!dbState[field] || dbState[field].length === 0)) {
-              console.log(`Syncing new operational field: ${field} from db.json to Supabase...`);
-              dbState[field] = localState[field];
-              needsUpdate = true;
-            }
-          });
-
-          if (needsUpdate) {
-            await client.query('UPDATE app_state SET state_json = $1 WHERE id = 1', [JSON.stringify(dbState)]);
-          }
-        } catch (e) {
-          console.error('Failed to sync database state:', e);
+        let dbState = {};
+        try { dbState = JSON.parse(res.rows[0].state_json); } catch (e) {}
+        if (dbState.dbVersion !== '20.67') {
+          console.log('Force updating Postgres DB state with clean db.json v20.67...');
+          await client.query('INSERT INTO app_state (id, state_json) VALUES (1, ) ON CONFLICT (id) DO UPDATE SET state_json = ', [JSON.stringify(localState)]);
+          await client.end();
+          return localState;
         }
-        
+        await client.end();
         return dbState;
       } else {
-        // Seed database from local db.json
-        console.log('Seeding database with default mock data...');
-        const defaultState = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
-        await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1)', [defaultState]);
-        return JSON.parse(defaultState);
+        await client.query('INSERT INTO app_state (id, state_json) VALUES (1, )', [JSON.stringify(localState)]);
+        await client.end();
+        return localState;
       }
     } catch (err) {
-      console.error('Database load error:', err);
-    } finally {
-      await client.end().catch(() => {});
+      console.error('Database connection error, falling back to local db.json:', err);
+      try { await client.end(); } catch (e) {}
     }
   }
-  
-  // Local fallback
-  const data = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
-  return JSON.parse(data);
+  return localState;
 }
 
 // Helper to save state to Supabase PostgreSQL or local db.json
