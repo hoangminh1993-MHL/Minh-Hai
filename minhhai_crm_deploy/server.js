@@ -18,16 +18,24 @@ app.use(express.static(path.join(__dirname, '.')));
 const PORT = process.env.PORT || 3000;
 const DATABASE_URL = process.env.DATABASE_URL;
 
+// Helper to safely read and parse JSON file, stripping UTF-8 BOM if present
+function readJsonFile(filePath) {
+  try {
+    let raw = fs.readFileSync(filePath, 'utf8');
+    if (raw.charCodeAt(0) === 0xFEFF) {
+      raw = raw.slice(1);
+    }
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error(Error reading/parsing :, err);
+    return {};
+  }
+}
+
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
-  let localState = {};
-  try {
-    const localStateRaw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
-    localState = JSON.parse(localStateRaw);
-    localState.dbVersion = '20.71';
-  } catch (e) {
-    console.error('Error reading db.json:', e);
-  }
+  const localState = readJsonFile(path.join(__dirname, 'db.json'));
+  localState.dbVersion = '20.72';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -40,9 +48,16 @@ async function loadState() {
       const res = await client.query('SELECT state_json FROM app_state WHERE id = 1');
       if (res.rows.length > 0) {
         let dbState = {};
-        try { dbState = JSON.parse(res.rows[0].state_json); } catch (e) {}
-        if (!dbState || dbState.dbVersion !== '20.71') {
-          console.log('Force updating Postgres DB state with clean db.json v20.71...');
+        try {
+          let rawDb = res.rows[0].state_json;
+          if (rawDb && rawDb.charCodeAt(0) === 0xFEFF) rawDb = rawDb.slice(1);
+          dbState = JSON.parse(rawDb);
+        } catch (e) {
+          console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
+        }
+
+        if (!dbState || dbState.dbVersion !== '20.72') {
+          console.log('Force updating Postgres DB state with clean db.json v20.72...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, ) ON CONFLICT (id) DO UPDATE SET state_json = ', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -64,7 +79,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.71';
+  newState.dbVersion = '20.72';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
