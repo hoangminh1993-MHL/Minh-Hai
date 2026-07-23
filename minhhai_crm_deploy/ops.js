@@ -1,4 +1,4 @@
-﻿// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
+// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
 
 document.addEventListener('DOMContentLoaded', () => {
   initOpsEvents();

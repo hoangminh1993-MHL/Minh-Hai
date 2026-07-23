@@ -1,4 +1,4 @@
-﻿# Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
+# Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
 ## [v20.56] - 2026-07-23
 ### Sửa lỗi (Fixed)

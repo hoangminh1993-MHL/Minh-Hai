@@ -1470,6 +1470,7 @@ function handleLeadAddStepComment() {
   });
 
   input.value = '';
+  saveState();
   renderActiveLeadStepPanel();
 }
 

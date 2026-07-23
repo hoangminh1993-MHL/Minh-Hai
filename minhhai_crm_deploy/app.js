@@ -1,4 +1,4 @@
-﻿window.BaseState = null;
+window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -351,15 +351,8 @@ async function saveState() {
     window.syncStateQueue = window.syncStateQueue.then(async () => {
       try {
         if (!window.BaseState) {
-          // Fallback if no BaseState available
-          await fetch(getApiUrl('/api/state'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(AppState)
-          });
+          // Fallback if no BaseState available: initialize it to avoid full POST overwrite
           window.BaseState = JSON.parse(JSON.stringify(AppState));
-          updateMyTasksBadge();
-          return;
         }
 
         const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
@@ -433,7 +426,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.56';
+const CLIENT_VERSION = '20.58';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -585,6 +578,41 @@ function navigateToView(viewId, updateHash = true) {
     view.style.display = 'none';
   });
 
+    const titles = {
+      dashboard: { main: 'Báo Cáo Tổng Quan', sub: 'Tổng quan doanh số chuyển đổi và hiệu suất công việc phòng ban.' },
+      crm: { main: 'Bảng CRM Khách Hàng', sub: 'Quản lý phễu chuyển đổi khách hàng 7 bước từ nhận thông tin đến chốt.' },
+      tasks: { main: 'Quản Lý Công Việc', sub: 'Giao việc, bám sát quy trình từng phòng ban và tích điểm Xúc Xích.' },
+      'inbox-simulator': { main: 'Giả Lập Fanpage Message', sub: 'Thử nghiệm tính năng tự động tạo lead trên CRM từ tin nhắn của khách.' },
+      settings: { main: 'Thiết Lập Hệ Thống', sub: 'Cấu hình liên kết Fanpage Facebook, quản lý kết nối API Server và dữ liệu hệ thống.' },
+      'staff-management': { main: 'Quản Lý Nhân Sự', sub: 'Quản lý tài khoản, phân quyền vai trò và hệ thống điểm thưởng của nhân sự.' },
+      clients: { main: 'Quản Lý Khách Hàng Cũ', sub: 'Tái khai thác và theo dõi lịch sử dịch vụ của khách hàng đã chốt.' },
+      'tasks-projects': { main: 'Dự Án Vận Hành & Phòng Ban', sub: 'Không gian làm việc chung, quản lý tài liệu và tiến độ theo dự án.' },
+      'project-dedicated': { main: 'Không Gian Dự Án', sub: 'Khu vực làm việc chuyên dụng cho dự án vận hành.' },
+      'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Bảng theo dõi và xử lý các đầu việc được giao cá nhân.' },
+      rewards: { main: 'Siêu Thị Đổi Thưởng', sub: 'Sử dụng điểm Xúc Xích tích lũy để đổi quà tặng hoặc nghỉ phép.' },
+      suggestions: { main: 'Góp ý & Đề xuất', sub: 'Hòm thư góp ý ẩn danh và đề xuất cải tiến hệ thống.' },
+      'mini-games': { main: 'Khu Giải Trí', sub: 'Cờ Caro, Vòng Quay May Mắn, Xổ Số Kiến Thiết - Kiếm thêm Xúc Xích!' }
+    };
+    if (titles[viewId]) {
+      document.getElementById('header-title').innerText = titles[viewId].main;
+      document.getElementById('header-subtitle').innerText = titles[viewId].sub;
+    }
+  
+    // Execute specific render logic
+    switch (viewId) {
+      case 'dashboard': renderDashboard(); break;
+      case 'crm': if (typeof renderCRMBoard === 'function') renderCRMBoard(); break;
+      case 'tasks': if (typeof renderTasksBoard === 'function') renderTasksBoard(); break;
+      case 'staff-management': if (typeof renderStaffManagement === 'function') renderStaffManagement(); break;
+      case 'clients': if (typeof renderClientsKanban === 'function') renderClientsKanban(); break;
+      case 'tasks-projects': if (typeof renderProjectsList === 'function') renderProjectsList(); break;
+      case 'project-dedicated': if (typeof openProjectDetails === 'function' && window.currentActiveProjectId) openProjectDetails(window.currentActiveProjectId); break;
+      case 'my-tasks': if (typeof renderMyTasksView === 'function') renderMyTasksView(); break;
+      case 'rewards': if (typeof renderRewardsShop === 'function') renderRewardsShop(); break;
+      case 'suggestions': if (typeof renderSuggestionsKanban === 'function') renderSuggestionsKanban(); break;
+      case 'mini-games': if (typeof renderMiniGames === 'function') renderMiniGames(); break;
+    }
+    
   activeView.style.display = 'block';
   setTimeout(() => {
     activeView.classList.add('active');
