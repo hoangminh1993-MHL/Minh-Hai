@@ -426,7 +426,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.59';
+const CLIENT_VERSION = '20.60';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -555,7 +555,7 @@ function initSidebarRouter() {
 }
 
 function navigateToView(viewId, updateHash = true) {
-  const activeView = document.querySelector(.app-view[id="view-"]);
+  const activeView = document.querySelector(`.app-view[id="view-${viewId}"]`);
   if (!activeView) return;
 
   // Update hash
