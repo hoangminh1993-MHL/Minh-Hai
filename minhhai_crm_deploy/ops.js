@@ -1,4 +1,4 @@
-﻿// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
+// ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
 
 document.addEventListener('DOMContentLoaded', () => {
   initOpsEvents();
@@ -25,7 +25,7 @@ window.showStatsModal = function(type) {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
       
-      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+      const isChinhNgach = ((w.serviceType && (w.serviceType.toLowerCase().includes('ch') || w.serviceType.toLowerCase().includes('chính'))));
 
       const item = {
         type: 'workflow',
@@ -56,7 +56,7 @@ window.showStatsModal = function(type) {
       // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows), tránh đếm trùng
       if (l.stage === 'success') return; 
 
-      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
+      if ((l.note && (l.note.toLowerCase().includes('chính ngạch') || l.note.toLowerCase().includes('chinh ngach') || /\bcn\b/i.test(l.note)))) {
         const createdDate = new Date(l.createdTime || l.date);
         
         const item = {
@@ -90,7 +90,7 @@ window.showStatsModal = function(type) {
         <tr style="cursor:pointer;" onclick="openStatDetail('\${i.type}', '\${i.id}')">
           <td>\${i.code}</td>
           <td>\${i.name}</td>
-          <td><span class="badge \${i.service && i.service.toLowerCase() === 'chính ngạch' ? 'badge-blue' : 'badge-gold'}\">\${i.service}</span><br><span style="font-size: 0.8em; color: #888;">\${i.source}</span></td>
+          <td><span class="badge \${(i.service && (i.service.toLowerCase().includes('ch') || i.service.toLowerCase().includes('chính'))) ? 'badge-blue' : 'badge-gold'}\">\${i.service}</span><br><span style="font-size: 0.8em; color: #888;">\${i.source}</span></td>
           <td>\${i.stage}</td>
           <td>\${i.date}</td>
           <td>\${i.val}</td>
@@ -507,7 +507,7 @@ function renderFounderDashboard() {
     AppState.shipment_workflows.forEach(w => {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+      const isChinhNgach = ((w.serviceType && (w.serviceType.toLowerCase().includes('ch') || w.serviceType.toLowerCase().includes('chính'))));
 
       if (isThisMonth) {
         if (isChinhNgach) {
@@ -527,7 +527,7 @@ function renderFounderDashboard() {
       // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows)
       if (l.stage === 'success') return;
 
-      if (l.note && (l.note.toLowerCase().includes('chính ngạch') || /\bcn\b/i.test(l.note))) {
+      if ((l.note && (l.note.toLowerCase().includes('chính ngạch') || l.note.toLowerCase().includes('chinh ngach') || /\bcn\b/i.test(l.note)))) {
         const createdDate = new Date(l.createdTime || l.date);
         if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
           cnGenerated++;
@@ -705,7 +705,7 @@ function renderOpsWorkflows() {
     if (!matchesSearch) return;
 
     // Service type filter
-    if (serviceVal !== 'all' && flow.serviceType !== serviceVal) return;
+    if (serviceVal !== 'all' && (serviceVal === 'chính ngạch' ? !flow.serviceType.toLowerCase().includes('ch') : !flow.serviceType.toLowerCase().includes('hàng'))) return;
 
     // Assignee filter
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
@@ -4121,7 +4121,7 @@ function renderOpsStats() {
     AppState.shipment_workflows.forEach(w => {
       const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
       const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      const isChinhNgach = (w.serviceType && w.serviceType.toLowerCase() === 'chính ngạch');
+      const isChinhNgach = ((w.serviceType && (w.serviceType.toLowerCase().includes('ch') || w.serviceType.toLowerCase().includes('chính'))));
 
       if (isThisMonth) {
         if (isChinhNgach) {
