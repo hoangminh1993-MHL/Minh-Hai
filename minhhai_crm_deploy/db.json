@@ -419,7 +419,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-18",
-                      "note":  "Hß╗Åi gi├í x├ích tay cf, bß╗Öt ─æß║¡u xanh, hß║ít ─æiß╗üu tß╗½ VN sang TQ - B├ío gi├í : 120-150k/1kg t├╣y sß╗æ lg (KH ─æang ß╗ƒ TQ).\n22/6: ─É├ú b├ío gi├í 140k/1kg cho ─æoqn 7kg. Trß╗ìn g├│i : 200k/1kg\n10/7 : B├ío gi├í x├ích tay :  quß║ºn ├ío , ─æß╗ô c├í nh├ón... vß╗ü VN : 50k/1kg",
+                      "note":  "Hỏi giá xách tay cf, bột đậu xanh, hạt điều từ VN sang TQ - Báo giá : 120-150k/1kg tùy số lg (KH đang ở TQ).\n22/6: Đã báo giá 140k/1kg cho đoqn 7kg. Trọn gói : 200k/1kg\n10/7 : Báo giá xách tay :  quần áo , đồ cá nhân... về VN : 50k/1kg",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -723,14 +723,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-09 09:00",
-                      "name":  "─Éinh Ph├║c An",
+                      "name":  "Đinh Phúc An",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0987768676",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "10/7 : Cß║ºn t╞░ vß║Ñn nhß║¡p h├áng - Zalo ─Éinh Ch├¡ Thiß║┐t bß╗ï ─æiß╗çn : \n1. B├║t thß╗¡ ─æiß╗çn : ─æi CN\n2. ─É├ám ph├ín x╞░ß╗ƒng nhß║¡p h├áng : X╞░ß╗ƒng sx ─æ├¿n chiß║┐u s├íng\n11/7 : B├ío gi├í CN sp B├║t thß╗¡ ─æiß╗çn",
+                      "note":  "10/7 : Cần tư vấn nhập hàng - Zalo Đinh Chí Thiết bị điện : \n1. Bút thử điện : đi CN\n2. Đàm phán xưởng nhập hàng : Xưởng sx đèn chiếu sáng\n11/7 : Báo giá CN sp Bút thử điện",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -851,7 +851,7 @@
                       "wechat":  "",
                       "stage":  "receive_info",
                       "valVnd":  0,
-                      "name":  "Minh Nguyß╗àn",
+                      "name":  "Minh Nguyễn",
                       "failReason":  null,
                       "valRmb":  0,
                       "phone":  "",
@@ -870,7 +870,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "CN : ─Éiß╗üu h├▓a cho oto\n9/7 : B├¬n x╞░ß╗¢ng TQ ─æang ß║únh h╞░ß╗ƒng m╞░a b├úo n├¬n ch╞░a cß║¡p nhß║¡t ─æ╞░ß╗úc ttin sp",
+                      "note":  "CN : Điều hòa cho oto\n9/7 : Bên xướng TQ đang ảnh hưởng mưa bão nên chưa cập nhật được ttin sp",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -977,14 +977,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-01 09:00",
-                      "name":  "Huyß╗ün Sky",
+                      "name":  "Huyền Sky",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0366611664",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-01",
-                      "note":  "Nhß║¡p gi├áy Tiß╗âu ngß║ích v├á CN\n3/7 : ─É├ú b├ío gi├í CN. Hß║╣n KH sang tuß║ºn qua c├┤ng ty ─æß╗â l├ám viß╗çc.\n11/7 : Hß║╣n lß╗ïch KH thß╗⌐ 2 qua c├┤ng ty trao ─æß╗òi",
+                      "note":  "Nhập giày Tiểu ngạch và CN\n3/7 : Đã báo giá CN. Hẹn KH sang tuần qua công ty để làm việc.\n11/7 : Hẹn lịch KH thứ 2 qua công ty trao đổi",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1086,19 +1086,19 @@
                                           }
                   },
                   {
-                      "failReason":  "Kh├ích h├áng ko quan t├óm",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-20-381",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Ho├áng C╞░╞íng Biz",
+                      "name":  "Hoàng Cương Biz",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH hß╗Åi vu v╞í, khai th├íc th├¬m v├á s─æt Kh ko trß║ú lß╗¥i",
+                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1402,14 +1402,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "B├¼nh Minh Trß║ºn",
+                      "name":  "Bình Minh Trần",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0329572532",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Hß╗Åi mua m├án h├¼nh m├íy t├¡nh. KH check gi├í ok. ─É├ú b├ío gi├í. ─É├ú g─æ t╞░ vß║Ñn v├á trao ─æß╗òi. KH tham khß║úo sß║ún phß║⌐m, ch╞░a c├│ nhu cß║ºu mua ngay. Dß╗▒ kiß║┐n mua l├á th├íng 9 - mua ─æß╗â ch╞íi Game",
+                      "note":  "Hỏi mua màn hình máy tính. KH check giá ok. Đã báo giá. Đã gđ tư vấn và trao đổi. KH tham khảo sản phẩm, chưa có nhu cầu mua ngay. Dự kiến mua là tháng 9 - mua để chơi Game",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1516,14 +1516,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-30 09:00",
-                      "name":  "Ho├áng Ph├ít Koffmann",
+                      "name":  "Hoàng Phát Koffmann",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0983792888",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Cß╗¡a cuß╗æn tß║íi HP : KG CN bß╗Ö cß╗¡a : cß║ºn b├ío gi├í 1 bß╗Ö v├á 10 bß╗Ö. ─Éang check thß╗º tß╗Ñc v├á thuß║┐ ph├¡\n5/7 : Li├¬n hß╗ç hß╗Åi th─âm KH. KH phß║ún hß╗ôi gi├í ok. Hß╗Åi th├¬m vß╗ü dv TTH\n11/7 : Li├¬n hß╗ç lß║íi hß╗Åi th─âm KH",
+                      "note":  "Cửa cuốn tại HP : KG CN bộ cửa : cần báo giá 1 bộ và 10 bộ. Đang check thủ tục và thuế phí\n5/7 : Liên hệ hỏi thăm KH. KH phản hồi giá ok. Hỏi thêm về dv TTH\n11/7 : Liên hệ lại hỏi thăm KH",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1814,14 +1814,14 @@
                       "valRmb":  0,
                       "stage":  "success",
                       "createdTime":  "2026-07-03 09:00",
-                      "name":  "Minh T├óm",
+                      "name":  "Minh Tâm",
                       "source":  "Fanpage",
                       "salesId":  "usr-6",
                       "phone":  "0896122898",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-03",
-                      "note":  "[M├ú KH: MH408 - Nguyß╗àn Minh T├óm] ─Éß║╖t set v├íy : KH lß║╗ 35k/1kg. 0% ph├¡ dv.",
+                      "note":  "[Mã KH: MH408 - Nguyễn Minh Tâm] Đặt set váy : KH lẻ 35k/1kg. 0% phí dv.",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1928,14 +1928,14 @@
                       "valRmb":  0,
                       "stage":  "success",
                       "createdTime":  "2026-06-26 09:00",
-                      "name":  "Mai Hß╗ông VPP",
+                      "name":  "Mai Hồng VPP",
                       "source":  "Giß╗¢i thiß╗çu",
                       "salesId":  "usr-7",
                       "phone":  "Minh",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-26",
-                      "note":  "[M├ú KH: MH406 - C. Hß╗ông VPP] 4/7 : ─Éang chß╗æt lß║íi sß╗æ l╞░ß╗úng thß║╗ ─æß╗â l├¬n ─æ╞ín. Sang tuß║ºn T2 kß║┐ to├ín ck\n6/7 : ─É├ú ck cß╗ìc h├áng - di h├áng thß║╗ tr╞░ß╗¢c. B├║t sß║╜ ─æß║╖t sau",
+                      "note":  "[Mã KH: MH406 - C. Hồng VPP] 4/7 : Đang chốt lại số lượng thẻ để lên đơn. Sang tuần T2 kế toán ck\n6/7 : Đã ck cọc hàng - di hàng thẻ trước. Bút sẽ đặt sau",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2037,19 +2037,19 @@
                                           }
                   },
                   {
-                      "failReason":  "Kh├ích h├áng ko quan t├óm",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-22-732",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-08 09:00",
-                      "name":  "Trß║ºn Hiß║┐u",
+                      "name":  "Trần Hiếu",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "KH hß╗Åi vu v╞í, khai th├íc th├¬m v├á s─æt Kh ko trß║ú lß╗¥i",
+                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2163,7 +2163,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "─Éang xin s─æt hß╗ù trß╗ú. ─É├ú gß╗¡i",
+                      "note":  "Đang xin sđt hỗ trợ. Đã gửi",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2277,7 +2277,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-06",
-                      "note":  "[M├ú KH: MH409 - V┼⌐ Huyß╗ün] KH c┼⌐ tr╞░ß╗¢c ─æ├│ giß╗¥ mß╗¢i ─æß║╖t lß║íi : 4050 , 30k/1kg, 2% ph├¡ dv",
+                      "note":  "[Mã KH: MH409 - Vũ Huyền] KH cũ trước đó giờ mới đặt lại : 4050 , 30k/1kg, 2% phí dv",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2397,14 +2397,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "Nguyß╗àn L├ánh",
+                      "name":  "Nguyễn Lành",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0868342865",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "MH : 20 cuß╗Ön b─âng d├¡nh 3M. ─É├ú b├ío gi├í\n26/6 : Li├¬n hß╗ç KH ch╞░a rep\n27/6: G─æ ko li├¬n lß║íc ─æc",
+                      "note":  "MH : 20 cuộn băng dính 3M. Đã báo giá\n26/6 : Liên hệ KH chưa rep\n27/6: Gđ ko liên lạc đc",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2518,7 +2518,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH y├¬u cß║ºu : H╞░ß╗¢ng dß║½n tß║ío tk app cty",
+                      "note":  "KH yêu cầu : Hướng dẫn tạo tk app cty",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2625,14 +2625,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-02 09:00",
-                      "name":  "Quß╗æc Kh├ính",
+                      "name":  "Quốc Khánh",
                       "source":  "Giß╗¢i thiß╗çu",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-02",
-                      "note":  "3/7 :B├ío gi├í CN : 8 bß╗Ö kß║╣p Phanh cß╗ºa Nga\n4/7 : ─É├ú nt cho KH ─æß╗â hß╗Åi th─âm\n11/7 : Li├¬n hß╗ç Kh hß╗Åi th─âm vß╗ü ─æ╞ín h├áng",
+                      "note":  "3/7 :Báo giá CN : 8 bộ kẹp Phanh của Nga\n4/7 : Đã nt cho KH để hỏi thăm\n11/7 : Liên hệ Kh hỏi thăm về đơn hàng",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2765,14 +2765,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-02 09:00",
-                      "name":  "Phß║ím Thuß║ºn",
+                      "name":  "Phạm Thuần",
                       "source":  "Fanpage",
                       "salesId":  "usr-3",
                       "phone":  "0988274665",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-02",
-                      "note":  "Mua hß╗Ö h├áng tr├¬n TM─ÉT. Mua m├íy c├ín ─æ├ú b├ío c╞░ß╗¢c. ─Éß╗úi kh├ích chß╗ìn ph├ón loß║íi b├ío gi├í\n4/6 : G─æ v├á nt KH ch╞░a rep\n9/6 : G─æ Kh muß╗æn chß╗ìn mua m├íy to h╞ín. Sß║╜ li├¬n hß╗ç lß║íi sau\n13/6: Lhe Kh hß╗Åi th─âm\n23/6: G─æ cho KH ─æß╗â hß╗ù trß╗ú. KH hß║╣n v├ái h├┤m nß╗»a sß║╜ nt nhß╗¥ hß╗ù trß╗ú\n11/7 : Hß╗Åi th─âm khai th├íc th├¬m nhu cß║ºu cß╗ºa KH. KH ko quan t├óm",
+                      "note":  "Mua hộ hàng trên TMĐT. Mua máy cán đã báo cước. Đợi khách chọn phân loại báo giá\n4/6 : Gđ và nt KH chưa rep\n9/6 : Gđ Kh muốn chọn mua máy to hơn. Sẽ liên hệ lại sau\n13/6: Lhe Kh hỏi thăm\n23/6: Gđ cho KH để hỗ trợ. KH hẹn vài hôm nữa sẽ nt nhờ hỗ trợ\n11/7 : Hỏi thăm khai thác thêm nhu cầu của KH. KH ko quan tâm",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2880,14 +2880,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-02 09:00",
-                      "name":  "Qu├ƒΓòù├ªc KhΓö£├¡nh",
+                      "name":  "Quốc Khánh",
                       "source":  "Gi├ƒΓòù┬ói thi├ƒΓòù├ºu",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-02",
-                      "note":  "3/7 :BΓö£├¡o giΓö£├¡ CN : 8 b├ƒΓòù├û k├ƒΓòæΓòúp Phanh c├ƒΓòù┬║a Nga\n4/7 : ΓöÇ├ëΓö£├║ nt cho KH ΓöÇ├ª├ƒΓòù├ó h├ƒΓòù├ài thΓöÇ├óm",
+                      "note":  "3/7 :Báo giá CN : 8 bộ kẹp Phanh của Nga\n4/7 : Đã nt cho KH để hỏi thăm",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2994,14 +2994,14 @@
                       "valRmb":  0,
                       "stage":  "receive_info",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "D╞░╞íng t├│c",
+                      "name":  "Dương tóc",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "T├║ Anh",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "Nhß║¡p s├íp vuß╗æt t├│c. \n─Éang l├ám tß╗▒ c├┤ng bß╗æ ß╗ƒ VN : dß╗▒ kiß║┐n 1,5 th├íng nß╗»a mß╗¢i xong \nSau khi xong mß╗¢i c├│ thß╗â nhß║¡p h├áng",
+                      "note":  "Nhập sáp vuốt tóc. \nĐang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong \nSau khi xong mới có thể nhập hàng",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3116,19 +3116,19 @@
                       "note":  "[Tin nhan tu Fanpage]: Locally sent message to port 3000"
                   },
                   {
-                      "failReason":  "KhΓö£├¡ch hΓö£├íng ko quan tΓö£├│m",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-15-136",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "B├ƒΓòæ├║o Ng├ƒΓòù├¼c Rice",
+                      "name":  "Bảo Ngọc Rice",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "H├ƒΓòù├ài bΓö£├│ng quΓò₧├¡",
+                      "note":  "Hỏi bâng quơ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3235,14 +3235,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Phß║ím Thß╗ï ├ünh Ngß╗ìc",
+                      "name":  "Phạm Thị Ánh Ngọc",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0836060902",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Hß╗Åi KG : b├ính ─æß║¡u xanh, ... gß╗¡i sang TQ",
+                      "note":  "Hỏi KG : bánh đậu xanh, ... gửi sang TQ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3540,7 +3540,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "CN : ─æß╗úi KH xin th├┤ng tin NCC vß╗ü l├┤ h├áng gß║ích \n10/7 : KH ─æang ─æß╗úi NCC cß║¡p nhß║¡t ttin sp",
+                      "note":  "CN : đợi KH xin thông tin NCC về lô hàng gạch \n10/7 : KH đang đợi NCC cập nhật ttin sp",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3642,19 +3642,19 @@
                                           }
                   },
                   {
-                      "failReason":  "KhΓö£├¡ch hΓö£├íng ko quan tΓö£├│m",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-20-381",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "HoΓö£├íng CΓò₧ΓûæΓò₧├¡ng Biz",
+                      "name":  "Hoàng Cương Biz",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH h├ƒΓòù├ài vu vΓò₧├¡, khai thΓö£├¡c thΓö£┬¼m vΓö£├í sΓöÇ├ªt Kh ko tr├ƒΓòæ├║ l├ƒΓòù┬Ñi",
+                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3761,14 +3761,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-06 09:00",
-                      "name":  "Th╞░ Cao",
+                      "name":  "Thư Cao",
                       "source":  "Fanpage",
                       "salesId":  "usr-3",
                       "phone":  "0866927326",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-06",
-                      "note":  "KG : h├áng lß║╗ v├á l├┤ quß║ºn ├ío- Ti├¬n L├úng HP. ─Éang b├ío gi├í lß║╗ : 30k- L├┤ : 26k\n. KH phß║ún hß╗ôi ─æang ─æi h├áng L├┤ vß╗ü HN l├á 20k/1kg.\n9/6 : B├ío gi├í h├áng l├┤ 22k/1kg - H├áng lß║╗: 30k\n11/6: G─æ cho KH ko nge m├íy\n12/6: ─Éang chß╗æt lß║íi vß╗¢i KH \n13/6 : KH ─æß╗úi mß║Ñy h├┤m nß╗»a c├│ ─æ╞ín sß║╜ b├ío lß║íi",
+                      "note":  "KG : hàng lẻ và lô quần áo- Tiên Lãng HP. Đang báo giá lẻ : 30k- Lô : 26k\n. KH phản hồi đang đi hàng Lô về HN là 20k/1kg.\n9/6 : Báo giá hàng lô 22k/1kg - Hàng lẻ: 30k\n11/6: Gđ cho KH ko nge máy\n12/6: Đang chốt lại với KH \n13/6 : KH đợi mấy hôm nữa có đơn sẽ báo lại",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3870,19 +3870,19 @@
                                           }
                   },
                   {
-                      "failReason":  "KhΓö£├¡ch hΓö£├íng ko quan tΓö£├│m",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-18-945",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "SΓò₧├¡n Quang LΓö£├│m",
+                      "name":  "Sơn Quang Lâm",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Tk qu├ƒΓòæ├║ng cΓö£├¡o kΓö£ΓîÉ Page",
+                      "note":  "Tk quảng cáo ké Page",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4174,7 +4174,7 @@
                       "source":  "Fanpage",
                       "valRmb":  0,
                       "valVnd":  0,
-                      "note":  "Nhu cß║ºu KG h├áng lß║╗",
+                      "note":  "Nhu cầu KG hàng lẻ",
                       "salesId":  "usr-3",
                       "stage":  "receive_info",
                       "failReason":  null,
@@ -4287,14 +4287,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-12 09:00",
-                      "name":  "MH404 - Li├¬n193",
+                      "name":  "MH404 - Liên193",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0387516193",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-12",
-                      "note":  "Cß║ºn t├¼m nguß╗ôn h├áng ruy b─âng decor\n15/6: Lv vß╗¢i x╞░ß╗ƒng ruy b─âng v├á l╞░ß╗¢i Kh gß╗¡i. B├¬n l╞░ß╗¢i gß╗¡i mß║½u free cho 2 cuß╗Ön th╞░ß╗¥ng v├á l╞░ß╗¢i\n16/6 : X╞░ß╗ƒng l╞░ß╗¢i ─æ├ú gß╗¡i 2 cuß╗Ön l╞░ß╗¢i mß║½u : k├¡ch th╞░ß╗¢c bß║ún rß╗Öng 52cm 10Y - 1 cuß╗Ön nß║╖ng 240-250g\n18/6 : ─Éß║╖t h├áng mß║½u 2 x╞░ß╗ƒng ruy b─âng. ─Éang ─æß╗úi h├áng vß╗ü\n25/6: H├áng mß║½u vß╗ü ─æß╗úi kh├ích l├ám ─æ├║ng sp cß║ºn ko",
+                      "note":  "Cần tìm nguồn hàng ruy băng decor\n15/6: Lv với xưởng ruy băng và lưới Kh gửi. Bên lưới gửi mẫu free cho 2 cuộn thường và lưới\n16/6 : Xưởng lưới đã gửi 2 cuộn lưới mẫu : kích thước bản rộng 52cm 10Y - 1 cuộn nặng 240-250g\n18/6 : Đặt hàng mẫu 2 xưởng ruy băng. Đang đợi hàng về\n25/6: Hàng mẫu về đợi khách làm đúng sp cần ko",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4401,14 +4401,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "V├▓ng bi Ph├║ Qu├╜",
+                      "name":  "Vòng bi Phú Quý",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0912116076",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "CN : thß╗º tß╗Ñc ch├¡nh ngß║ích h├án v├▓ng bi. ─É├ú tß║ío nh├│m lv\n26/6: Minh ─æ├ú gß╗ìi t╞░ vß║Ñn. ─Éß╗úi KH lv vß╗¢i b├¬n TQ vß╗ü c╞░ß╗¢c vc. Sau ─æ├│ sß║╜  B├ío gi├í",
+                      "note":  "CN : thủ tục chính ngạch hàn vòng bi. Đã tạo nhóm lv\n26/6: Minh đã gọi tư vấn. Đợi KH lv với bên TQ về cước vc. Sau đó sẽ  Báo giá",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4511,12 +4511,12 @@
                   },
                   {
                       "id":  "lead-1783705531795",
-                      "name":  "Diß╗àm Quß╗│nh",
+                      "name":  "Diễm Quỳnh",
                       "phone":  "0904472004",
                       "source":  "Fanpage",
                       "valRmb":  0,
                       "valVnd":  0,
-                      "note":  "11/7 : LH vß╗¢i KH qua zalo",
+                      "note":  "11/7 : LH với KH qua zalo",
                       "salesId":  "usr-3",
                       "stage":  "get_phone",
                       "failReason":  null,
@@ -4834,19 +4834,19 @@
                       "date":  "2026-07-09"
                   },
                   {
-                      "failReason":  "Kh├ích h├áng ko quan t├óm",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-15-136",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Bß║úo Ngß╗ìc Rice",
+                      "name":  "Bảo Ngọc Rice",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Hß╗Åi b├óng qu╞í",
+                      "note":  "Hỏi bâng quơ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4953,14 +4953,14 @@
                       "valRmb":  0,
                       "stage":  "receive_info",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "DΓò₧ΓûæΓò₧├¡ng tΓö£Γöéc",
+                      "name":  "Dương tóc",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "TΓö£Γòæ Anh",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "Nh├ƒΓòæ┬íp sΓö£├¡p vu├ƒΓòù├ªt tΓö£Γöéc. \nΓöÇ├ëang lΓö£├ím t├ƒΓòùΓûÆ cΓö£Γöñng b├ƒΓòù├ª ├ƒΓòù╞Æ VN : d├ƒΓòùΓûÆ ki├ƒΓòæΓöÉn 1,5 thΓö£├¡ng n├ƒΓòù┬╗a m├ƒΓòù┬ói xong \nSau khi xong m├ƒΓòù┬ói cΓö£Γöé th├ƒΓòù├ó nh├ƒΓòæ┬íp hΓö£├íng",
+                      "note":  "Nhập sáp vuốt tóc. \nĐang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong \nSau khi xong mới có thể nhập hàng",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5062,19 +5062,19 @@
                                           }
                   },
                   {
-                      "failReason":  "Kh├ích h├áng ko quan t├óm",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-18-945",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "S╞ín Quang L├óm",
+                      "name":  "Sơn Quang Lâm",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Tk quß║úng c├ío k├⌐ Page",
+                      "note":  "Tk quảng cáo ké Page",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5181,14 +5181,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-08 09:00",
-                      "name":  "H╞░╞íng V┼⌐",
+                      "name":  "Hương Vũ",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0766266294",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "T╞░ vß║Ñn KH vß╗ü thß╗º tß╗Ñc CN \n9/7 : ─É├ú gß╗¡i b├ío gi├í CN - ─æß╗úi kh├ích lv vß╗¢i sß║┐p TQ",
+                      "note":  "Tư vấn KH về thủ tục CN \n9/7 : Đã gửi báo giá CN - đợi khách lv với sếp TQ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5295,14 +5295,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-30 09:00",
-                      "name":  "NhΓö£├║ PhΓò₧ΓûæΓò₧├¡ng BΓö£Γòúi",
+                      "name":  "Nhã Phương Bùi",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Vc hΓö£├íng n├ƒΓòù├ûi th├ƒΓòæ├æt g├ƒΓòù├╣ : dΓò₧Γûæ├ƒΓòù┬ói 200kg\n2/7 : ΓöÇ├ëΓö£├║ bΓö£├¡o giΓö£├¡ 16k v├ƒΓòù├╝ t├ƒΓòæ┬ín nhΓö£├í ├ƒΓòù╞Æ HP v├ƒΓòù┬ói hΓö£├íng lΓö£Γöñ giΓò₧Γûæ├ƒΓòù┬Ñng n├ƒΓòù├ûi th├ƒΓòæ├æt g├ƒΓòù├╣",
+                      "note":  "Vc hàng nội thất gỗ : dưới 200kg\n2/7 : Đã báo giá 16k về tận nhà ở HP với hàng lô giường nội thất gỗ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5409,14 +5409,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-08 09:00",
-                      "name":  "Ruby Nguyß╗àn",
+                      "name":  "Ruby Nguyễn",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0354106419",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "Nhß║¡p khß║⌐u CN : Cß║⌐u cß║ºn trß╗Ñc - ─æang xin ttin check thß╗º tß╗Ñc : 83 tß║Ñn\n10/7 : ─æang check thß╗º tß╗Ñc line sea\n12/7 : Hß║╣n kh├ích sang tuß║ºn b├ío lß║íi. Minh ─æang li├¬n hß╗ç th├¬m lß║ºn nß╗»a",
+                      "note":  "Nhập khẩu CN : Cẩu cần trục - đang xin ttin check thủ tục : 83 tấn\n10/7 : đang check thủ tục line sea\n12/7 : Hẹn khách sang tuần báo lại. Minh đang liên hệ thêm lần nữa",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5715,19 +5715,19 @@
                       "date":  "2026-07-05"
                   },
                   {
-                      "failReason":  "KhΓö£├¡ch hΓö£├íng ko quan tΓö£├│m",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "id":  "lead-excel-22-732",
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-08 09:00",
-                      "name":  "Tr├ƒΓòæ┬║n Hi├ƒΓòæΓöÉu",
+                      "name":  "Trần Hiếu",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "KH h├ƒΓòù├ài vu vΓò₧├¡, khai thΓö£├¡c thΓö£┬¼m vΓö£├í sΓöÇ├ªt Kh ko tr├ƒΓòæ├║ l├ƒΓòù┬Ñi",
+                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5834,14 +5834,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-30 09:00",
-                      "name":  "Nh├ú Ph╞░╞íng B├╣i",
+                      "name":  "Nhã Phương Bùi",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Vc h├áng nß╗Öi thß║Ñt gß╗ù : d╞░ß╗¢i 200kg\n2/7 : ─É├ú b├ío gi├í 16k vß╗ü tß║¡n nh├á ß╗ƒ HP vß╗¢i h├áng l├┤ gi╞░ß╗¥ng nß╗Öi thß║Ñt gß╗ù",
+                      "note":  "Vc hàng nội thất gỗ : dưới 200kg\n2/7 : Đã báo giá 16k về tận nhà ở HP với hàng lô giường nội thất gỗ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
