@@ -3784,7 +3784,6 @@ window.openProjectDedicatedView = function(projId) {
   if (typeof renderDedicatedProjectTasks === 'function') renderDedicatedProjectTasks(p);
   if (typeof renderDedicatedProjectDocs === 'function') renderDedicatedProjectDocs(p);
   if (typeof renderDedicatedProjectDiscussion === 'function') renderDedicatedProjectDiscussion(p);
-};
       const statusColors = { 
         todo: 'bg-blue',
         pending: 'bg-gray', 
