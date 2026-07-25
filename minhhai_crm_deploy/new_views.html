@@ -1,0 +1,301 @@
+﻿                <div>CN</div><div>T2</div><div>T3</div><div>T4</div><div>T5</div><div>T6</div><div>T7</div>
+              </div>
+              <div class="calendar-grid-body" id="calendar-days-grid" style="display:grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: 110px; border-left:1px solid var(--border-color); border-bottom:1px solid var(--border-color);">
+                <!-- Dynamic calendar cells -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==================== VIEW: DỰ ÁN VẬN HÀNH ==================== -->
+        <section id="view-tasks-projects" class="app-view" style="display: none;">
+          <div class="workflow-desc">
+            <p><i class="fa-solid fa-folder-tree text-blue"></i> <strong>Dự Án Vận Hành & Phòng Ban:</strong> Tập trung quản lý tài liệu, công việc, file báo giá, chứng từ hải quan hoặc hợp đồng theo từng khách hàng VIP hoặc dự án nội bộ.</p>
+          </div>
+
+
+
+          <div style="margin-top: 20px;">
+            <!-- Left Panel: Project List -->
+            <div class="dashboard-card" style="display: flex; flex-direction: column;">
+              <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                <h3>Dự Án & Phòng Ban</h3>
+                <button class="btn btn-sm btn-primary" id="btn-add-project-modal"><i class="fa-solid fa-plus"></i> Tạo Mới</button>
+              </div>
+              <div class="card-body" id="projects-list-container" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap:15px; padding: 15px 0 0 0;">
+                <!-- Project cards list -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== VIEW: DEDICATED PROJECT VIEW ==================== -->
+        <section id="view-project-dedicated" class="app-view" style="display: none;">
+
+            <!-- Right Panel: Active Project Details -->
+                        <div class="dashboard-card" id="project-details-container" style="display: flex; flex-direction: column; height: calc(100vh - 180px); overflow: hidden; padding: 0;">
+              <!-- Top Header Area -->
+              <div class="card-header" style="border-bottom:1px solid rgba(255, 255, 255, 0.08); padding: 16px; background: #111827;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
+                  <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                      <button class="btn btn-sm btn-outline" id="btn-back-to-projects-list" style="padding: 2px 8px; font-size: 11px;"><i class="fa-solid fa-arrow-left"></i> Quay lại</button>
+                      <h3 id="active-project-name" style="font-size: 18px; font-weight: 600; margin: 0; color: #f8fafc;">Tên Dự Án</h3>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 6px; font-size: 12px; color: var(--text-muted);">
+                      <span><i class="fa-solid fa-user-tie"></i> Quản lý: <strong id="active-project-manager" style="color: #94a3b8;">Admin</strong></span>
+                      <span style="color: rgba(255,255,255,0.2);">|</span>
+                      <span><i class="fa-solid fa-users"></i> Thành viên: <strong id="active-project-members" style="color: #94a3b8;">...</strong></span>
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+                    <span id="active-project-status" class="badge bg-blue">Đang chuẩn bị</span>
+                    <span id="active-project-type" style="font-size: 11px; color: var(--text-muted);">Loại: CSKH</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Main Content Split -->
+              <div style="display: flex; flex: 1; overflow: hidden;">
+                
+                <!-- Left Panel: Overview & Progress -->
+                <div class="project-dedicated-left" style="width: 28%; border-right: 1px solid rgba(255, 255, 255, 0.08); padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; background: #0f172a;">
+                  <div>
+                    <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Tiến Độ Dự Án</h4>
+                    <div class="project-progress-container" style="background: rgba(255,255,255,0.05); border-radius: 6px; padding: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                      <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px;">
+                        <span>Hoàn thành công việc</span>
+                        <strong id="dedicated-project-progress-percent">0%</strong>
+                      </div>
+                      <div class="progress-bar-bg" style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden;">
+                        <div id="dedicated-project-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #f59e0b, #eab308); transition: width 0.3s ease;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                      <h4 style="margin: 0; color: #f59e0b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Mô tả & Ghi chú</h4>
+                      <button id="btn-edit-project-desc" class="btn btn-xs btn-outline" style="padding: 2px 6px; font-size: 10.5px;"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                    </div>
+                    
+                    <!-- Read-only View -->
+                    <div id="project-desc-view-mode">
+                      <div id="dedicated-project-desc" style="font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; white-space: pre-wrap;">Mô tả chi tiết dự án...</div>
+                    </div>
+                    
+                    <!-- Edit View -->
+                    <div id="project-desc-edit-mode" style="display: none; flex-direction: column; gap: 10px;">
+                      <div class="form-group" style="margin-bottom: 8px;">
+                        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Mô tả chi tiết</label>
+                        <textarea id="edit-project-desc-input" class="form-control" style="font-size: 12px; height: 100px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: white;" placeholder="Nhập mô tả dự án..."></textarea>
+                      </div>
+                      <div class="form-group" style="margin-bottom: 8px;">
+                        <label style="font-size: 11px; color: var(--text-muted); display: block; margin-bottom: 4px;">Ghi chú đặc biệt / Lưu ý</label>
+                        <input type="text" id="edit-project-notes-input" class="form-control" style="font-size: 12px; background: #0f172a; border: 1px solid rgba(255,255,255,0.1); color: white;" placeholder="Nhập ghi chú...">
+                      </div>
+                      <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                        <button id="btn-save-project-desc" class="btn btn-xs btn-primary" style="padding: 4px 10px; font-size: 11px;">Lưu</button>
+                        <button id="btn-cancel-project-desc" class="btn btn-xs btn-outline" style="padding: 4px 10px; font-size: 11px;">Hủy</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Middle Panel: Tasks & Documents -->
+                <div class="project-dedicated-middle" style="width: 44%; border-right: 1px solid rgba(255, 255, 255, 0.08); display: flex; flex-direction: column; overflow: hidden;">
+                  <!-- Top Section: Tasks -->
+                  <div style="flex: 1; display: flex; flex-direction: column; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 16px; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                      <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-list-check"></i> Công Việc Dự Án</h3>
+                      <button class="btn btn-sm btn-primary" id="btn-dedicated-project-add-task" style="padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-plus"></i> Giao việc</button>
+                    </div>
+                    <div id="dedicated-project-tasks-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+                      <!-- Tasks will be loaded here dynamically -->
+                    </div>
+                  </div>
+
+                  <!-- Bottom Section: Documents -->
+                  <div style="flex: 1; display: flex; flex-direction: column; padding: 16px; overflow: hidden;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                      <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-shield"></i> Tài Liệu & Link Liên Kết</h3>
+                      <button class="btn btn-sm btn-outline" id="btn-dedicated-project-add-doc" style="padding: 4px 10px; font-size: 11px;"><i class="fa-solid fa-link"></i> Ghim Link</button>
+                    </div>
+                    <div id="dedicated-project-docs-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;">
+                      <!-- Documents will be loaded here dynamically -->
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Right Panel: Chat & Discussions -->
+                <div class="project-dedicated-right" style="width: 28%; display: flex; flex-direction: column; background: #0b0f19; overflow: hidden;">
+                  <div style="padding: 14px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #111827;">
+                    <h3 style="margin: 0; font-size: 14px; text-transform: uppercase; color: #f59e0b; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-comments"></i> Thảo Luận Nhóm</h3>
+                  </div>
+                  
+                  <!-- Chat messages area -->
+                  <div id="dedicated-project-discussion" style="flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Discussions will load here dynamically -->
+                  </div>
+
+                  <!-- Chat input area -->
+                  <form id="form-dedicated-project-add-comment" style="padding: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); background: #111827; display: flex; gap: 8px;">
+                    <input type="text" id="dedicated-project-comment-input" class="form-control" placeholder="Nhập tin nhắn thảo luận..." style="flex: 1; font-size: 12.5px; height: 36px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);" required>
+                    <button type="submit" class="btn btn-primary" style="padding: 0 14px; height: 36px;"><i class="fa-solid fa-paper-plane"></i></button>
+                  </form>
+                </div>
+              </div>
+            </div><!-- end #project-details-container -->
+        </section>
+
+  <!-- MODAL: MANDATORY CHECKLIST PROMPT ON STAGE MOVE -->
+  <div class="modal" id="modal-step-checklist-confirm">
+    <div class="modal-content" style="width: 500px; max-width: 95%;">
+      <div class="modal-header">
+        <h3 style="color:var(--color-primary);"><i class="fa-solid fa-triangle-exclamation"></i> Xác Nhận Checklist Bắt Buộc</h3>
+        <button class="btn-close-modal" data-modal="modal-step-checklist-confirm">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:14px; margin-bottom:12px;">Bạn đang di chuyển lô hàng sang bước mới. Vui lòng xác nhận bạn đã hoàn thành các checklist bắt buộc sau đây của bước trước:</p>
+        
+        <div id="ops-mandatory-checklist-list" style="display:flex; flex-direction:column; gap:10px; background:#111827; padding:15px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+          <!-- Checklist items with check status -->
+        </div>
+
+        <p id="ops-checklist-warning-text" style="color:var(--color-error); font-size:12px; margin-top:8px; display:none; font-weight:bold;">
+          <i class="fa-solid fa-circle-exclamation"></i> Vui lòng hoàn thành toàn bộ checklist bắt buộc trước khi chuyển sang bước tiếp theo!
+        </p>
+
+        <div class="modal-footer mt-4">
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-step-checklist-confirm">Hủy Di Chuyển</button>
+          <button type="button" class="btn btn-primary" id="btn-ops-confirm-move">Xác Nhận & Di Chuyển</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== modal-global-quick-chooser ==================== -->
+  <div class="modal" id="modal-global-quick-chooser">
+    <div class="modal-content" style="max-width: 400px; text-align: center; padding: 24px; border-radius: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <h3 style="font-size: 16px; font-weight: bold; margin: 0; color: var(--color-primary); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-circle-plus" style="color: #eab308;"></i> Tạo Việc Nhanh
+        </h3>
+        <button class="btn-close-modal" data-modal="modal-global-quick-chooser" style="background: none; border: none; font-size: 20px; color: var(--text-muted); cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px; text-align: left;">Vui lòng chọn loại công việc bạn muốn khởi tạo:</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsFlowModal();" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #3b82f6; border-color: #3b82f6; border-radius: 8px;">
+          <i class="fa-solid fa-truck-ramp-box"></i> 🚚 Khởi Tạo Lô Hàng / Quy Trình mới
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsTaskModal(true);" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #10b981; border-color: #10b981; color: #ffffff; border-radius: 8px;">
+          <i class="fa-solid fa-folder-open"></i> 📂 Tạo Công Việc Theo Dự Án
+        </button>
+        <button class="btn btn-primary" onclick="closeModal('modal-global-quick-chooser'); openGlobalAddOpsTaskModal();" style="padding: 12px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; background: #f59e0b; border-color: #f59e0b; border-radius: 8px;">
+          <i class="fa-solid fa-list-check"></i> 📋 Tạo Công Việc Đơn Lẻ (Hàng ngày)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== modal-add-ops-flow ==================== -->
+  <div class="modal" id="modal-add-ops-flow">
+    <div class="modal-content" style="width: 700px; max-width: 95%;">
+      <div class="modal-header">
+        <h3>Khởi Tạo Lô Hàng / Workflow Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-ops-flow">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-ops-flow">
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="flow-name">Tên lô hàng/workflow <span class="text-rose">*</span></label>
+              <input type="text" id="flow-name" class="form-control" placeholder="Ví dụ: Vải thô K1090 Nam Thuận" required>
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-service-type">Loại dịch vụ <span class="text-rose">*</span></label>
+              <select id="flow-service-type" class="form-control" required>
+                <option value="mua hộ">Mua hộ</option>
+                <option value="ký gửi">Ký gửi</option>
+                <option value="chính ngạch" selected>Chính ngạch</option>
+                <option value="hàng lô">Hàng lô</option>
+                <option value="sourcing">Sourcing</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Client selection -->
+          <div class="form-row">
+            <div class="form-group col-6" style="display:none;">
+              <label for="flow-client-select">Chọn khách hàng thân thiết</label>
+              <select id="flow-client-select" class="form-control">
+                <option value="new">-- Tạo Khách Hàng Mới --</option>
+                <!-- JS populated -->
+              </select>
+            </div>
+            <div class="form-group col-12" id="flow-new-client-fields">
+              <label for="flow-client-name">Tên khách mới <span class="text-rose">*</span></label>
+              <input type="text" id="flow-client-name" class="form-control" placeholder="Nhập tên khách hàng...">
+            </div>
+          </div>
+
+          <div class="form-row" id="flow-new-client-extra" style="display:none;">
+            <div class="form-group col-6">
+              <label for="flow-client-phone">SĐT khách mới</label>
+              <input type="text" id="flow-client-phone" class="form-control" placeholder="Nhập SĐT...">
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-client-social">Facebook/Zalo Link</label>
+              <input type="text" id="flow-client-social" class="form-control" placeholder="Link chat...">
+            </div>
+          </div>
+
+          <div class="form-row" id="flow-time-audit-fields">
+            <div class="form-group col-4">
+              <label for="flow-customer-msg-time">Thời gian khách nhắn <span class="text-rose">*</span></label>
+              <input type="datetime-local" id="flow-customer-msg-time" class="form-control" required>
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-info-entry-time">Thời gian nhập <span class="text-rose">*</span></label>
+              <input type="datetime-local" id="flow-info-entry-time" class="form-control" required>
+            </div>
+            <div class="form-group col-4">
+              <label for="flow-evidence-url">Link ảnh bằng chứng</label>
+              <input type="text" id="flow-evidence-url" class="form-control" placeholder="Dán link ảnh/Drive...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="flow-assignee">Phụ trách chính</label>
+              <select id="flow-assignee" class="form-control"></select>
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-cskh">CSKH liên quan</label>
+              <select id="flow-cskh" class="form-control"></select>
+            </div>
+            <div class="form-group col-4" style="display:none;">
+              <label for="flow-buyer">Người mua hàng</label>
+              <select id="flow-buyer" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="flow-warehouse-cn">Kho nhận Trung Quốc</label>
+              <input type="text" id="flow-warehouse-cn" class="form-control" placeholder="Ví dụ: Bằng Tường, Đông Hưng...">
+            </div>
+            <div class="form-group col-6">
+              <label for="flow-warehouse-vn">Kho trả Việt Nam</label>
+              <input type="text" id="flow-warehouse-vn" class="form-control" placeholder="Ví dụ: Hà Nội, Hải Phòng...">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-12">
+              <label for="flow-val-total">Giá trị đơn hàng (VND)</label>
+              <input type="number" id="flow-val-total" class="form-control" min="0" value="0">
+            </div>
+            <div class="form-group col-4" style="display:none;">

@@ -7,6 +7,11 @@ let draggingLeadId = null; // Backup reference for touch devices or simple drag 
 let failPromptCallback = null; // Callback for confirm button on fail modal
 
 function formatDateTime(date) {
+  if (!date) return '';
+  if (typeof date === 'string' || typeof date === 'number') {
+    date = new Date(date);
+  }
+  if (isNaN(date.getTime())) return '';
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
@@ -16,6 +21,37 @@ function formatDateTime(date) {
 }
 
 function initCRMEvents() {
+  // View mode toggling
+  const btnBoard = document.getElementById('btn-crm-view-board');
+  const btnList = document.getElementById('btn-crm-view-list');
+  if (btnBoard && btnList) {
+    btnBoard.onclick = () => {
+      AppState.crmViewMode = 'board';
+      saveState();
+      renderCRMBoard();
+    };
+    btnList.onclick = () => {
+      AppState.crmViewMode = 'list';
+      saveState();
+      renderCRMBoard();
+    };
+  }
+
+  // Sortable headers in list view
+  document.querySelectorAll('.crm-sortable-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const field = header.getAttribute('data-field');
+      if (AppState.crmSortField === field) {
+        AppState.crmSortOrder = AppState.crmSortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        AppState.crmSortField = field;
+        AppState.crmSortOrder = 'asc';
+      }
+      saveState();
+      renderCRMBoard();
+    });
+  });
+
   // Search input
   const searchInput = document.getElementById('crm-search');
   if (searchInput) {
@@ -80,6 +116,7 @@ function initCRMEvents() {
     btnConfirmFail.addEventListener('click', () => {
       const select = document.getElementById('prompt-fail-reason');
       const otherInput = document.getElementById('prompt-fail-reason-other');
+      const evidenceInput = document.getElementById('prompt-fail-evidence');
       let reason = select.value;
 
       if (!reason) {
@@ -95,9 +132,15 @@ function initCRMEvents() {
         }
       }
 
+      const evidence = evidenceInput.value.trim();
+      if (!evidence) {
+        showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+        return;
+      }
+
       closeModal('modal-fail-reason-prompt');
       if (failPromptCallback) {
-        failPromptCallback(reason);
+        failPromptCallback(reason, evidence);
         failPromptCallback = null;
       }
     });
@@ -139,6 +182,26 @@ function populateSalesDropdown(selectId, selectedId = '') {
 
 // ==================== RENDERING KANBAN ==================== //
 function renderCRMBoard() {
+  // Sanitize stage and checklists for all leads
+  if (AppState.leads) {
+    AppState.leads.forEach(lead => {
+      if (lead.stage === 'negotiation') {
+        lead.stage = 'negotiating';
+      }
+      if (typeof window.initLeadSteps === 'function') {
+        window.initLeadSteps(lead);
+      }
+      if (Array.isArray(lead.steps)) {
+        lead.steps.forEach(s => {
+          s.checklist = [];
+        });
+      }
+    });
+  }
+
+  // Auto-heal tasks for any lead currently in quotation stage
+  let stateChanged = false;
+
   const user = getCurrentUser();
   const searchVal = document.getElementById('crm-search').value.toLowerCase().trim();
   
@@ -152,16 +215,168 @@ function renderCRMBoard() {
   });
 
   // Filter leads by search query and user role permission
-  const currentUser = getCurrentUser();
+  const currentUser = getCurrentUser() || {};
   const filteredLeads = AppState.leads.filter(lead => {
-    if (currentUser.role !== 'admin' && lead.salesId !== currentUser.id) {
+    const isSpecialAccess = currentUser.role === 'admin' || currentUser.username === 'minhphuong';
+    if (currentUser && currentUser.id && !isSpecialAccess && lead.salesId !== currentUser.id) {
       return false;
     }
-    const matchesSearch = lead.name.toLowerCase().includes(searchVal) || 
-                          (lead.phone && lead.phone.includes(searchVal)) ||
-                          (lead.note && lead.note.toLowerCase().includes(searchVal));
+    const nameVal = String(lead.name || '').toLowerCase();
+    const phoneVal = String(lead.phone || '');
+    const noteVal = String(lead.note || '').toLowerCase();
+    const matchesSearch = nameVal.includes(searchVal) || 
+                          phoneVal.includes(searchVal) ||
+                          noteVal.includes(searchVal);
     return matchesSearch;
   });
+
+  // Synchronize toggle UI state
+  const viewMode = AppState.crmViewMode || 'board';
+  const btnBoard = document.getElementById('btn-crm-view-board');
+  const btnList = document.getElementById('btn-crm-view-list');
+  const kanbanWrapper = document.getElementById('crm-kanban-wrapper');
+  const listWrapper = document.getElementById('crm-list-wrapper');
+
+  if (btnBoard && btnList && kanbanWrapper && listWrapper) {
+    if (viewMode === 'list') {
+      btnList.classList.add('active');
+      btnList.style.background = 'var(--color-primary)';
+      btnList.style.color = 'white';
+      btnBoard.classList.remove('active');
+      btnBoard.style.background = 'transparent';
+      btnBoard.style.color = 'var(--text-secondary)';
+      kanbanWrapper.style.display = 'none';
+      listWrapper.style.display = 'block';
+    } else {
+      btnBoard.classList.add('active');
+      btnBoard.style.background = 'var(--color-primary)';
+      btnBoard.style.color = 'white';
+      btnList.classList.remove('active');
+      btnList.style.background = 'transparent';
+      btnList.style.color = 'var(--text-secondary)';
+      kanbanWrapper.style.display = 'block';
+      listWrapper.style.display = 'none';
+    }
+  }
+
+  if (viewMode === 'list') {
+    // Sort leads if in list view and sort configuration is set
+    const crmSortField = AppState.crmSortField || 'name';
+    const crmSortOrder = AppState.crmSortOrder || 'asc';
+
+    filteredLeads.sort((a, b) => {
+      let valA = '';
+      let valB = '';
+      
+      if (crmSortField === 'name') {
+        valA = a.name || '';
+        valB = b.name || '';
+      } else if (crmSortField === 'phone') {
+        valA = a.phone || '';
+        valB = b.phone || '';
+      } else if (crmSortField === 'source') {
+        valA = a.source || '';
+        valB = b.source || '';
+      } else if (crmSortField === 'sales') {
+        const uA = AppState.users.find(u => u.id === a.salesId);
+        const uB = AppState.users.find(u => u.id === b.salesId);
+        valA = uA ? uA.name : '';
+        valB = uB ? uB.name : '';
+      } else if (crmSortField === 'stage') {
+        const stagesOrder = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
+        valA = stagesOrder.indexOf(a.stage);
+        valB = stagesOrder.indexOf(b.stage);
+      } else if (crmSortField === 'updated') {
+        valA = a.updatedTime || a.createdTime || a.date || '';
+        valB = b.updatedTime || b.createdTime || b.date || '';
+      }
+      
+      if (valA < valB) return crmSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return crmSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    // Update header sort icons
+    document.querySelectorAll('.crm-sortable-header').forEach(header => {
+      const field = header.getAttribute('data-field');
+      const iconSpan = header.querySelector('.sort-icon');
+      if (iconSpan) {
+        if (field === crmSortField) {
+          iconSpan.innerHTML = crmSortOrder === 'asc' ? ' ▲' : ' ▼';
+          iconSpan.style.opacity = '1';
+        } else {
+          iconSpan.innerHTML = ' ⇅';
+          iconSpan.style.opacity = '0.3';
+        }
+      }
+    });
+
+    const listBody = document.getElementById('crm-list-table-body');
+    if (listBody) {
+      listBody.innerHTML = '';
+      if (filteredLeads.length === 0) {
+        listBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy khách hàng nào.</td></tr>`;
+      } else {
+        filteredLeads.forEach(lead => {
+          const salesUser = AppState.users.find(u => u.id === lead.salesId);
+          const salesName = salesUser ? salesUser.name : 'Chưa giao';
+          
+          const stageLabels = {
+            receive_info: 'Nhận thông tin',
+            get_phone: 'Lấy SĐT',
+            explore_info: 'Khai thác thông tin',
+            quotation: 'Báo giá',
+            negotiating: 'Thương lượng',
+            success: 'Thành công',
+            failed: 'Thất bại'
+          };
+          
+          const stageColors = {
+            receive_info: '#3b82f6',
+            get_phone: '#8b5cf6',
+            explore_info: '#f97316',
+            quotation: '#eab308',
+            negotiating: '#f97316',
+            success: '#10b981',
+            failed: '#ef4444'
+          };
+          
+          const stageBadge = `<span class="badge" style="background: ${stageColors[lead.stage] || '#6b7280'}; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;">${stageLabels[lead.stage] || lead.stage}</span>`;
+          
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid var(--border-color)';
+          tr.style.cursor = 'pointer';
+          tr.addEventListener('click', () => {
+            openLeadDetailModal(lead.id);
+          });
+          
+          tr.innerHTML = `
+            <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${lead.name}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.phone || 'Chưa có'}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.source || 'Trực tiếp'}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
+            <td style="padding: 12px 10px;">${stageBadge}</td>
+            <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${lead.note || ''}">${lead.note || 'Không có ghi chú.'}</td>
+            <td style="padding: 12px 10px; color: var(--text-secondary); font-size: 12px;">${lead.updatedTime || lead.createdTime || lead.date || ''}</td>
+            <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
+              <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
+            </td>
+          `;
+          listBody.appendChild(tr);
+        });
+      }
+    }
+    
+    // Still update column counts in background
+    stages.forEach(st => {
+      const countSpan = document.getElementById(`count-${st}`);
+      if (countSpan) {
+        const count = AppState.leads.filter(l => l.stage === st).length;
+        countSpan.innerText = count;
+      }
+    });
+    return;
+  }
 
   // Render cards
   filteredLeads.forEach(lead => {
@@ -169,18 +384,29 @@ function renderCRMBoard() {
     if (!container) return;
 
     const card = document.createElement('div');
-    card.className = `kanban-card ${lead.stage === 'failed' ? 'failed-card' : ''}`;
+    const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
+    card.className = `kanban-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
     card.setAttribute('draggable', (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') ? 'true' : 'false');
     card.setAttribute('data-id', lead.id);
 
     // Get assigned sales name
     const salesUser = AppState.users.find(u => u.id === lead.salesId);
-    const salesName = salesUser ? salesUser.name.split(' ').pop() : 'Chưa giao';
+    const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
     // Show fail reason badge if failed
-    const failReasonHtml = (lead.stage === 'failed' && lead.failReason) 
-      ? `<div class="card-fail-reason" title="Lý do: ${lead.failReason}"><i class="fa-solid fa-circle-xmark"></i> ${lead.failReason}</div>`
-      : '';
+    let failReasonHtml = '';
+    if (lead.stage === 'failed') {
+      const appColor = lead.failApproved ? '#10b981' : '#f59e0b';
+      const appIcon = lead.failApproved ? 'fa-circle-check' : 'fa-clock';
+      const appText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
+      
+      failReasonHtml = `
+        <div class="card-fail-reason" title="Lý do: ${lead.failReason || 'Chưa rõ'}"><i class="fa-solid fa-circle-xmark"></i> ${lead.failReason || 'Chưa rõ'}</div>
+        <div class="card-fail-reason" style="background: rgba(31,41,55,0.2); border: 1px solid ${appColor}; color: ${appColor}; font-weight: bold; margin-top: 4px;" title="Trạng thái duyệt của quản lý">
+          <i class="fa-solid ${appIcon}"></i> ${appText}
+        </div>
+      `;
+    }
 
     // Values formatted
     const valRmbStr = lead.valRmb > 0 ? formatRmb(lead.valRmb) : '';
@@ -193,10 +419,15 @@ function renderCRMBoard() {
     const isUpdatedToday = (lead.updatedTime && lead.updatedTime.startsWith(todayStr)) || (lead.date && lead.date.startsWith(todayStr));
     const timeClass = isUpdatedToday ? 'time-updated-today' : '';
 
+    const overdueBadge = isOverdue 
+      ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
+      : '';
+
     card.innerHTML = `
       <div class="card-client-name">${lead.name}</div>
       <div class="card-desc">${lead.note || 'Không có ghi chú thêm.'}</div>
       ${failReasonHtml}
+      ${overdueBadge}
       <div class="card-meta">
         <div class="card-phone">
           <i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}
@@ -207,16 +438,70 @@ function renderCRMBoard() {
         <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
         <div style="font-size: 11.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
           <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
-          <div class="${timeClass}"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
+          <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-share-nodes"></i> Nguồn KH:</span>
+          <select class="card-source-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+            <option value="Fanpage" ${lead.source === 'Fanpage' ? 'selected' : ''}>Fanpage</option>
+            <option value="KH cũ" ${lead.source === 'KH cũ' ? 'selected' : ''}>KH cũ</option>
+            <option value="BNI" ${lead.source === 'BNI' ? 'selected' : ''}>BNI</option>
+            <option value="GT" ${lead.source === 'GT' ? 'selected' : ''}>GT</option>
+            <option value="Cá nhân" ${lead.source === 'Cá nhân' ? 'selected' : ''}>Cá nhân</option>
+            <option value="Giới thiệu" ${lead.source === 'Giới thiệu' ? 'selected' : ''}>Giới thiệu</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+          <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+          <select class="card-stage-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+            <option value="" disabled selected>Chọn...</option>
+            <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
+            <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
+            <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác TT</option>
+            <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
+            <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
+            <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
+            <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
+          </select>
         </div>
       </div>
     `;
 
     // Click card to open detail
     card.addEventListener('click', (e) => {
+      if (e.target.closest('.card-stage-select') || e.target.closest('.card-source-select')) return;
       if (card.classList.contains('dragging')) return;
       openLeadDetailModal(lead.id);
     });
+
+    const select = card.querySelector('.card-stage-select');
+    if (select) {
+      select.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val) {
+          handleLeadMove(lead.id, val);
+        }
+      });
+    }
+
+    const sourceSelect = card.querySelector('.card-source-select');
+    if (sourceSelect) {
+      sourceSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val) {
+          lead.source = val;
+          lead.updatedTime = formatDateTime(new Date());
+          saveState();
+          
+          if (typeof renderDashboard === 'function') renderDashboard();
+          if (typeof renderCRMBoard === 'function') renderCRMBoard();
+          
+          addNotification('Cập nhật Nguồn', `Đã chuyển nguồn khách hàng ${lead.name} sang: ${val}`, 'info');
+        }
+      });
+    }
 
     // Drag and Drop events
     if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
@@ -225,11 +510,13 @@ function renderCRMBoard() {
         e.dataTransfer.setData('text/plain', lead.id);
         card.classList.add('dragging');
         e.dataTransfer.effectAllowed = 'move';
+        document.getElementById('crm-kanban-board')?.classList.add('board-dragging');
       });
 
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
         draggingLeadId = null;
+        document.getElementById('crm-kanban-board')?.classList.remove('board-dragging');
       });
     }
 
@@ -246,23 +533,23 @@ function renderCRMBoard() {
     countSpan.innerText = count;
 
     if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
-      col.addEventListener('dragover', (e) => {
+      col.ondragover = (e) => {
         e.preventDefault();
         col.classList.add('drag-over');
-      });
+      };
 
-      col.addEventListener('dragleave', () => {
+      col.ondragleave = () => {
         col.classList.remove('drag-over');
-      });
+      };
 
-      col.addEventListener('drop', (e) => {
+      col.ondrop = (e) => {
         e.preventDefault();
         col.classList.remove('drag-over');
         const id = e.dataTransfer.getData('text/plain') || draggingLeadId;
         if (id) {
           handleLeadMove(id, st);
         }
-      });
+      };
     }
   });
 }
@@ -309,19 +596,116 @@ function handleLeadMove(leadId, targetStage) {
     }
   }
 
+  // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
+  if (currentStepNum === 3 && targetStepNum === 4) {
+    const files = lead.files || [];
+    if (files.length === 0) {
+      showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+  }
+
+  // Validate files and tasks when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
+  if (currentStepNum === 4 && (targetStepNum === 5 || targetStepNum === 6)) {
+    const files = lead.files || [];
+    const hasImage = files.some(f => 
+      /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+      f.name.toLowerCase().includes('ảnh') || 
+      f.name.toLowerCase().includes('hình') ||
+      f.name.toLowerCase().includes('image') ||
+      f.name.toLowerCase().includes('img') ||
+      f.name.toLowerCase().includes('báo giá') ||
+      f.name.toLowerCase().includes('bao gia')
+    );
+    if (!hasImage) {
+      showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+
+    const quoteFeedback = (lead.quoteFeedback || '').trim();
+    if (quoteFeedback.length < 3) {
+      showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+      renderCRMBoard(); // Reset visual drag status
+      return;
+    }
+
+    saveState();
+  }
+
   // If moving to FAILED, ask for reason
   if (targetStage === 'failed') {
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
+    if (!isAdminOrManager) {
+      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      
+      // Automatically redirect to negotiation instead
+      lead.stage = 'negotiating';
+      lead.stageEntryTimes = lead.stageEntryTimes || {};
+      lead.stageEntryTimes['negotiating'] = Date.now();
+      lead.failReason = null;
+      lead.failEvidence = null;
+      lead.failApproved = null;
+      lead.updatedTime = formatDateTime(new Date());
+      
+      const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
+      if (currentStepData) currentStepData.status = 'done';
+      const negoStep = lead.steps.find(s => s.stepNum === 5); // Negotiation step
+      if (negoStep) negoStep.status = 'doing';
+
+      saveState();
+      renderCRMBoard();
+      return;
+    }
+
     document.getElementById('fail-prompt-client-name').innerText = lead.name;
     document.getElementById('prompt-fail-reason').value = '';
     document.getElementById('prompt-fail-reason-other').value = '';
     document.getElementById('prompt-fail-reason-other').style.display = 'none';
+    document.getElementById('prompt-fail-evidence').value = '';
     
     openModal('modal-fail-reason-prompt');
     
-    failPromptCallback = (reason) => {
+    failPromptCallback = (reason, evidence) => {
+      const allowedFailReasons = [
+        "Không đủ năng lực xử lý hàng",
+        "Hàng khó từ chối",
+        "Khách lẻ, hàng khó => chủ động từ chối",
+        "Không tìm được hàng cho KH"
+      ];
+      
+      const isNegotiationReason = !allowedFailReasons.includes(reason);
+      
+      if (isNegotiationReason) {
+        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển khách hàng sang cột Thương lượng.", "info");
+        
+        lead.stage = 'negotiating';
+        lead.stageEntryTimes = lead.stageEntryTimes || {};
+        lead.stageEntryTimes['negotiating'] = Date.now();
+        lead.failReason = null;
+        lead.failEvidence = null;
+        lead.failApproved = null;
+        lead.updatedTime = formatDateTime(new Date());
+        
+        const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
+        if (currentStepData) currentStepData.status = 'done';
+        const negoStep = lead.steps.find(s => s.stepNum === 5); // Negotiation step
+        if (negoStep) negoStep.status = 'doing';
+
+        saveState();
+        renderCRMBoard();
+        return;
+      }
+
       const oldStage = lead.stage;
       lead.stage = 'failed';
+      lead.stageEntryTimes = lead.stageEntryTimes || {};
+      lead.stageEntryTimes['failed'] = Date.now();
       lead.failReason = reason;
+      lead.failEvidence = evidence;
+      lead.failApproved = false; // Initialize to false
       lead.updatedTime = formatDateTime(new Date());
       
       // Update step status
@@ -339,6 +723,8 @@ function handleLeadMove(leadId, targetStage) {
   else if (targetStage === 'success') {
     const oldStage = lead.stage;
     lead.stage = 'success';
+    lead.stageEntryTimes = lead.stageEntryTimes || {};
+    lead.stageEntryTimes['success'] = Date.now();
     lead.failReason = null;
     lead.updatedTime = formatDateTime(new Date());
     
@@ -378,6 +764,8 @@ function handleLeadMove(leadId, targetStage) {
   else {
     const oldStage = lead.stage;
     lead.stage = targetStage;
+    lead.stageEntryTimes = lead.stageEntryTimes || {};
+    lead.stageEntryTimes[targetStage] = Date.now();
     lead.failReason = null;
     lead.updatedTime = formatDateTime(new Date());
     
@@ -386,6 +774,12 @@ function handleLeadMove(leadId, targetStage) {
     if (currentStepData) currentStepData.status = 'done';
     const nextStep = lead.steps.find(s => s.stepNum === targetStepNum);
     if (nextStep) nextStep.status = 'doing';
+
+    if (targetStage === 'quotation') {
+      if (typeof createNegotiatingTaskIfNeeded === 'function') {
+        createNegotiatingTaskIfNeeded(lead);
+      }
+    }
 
     saveState();
     renderCRMBoard();
@@ -410,10 +804,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Nhận thông tin",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "receive_info" ? "doing" : "todo",
-      checklist: [
-        { text: "Xác định nhu cầu của khách", done: false, required: true },
-        { text: "Tạo ghi chú ban đầu về hàng hóa", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "receive_info" ? (lead.note || "") : ""
     },
@@ -422,10 +813,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Lấy SĐT",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "get_phone" ? "doing" : "todo",
-      checklist: [
-        { text: "Xin số điện thoại/Zalo liên hệ", done: !!lead.phone, required: true },
-        { text: "Xác nhận phương thức liên lạc chính", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "get_phone" ? (lead.note || "") : ""
     },
@@ -434,11 +822,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Khai thác thông tin",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "explore_info" ? "doing" : "todo",
-      checklist: [
-        { text: "Tìm hiểu loại mặt hàng & số lượng dự kiến", done: false, required: true },
-        { text: "Tìm hiểu địa chỉ nhận hàng tại Việt Nam", done: false, required: true },
-        { text: "Hỏi về tần suất nhập hàng (lẻ hay lô)", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "explore_info" ? (lead.note || "") : ""
     },
@@ -447,11 +831,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Báo giá",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "quotation" ? "doing" : "todo",
-      checklist: [
-        { text: "Tìm nguồn hàng / Liên hệ xưởng", done: false, required: false },
-        { text: "Tính toán thuế phí & cước vận chuyển", done: false, required: true },
-        { text: "Gửi báo giá chi tiết cho khách", done: false, required: true }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "quotation" ? (lead.note || "") : ""
     },
@@ -460,10 +840,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Thương lượng",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "negotiating" ? "doing" : "todo",
-      checklist: [
-        { text: "Thảo luận về giá và chính sách cọc", done: false, required: true },
-        { text: "Giải đáp thắc mắc của khách", done: false, required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "negotiating" ? (lead.note || "") : ""
     },
@@ -472,10 +849,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Thành công",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "success" ? "doing" : "todo",
-      checklist: [
-        { text: "Xác nhận khách đã đồng ý và cọc (hoặc lên đơn)", done: lead.stage === "success", required: true },
-        { text: "Chuyển khách sang danh sách Khách cũ / Tạo lô hàng mới", done: lead.stage === "success", required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "success" ? (lead.note || "") : ""
     },
@@ -484,10 +858,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
       name: "Thất bại",
       assigneeId: lead.salesId || "usr-admin",
       status: lead.stage === "failed" ? "doing" : "todo",
-      checklist: [
-        { text: "Chọn lý do thất bại", done: lead.stage === "failed", required: true },
-        { text: "Lưu lịch sử phản hồi để chăm sóc lại sau", done: lead.stage === "failed", required: false }
-      ],
+      checklist: [],
       comments: [],
       note: lead.stage === "failed" ? (lead.note || "") : ""
     }
@@ -512,6 +883,11 @@ window.initLeadSteps = function initLeadSteps(lead) {
   
   lead.steps = defaultSteps;
   lead.files = lead.files || [];
+  lead.stageEntryTimes = lead.stageEntryTimes || {};
+  if (!lead.stageEntryTimes[lead.stage]) {
+    const fallbackTime = lead.createdTime ? new Date(lead.createdTime).getTime() : (lead.date ? new Date(lead.date).getTime() : Date.now());
+    lead.stageEntryTimes[lead.stage] = fallbackTime;
+  }
 };
 
 function openLeadDetailModal(leadId) {
@@ -536,6 +912,21 @@ function openLeadDetailModal(leadId) {
 
   document.getElementById('lead-detail-title').innerText = lead.name;
   document.getElementById('lead-detail-subtitle').innerText = `Nguồn: ${lead.source} - SĐT: ${lead.phone || 'Chưa có'}`;
+
+  const stageSelect = document.getElementById('modal-lead-stage-select');
+  if (stageSelect) {
+    stageSelect.value = lead.stage;
+    stageSelect.onchange = (e) => {
+      const val = e.target.value;
+      if (val && val !== lead.stage) {
+        handleLeadMove(lead.id, val);
+        const updatedLead = AppState.leads.find(l => l.id === lead.id);
+        if (updatedLead) {
+          openLeadDetailModal(updatedLead.id);
+        }
+      }
+    };
+  }
 
   // Render 7 steps timeline bubbles
   const timeline = document.querySelector('.lead-steps-timeline');
@@ -585,7 +976,13 @@ function openLeadDetailModal(leadId) {
 
   // Wire buttons inside modal
   document.getElementById('btn-lead-step-save').onclick = handleSaveActiveLeadStepData;
+  
+  const chkInput = document.getElementById('lead-step-new-chk');
   document.getElementById('btn-lead-step-add-chk').onclick = handleLeadAddStepChecklistItem;
+  chkInput.onkeyup = (e) => {
+    if (e.key === 'Enter') handleLeadAddStepChecklistItem();
+  };
+
   document.getElementById('btn-lead-step-add-file').onclick = handleLeadAddStepFile;
   document.getElementById('btn-lead-step-add-comment').onclick = handleLeadAddStepComment;
 
@@ -632,7 +1029,58 @@ function renderActiveLeadStepPanel() {
   const failGroup = document.getElementById('lead-step-fail-group');
   if (currentActiveLeadStepNum === 7) {
     failGroup.style.display = 'block';
-    document.getElementById('lead-step-fail-reason').value = lead.failReason || '';
+    
+    const reasonSelect = document.getElementById('lead-step-fail-reason');
+    const reasonOtherGroup = document.getElementById('lead-step-fail-reason-other-group');
+    const reasonOtherInput = document.getElementById('lead-step-fail-reason-other');
+    const evidenceInput = document.getElementById('lead-step-fail-evidence');
+    const approvedCheckbox = document.getElementById('lead-step-fail-approved');
+    
+    const storedReason = lead.failReason || '';
+    const stdReasons = [
+      'Giá dịch vụ cao',
+      'Thời gian vận chuyển lâu',
+      'Không cạnh tranh được với đại lý VN',
+      'Trả lời chậm',
+      'Hàng khó từ chối',
+      'Không đủ năng lực xử lý hàng',
+      'Không cạnh tranh được giá dịch vụ với đối thủ',
+      'Không tìm được hàng cho KH',
+      'Khách lẻ, hàng khó => chủ động từ chối',
+      'Khách hàng ko quan tâm',
+      'Do AI tư vấn chưa tốt'
+    ];
+    
+    if (storedReason && !stdReasons.includes(storedReason)) {
+      reasonSelect.value = 'Khác';
+      reasonOtherGroup.style.display = 'block';
+      reasonOtherInput.value = storedReason;
+    } else {
+      reasonSelect.value = storedReason;
+      reasonOtherGroup.style.display = 'none';
+      reasonOtherInput.value = '';
+    }
+
+    reasonSelect.onchange = (e) => {
+      if (e.target.value === 'Khác') {
+        reasonOtherGroup.style.display = 'block';
+      } else {
+        reasonOtherGroup.style.display = 'none';
+        reasonOtherInput.value = '';
+      }
+    };
+
+    evidenceInput.value = lead.failEvidence || '';
+    approvedCheckbox.checked = !!lead.failApproved;
+    
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong';
+    approvedCheckbox.disabled = !isAdminOrManager;
+    if (!isAdminOrManager) {
+      approvedCheckbox.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
+    } else {
+      approvedCheckbox.parentElement.removeAttribute('title');
+    }
   } else {
     failGroup.style.display = 'none';
   }
@@ -670,18 +1118,75 @@ function renderActiveLeadStepPanel() {
       row.appendChild(btnDel);
       chkContainer.appendChild(row);
     });
-  } else {
+  }
+
+  // Inject system task textarea dynamically for Step 4 (Báo giá)
+  if (currentActiveLeadStepNum === 4) {
+    const row = document.createElement('div');
+    row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px;';
+    row.innerHTML = `
+      <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
+        [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
+      </div>
+      <textarea id="lead-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${lead.quoteFeedback || ''}</textarea>
+    `;
+    
+    const textarea = row.querySelector('textarea');
+    textarea.oninput = (e) => {
+      const val = e.target.value;
+      lead.quoteFeedback = val;
+    };
+    textarea.onchange = () => {
+      saveState();
+    };
+    
+    chkContainer.appendChild(row);
+  }
+
+  // Handle empty state
+  if (chkContainer.innerHTML === '') {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
   const filesContainer = document.getElementById('lead-step-files-list');
   filesContainer.innerHTML = '';
-  const stepFiles = lead.files ? lead.files.filter(f => f.stepNum === currentActiveLeadStepNum) : [];
+  const stepFiles = lead.files || [];
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
       
+      const nameLower = file.name.toLowerCase();
+      const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
+                      file.url.toLowerCase().includes('drive.google.com') || 
+                      file.url.toLowerCase().includes('googleusercontent.com') ||
+                      nameLower.includes('ảnh') || 
+                      nameLower.includes('anh') || 
+                      nameLower.includes('image') || 
+                      nameLower.includes('png') || 
+                      nameLower.includes('jpg') || 
+                      nameLower.includes('jpeg');
+
+      // Resolve Google Drive direct preview link if applicable
+      let displayUrl = file.url;
+      if (file.url.toLowerCase().includes('drive.google.com')) {
+        let fileId = '';
+        const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (dMatch && dMatch[1]) {
+          fileId = dMatch[1];
+        } else {
+          const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+          if (idMatch && idMatch[1]) {
+            fileId = idMatch[1];
+          }
+        }
+        if (fileId) {
+          displayUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
+        }
+      }
+
+      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+
       const fileInfo = document.createElement('div');
       fileInfo.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
       fileInfo.innerHTML = `
@@ -690,17 +1195,21 @@ function renderActiveLeadStepPanel() {
       `;
       
       fileInfo.querySelector('button').onclick = () => {
-        const leadFileIdx = lead.files.findIndex(f => f.name === file.name && f.url === file.url && f.stepNum === currentActiveLeadStepNum);
-        if (leadFileIdx !== -1) {
-          lead.files.splice(leadFileIdx, 1);
-        }
+        lead.files.splice(idx, 1);
+        saveState();
         renderActiveLeadStepPanel();
       };
+      
       row.appendChild(fileInfo);
+      if (imgPreview) {
+        const previewDiv = document.createElement('div');
+        previewDiv.innerHTML = imgPreview;
+        row.appendChild(previewDiv.firstChild);
+      }
       filesContainer.appendChild(row);
     });
   } else {
-    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm bước.</span>`;
+    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
   }
 
   const commentsContainer = document.getElementById('lead-step-comments');
@@ -760,7 +1269,43 @@ function handleSaveActiveLeadStepData() {
     lead.valVnd = parseFloat(document.getElementById('lead-step-val-vnd').value) || 0;
   }
   if (currentActiveLeadStepNum === 7) {
-    lead.failReason = document.getElementById('lead-step-fail-reason').value;
+    const currentUser = getCurrentUser();
+    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong');
+    if (!isAdminOrManager) {
+      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      return;
+    }
+
+    const reasonSelect = document.getElementById('lead-step-fail-reason');
+    const reasonVal = reasonSelect.value;
+    if (!reasonVal) {
+      showToast('Vui lòng chọn lý do thất bại!', 'warning');
+      return;
+    }
+    
+    let finalReason = reasonVal;
+    if (reasonVal === 'Khác') {
+      const reasonOtherVal = document.getElementById('lead-step-fail-reason-other').value.trim();
+      if (!reasonOtherVal) {
+        showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
+        return;
+      }
+      finalReason = reasonOtherVal;
+    }
+    
+    const evidenceVal = document.getElementById('lead-step-fail-evidence').value.trim();
+    if (!evidenceVal) {
+      showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+      return;
+    }
+    
+    lead.failReason = finalReason;
+    lead.failEvidence = evidenceVal;
+    
+    // Only verify failApproved if changed by Manager/Admin
+    if (isAdminOrManager) {
+      lead.failApproved = document.getElementById('lead-step-fail-approved').checked;
+    }
   }
 
   if (currentActiveLeadStepNum !== currentStepNum) {
@@ -773,10 +1318,47 @@ function handleSaveActiveLeadStepData() {
       }
     }
 
+    // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
+    if (currentStepNum === 3 && currentActiveLeadStepNum === 4) {
+      const files = lead.files || [];
+      if (files.length === 0) {
+        showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+        return;
+      }
+    }
+
+    // Validate files and tasks when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
+    if (currentStepNum === 4 && (currentActiveLeadStepNum === 5 || currentActiveLeadStepNum === 6)) {
+      const files = lead.files || [];
+      const hasImage = files.some(f => 
+        /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
+        f.name.toLowerCase().includes('ảnh') || 
+        f.name.toLowerCase().includes('hình') ||
+        f.name.toLowerCase().includes('image') ||
+        f.name.toLowerCase().includes('img') ||
+        f.name.toLowerCase().includes('báo giá') ||
+        f.name.toLowerCase().includes('bao gia')
+      );
+      if (!hasImage) {
+        showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+        return;
+      }
+
+      const quoteFeedback = (lead.quoteFeedback || '').trim();
+      if (quoteFeedback.length < 3) {
+        showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+        return;
+      }
+
+      saveState();
+    }
+
     const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
     currentStepData.status = 'done';
 
     const targetStage = stepNumToStage[currentActiveLeadStepNum];
+    lead.stageEntryTimes = lead.stageEntryTimes || {};
+    lead.stageEntryTimes[targetStage] = Date.now();
     
     if (targetStage === 'success') {
       if (lead.stage !== 'success') {
@@ -835,6 +1417,7 @@ function handleLeadAddStepChecklistItem() {
   });
 
   input.value = '';
+  saveState();
   renderActiveLeadStepPanel();
 }
 
@@ -848,21 +1431,22 @@ function handleLeadAddStepFile() {
   const name = nameInput.value.trim();
   const url = urlInput.value.trim();
 
-  if (!name || !url) {
-    showToast('Vui lòng nhập tên tài liệu và đường dẫn link!', 'warning');
+  if (!url) {
+    alert("Vui lòng nhập đường dẫn liên kết URL!");
     return;
   }
+  const finalName = name || (lead.stage === 'quotation' ? "Ảnh báo giá" : "Tài liệu đính kèm");
 
   lead.files = lead.files || [];
   lead.files.push({
-    name: name,
+    name: finalName,
     url: url,
-    stepNum: currentActiveLeadStepNum,
     date: formatDateTime(new Date()).substring(0, 10)
   });
 
   nameInput.value = '';
   urlInput.value = '';
+  saveState();
   renderActiveLeadStepPanel();
 }
 
@@ -886,6 +1470,7 @@ function handleLeadAddStepComment() {
   });
 
   input.value = '';
+  saveState();
   renderActiveLeadStepPanel();
 }
 
@@ -963,6 +1548,7 @@ function handleAddLeadSubmit(e) {
     note,
     salesId,
     stage: 'receive_info',
+    stageEntryTimes: { receive_info: Date.now() },
     failReason: null,
     date: dateStr,
     createdTime: nowStr,
@@ -978,4 +1564,61 @@ function handleAddLeadSubmit(e) {
   renderCRMBoard();
   
   addNotification('Khách hàng mới', `Đã thêm khách hàng ${name} vào bước Nhận thông tin.`, 'success');
+}
+
+function checkLeadOverdue(lead) {
+  if (!lead.stageEntryTimes) {
+    lead.stageEntryTimes = {};
+  }
+  const now = Date.now();
+  const created = lead.createdTime ? new Date(lead.createdTime).getTime() : now;
+
+  if (lead.stage === 'get_phone') {
+    const entered = lead.stageEntryTimes.get_phone || created;
+    const elapsed = now - entered;
+    return elapsed > 2 * 60 * 60 * 1000; // 2 hours
+  }
+  if (lead.stage === 'explore_info') {
+    const entered = lead.stageEntryTimes.explore_info || created;
+    const elapsed = now - entered;
+    return elapsed > 12 * 60 * 60 * 1000; // 12 hours
+  }
+  if (lead.stage === 'quotation') {
+    const entered = lead.stageEntryTimes.quotation || created;
+    const elapsed = now - entered;
+    const hasFeedback = lead.quoteFeedback && lead.quoteFeedback.trim().length >= 3;
+    if (!hasFeedback && elapsed > 24 * 60 * 60 * 1000) {
+      return true; // Overdue if no feedback after 24h
+    }
+  }
+  return false;
+}
+
+function createNegotiatingTaskIfNeeded(lead) {
+  if (!AppState.single_tasks) AppState.single_tasks = [];
+  const hasTask = AppState.single_tasks.some(t => t.clientId === lead.id && t.title.includes('Tình trạng KH sau báo giá') && t.status !== 'completed');
+  if (!hasTask) {
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const deadlineStr = tomorrow.toISOString().split('T')[0];
+    const newTask = {
+      id: `task-ops-${Date.now()}`,
+      title: `Tình trạng KH sau báo giá`,
+      desc: `Cập nhật tình trạng khách hàng ${lead.name} sau báo giá`,
+      assigneeId: lead.salesId || 'usr-admin',
+      helperId: null,
+      dept: 'sales',
+      priority: 'high',
+      deadline: deadlineStr,
+      status: 'todo',
+      projectId: null,
+      clientId: lead.id,
+      workflowId: null,
+      tags: ['CRM', 'Báo giá'],
+      checklist: [],
+      attachments: [],
+      comments: [],
+      history: [`${new Date().toISOString().split('T')[0]}: Tự động tạo việc từ CRM`]
+    };
+    AppState.single_tasks.push(newTask);
+  }
 }
