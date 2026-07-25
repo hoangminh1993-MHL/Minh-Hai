@@ -6,6 +6,45 @@ document.addEventListener('DOMContentLoaded', () => {
 let draggingLeadId = null; // Backup reference for touch devices or simple drag tracking
 let failPromptCallback = null; // Callback for confirm button on fail modal
 
+function cleanVietnameseText(text) {
+  if (!text || typeof text !== 'string') return text || '';
+  let s = text.trim();
+  s = s.replace(/Kh├ích Messenger Remote/g, 'Khách Messenger Remote')
+       .replace(/Kh├ích Messenger/g, 'Khách Messenger')
+       .replace(/D├║ng T├║c/g, 'Dương Tóc')
+       .replace(/D├║ng t├║c/g, 'Dương Tóc')
+       .replace(/Anh Ph╞░╞íng/g, 'Anh Phương')
+       .replace(/Minh Nguyß╗àn/g, 'Minh Nguyễn')
+       .replace(/Hu╞░╞íng Phß║ím/g, 'Huơng Phạm')
+       .replace(/Xu├ón H├ái ─É├¡nh/g, 'Xuân Hải Đinh')
+       .replace(/─É├¡nh Ph├║c An/g, 'Đinh Phúc An')
+       .replace(/Ho├óng Th├╣y Du╞░╞íng/g, 'Hoàng Thùy Dương')
+       .replace(/Phß║ím Thuß║¡n/g, 'Phạm Thuận')
+       .replace(/Mai Hß╗Öng VPP/g, 'Mai Hồng VPP')
+       .replace(/Ho├óng Ph├ít Koffmann/g, 'Hoàng Phát Koffmann')
+       .replace(/V├▓ng bi Ph├║ Qu├╜/g, 'Vòng bi Phú Quý')
+       .replace(/Nha Phuong B├╣i/g, 'Nha Phuong Bùi')
+       .replace(/Quß╗æc Kh├ính/g, 'Quốc Khánh')
+       .replace(/Minh T├ím/g, 'Minh Tâm')
+       .replace(/Bß║úo Ngß╗ìc Rice/g, 'Bảo Ngọc Rice')
+       .replace(/S╞í n Quang L├ím/g, 'Sơn Quang Lâm')
+       .replace(/Phß║ím Thß╗ï Anh Ngß╗ìc/g, 'Phạm Thị Anh Ngọc')
+       .replace(/Ho├óng C╞░╞íng Biz/g, 'Hoàng Cường Biz')
+       .replace(/V┼⌐ Ngß╗ìc Huyß╗ün/g, 'Vũ Ngọc Huyền')
+       .replace(/Trß║ºn Hiß║┐u/g, 'Trần Hiếu')
+       .replace(/H╞░╞íng V┼⌐/g, 'Hương Vũ')
+       .replace(/Ruby Nguyß╗ün/g, 'Ruby Nguyễn')
+       .replace(/Diß╗åm Quß╗│nh/g, 'Điểm Quỳnh')
+       .replace(/─É/g, 'Đ').replace(/─æ/g, 'đ')
+       .replace(/├║/g, 'ú').replace(/├í/g, 'á').replace(/├¡/g, 'í').replace(/├┤/g, 'ô')
+       .replace(/├¬/g, 'ê').replace(/├á/g, 'à').replace(/├¿/g, 'è').replace(/├╣/g, 'ù').replace(/├╜/g, 'ý')
+       .replace(/ß╗a/g, 'ẩ').replace(/ß╗å/g, 'ổ').replace(/ß╗à/g, 'ề').replace(/ß╗ï/g, 'ị')
+       .replace(/ß╗ì/g, 'ỉ').replace(/ß╗Å/g, 'ỏ').replace(/ß╗ü/g, 'ụ').replace(/ß╗ñ/g, 'ủ')
+       .replace(/ß╗ª/g, 'ữ').replace(/ß╗¿/g, 'ừ').replace(/ß╗«/g, 'ứ').replace(/ß╗░/g, 'ử').replace(/ß╗▓/g, 'ữ')
+       .replace(/ß║ím/g, 'ạ').replace(/ß║í/g, 'ạ');
+  return s;
+}
+
 function formatDateTime(date) {
   if (!date) return '';
   if (typeof date === 'string' || typeof date === 'number') {
@@ -351,12 +390,12 @@ function renderCRMBoard() {
           });
           
           tr.innerHTML = `
-            <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${lead.name}</td>
+            <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${cleanVietnameseText(lead.name)}</td>
             <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.phone || 'Chưa có'}</td>
             <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.source || 'Trực tiếp'}</td>
             <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
             <td style="padding: 12px 10px;">${stageBadge}</td>
-            <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${lead.note || ''}">${lead.note || 'Không có ghi chú.'}</td>
+            <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cleanVietnameseText(lead.note) || ''}">${cleanVietnameseText(lead.note) || 'Không có ghi chú.'}</td>
             <td style="padding: 12px 10px; color: var(--text-secondary); font-size: 12px;">${lead.updatedTime || lead.createdTime || lead.date || ''}</td>
             <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
               <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
@@ -424,8 +463,8 @@ function renderCRMBoard() {
       : '';
 
     card.innerHTML = `
-      <div class="card-client-name">${lead.name}</div>
-      <div class="card-desc">${lead.note || 'Không có ghi chú thêm.'}</div>
+      <div class="card-client-name">${cleanVietnameseText(lead.name)}</div>
+      <div class="card-desc">${cleanVietnameseText(lead.note) || 'Không có ghi chú thêm.'}</div>
       ${failReasonHtml}
       ${overdueBadge}
       <div class="card-meta">
