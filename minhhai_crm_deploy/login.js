@@ -1,22 +1,11 @@
 const INITIAL_USERS = [
   { id: 'usr-1', name: 'Nguyễn Hoàng Minh', username: 'hoangminh', role: 'admin' },
+  { id: 'usr-admin', name: 'Quản trị viên Minh Hải', username: 'admin', role: 'admin' },
   { id: 'usr-2', name: 'Trần Tú Anh', username: 'tuanh', role: 'sales' },
   { id: 'usr-3', name: 'M.Phương (CSKH)', username: 'minhphuong', role: 'sales' },
   { id: 'usr-6', name: 'Trang (CSKH)', username: 'trang', role: 'sales' },
   { id: 'usr-7', name: 'Phượng (CSKH)', username: 'phuong', role: 'sales' }
 ];
-
-function getApiUrl(path) {
-  const customApiBase = localStorage.getItem('minhhai_custom_api_base');
-  if (customApiBase) {
-    const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
-    return `${base}${path}`;
-  }
-  if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') {
-    return `https://minh-hai.onrender.com${path}`;
-  }
-  return `${window.location.origin}${path}`;
-}
 
 document.getElementById('login-form').onsubmit = async (e) => {
   e.preventDefault();
@@ -26,25 +15,29 @@ document.getElementById('login-form').onsubmit = async (e) => {
   
   errorBox.style.display = 'none';
   
-  // 1. Try online login first
-  const apiLoginUrl = getApiUrl('/api/login');
-  try {
-    const res = await fetch(apiLoginUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: u, password: p })
-    });
-    if (res.ok) {
-      const result = await res.json();
-      if (result.success) {
-        localStorage.setItem('minhhai_user', JSON.stringify(result.user));
-        localStorage.setItem('votr_current_user_id', result.user.id);
-        window.location.href = 'index.html';
-        return;
+  const customApiBase = localStorage.getItem('minhhai_custom_api_base') || '';
+  const apiBase = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
+  
+  // 1. Try online login first if API server is configured
+  if (apiBase) {
+    try {
+      const res = await fetch(`${apiBase}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      if (res.ok) {
+        const result = await res.json();
+        if (result.success) {
+          localStorage.setItem('minhhai_user', JSON.stringify(result.user));
+          localStorage.setItem('votr_current_user_id', result.user.id);
+          window.location.href = 'index.html';
+          return;
+        }
       }
+    } catch (err) {
+      console.warn('Không thể kết nối đến API Server, chuyển sang kiểm tra tài khoản offline.');
     }
-  } catch (err) {
-    console.warn('Không thể kết nối đến API Server, chuyển sang kiểm tra tài khoản offline:', err);
   }
   
   // 2. Offline / Local fallback: Chỉ cần đúng tài khoản (username) là cho vào!

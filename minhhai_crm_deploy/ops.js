@@ -6,114 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Global state variables for operations drag and drop
-window.showStatsModal = function(type) {
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  
-  let items = [];
-
-  const getWorkflowStageName = (stage) => {
-    const stepNames = [
-      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-      "Shop gửi hàng", "Kho Trung Quốc", "Hàng về VN", "Giao hàng", "Thu nợ", "Hoàn thành", "Huỷ"
-    ];
-    return stepNames[stage - 1] || 'N/A';
-  };
-
-  if (AppState.shipment_workflows) {
-    AppState.shipment_workflows.forEach(w => {
-      const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
-      const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      
-      const isChinhNgach = ((w.serviceType && (w.serviceType.toLowerCase().includes('ch') || w.serviceType.toLowerCase().includes('chính'))));
-
-      const item = {
-        type: 'workflow',
-        id: w.id,
-        code: w.trackingCode || w.code || w.id,
-        name: w.clientName || 'N/A',
-        service: w.serviceType || 'N/A',
-        source: 'Vận hành',
-        stage: getWorkflowStageName(w.stage),
-        date: createdDate.toLocaleDateString('vi-VN'),
-        val: (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0).toLocaleString() + ' đ'
-      };
-
-      if (isThisMonth) {
-        if (type === 'ops_added') items.push(item);
-        if (isChinhNgach && (type === 'cn_generated' || type === 'cn_profit')) {
-          items.push(item);
-        }
-      }
-      if (isChinhNgach && w.stage >= 4 && w.stage !== 12 && isThisMonth && type === 'cn_success') {
-        items.push(item);
-      }
-    });
-  }
-
-  if (AppState.leads) {
-    AppState.leads.forEach(l => {
-      // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows), tránh đếm trùng
-      if (l.stage === 'success') return; 
-
-      if ((l.note && (l.note.toLowerCase().includes('chính ngạch') || l.note.toLowerCase().includes('chinh ngach') || /\bcn\b/i.test(l.note)))) {
-        const createdDate = new Date(l.createdTime || l.date);
-        
-        const item = {
-          type: 'lead',
-          id: l.id,
-          code: l.phone || l.id,
-          name: l.name || 'N/A',
-          service: 'Chính ngạch',
-          source: 'CRM Khách mới',
-          stage: l.stage === 'success' ? 'Thành công' : (l.stage === 'failed' ? 'Thất bại' : 'Tiềm năng'),
-          date: createdDate.toLocaleDateString('vi-VN'),
-          val: l.valTotal ? parseFloat(l.valTotal).toLocaleString() + ' đ' : '-'
-        };
-
-        if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
-          if (type === 'cn_generated' || type === 'cn_profit') {
-            items.push(item);
-          }
-        }
-        // Không push vào cn_success vì l.stage === 'success' đã bị loại ở trên để tránh đếm trùng
-      }
-    });
-  }
-
-  const tbody = document.getElementById('modal-stats-tbody');
-  if (tbody) {
-    if (items.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888;">Không có dữ liệu trong tháng này</td></tr>`;
-    } else {
-      tbody.innerHTML = items.map(i => `
-        <tr style="cursor:pointer;" onclick="openStatDetail('${i.type}', '${i.id}')">
-          <td>${i.code}</td>
-          <td>${i.name}</td>
-          <td><span class="badge ${(i.service && (i.service.toLowerCase().includes('ch') || i.service.toLowerCase().includes('chính'))) ? 'badge-blue' : 'badge-gold'}">${i.service}</span><br><span style="font-size: 0.8em; color: #888;">${i.source}</span></td>
-          <td>${i.stage}</td>
-          <td>${i.date}</td>
-          <td>${i.val}</td>
-        </tr>
-      `).join('');
-    }
-  }
-
-  const titles = {
-    'cn_generated': 'Danh sách lô chính ngạch phát sinh',
-    'cn_success': 'Danh sách lô chính ngạch chốt được',
-    'cn_profit': 'Danh sách lô hàng tính lợi nhuận',
-    'ops_added': 'Danh sách lô hàng vận hành mới'
-  };
-  const titleEl = document.getElementById('modal-stats-title');
-  if (titleEl) titleEl.innerText = titles[type] || 'Chi tiết';
-
-  const modal = document.getElementById('modal-stats-details');
-  if (modal) {
-    modal.classList.add('active');
-  }
-};
-
 let draggingFlowId = null;
 let targetFlowStage = null;
 let confirmingMoveFlowId = null;
@@ -143,21 +35,8 @@ function initOpsEvents() {
     btnAddFlowModal.onclick = () => {
       populateFlowUserDropdowns();
       populateFlowClientDropdown();
-      initFlowAddModalTimes();
       openModal('modal-add-ops-flow');
     };
-  }
-
-  function initFlowAddModalTimes() {
-    const formatDateTimeLocal = (date) => {
-      const tzOffset = date.getTimezoneOffset() * 60000;
-      return (new Date(date - tzOffset)).toISOString().slice(0, 16);
-    };
-    const now = new Date();
-    const entryInput = document.getElementById('flow-info-entry-time');
-    const msgTimeInput = document.getElementById('flow-customer-msg-time');
-    if (entryInput) entryInput.value = formatDateTimeLocal(now);
-    if (msgTimeInput) msgTimeInput.value = formatDateTimeLocal(new Date(now.getTime() - 30 * 60 * 1000)); // Default 30 mins ago
   }
 
   const formAddOpsFlow = document.getElementById('form-add-ops-flow');
@@ -170,34 +49,12 @@ function initOpsEvents() {
     clientSelect.onchange = (e) => {
       const newFields = document.getElementById('flow-new-client-fields');
       const extraFields = document.getElementById('flow-new-client-extra');
-      const val = e.target.value;
-      if (val === 'new') {
+      if (e.target.value === 'new') {
         newFields.style.display = 'block';
         extraFields.style.display = 'block';
-        
-        const now = new Date();
-        const msgTimeInput = document.getElementById('flow-customer-msg-time');
-        if (msgTimeInput) {
-          const tzOffset = now.getTimezoneOffset() * 60000;
-          msgTimeInput.value = (new Date(now - tzOffset - 30 * 60 * 1000)).toISOString().slice(0, 16);
-        }
       } else {
         newFields.style.display = 'none';
         extraFields.style.display = 'none';
-        
-        if (val.startsWith('lead-')) {
-          const leadId = val.replace('lead-', '');
-          const lead = AppState.leads && AppState.leads.find(l => l.id === leadId);
-          if (lead && lead.createdTime) {
-            document.getElementById('flow-customer-msg-time').value = lead.createdTime.replace(' ', 'T');
-          } else if (lead && lead.date) {
-            document.getElementById('flow-customer-msg-time').value = `${lead.date}T12:00`;
-          }
-        } else {
-          const now = new Date();
-          const tzOffset = now.getTimezoneOffset() * 60000;
-          document.getElementById('flow-customer-msg-time').value = (new Date(now - tzOffset)).toISOString().slice(0, 16);
-        }
       }
     };
   }
@@ -214,54 +71,11 @@ function initOpsEvents() {
     btnExportCSV.onclick = exportWorkflowsToCSV;
   }
 
-  // View mode toggling for Ops Workflows
-  const btnOpsBoard = document.getElementById('btn-ops-view-board');
-  const btnOpsList = document.getElementById('btn-ops-view-list');
-  if (btnOpsBoard && btnOpsList) {
-    btnOpsBoard.onclick = () => {
-      AppState.opsViewMode = 'board';
-      saveState();
-      renderOpsWorkflows();
-    };
-    btnOpsList.onclick = () => {
-      AppState.opsViewMode = 'list';
-      saveState();
-      renderOpsWorkflows();
-    };
-  }
-
-  // Sortable headers in list view
-  document.querySelectorAll('.ops-sortable-header').forEach(header => {
-    header.addEventListener('click', () => {
-      const field = header.getAttribute('data-field');
-      if (AppState.opsSortField === field) {
-        AppState.opsSortOrder = AppState.opsSortOrder === 'asc' ? 'desc' : 'asc';
-      } else {
-        AppState.opsSortField = field;
-        AppState.opsSortOrder = 'asc';
-      }
-      saveState();
-      renderOpsWorkflows();
-    });
-  });
-
   // Filter triggers
-  const opsFlowSearch = document.getElementById('ops-flow-search');
-  if (opsFlowSearch) {
-    opsFlowSearch.oninput = renderOpsWorkflows;
-  }
-  const opsFlowFilterService = document.getElementById('ops-flow-filter-service');
-  if (opsFlowFilterService) {
-    opsFlowFilterService.onchange = renderOpsWorkflows;
-  }
-  const opsFlowFilterAssignee = document.getElementById('ops-flow-filter-assignee');
-  if (opsFlowFilterAssignee) {
-    opsFlowFilterAssignee.onchange = renderOpsWorkflows;
-  }
-  const opsFlowFilterOverdue = document.getElementById('ops-flow-filter-overdue');
-  if (opsFlowFilterOverdue) {
-    opsFlowFilterOverdue.onchange = renderOpsWorkflows;
-  }
+  document.getElementById('ops-flow-search').oninput = renderOpsWorkflows;
+  document.getElementById('ops-flow-filter-service').onchange = renderOpsWorkflows;
+  document.getElementById('ops-flow-filter-assignee').onchange = renderOpsWorkflows;
+  document.getElementById('ops-flow-filter-overdue').onchange = renderOpsWorkflows;
 
   // --- Single Tasks events ---
   const btnAddSingleTaskModal = document.getElementById('btn-add-single-task-modal');
@@ -272,8 +86,7 @@ function initOpsEvents() {
       
       const today = new Date();
       today.setDate(today.getDate() + 3);
-      today.setHours(9, 0, 0, 0);
-      document.getElementById('ops-task-deadline').value = window.formatDateTimeLocal(today);
+      document.getElementById('ops-task-deadline').value = today.toISOString().split('T')[0];
       
       openModal('modal-add-ops-task');
     };
@@ -298,8 +111,6 @@ function initOpsEvents() {
   document.getElementById('tasks-single-filter-dept').onchange = renderOpsSingleTasks;
   document.getElementById('tasks-single-filter-assignee').onchange = renderOpsSingleTasks;
   document.getElementById('tasks-single-filter-priority').onchange = renderOpsSingleTasks;
-  const statusFilterEl = document.getElementById('tasks-single-filter-status');
-  if (statusFilterEl) statusFilterEl.onchange = renderOpsSingleTasks;
 
   // Save/Delete Task Detail Handlers
   document.getElementById('btn-ops-task-save').onclick = handleSaveTaskDetails;
@@ -307,61 +118,6 @@ function initOpsEvents() {
   document.getElementById('btn-ops-task-detail-add-chk').onclick = handleAddTaskChecklistItem;
   document.getElementById('btn-ops-task-add-file').onclick = handleAddTaskFile;
   document.getElementById('btn-ops-task-add-comment').onclick = handleAddTaskComment;
-
-  // Task description edit handlers
-  const btnEditDesc = document.getElementById('btn-ops-task-detail-edit-desc');
-  if (btnEditDesc) {
-    btnEditDesc.onclick = () => {
-      const descText = document.getElementById('ops-task-detail-desc').innerText;
-      document.getElementById('ops-task-detail-desc').style.display = 'none';
-      btnEditDesc.style.display = 'none';
-      document.getElementById('ops-task-detail-edit-desc-group').style.display = 'flex';
-      document.getElementById('ops-task-detail-desc-input').value = descText === 'Không có mô tả chi tiết.' ? '' : descText;
-    };
-  }
-
-  const btnCancelDesc = document.getElementById('btn-ops-task-detail-cancel-desc');
-  if (btnCancelDesc) {
-    btnCancelDesc.onclick = () => {
-      document.getElementById('ops-task-detail-desc').style.display = 'block';
-      if (btnEditDesc) btnEditDesc.style.display = 'inline-block';
-      document.getElementById('ops-task-detail-edit-desc-group').style.display = 'none';
-    };
-  }
-
-  const btnSaveDesc = document.getElementById('btn-ops-task-detail-save-desc');
-  if (btnSaveDesc) {
-    btnSaveDesc.onclick = () => {
-      const newVal = document.getElementById('ops-task-detail-desc-input').value.trim();
-      const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
-      if (task) {
-        task.desc = newVal;
-        saveState();
-        
-        document.getElementById('ops-task-detail-desc').innerText = newVal || 'Không có mô tả chi tiết.';
-        document.getElementById('ops-task-detail-desc').style.display = 'block';
-        if (btnEditDesc) btnEditDesc.style.display = 'inline-block';
-        document.getElementById('ops-task-detail-edit-desc-group').style.display = 'none';
-        
-        renderOpsSingleTasks();
-        
-        // Also update CRM board if the task belongs to a CRM Khách Mới lead
-        if (task.clientId && task.clientId.startsWith('lead-')) {
-          const lead = AppState.leads && AppState.leads.find(l => l.id === task.clientId);
-          if (lead) {
-            if (task.title.includes('Tình trạng KH sau báo giá')) {
-              const cleanFeedback = newVal.replace('Tình trạng khách hàng sau báo giá: ', '').replace('Tình trạng khách hàng: ', '');
-              lead.quoteFeedback = cleanFeedback;
-              saveState();
-              if (typeof renderCRMBoard === 'function') renderCRMBoard();
-            }
-          }
-        }
-        
-        showToast('Đã cập nhật mô tả công việc!', 'success');
-      }
-    };
-  }
 
   // --- Projects events ---
   const btnAddProjectModal = document.getElementById('btn-add-project-modal');
@@ -401,8 +157,7 @@ function initOpsEvents() {
     
     const today = new Date();
     today.setDate(today.getDate() + 3);
-    today.setHours(9, 0, 0, 0);
-    document.getElementById('ops-task-deadline').value = window.formatDateTimeLocal(today);
+    document.getElementById('ops-task-deadline').value = today.toISOString().split('T')[0];
     
     openModal('modal-add-ops-task');
   };
@@ -485,70 +240,27 @@ function renderFounderDashboard() {
   const container = document.getElementById('ops-dashboard-content');
   if (!container) return;
 
-  const activeSingleTasks = (AppState.single_tasks || []).filter(t => !(t.title && t.title.includes('Tình trạng KH sau báo giá')));
-  const totalTasks = activeSingleTasks.length;
-  const overdueTasks = activeSingleTasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
-  const completedTodayTasks = activeSingleTasks.filter(t => t.status === 'completed').length; // Simplification for today
+  const totalTasks = AppState.single_tasks.length;
+  const overdueTasks = AppState.single_tasks.filter(t => t.status === 'overdue' || (t.status !== 'completed' && t.deadline && new Date(t.deadline) < new Date())).length;
+  const completedTodayTasks = AppState.single_tasks.filter(t => t.status === 'completed').length; // Simplification for today
 
   const billingPending = AppState.shipment_workflows.filter(w => w.stage === 2).length; // Step 2: Báo giá
   const waitingShop = AppState.shipment_workflows.filter(w => w.stage === 6).length; // Step 6: Shop gửi hàng
   const arrivingCn = AppState.shipment_workflows.filter(w => w.stage === 7).length; // Step 7: Kho Trung Quốc
   const waitingDebt = AppState.shipment_workflows.filter(w => w.stage === 10).length; // Step 10: Thu nợ
 
-  // ---------------- Compute Chính Ngạch & Ops stats ---------------- //
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  let cnGenerated = 0;
-  let cnSuccess = 0;
-  let cnProfit = 0;
-  let totalOpsAdded = 0;
-
-  if (AppState.shipment_workflows) {
-    AppState.shipment_workflows.forEach(w => {
-      const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
-      const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      const isChinhNgach = ((w.serviceType && (w.serviceType.toLowerCase().includes('ch') || w.serviceType.toLowerCase().includes('chính'))));
-
-      if (isThisMonth) {
-        if (isChinhNgach) {
-          cnGenerated++;
-          cnProfit += (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0);
-        }
-        totalOpsAdded++;
-      }
-      if (isChinhNgach && w.stage >= 4 && w.stage !== 12 && isThisMonth) {
-        cnSuccess++;
-      }
-    });
-  }
-
-  if (AppState.leads) {
-    AppState.leads.forEach(l => {
-      // Bỏ qua lead đã thành công vì nó đã được chuyển sang Vận Hành (shipment_workflows)
-      if (l.stage === 'success') return;
-
-      if ((l.note && (l.note.toLowerCase().includes('chính ngạch') || l.note.toLowerCase().includes('chinh ngach') || /\bcn\b/i.test(l.note)))) {
-        const createdDate = new Date(l.createdTime || l.date);
-        if (createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth) {
-          cnGenerated++;
-        }
-      }
-    });
-  }
-  // ----------------------------------------------------------------- //
-
   // Render KPI grid cards
   let html = `
     <div class="stats-grid" style="margin-top: 15px;">
-      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'all'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
+      <div class="stat-card">
         <div class="stat-icon bg-blue"><i class="fa-solid fa-list-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Tổng task đang mở</span>
-          <h3>${activeSingleTasks.filter(t => t.status !== 'completed').length}</h3>
+          <h3>${AppState.single_tasks.filter(t => t.status !== 'completed').length}</h3>
           <span class="stat-trend trend-up">Tổng số: ${totalTasks} việc</span>
         </div>
       </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'all'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
+      <div class="stat-card">
         <div class="stat-icon bg-rose"><i class="fa-solid fa-circle-exclamation"></i></div>
         <div class="stat-data">
           <span class="stat-label">Công việc quá hạn</span>
@@ -556,7 +268,7 @@ function renderFounderDashboard() {
           <span class="stat-trend text-rose"><i class="fa-solid fa-clock"></i> Cần xử lý gấp!</span>
         </div>
       </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('tasks-single'); const statusSel = document.getElementById('tasks-single-filter-status'); if (statusSel) { statusSel.value = 'completed'; } if (typeof renderOpsSingleTasks === 'function') { renderOpsSingleTasks(); }">
+      <div class="stat-card">
         <div class="stat-icon bg-emerald"><i class="fa-solid fa-circle-check"></i></div>
         <div class="stat-data">
           <span class="stat-label">Việc đã hoàn thành</span>
@@ -564,7 +276,7 @@ function renderFounderDashboard() {
           <span class="stat-trend trend-up">Vận hành nội bộ</span>
         </div>
       </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="navigateToView('crm-clients-workflows');">
+      <div class="stat-card">
         <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
         <div class="stat-data">
           <span class="stat-label">Đơn chờ thu nợ (Bước 10)</span>
@@ -620,7 +332,7 @@ function renderFounderDashboard() {
     html += `<tr><td colspan="3" class="text-center text-muted" style="padding:15px;">Tuyệt vời! Không có nhân sự nào bị trễ việc.</td></tr>`;
   } else {
     sortedUsers.slice(0, 5).forEach(u => {
-      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi', admin: 'Kế toán/Admin' };
+      const deptLabels = { sales: 'Sales/CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán/Admin' };
       html += `
         <tr>
           <td><strong>${u.name}</strong></td>
@@ -643,27 +355,8 @@ function renderFounderDashboard() {
   container.innerHTML = html;
 }
 
-// ==================== CRM KHÁCH CŨ & LÔ HÀNG (12 BƯỚC) ==================== //
+// ==================== CRM KHÁCH CŨ & LÔ HÀNG (11 BƯỚC) ==================== //
 function renderOpsWorkflows() {
-    if (typeof renderOpsStats === 'function') renderOpsStats();
-  // Sanitize checklists: only allow 'cập nhật tình trạng sau báo giá' in Step 2, clear all others
-  if (AppState.shipment_workflows) {
-    AppState.shipment_workflows.forEach(flow => {
-      if (flow.steps) {
-        flow.steps.forEach(s => {
-          if (s.stepNum === 2) {
-            s.checklist = s.checklist ? s.checklist.filter(c => c.text === "cập nhật tình trạng sau báo giá") : [];
-            if (s.checklist.length === 0) {
-              s.checklist.push({ text: "cập nhật tình trạng sau báo giá", done: false, required: true });
-            }
-          } else {
-            s.checklist = [];
-          }
-        });
-      }
-    });
-  }
-
   const container = document.getElementById('ops-workflows-kanban');
   if (!container) return;
   container.innerHTML = '';
@@ -675,12 +368,11 @@ function renderOpsWorkflows() {
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
 
-  // 12 steps arrays
-  const stepLists = Array.from({ length: 12 }, () => []);
-  const filteredFlows = [];
+  // 11 steps arrays
+  const stepLists = Array.from({ length: 11 }, () => []);
 
   // Filter shipment workflows
   const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
@@ -688,12 +380,8 @@ function renderOpsWorkflows() {
     const client = AppState.clients.find(c => c.id === flow.clientId) || {};
     
     // Role-based permission filter: Non-admin only sees flows they are assigned to
-    const isSpecialAccess = currentUser.role === 'admin' || 
-                            currentUser.username === 'phuongthao' || 
-                            currentUser.username === 'nhuquynh';
-    if (currentUser && !isSpecialAccess) {
+    if (currentUser && currentUser.role !== 'admin') {
       const isAssigned = flow.assigneeId === currentUser.id || 
-                         flow.cskhId === currentUser.id ||
                          (flow.steps && flow.steps.some(s => s.assigneeId === currentUser.id));
       if (!isAssigned) return;
     }
@@ -705,185 +393,24 @@ function renderOpsWorkflows() {
     if (!matchesSearch) return;
 
     // Service type filter
-    if (serviceVal !== 'all' && (serviceVal === 'chính ngạch' ? !flow.serviceType.toLowerCase().includes('ch') : !flow.serviceType.toLowerCase().includes('hàng'))) return;
+    if (serviceVal !== 'all' && flow.serviceType !== serviceVal) return;
 
     // Assignee filter
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
 
     // Overdue filter
-    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
+    const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
     if (overdueVal && !isOverdue) return;
-
-    filteredFlows.push(flow);
 
     // Place into corresponding step array (flow.stage is 1-indexed)
     const idx = flow.stage - 1;
-    if (idx >= 0 && idx < 12) {
+    if (idx >= 0 && idx < 11) {
       stepLists[idx].push(flow);
     }
   });
 
-  const viewMode = AppState.opsViewMode || 'board';
-  const btnBoard = document.getElementById('btn-ops-view-board');
-  const btnList = document.getElementById('btn-ops-view-list');
-  const kanbanWrapper = document.getElementById('ops-kanban-wrapper');
-  const listWrapper = document.getElementById('ops-list-wrapper');
-
-  if (btnBoard && btnList && kanbanWrapper && listWrapper) {
-    if (viewMode === 'list') {
-      btnList.classList.add('active');
-      btnList.style.background = 'var(--color-primary)';
-      btnList.style.color = 'white';
-      btnBoard.classList.remove('active');
-      btnBoard.style.background = 'transparent';
-      btnBoard.style.color = 'var(--text-secondary)';
-      kanbanWrapper.style.display = 'none';
-      listWrapper.style.display = 'block';
-    } else {
-      btnBoard.classList.add('active');
-      btnBoard.style.background = 'var(--color-primary)';
-      btnBoard.style.color = 'white';
-      btnList.classList.remove('active');
-      btnList.style.background = 'transparent';
-      btnList.style.color = 'var(--text-secondary)';
-      kanbanWrapper.style.display = 'block';
-      listWrapper.style.display = 'none';
-    }
-  }
-
-  if (viewMode === 'list') {
-    const opsSortField = AppState.opsSortField || 'name';
-    const opsSortOrder = AppState.opsSortOrder || 'asc';
-    
-    filteredFlows.sort((a, b) => {
-      let valA = '';
-      let valB = '';
-      
-      if (opsSortField === 'name') {
-        valA = a.name || '';
-        valB = b.name || '';
-      } else if (opsSortField === 'client') {
-        const clientA = AppState.clients.find(c => c.id === a.clientId) || {};
-        const clientB = AppState.clients.find(c => c.id === b.clientId) || {};
-        valA = clientA.name || '';
-        valB = clientB.name || '';
-      } else if (opsSortField === 'assignee') {
-        const uA = AppState.users.find(u => u.id === a.assigneeId);
-        const uB = AppState.users.find(u => u.id === b.assigneeId);
-        valA = uA ? uA.name : '';
-        valB = uB ? uB.name : '';
-      } else if (opsSortField === 'stage') {
-        valA = a.stage || 0;
-        valB = b.stage || 0;
-      } else if (opsSortField === 'sla') {
-        // Evaluate SLA duration in minutes if it exists
-        const getSlaMins = (f) => {
-          if (f.customerMsgTime && f.infoEntryTime) {
-            const diffMs = new Date(f.infoEntryTime) - new Date(f.customerMsgTime);
-            return diffMs >= 0 ? Math.floor(diffMs / 60000) : 999999;
-          }
-          return 999999;
-        };
-        valA = getSlaMins(a);
-        valB = getSlaMins(b);
-      } else if (opsSortField === 'deadline') {
-        valA = a.deadline || '9999-12-31';
-        valB = b.deadline || '9999-12-31';
-      }
-      
-      if (valA < valB) return opsSortOrder === 'asc' ? -1 : 1;
-      if (valA > valB) return opsSortOrder === 'asc' ? 1 : -1;
-      return 0;
-    });
-
-    // Update header sort icons
-    document.querySelectorAll('.ops-sortable-header').forEach(header => {
-      const field = header.getAttribute('data-field');
-      const iconSpan = header.querySelector('.sort-icon');
-      if (iconSpan) {
-        if (field === opsSortField) {
-          iconSpan.innerHTML = opsSortOrder === 'asc' ? ' ▲' : ' ▼';
-          iconSpan.style.opacity = '1';
-        } else {
-          iconSpan.innerHTML = ' ⇅';
-          iconSpan.style.opacity = '0.3';
-        }
-      }
-    });
-
-    const listBody = document.getElementById('ops-list-table-body');
-    if (listBody) {
-      listBody.innerHTML = '';
-      if (filteredFlows.length === 0) {
-        listBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy lô hàng nào.</td></tr>`;
-      } else {
-        filteredFlows.forEach(flow => {
-          const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-          const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
-          const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
-          
-          let slaBadge = '<span class="text-muted" style="font-size:11.5px; font-style:italic;">--</span>';
-          if (flow.customerMsgTime && flow.infoEntryTime) {
-            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
-            if (diffMs >= 0) {
-              const diffMins = Math.floor(diffMs / 60000);
-              const hours = Math.floor(diffMins / 60);
-              const mins = diffMins % 60;
-              const timeText = hours > 0 ? `${hours}h${mins}m` : `${mins}m`;
-              if (diffMins <= 120) {
-                slaBadge = `<span class="badge" style="background:#10b981; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-check"></i> Đạt (${timeText})</span>`;
-              } else {
-                slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Muộn (${timeText})</span>`;
-              }
-            } else {
-              slaBadge = `<span class="badge" style="background:#ef4444; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-circle-xmark"></i> Lỗi thời gian</span>`;
-            }
-          } else if (flow.stage === 1) {
-            slaBadge = `<span class="badge" style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Chờ nhập thời gian</span>`;
-          }
-          
-          const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
-          const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Bước ${flow.stage}: ${currentStepName}</span>`;
-          
-          const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
-          const deadlineBadge = isOverdue
-            ? `<span class="badge" style="background:rgba(239, 68, 68, 0.15); color:#ef4444; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;"><i class="fa-solid fa-triangle-exclamation"></i> Trễ hạn</span>`
-            : `<span style="color:var(--text-secondary);">${flow.deadline || 'Chưa đặt'}</span>`;
-            
-          const tr = document.createElement('tr');
-          tr.style.borderBottom = '1px solid var(--border-color)';
-          tr.style.cursor = 'pointer';
-          tr.addEventListener('click', () => {
-            openFlowDetailModal(flow.id);
-          });
-          
-          tr.innerHTML = `
-            <td style="padding: 12px 10px;">
-              <div style="font-weight: bold; color: var(--color-primary);">${flow.name}</div>
-              <div style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Dịch vụ: ${flow.serviceType || 'Chưa rõ'}</div>
-              ${flow.failReason ? `<div style="font-size: 10px; color: #f87171; margin-top: 2px;"><i class="fa-solid fa-triangle-exclamation"></i> Lý do hỏng: ${flow.failReason}</div>` : ''}
-            </td>
-            <td style="padding: 12px 10px;">
-              <div style="font-weight: 600;">${client.name || 'Vô danh'}</div>
-              <div style="font-size: 11px; color: var(--text-muted);">Mã KH: ${client.code || '--'}</div>
-            </td>
-            <td style="padding: 12px 10px; color: var(--text-secondary);">${assigneeName}</td>
-            <td style="padding: 12px 10px;">${stepBadge}</td>
-            <td style="padding: 12px 10px;">${slaBadge}</td>
-            <td style="padding: 12px 10px;">${deadlineBadge}</td>
-            <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
-              <button class="btn btn-sm btn-outline" onclick="openFlowDetailModal('${flow.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
-            </td>
-          `;
-          listBody.appendChild(tr);
-        });
-      }
-    }
-    return;
-  }
-
-  // Render 12 columns
-  for (let i = 0; i < 12; i++) {
+  // Render 11 columns
+  for (let i = 0; i < 11; i++) {
     const col = document.createElement('div');
     col.className = 'kanban-column';
     col.setAttribute('data-stage', i + 1);
@@ -911,7 +438,7 @@ function renderOpsWorkflows() {
       col.classList.add('drag-over');
     });
 
-    cardsContainer.addEventListener('dragleave', (e) => {
+    cardsContainer.addEventListener('dragleave', () => {
       col.classList.remove('drag-over');
     });
 
@@ -920,155 +447,52 @@ function renderOpsWorkflows() {
       col.classList.remove('drag-over');
       const flowId = e.dataTransfer.getData('text/plain') || draggingFlowId;
       const targetStage = i + 1;
-      
-      // Delay the move attempt slightly to allow 'dragend' event to fire properly.
-      // Destroying the dragged DOM element synchronously during 'drop' causes browser D&D state to glitch/lag.
-      setTimeout(() => {
-        handleFlowMoveAttempt(flowId, targetStage);
-      }, 50);
+      handleFlowMoveAttempt(flowId, targetStage);
     });
 
     // Populate columns cards
     stepLists[i].forEach(flow => {
       const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
       const card = document.createElement('div');
-      card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
+      card.className = 'kanban-card';
       card.setAttribute('draggable', 'true');
       card.setAttribute('data-id', flow.id);
       
       const salesUser = AppState.users.find(u => u.id === flow.cskhId);
-      const salesName = salesUser ? salesUser.name.split(' ').pop() : 'Chưa giao';
       const assigneeUser = AppState.users.find(u => u.id === flow.assigneeId);
       const assigneeName = assigneeUser ? assigneeUser.name.split(' ').pop() : 'Chưa giao';
 
+      const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
       const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="Quá hạn chót lô hàng!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` : '';
-
-      // Highlight if updated today
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-      const lastHistoryTime = flow.history && flow.history.length > 0 ? flow.history[flow.history.length - 1].split(': ')[0] : '';
-      const isUpdatedToday = lastHistoryTime.startsWith(todayStr);
-      const timeColor = isUpdatedToday ? '#34d399' : '#38bdf8';
-      const timeFontWeight = isUpdatedToday ? '700' : '600';
 
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.name || 'Vô danh'} - ${flow.name}</span>
-          <span class="badge bg-blue" style="font-size:9px; padding:2px 4px; white-space: nowrap; margin-left: 4px;">${flow.serviceType}</span>
+          <span style="font-size:10px; font-weight:bold; color:var(--color-primary);">${client.code || 'KH CŨ'}</span>
+          <span class="badge bg-blue" style="font-size:9px; padding:2px 4px;">${flow.serviceType}</span>
         </div>
         <div class="card-client-name" style="margin-top:6px; font-size:13.5px;">${flow.name}</div>
         <div class="card-desc" style="font-size:11.5px; opacity:0.8;">Khách: ${client.name || 'Không rõ'}</div>
-        ${(() => {
-          if (flow.customerMsgTime && flow.infoEntryTime) {
-            const diffMs = new Date(flow.infoEntryTime) - new Date(flow.customerMsgTime);
-            const diffMin = Math.round(diffMs / (1000 * 60));
-            if (diffMin >= 0) {
-              const hrs = Math.floor(diffMin / 60);
-              const mins = diffMin % 60;
-              const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-              const isOk = diffMin <= 120;
-              
-              const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-              const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-              
-              const color = isOk ? '#34d399' : '#ef4444';
-              const icon = isOk ? 'fa-solid fa-circle-check' : 'fa-solid fa-triangle-exclamation';
-              const labelText = isOk ? `Phản hồi đạt: ${timeText}` : `Phản hồi trễ: ${timeText} (>2h)`;
-              
-              const evidenceLink = flow.evidenceUrl ? `
-                <a href="${flow.evidenceUrl}" target="_blank" style="color: #38bdf8; font-size: 9.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 2px;" onclick="event.stopPropagation();">
-                  <i class="fa-solid fa-image"></i> Bằng chứng
-                </a>
-              ` : '';
-              
-              return `
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px;">
-                  <div style="font-size: 10px; color: ${color}; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                    <i class="${icon}"></i> ${labelText}
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    ${evidenceLink}
-                    <label style="display: inline-flex; align-items: center; gap: 3px; cursor: pointer; margin: 0; user-select: none;" onclick="event.stopPropagation();" ${!isAdminOrManager ? 'title="Chỉ Quản lý mới có quyền duyệt"' : ''}>
-                      <input type="checkbox" onchange="window.toggleManagerVerify('${flow.id}', this.checked)" ${flow.managerVerified ? 'checked' : ''} ${!isAdminOrManager ? 'disabled' : ''} style="cursor: pointer; width: 11px; height: 11px; margin: 0;">
-                      <span style="font-size: 9.5px; color: ${flow.managerVerified ? '#34d399' : '#9ca3af'}; font-weight: bold;">Duyệt</span>
-                    </label>
-                  </div>
-                </div>
-              `;
-            }
-          }
-          return '';
-        })() || ''}
         ${overdueBadge}
-        <div style="font-size: 10.2px; color: ${isOverdue ? '#ef4444' : 'var(--text-muted)'}; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 4px;">
-          <i class="fa-solid fa-calendar-xmark"></i> Hạn: ${flow.deadline || 'Chưa thiết lập'}
-        </div>
-        ${flow.failReason ? `
-          <div style="margin-top: 6px; padding: 4px 6px; background: rgba(239, 68, 68, 0.12); border: 1px dashed rgba(239, 68, 68, 0.25); border-radius: 4px; font-size: 10.5px; color: #f87171; line-height: 1.3;">
-            <i class="fa-solid fa-triangle-exclamation"></i> <strong>Lý do hỏng:</strong> ${flow.failReason}
-          </div>
-        ` : ''}
         <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
-          <div style="display:flex; flex-direction:column; gap:2px; font-size:10px; color:var(--text-muted);">
-            <span><i class="fa-solid fa-user-gear"></i> Phụ trách: ${assigneeName}</span>
-            <span><i class="fa-solid fa-headset"></i> CSKH: ${salesName}</span>
-          </div>
+          <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> Phụ trách: ${assigneeName}</span>
           <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
-        </div>
-        <div style="font-size: 10px; color: ${timeColor}; font-weight: ${timeFontWeight}; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;">
-          <i class="fa-solid fa-rotate"></i> Cập nhật: ${lastHistoryTime}
-        </div>
-        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
-          <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển:</span>
-          <select class="card-stage-select" style="font-size: 10px; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-            <option value="" disabled selected>Chọn...</option>
-            <option value="1" ${flow.stage === 1 ? 'disabled' : ''}>1. Nhận thông tin</option>
-            <option value="2" ${flow.stage === 2 ? 'disabled' : ''}>2. Báo giá</option>
-            <option value="3" ${flow.stage === 3 ? 'disabled' : ''}>3. Thương lượng</option>
-            <option value="4" ${flow.stage === 4 ? 'disabled' : ''}>4. Thành công</option>
-            <option value="5" ${flow.stage === 5 ? 'disabled' : ''}>5. Mua hàng</option>
-            <option value="6" ${flow.stage === 6 ? 'disabled' : ''}>6. Shop gửi</option>
-            <option value="7" ${flow.stage === 7 ? 'disabled' : ''}>7. Về TQ</option>
-            <option value="8" ${flow.stage === 8 ? 'disabled' : ''}>8. Về VN</option>
-            <option value="9" ${flow.stage === 9 ? 'disabled' : ''}>9. Giao hàng</option>
-            <option value="10" ${flow.stage === 10 ? 'disabled' : ''}>10. Thu nợ</option>
-            <option value="11" ${flow.stage === 11 ? 'disabled' : ''}>11. Hoàn tất</option>
-            <option value="12" ${flow.stage === 12 ? 'disabled' : ''}>12. Thất bại</option>
-          </select>
         </div>
       `;
 
       card.addEventListener('dragstart', (e) => {
         draggingFlowId = flow.id;
         e.dataTransfer.setData('text/plain', flow.id);
-        e.dataTransfer.effectAllowed = 'move';
         card.classList.add('dragging');
-        document.getElementById('ops-kanban-board')?.classList.add('board-dragging');
       });
 
       card.addEventListener('dragend', () => {
         card.classList.remove('dragging');
         draggingFlowId = null;
-        document.getElementById('ops-kanban-board')?.classList.remove('board-dragging');
       });
 
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.card-stage-select')) return;
+      card.addEventListener('click', () => {
         openFlowDetailModal(flow.id);
       });
-
-      const select = card.querySelector('.card-stage-select');
-      if (select) {
-        select.addEventListener('change', (e) => {
-          const val = parseInt(e.target.value);
-          if (val) {
-            // Revert dropdown visual value IMMEDIATELY so if validation fails, it stays correct
-            e.target.value = flow.stage;
-            handleFlowMoveAttempt(flow.id, val);
-          }
-        });
-      }
 
       cardsContainer.appendChild(card);
     });
@@ -1081,117 +505,12 @@ function renderOpsWorkflows() {
   populateFlowFilterUsers();
 }
 
-function ensureTwelveSteps(flow) {
-  if (!flow) return;
-  if (!flow.steps) flow.steps = [];
-  if (flow.steps.length < 12) {
-    const defaultStepNames = [
-      "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-      "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
-    ];
-    for (let i = flow.steps.length + 1; i <= 12; i++) {
-      flow.steps.push({
-        stepNum: i,
-        name: defaultStepNames[i - 1],
-        assigneeId: flow.assigneeId || 'usr-admin',
-        deadline: '',
-        status: 'todo',
-        checklist: [],
-        note: '',
-        comments: []
-      });
-    }
-  }
-}
-
 function handleFlowMoveAttempt(flowId, targetStage) {
   const flow = AppState.shipment_workflows.find(f => f.id === flowId);
   if (!flow) return;
-  ensureTwelveSteps(flow);
 
   const currentStage = flow.stage;
   if (currentStage === targetStage) return;
-
-  // Validate files when transitioning to Báo giá (Step 2)
-  if (targetStage === 2) {
-    const files = flow.files || [];
-    const hasImage = files.some(f => 
-      /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
-      f.name.toLowerCase().includes('ảnh') || 
-      f.name.toLowerCase().includes('hình') ||
-      f.name.toLowerCase().includes('image') ||
-      f.name.toLowerCase().includes('img')
-    );
-    if (!hasImage) {
-      alert("Để chuyển sang bước Báo giá, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!");
-      return;
-    }
-  }
-  // Validate quote feedback when transitioning from Báo giá (Step 2) to Step 3 (Thương lượng) or higher
-  if (currentStage === 2 && targetStage >= 3) {
-    const feedback = (flow.quoteFeedback || '').trim();
-    if (feedback.length < 3) {
-      alert("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 2!");
-      return;
-    }
-  }
-  // If moving to Thất bại (stage 12), require fail reason + evidence
-  if (targetStage === 12) {
-    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
-    if (!isAdminOrManager) {
-      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
-      
-      // Automatically redirect to Step 3: Thương lượng instead of Step 12: Thất bại
-      executeFlowMove(flow, 3);
-      flow.failReason = null;
-      flow.failEvidence = null;
-      flow.failApproved = null;
-      
-      saveState();
-      renderOpsWorkflows();
-      return;
-    }
-
-    document.getElementById('fail-prompt-client-name').innerText = flow.name;
-    document.getElementById('prompt-fail-reason').value = '';
-    document.getElementById('prompt-fail-reason-other').value = '';
-    document.getElementById('prompt-fail-reason-other').style.display = 'none';
-    document.getElementById('prompt-fail-evidence').value = '';
-    
-    openModal('modal-fail-reason-prompt');
-    
-    failPromptCallback = (reason, evidence) => {
-      const allowedFailReasons = [
-        "Không đủ năng lực xử lý hàng",
-        "Hàng khó từ chối",
-        "Khách lẻ, hàng khó => chủ động từ chối",
-        "Không tìm được hàng cho KH"
-      ];
-      
-      const isNegotiationReason = !allowedFailReasons.includes(reason);
-      
-      if (isNegotiationReason) {
-        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển lô hàng sang cột Thương lượng.", "info");
-        executeFlowMove(flow, 3);
-        flow.failReason = null;
-        flow.failEvidence = null;
-        flow.failApproved = null;
-        saveState();
-        renderOpsWorkflows();
-        return;
-      }
-
-      flow.failReason = reason;
-      flow.failEvidence = evidence;
-      flow.failApproved = false;
-      executeFlowMove(flow, 12);
-      saveState();
-      renderOpsWorkflows();
-      addNotification('Lô hàng thất bại', `Lô hàng ${flow.name} đã chuyển sang Thất bại: ${reason}`, 'warning');
-    };
-    return;
-  }
 
   // Verify transition checklists of the current step
   const currentStepData = flow.steps.find(s => s.stepNum === currentStage);
@@ -1218,14 +537,6 @@ function handleFlowMoveAttempt(flowId, targetStage) {
         
         // Listen to change
         itemDiv.querySelector('input').onchange = (e) => {
-          if (item.text === "cập nhật tình trạng sau báo giá" && e.target.checked) {
-            const feedback = (flow.quoteFeedback || '').trim();
-            if (feedback.length < 3) {
-              alert("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 2!");
-              e.target.checked = false;
-              return;
-            }
-          }
           item.done = e.target.checked;
           itemDiv.className = `mandatory-item ${item.done ? 'checked' : 'unchecked'}`;
           document.getElementById('ops-checklist-warning-text').style.display = 'none';
@@ -1266,10 +577,9 @@ function handleConfirmedFlowMove() {
 }
 
 function executeFlowMove(flow, targetStage) {
-  ensureTwelveSteps(flow);
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
   const oldStage = flow.stage;
   flow.stage = targetStage;
@@ -1281,35 +591,8 @@ function executeFlowMove(flow, targetStage) {
     else s.status = 'todo';
   });
 
-  // When moving to Thất bại, set failApproved = false
-  if (targetStage === 12) {
-    flow.failApproved = false;
-  }
-  // When moving away from Thất bại, clear fail fields
-  if (oldStage === 12 && targetStage !== 12) {
-    flow.failReason = null;
-    flow.failEvidence = null;
-    flow.failApproved = false;
-  }
-
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  
-  if (targetStage === 2) {
-    const step2 = flow.steps.find(s => s.stepNum === 2);
-    if (step2) {
-      const deadlineDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      const step2Deadline = `${deadlineDate.getFullYear()}-${String(deadlineDate.getMonth()+1).padStart(2,'0')}-${String(deadlineDate.getDate()).padStart(2,'0')} ${String(deadlineDate.getHours()).padStart(2,'0')}:${String(deadlineDate.getMinutes()).padStart(2,'0')}`;
-      step2.deadline = step2Deadline;
-      flow.deadline = step2Deadline;
-    }
-  } else {
-    const activeStep = flow.steps.find(s => s.stepNum === targetStage);
-    if (activeStep && activeStep.deadline) {
-      flow.deadline = activeStep.deadline;
-    }
-  }
-
   flow.history.push(`${dateStr}: Di chuyển từ bước ${oldStage} sang ${targetStage} (${stepNames[targetStage - 1]})`);
 
   saveState();
@@ -1317,14 +600,13 @@ function executeFlowMove(flow, targetStage) {
   addNotification('Cập nhật Lô Hàng 🚚', `Đã chuyển lô hàng "${flow.name}" sang bước: ${stepNames[targetStage - 1]}`, 'success');
 }
 
-// Open detail modal for 12 steps workflow
+// Open detail modal for 11 steps workflow
 let currentActiveFlowId = null;
 let currentActiveStepNum = 1;
 
 function openFlowDetailModal(flowId) {
   const flow = AppState.shipment_workflows.find(f => f.id === flowId);
   if (!flow) return;
-  ensureTwelveSteps(flow);
 
   currentActiveFlowId = flowId;
   currentActiveStepNum = flow.stage; // Set default view to current active step
@@ -1333,31 +615,16 @@ function openFlowDetailModal(flowId) {
   const client = AppState.clients.find(c => c.id === flow.clientId) || {};
   document.getElementById('flow-detail-subtitle').innerText = `${flow.serviceType.toUpperCase()} - Khách: ${client.name || 'Không rõ'} (${client.code || 'KH CŨ'})`;
 
-  const stageSelect = document.getElementById('modal-flow-stage-select');
-  if (stageSelect) {
-    stageSelect.value = flow.stage;
-    stageSelect.onchange = (e) => {
-      const val = parseInt(e.target.value);
-      if (val && val !== flow.stage) {
-        handleFlowMoveAttempt(flow.id, val);
-        const updatedFlow = AppState.shipment_workflows.find(f => f.id === flow.id);
-        if (updatedFlow) {
-          openFlowDetailModal(updatedFlow.id);
-        }
-      }
-    };
-  }
-
-  // Render 12 steps timeline bubbles
+  // Render 11 steps timeline bubbles
   const timeline = document.querySelector('.flow-steps-timeline');
   timeline.innerHTML = '';
   
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
 
-  for (let i = 1; i <= 12; i++) {
+  for (let i = 1; i <= 11; i++) {
     const bubble = document.createElement('div');
     const stepData = flow.steps.find(s => s.stepNum === i) || {};
     
@@ -1398,10 +665,6 @@ function openFlowDetailModal(flowId) {
   document.getElementById('btn-flow-step-add-file').onclick = handleFlowAddStepFile;
   document.getElementById('btn-flow-step-add-comment').onclick = handleFlowAddStepComment;
 
-  // Pre-fill file name inputs
-  const fileNameInput = document.getElementById('flow-step-new-file-name');
-  if (fileNameInput) fileNameInput.value = '';
-
   openModal('modal-flow-detail');
 }
 
@@ -1414,10 +677,10 @@ function renderActiveStepPanel() {
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất"
   ];
 
-  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1] || 'Thất bại'}`;
+  document.getElementById('flow-step-panel-title').innerText = `Bước ${currentActiveStepNum}: ${stepNames[currentActiveStepNum - 1]}`;
 
   // Populate users
   const assigneeSelect = document.getElementById('flow-step-assignee');
@@ -1434,174 +697,13 @@ function renderActiveStepPanel() {
   document.getElementById('flow-step-deadline').value = stepData.deadline || '';
 
   // Set notes
-  const noteEl = document.getElementById('flow-step-note');
-  noteEl.value = stepData.note || '';
-  noteEl.onchange = autoSaveActiveStepData;
-
-  assigneeSelect.onchange = autoSaveActiveStepData;
-  const deadlineEl = document.getElementById('flow-step-deadline');
-  if (deadlineEl) deadlineEl.onchange = autoSaveActiveStepData;
-
-  // ===== ALWAYS SHOW: Audit time section (Step 1 data) =====
-  const auditGroup = document.getElementById('flow-step-time-audit-group');
-  if (auditGroup) {
-    auditGroup.style.display = 'block';
-    const msgTimeInput = document.getElementById('flow-step-customer-msg-time');
-    const entryTimeInput = document.getElementById('flow-step-info-entry-time');
-    const auditResult = document.getElementById('flow-step-time-audit-result');
-    
-    msgTimeInput.value = flow.customerMsgTime || '';
-    entryTimeInput.value = flow.infoEntryTime || '';
-    
-    const updateAuditMessage = () => {
-      const msgTime = msgTimeInput.value;
-      const entryTime = entryTimeInput.value;
-      if (msgTime && entryTime) {
-        const diffMs = new Date(entryTime) - new Date(msgTime);
-        const diffMin = Math.round(diffMs / (1000 * 60));
-        if (diffMin >= 0) {
-          const hrs = Math.floor(diffMin / 60);
-          const mins = diffMin % 60;
-          const timeText = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
-          const isOk = diffMin <= 120;
-          if (isOk) {
-            auditResult.innerHTML = `<span style="font-size:12px; color:#34d399; font-weight:bold;"><i class="fa-solid fa-circle-check"></i> Đạt: phản hồi trong ${timeText} (dưới 2 tiếng)</span>`;
-          } else {
-            auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-triangle-exclamation"></i> Không Đạt: phản hồi trong ${timeText} (vượt quá 2 tiếng)</span>`;
-          }
-        } else {
-          auditResult.innerHTML = `<span style="font-size:12px; color:#ef4444; font-weight:bold;"><i class="fa-solid fa-circle-xmark"></i> Lỗi: Thời gian nhập nhỏ hơn thời gian khách nhắn!</span>`;
-        }
-      } else {
-        auditResult.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Nhập đầy đủ thông tin thời gian để kiểm tra.</span>`;
-      }
-    };
-    
-    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-    const verifyChk = document.getElementById('flow-step-manager-verify');
-    if (verifyChk) {
-      verifyChk.checked = !!flow.managerVerified;
-      verifyChk.disabled = !isAdminOrManager;
-      if (!isAdminOrManager) {
-        verifyChk.parentElement.setAttribute('title', 'Chỉ Quản lý mới có quyền duyệt');
-      } else {
-        verifyChk.parentElement.removeAttribute('title');
-      }
-    }
-
-    const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-    if (evidenceUrlInput) {
-      evidenceUrlInput.value = flow.evidenceUrl || '';
-    }
-
-    updateAuditMessage();
-    msgTimeInput.oninput = updateAuditMessage;
-    entryTimeInput.oninput = updateAuditMessage;
-    
-    msgTimeInput.onchange = autoSaveActiveStepData;
-    entryTimeInput.onchange = autoSaveActiveStepData;
-    
-    if (verifyChk) {
-      verifyChk.onchange = autoSaveActiveStepData;
-    }
-    if (evidenceUrlInput) {
-      evidenceUrlInput.onchange = autoSaveActiveStepData;
-    }
-  }
-
-  // ===== ALWAYS SHOW: Quote feedback section (Step 2 data) =====
-  const quoteFeedbackGroup = document.getElementById('flow-step-quote-feedback-group');
-  if (quoteFeedbackGroup) {
-    quoteFeedbackGroup.style.display = 'block';
-    const quoteTextarea = document.getElementById('flow-step-quote-feedback');
-    if (quoteTextarea) {
-      quoteTextarea.value = flow.quoteFeedback || '';
-      quoteTextarea.oninput = (e) => {
-        const val = e.target.value;
-        flow.quoteFeedback = val;
-        const step2 = flow.steps.find(s => s.stepNum === 2);
-        if (step2) {
-          const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
-          if (item) {
-            item.done = val.trim().length >= 3;
-          }
-        }
-      };
-      quoteTextarea.onchange = () => {
-        saveState();
-      };
-    }
-  }
-
-  // ===== Fail group (only show for step 12) =====
-  const flowFailGroup = document.getElementById('flow-step-fail-group');
-  if (flowFailGroup) {
-    if (flow.stage === 12) {
-      flowFailGroup.style.display = 'block';
-      const reasonSelect = document.getElementById('flow-step-fail-reason');
-      const reasonOtherGroup = document.getElementById('flow-step-fail-reason-other-group');
-      const reasonOtherInput = document.getElementById('flow-step-fail-reason-other');
-      const evidenceInput = document.getElementById('flow-step-fail-evidence');
-      const approvedCheckbox = document.getElementById('flow-step-fail-approved');
-      
-      const storedReason = flow.failReason || '';
-      const stdReasons = [
-        'Giá dịch vụ cao',
-        'Thời gian vận chuyển lâu',
-        'Không cạnh tranh được với đại lý VN',
-        'Trả lời chậm',
-        'Hàng khó từ chối',
-        'Không đủ năng lực xử lý hàng',
-        'Không cạnh tranh được giá dịch vụ với đối thủ',
-        'Không tìm được hàng cho KH',
-        'Khách lẻ, hàng khó => chủ động từ chối',
-        'Khách hàng ko quan tâm',
-        'Do AI tư vấn chưa tốt'
-      ];
-      
-      if (storedReason && !stdReasons.includes(storedReason)) {
-        reasonSelect.value = 'Khác';
-        reasonOtherGroup.style.display = 'block';
-        reasonOtherInput.value = storedReason;
-      } else {
-        reasonSelect.value = storedReason;
-        reasonOtherGroup.style.display = 'none';
-        reasonOtherInput.value = '';
-      }
-
-      reasonSelect.onchange = (e) => {
-        if (e.target.value === 'Khác') {
-          reasonOtherGroup.style.display = 'block';
-        } else {
-          reasonOtherGroup.style.display = 'none';
-          reasonOtherInput.value = '';
-        }
-      };
-
-      evidenceInput.value = flow.failEvidence || '';
-      approvedCheckbox.checked = !!flow.failApproved;
-      
-      const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-      const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
-      approvedCheckbox.disabled = !isAdminOrManager2;
-      
-      reasonSelect.addEventListener('change', autoSaveActiveStepData);
-      reasonOtherInput.onchange = autoSaveActiveStepData;
-      evidenceInput.onchange = autoSaveActiveStepData;
-      approvedCheckbox.onchange = autoSaveActiveStepData;
-    } else {
-      flowFailGroup.style.display = 'none';
-    }
-  }
+  document.getElementById('flow-step-note').value = stepData.note || '';
 
   // Checklist render
   const chkContainer = document.getElementById('flow-step-checklist-container');
   chkContainer.innerHTML = '';
   if (stepData.checklist && stepData.checklist.length > 0) {
     stepData.checklist.forEach((item, idx) => {
-      if (item.text === "cập nhật tình trạng sau báo giá") return;
-      
       const row = document.createElement('div');
       row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px;';
       
@@ -1631,18 +733,16 @@ function renderActiveStepPanel() {
       row.appendChild(btnDel);
       chkContainer.appendChild(row);
     });
-  }
-
-  // Handle empty state
-  if (chkContainer.innerHTML === '') {
+  } else {
     chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
   }
 
-  // Render step files
+  // Render step files (with image previews support)
   const filesContainer = document.getElementById('flow-step-files-list');
   filesContainer.innerHTML = '';
   
-  const stepFiles = flow.files || [];
+  // Also collect files associated with this step (stage files)
+  const stepFiles = flow.files ? flow.files.filter(f => f.stepNum === currentActiveStepNum) : [];
   if (stepFiles.length > 0) {
     stepFiles.forEach((file, idx) => {
       const row = document.createElement('div');
@@ -1650,7 +750,7 @@ function renderActiveStepPanel() {
       
       const nameLower = file.name.toLowerCase();
       const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
-                      file.url.toLowerCase().includes('drive.google.com') || 
+                      file.url.toLowerCase().includes('drive.google.com/thumbnail') || 
                       file.url.toLowerCase().includes('googleusercontent.com') ||
                       nameLower.includes('ảnh') || 
                       nameLower.includes('anh') || 
@@ -1658,25 +758,7 @@ function renderActiveStepPanel() {
                       nameLower.includes('png') || 
                       nameLower.includes('jpg') || 
                       nameLower.includes('jpeg');
-
-      let displayUrl = file.url;
-      if (file.url.toLowerCase().includes('drive.google.com')) {
-        let fileId = '';
-        const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (dMatch && dMatch[1]) {
-          fileId = dMatch[1];
-        } else {
-          const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-          if (idMatch && idMatch[1]) {
-            fileId = idMatch[1];
-          }
-        }
-        if (fileId) {
-          displayUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
-        }
-      }
-
-      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+      const imgPreview = isImage ? `<img src="${file.url}" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
 
       row.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
@@ -1688,14 +770,14 @@ function renderActiveStepPanel() {
       filesContainer.appendChild(row);
     });
   } else {
-    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
+    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu đính kèm bước.</span>`;
   }
 
-  // Render comments
+  // Render comments for this step (v18)
   renderActiveStepComments();
 }
 
-function autoSaveActiveStepData() {
+function handleSaveActiveStepData() {
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
   if (!flow) return;
 
@@ -1706,56 +788,6 @@ function autoSaveActiveStepData() {
   stepData.deadline = document.getElementById('flow-step-deadline').value;
   stepData.note = document.getElementById('flow-step-note').value.trim();
 
-  // Always save audit times (Step 1 data - now always visible)
-  flow.customerMsgTime = document.getElementById('flow-step-customer-msg-time').value;
-  flow.infoEntryTime = document.getElementById('flow-step-info-entry-time').value;
-  const evidenceUrlInput = document.getElementById('flow-step-evidence-url');
-  if (evidenceUrlInput) {
-    flow.evidenceUrl = evidenceUrlInput.value.trim();
-  }
-  const verifyChk = document.getElementById('flow-step-manager-verify');
-  if (verifyChk) {
-    const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-    const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-    if (isAdminOrManager) {
-      flow.managerVerified = verifyChk.checked;
-    }
-  }
-
-  // Always save quote feedback (Step 2 data - now always visible)
-  const quoteFeedbackEl = document.getElementById('flow-step-quote-feedback');
-  if (quoteFeedbackEl) {
-    flow.quoteFeedback = quoteFeedbackEl.value;
-    const step2 = flow.steps.find(s => s.stepNum === 2);
-    if (step2) {
-      const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
-      if (item) {
-        item.done = quoteFeedbackEl.value.trim().length >= 3;
-      }
-    }
-  }
-
-  // Save fail reason, evidence and manager approval if flow is at step 12 (Thất bại)
-  if (flow.stage === 12) {
-    const reasonSelect = document.getElementById('flow-step-fail-reason');
-    const reasonVal = reasonSelect.value;
-    
-    let finalReason = reasonVal;
-    if (reasonVal === 'Khác') {
-      finalReason = document.getElementById('flow-step-fail-reason-other').value.trim();
-    }
-    
-    flow.failReason = finalReason;
-    flow.failEvidence = document.getElementById('flow-step-fail-evidence').value.trim();
-    flow.evidenceUrl = flow.failEvidence;
-
-    const currentUser2 = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-    const isAdminOrManager2 = currentUser2.role === 'admin' || currentUser2.role === 'manager' || currentUser2.username === 'phuongthao' || currentUser2.username === 'nhuquynh';
-    if (isAdminOrManager2) {
-      flow.failApproved = document.getElementById('flow-step-fail-approved').checked;
-    }
-  }
-
   // If status is not complete, we can keep it as is, or set to completed if all checklists are ticked!
   const hasPending = stepData.checklist.some(c => !c.done);
   if (!hasPending && stepData.status !== 'done') {
@@ -1765,28 +797,6 @@ function autoSaveActiveStepData() {
   }
 
   saveState();
-}
-
-function handleSaveActiveStepData() {
-  // Check for pending comment
-  const commentInput = document.getElementById('flow-step-new-comment');
-  if (commentInput && commentInput.value.trim()) {
-    handleFlowAddStepComment();
-  }
-
-  // Check for pending checklist item
-  const chkInput = document.getElementById('flow-step-new-chk');
-  if (chkInput && chkInput.value.trim()) {
-    handleFlowAddStepChecklistItem();
-  }
-
-  // Check for pending file link
-  const fileUrlInput = document.getElementById('flow-step-new-file-url');
-  if (fileUrlInput && fileUrlInput.value.trim()) {
-    handleFlowAddStepFile();
-  }
-
-  autoSaveActiveStepData();
   closeModal('modal-flow-detail');
   renderOpsWorkflows();
   showToast('Đã lưu thông tin bước xử lý!', 'success');
@@ -1805,7 +815,6 @@ function handleFlowAddStepChecklistItem() {
     if (!stepData.checklist) stepData.checklist = [];
     stepData.checklist.push({ text: text, done: false, required: false });
     textInput.value = '';
-    saveState();
     renderActiveStepPanel();
   }
 }
@@ -1814,16 +823,9 @@ function handleFlowAddStepFile() {
   const nameInput = document.getElementById('flow-step-new-file-name');
   const urlInput = document.getElementById('flow-step-new-file-url');
   
-  let name = nameInput.value.trim();
+  const name = nameInput.value.trim();
   const url = urlInput.value.trim();
-  
-  if (!url) {
-    alert("Vui lòng nhập đường dẫn liên kết URL!");
-    return;
-  }
-  if (!name) {
-    name = "Tài liệu đính kèm";
-  }
+  if (!name || !url) return;
 
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
   if (!flow) return;
@@ -1832,12 +834,12 @@ function handleFlowAddStepFile() {
   flow.files.push({
     name: name,
     url: url,
+    stepNum: currentActiveStepNum,
     date: new Date().toISOString().split('T')[0]
   });
 
   nameInput.value = '';
   urlInput.value = '';
-  saveState();
   renderActiveStepPanel();
 }
 
@@ -1845,11 +847,19 @@ window.handleDeleteFlowFile = function(idx) {
   const flow = AppState.shipment_workflows.find(f => f.id === currentActiveFlowId);
   if (!flow) return;
 
-  if (flow.files) {
-    flow.files.splice(idx, 1);
-  }
+  // Filter step files and delete the matching index
+  let fileCounter = 0;
+  flow.files = flow.files.filter((file) => {
+    if (file.stepNum === currentActiveStepNum) {
+      if (fileCounter === idx) {
+        fileCounter++;
+        return false;
+      }
+      fileCounter++;
+    }
+    return true;
+  });
 
-  saveState();
   renderActiveStepPanel();
 };
 
@@ -1861,37 +871,9 @@ function handleAddFlowSubmit(e) {
   const clientSelectVal = document.getElementById('flow-client-select').value;
   
   let clientId = clientSelectVal;
-  let customerMsgTime = document.getElementById('flow-customer-msg-time').value;
-  let infoEntryTime = document.getElementById('flow-info-entry-time').value;
-  let evidenceUrl = document.getElementById('flow-evidence-url') ? document.getElementById('flow-evidence-url').value.trim() : '';
 
-  // Handle lead select conversion
-  if (clientSelectVal.startsWith('lead-')) {
-    const leadId = clientSelectVal.replace('lead-', '');
-    const lead = AppState.leads && AppState.leads.find(l => l.id === leadId);
-    if (lead) {
-      const newClientId = `client-${Date.now()}`;
-      const newClientCode = `MH${400 + AppState.clients.length + 1}`;
-      const newClient = {
-        id: newClientId,
-        code: newClientCode,
-        name: lead.name,
-        phone: lead.phone || '',
-        social: lead.source === 'Fanpage' ? 'Facebook' : '',
-        type: serviceType,
-        tier: 'VIP 5',
-        source: lead.source,
-        cskhId: lead.salesId || 'usr-admin',
-        managerId: 'usr-admin',
-        note: 'Khách hàng tạo từ Lead qua Lô hàng',
-        createdTime: lead.createdTime ? lead.createdTime.split(' ')[0] : (lead.date || new Date().toISOString().split('T')[0])
-      };
-      AppState.clients.push(newClient);
-      clientId = newClientId;
-    }
-  }
   // Handle create new client if "new" is selected
-  else if (clientSelectVal === 'new') {
+  if (clientSelectVal === 'new') {
     const cName = document.getElementById('flow-client-name').value.trim();
     const cPhone = document.getElementById('flow-client-phone').value.trim();
     const cSocial = document.getElementById('flow-client-social').value.trim();
@@ -1923,37 +905,48 @@ function handleAddFlowSubmit(e) {
     clientId = newClientId;
   }
 
-  // Pre-generate 12 steps templates
+  // Pre-generate 11 steps templates
   const flowSteps = [];
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
     "Shop Trung Quốc gửi hàng", "Về đến kho Trung Quốc", "Về đến kho Hà Nội/Hải Phòng",
-    "Giao hàng cho khách", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Giao hàng cho khách", "Thu nợ", "Hoàn tất"
   ];
   
-  for (let i = 1; i <= 12; i++) {
+  for (let i = 1; i <= 11; i++) {
     const isFirst = (i === 1);
     
     // Add default required checklists for step 1, 5, 10
     let stepChecklist = [];
-    if (i === 2) {
+    if (i === 1) {
       stepChecklist = [
-        { text: "cập nhật tình trạng sau báo giá", done: false, required: true }
+        { text: "Nhập thông tin khách hàng", done: true, required: true },
+        { text: "Nhập mặt hàng & link", done: true, required: true },
+        { text: "Xác định loại dịch vụ", done: true, required: true }
       ];
-    }
-
-    let stepDeadline = '';
-    if (isFirst) {
-      const now = new Date();
-      const deadlineDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-      stepDeadline = `${deadlineDate.getFullYear()}-${String(deadlineDate.getMonth()+1).padStart(2,'0')}-${String(deadlineDate.getDate()).padStart(2,'0')} ${String(deadlineDate.getHours()).padStart(2,'0')}:${String(deadlineDate.getMinutes()).padStart(2,'0')}`;
+    } else if (i === 2) {
+      stepChecklist = [
+        { text: "Tìm nguồn/shop/xưởng", done: false, required: true },
+        { text: "Gửi báo giá cho khách", done: false, required: true },
+        { text: "Lưu file báo giá", done: false, required: false }
+      ];
+    } else if (i === 5) {
+      stepChecklist = [
+        { text: "Thanh toán shop/xưởng", done: false, required: true },
+        { text: "Lưu bill/thông tin thanh toán", done: false, required: true }
+      ];
+    } else if (i === 10) {
+      stepChecklist = [
+        { text: "Tổng kết công nợ", done: false, required: true },
+        { text: "Xác nhận khách thanh toán", done: false, required: true }
+      ];
     }
 
     flowSteps.push({
       stepNum: i,
       name: stepNames[i - 1],
       assigneeId: document.getElementById('flow-assignee').value,
-      deadline: stepDeadline || (document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : ''),
+      deadline: document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : '',
       status: isFirst ? 'doing' : 'todo',
       checklist: stepChecklist,
       note: '',
@@ -1977,10 +970,7 @@ function handleAddFlowSubmit(e) {
     revenue: parseInt(document.getElementById('flow-revenue').value) || 0,
     profit: parseInt(document.getElementById('flow-profit').value) || 0,
     debt: parseInt(document.getElementById('flow-revenue').value) || 0, // Default debt = revenue
-    deadline: flowSteps[0].deadline,
-    customerMsgTime: customerMsgTime,
-    infoEntryTime: infoEntryTime,
-    evidenceUrl: evidenceUrl,
+    deadline: document.getElementById('ops-task-deadline') ? document.getElementById('ops-task-deadline').value : '',
     files: [],
     riskNote: document.getElementById('flow-risk').value.trim(),
     history: [`${new Date().toISOString().split('T')[0]}: Khởi tạo quy trình lô hàng`],
@@ -1997,7 +987,6 @@ function handleAddFlowSubmit(e) {
 
 function populateFlowUserDropdowns() {
   const users = AppState.users;
-  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
   ['flow-assignee', 'flow-cskh', 'flow-buyer'].forEach(id => {
     const select = document.getElementById(id);
     if (!select) return;
@@ -2006,7 +995,6 @@ function populateFlowUserDropdowns() {
       const opt = document.createElement('option');
       opt.value = u.id;
       opt.innerText = u.name;
-      if (currentUser && u.id === currentUser.id) opt.selected = true;
       select.appendChild(opt);
     });
   });
@@ -2016,20 +1004,8 @@ function populateFlowClientDropdown() {
   const select = document.getElementById('flow-client-select');
   if (!select) return;
   
+  // Keep the first "new" option
   select.innerHTML = '<option value="new">-- Tạo Khách Hàng Mới --</option>';
-  
-  // List Facebook Leads first (prefixed with 'lead-')
-  if (AppState.leads) {
-    AppState.leads.forEach(l => {
-      if (l.stage !== 'failed') {
-        const opt = document.createElement('option');
-        opt.value = `lead-${l.id}`;
-        opt.innerText = `[Lead Fanpage] ${l.name}`;
-        select.appendChild(opt);
-      }
-    });
-  }
-
   AppState.clients.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c.id;
@@ -2099,72 +1075,17 @@ function renderOpsSingleTasks() {
   const deptVal = document.getElementById('tasks-single-filter-dept').value;
   const assigneeVal = document.getElementById('tasks-single-filter-assignee').value;
   const priorityVal = document.getElementById('tasks-single-filter-priority').value;
-  const statusEl = document.getElementById('tasks-single-filter-status');
-  const statusVal = statusEl ? statusEl.value : 'all';
 
-  let filtered = AppState.single_tasks.filter(t => {
-    if (t.title && t.title.includes('Tình trạng KH sau báo giá')) return false;
-
+  const filtered = AppState.single_tasks.filter(t => {
     const matchesSearch = t.title.toLowerCase().includes(searchVal) || (t.desc && t.desc.toLowerCase().includes(searchVal));
     if (!matchesSearch) return false;
 
     if (deptVal !== 'all' && t.dept !== deptVal) return false;
     if (assigneeVal !== 'all' && t.assigneeId !== assigneeVal) return false;
     if (priorityVal !== 'all' && t.priority !== priorityVal) return false;
-    if (statusVal !== 'all' && t.status !== statusVal) return false;
 
     return true;
   });
-
-  // Dynamic column sorting
-  if (currentSortField) {
-    filtered.sort((a, b) => {
-      let valA, valB;
-      if (currentSortField === 'title') {
-        valA = a.title || '';
-        valB = b.title || '';
-      } else if (currentSortField === 'dept') {
-        const deptLabels = { sales: 'Kinh Doanh & CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi', admin: 'Kế Toán & Quản Trị' };
-        valA = deptLabels[a.dept] || '';
-        valB = deptLabels[b.dept] || '';
-      } else if (currentSortField === 'assignee') {
-        const userA = AppState.users.find(u => u.id === a.assigneeId);
-        const userB = AppState.users.find(u => u.id === b.assigneeId);
-        valA = userA ? userA.name : '';
-        valB = userB ? userB.name : '';
-      } else if (currentSortField === 'helper') {
-        const userA = AppState.users.find(u => u.id === a.helperId);
-        const userB = AppState.users.find(u => u.id === b.helperId);
-        valA = userA ? userA.name : 'Không';
-        valB = userB ? userB.name : 'Không';
-      } else if (currentSortField === 'priority') {
-        const priorityOrder = { low: 1, normal: 2, high: 3, urgent: 4 };
-        valA = priorityOrder[a.priority] || 0;
-        valB = priorityOrder[b.priority] || 0;
-      } else if (currentSortField === 'deadline') {
-        valA = a.deadline ? new Date(a.deadline).getTime() : 0;
-        valB = b.deadline ? new Date(b.deadline).getTime() : 0;
-      } else if (currentSortField === 'status') {
-        const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
-        valA = statusLabels[a.status] || '';
-        valB = statusLabels[b.status] || '';
-      }
-      
-      if (typeof valA === 'string') {
-        return currentSortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-      } else {
-        return currentSortAsc ? valA - valB : valB - valA;
-      }
-    });
-  } else {
-    // Sort tasks: doing/checking first, then todo, then waiting, then completed/canceled
-    const statusOrder = { doing: 1, checking: 1, todo: 2, waiting: 3, completed: 4, canceled: 5 };
-    filtered.sort((a, b) => {
-      const orderA = statusOrder[a.status] || 99;
-      const orderB = statusOrder[b.status] || 99;
-      return orderA - orderB;
-    });
-  }
 
   // Render based on current layout
   if (currentSingleTaskLayout === 'list') {
@@ -2187,7 +1108,7 @@ function renderSingleTasksList(tasks) {
     return;
   }
 
-  const deptLabels = { sales: 'Kinh Doanh & CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho bãi', admin: 'Kế Toán & Quản Trị' };
+  const deptLabels = { sales: 'Sales & CSKH', sourcing: 'Sourcing', warehouse: 'Kho bãi', admin: 'Kế toán & Admin' };
   const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
   const priorityBadges = { low: 'bg-blue', normal: 'bg-gray', high: 'bg-orange', urgent: 'bg-rose' };
   const statusLabels = { todo: 'Chưa làm', doing: 'Đang làm', waiting: 'Chờ phản hồi', completed: 'Hoàn thành', overdue: 'Quá hạn', canceled: 'Đã hủy' };
@@ -2238,15 +1159,8 @@ function renderSingleTasksBoard(tasks) {
     card.setAttribute('data-id', t.id);
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-        <div class="card-client-name" style="font-weight:bold; flex-grow:1; margin-right:8px;">${t.title}</div>
-        ${t.status !== 'completed' ? `
-          <button class="btn btn-xs btn-success" style="padding:1px 4px; font-size:9px; flex-shrink:0; border: none; border-radius: 4px; color: white; background: #10b981; cursor: pointer;" onclick="event.stopPropagation(); window.quickCompleteTask('${t.id}')">
-            <i class="fa-solid fa-check"></i> Xong
-          </button>
-        ` : ''}
-      </div>
-      <div class="card-desc" style="margin-top:4px;">${t.desc || 'Không có mô tả.'}</div>
+      <div class="card-client-name">${t.title}</div>
+      <div class="card-desc">${t.desc || 'Không có mô tả.'}</div>
       <div class="card-meta" style="margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px; display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-circle-user"></i> ${assignee ? assignee.name.split(' ').pop() : 'Chưa giao'}</span>
         <span style="font-size:10px; color:var(--text-muted);"><i class="fa-solid fa-clock"></i> ${t.deadline}</span>
@@ -2292,18 +1206,6 @@ function renderSingleTasksBoard(tasks) {
       const task = AppState.single_tasks.find(tk => tk.id === taskId);
       if (task && task.status !== status) {
         task.status = status;
-        
-        if (task.assigneeId === AppState.currentUserId) {
-          if (typeof window.updateStreakOnActivity === 'function') {
-            window.updateStreakOnActivity(AppState.currentUserId);
-          }
-        }
-        if (status === 'completed') {
-          if (typeof window.awardPointsForCompletedTask === 'function') {
-            window.awardPointsForCompletedTask(task);
-          }
-        }
-        
         saveState();
         renderOpsSingleTasks();
         addNotification('Cập nhật Công việc 📝', `Đã chuyển công việc "${task.title}" sang cột ${status.toUpperCase()}`, 'info');
@@ -2410,34 +1312,10 @@ window.openOpsTaskDetail = function(taskId) {
   document.getElementById('ops-task-detail-title').innerText = task.title;
   const assignee = AppState.users.find(u => u.id === task.assigneeId);
   const helper = AppState.users.find(u => u.id === task.helperId);
-  const projectTextEl = document.getElementById('ops-task-detail-project-text');
-  if (projectTextEl) {
-    const project = task.projectId ? (AppState.projects || []).find(p => p.id === task.projectId) : null;
-    projectTextEl.innerText = project ? ` | Dự án: ${project.name}` : '';
-  }
-
-  // Populate assignee select dropdown
-  const assigneeSelect = document.getElementById('ops-task-detail-assignee');
-  if (assigneeSelect) {
-    assigneeSelect.innerHTML = AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-    assigneeSelect.value = task.assigneeId || '';
-  }
-
-  // Populate helper select dropdown
-  const helperSelect = document.getElementById('ops-task-detail-helper');
-  if (helperSelect) {
-    helperSelect.innerHTML = `<option value="">Không có hỗ trợ</option>` + AppState.users.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-    helperSelect.value = task.helperId || '';
-  }
+  document.getElementById('ops-task-detail-subtitle').innerText = `Phụ trách: ${assignee ? assignee.name : 'Chưa giao'} | Hỗ trợ: ${helper ? helper.name : 'Không'}`;
   
-  document.getElementById('ops-task-detail-deadline').value = task.deadline ? window.formatDateTimeLocal(task.deadline) : '';
+  document.getElementById('ops-task-detail-deadline').innerText = task.deadline || 'Chưa đặt';
   document.getElementById('ops-task-detail-desc').innerText = task.desc || 'Không có mô tả chi tiết.';
-
-  document.getElementById('ops-task-detail-desc').style.display = 'block';
-  const editBtn = document.getElementById('btn-ops-task-detail-edit-desc');
-  if (editBtn) editBtn.style.display = 'inline-block';
-  const editGroup = document.getElementById('ops-task-detail-edit-desc-group');
-  if (editGroup) editGroup.style.display = 'none';
 
   // Priority badge
   const priorityLabels = { low: 'Thấp', normal: 'Bình thường', high: 'Cao', urgent: 'Khẩn cấp' };
@@ -2556,15 +1434,9 @@ window.handleDeleteTaskFile = function(idx) {
 function handleAddTaskFile() {
   const nameInput = document.getElementById('ops-task-detail-new-file-name');
   const urlInput = document.getElementById('ops-task-detail-new-file-url');
-  let name = nameInput.value.trim();
+  const name = nameInput.value.trim();
   const url = urlInput.value.trim();
-  if (!url) {
-    showToast("Vui lòng nhập đường dẫn liên kết URL!", "warning");
-    return;
-  }
-  if (!name) {
-    name = "Tài liệu đính kèm";
-  }
+  if (!name || !url) return;
 
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
   if (task) {
@@ -2638,46 +1510,11 @@ function handleSaveTaskDetails() {
   const task = AppState.single_tasks.find(t => t.id === currentActiveTaskId);
   if (!task) return;
 
-  const oldStatus = task.status;
-  const newStatus = document.getElementById('ops-task-detail-status').value;
-  
-  if (oldStatus !== newStatus) {
-    task.status = newStatus;
-    
-    // Update streak if current user is assignee
-    if (task.assigneeId === AppState.currentUserId) {
-      if (typeof window.updateStreakOnActivity === 'function') {
-        window.updateStreakOnActivity(AppState.currentUserId);
-      }
-    }
-    
-    // Award points if status is changed to completed
-    if (newStatus === 'completed') {
-      if (typeof window.awardPointsForCompletedTask === 'function') {
-        window.awardPointsForCompletedTask(task);
-      }
-    }
-  }
-
-  // Save assignee, helper and deadline updates
-  const assigneeEl = document.getElementById('ops-task-detail-assignee');
-  const helperEl = document.getElementById('ops-task-detail-helper');
-  const deadlineEl = document.getElementById('ops-task-detail-deadline');
-  if (assigneeEl) {
-    task.assigneeId = assigneeEl.value;
-  }
-  if (helperEl) {
-    task.helperId = helperEl.value || null;
-  }
-  if (deadlineEl && deadlineEl.value) {
-    task.deadline = deadlineEl.value.replace('T', ' ');
-  }
-
+  task.status = document.getElementById('ops-task-detail-status').value;
   saveState();
   closeModal('modal-ops-task-detail');
   renderOpsSingleTasks();
-  if (typeof renderMyTasks === 'function') renderMyTasks();
-  showToast('Đã cập nhật thông tin công việc!', 'success');
+  showToast('Đã cập nhật trạng thái công việc!', 'success');
 }
 
 function handleDeleteTask() {
@@ -2693,14 +1530,13 @@ function handleDeleteTask() {
 function handleAddSingleTaskSubmit(e) {
   e.preventDefault();
   
-  const user = getCurrentUser();
   const title = document.getElementById('ops-task-title').value.trim();
   const desc = document.getElementById('ops-task-desc').value.trim();
   const dept = document.getElementById('ops-task-dept').value;
   const priority = document.getElementById('ops-task-priority').value;
   const assigneeId = document.getElementById('ops-task-assignee').value;
   const helperId = document.getElementById('ops-task-helper').value;
-  const deadline = document.getElementById('ops-task-deadline').value.replace('T', ' ');
+  const deadline = document.getElementById('ops-task-deadline').value;
   const projectId = document.getElementById('ops-task-project').value;
   const clientSelectVal = document.getElementById('ops-task-client').value;
   
@@ -2721,7 +1557,6 @@ function handleAddSingleTaskSubmit(e) {
     desc: desc,
     assigneeId: assigneeId,
     helperId: helperId || null,
-    creatorId: user.id,
     dept: dept,
     priority: priority,
     deadline: deadline,
@@ -2745,11 +1580,7 @@ function handleAddSingleTaskSubmit(e) {
   // If in project views, refresh project tasks & overview lists
   if (currentActiveProjectId) {
     renderProjectTasksTab(currentActiveProjectId);
-    if (typeof openProjectDedicatedView === 'function') {
-      openProjectDedicatedView(currentActiveProjectId);
-    } else {
-      openProjectDetails(currentActiveProjectId);
-    }
+    openProjectDetails(currentActiveProjectId);
   }
 
   addNotification('Giao Việc 📝', `Đã giao công việc mới: "${title}" cho nhân viên phụ trách.`, 'success');
@@ -3252,12 +2083,10 @@ function renderMyTasks() {
   const myFlowsList = document.getElementById('my-flows-list');
   const mySingleTasksList = document.getElementById('my-single-tasks-list');
   const myProjectTasksList = document.getElementById('my-project-tasks-list');
-  const myHelperTasksList = document.getElementById('my-helper-tasks-list');
 
   myFlowsList.innerHTML = '';
   mySingleTasksList.innerHTML = '';
   myProjectTasksList.innerHTML = '';
-  if (myHelperTasksList) myHelperTasksList.innerHTML = '';
 
   // Step names translation mapping
   const stepNames = [
@@ -3282,7 +2111,7 @@ function renderMyTasks() {
         const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
 
         const card = document.createElement('div');
-        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
+        card.className = 'kanban-card';
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #3b82f6; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3318,9 +2147,8 @@ function renderMyTasks() {
           negotiating: "Thương lượng"
         };
 
-        const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
         const card = document.createElement('div');
-        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
+        card.className = 'kanban-card';
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #8b5cf6; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3356,9 +2184,7 @@ function renderMyTasks() {
 
   if (AppState.single_tasks) {
     AppState.single_tasks.forEach(task => {
-      if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
-
-      if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
+      if (task.assigneeId === userId && task.status !== 'completed' && task.status !== 'canceled') {
         const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
         const chkTotal = task.checklist ? task.checklist.length : 0;
         
@@ -3368,29 +2194,14 @@ function renderMyTasks() {
         const isOverdue = task.deadline && new Date(task.deadline) < new Date();
 
         const card = document.createElement('div');
-        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
+        card.className = 'kanban-card';
         card.style.cssText = `cursor: pointer; border-left: 4px solid ${task.projectId ? '#10b981' : '#f59e0b'}; transition: transform 0.2s; margin-bottom: 8px;`;
-
-        let projectInfoHtml = '';
-        if (task.projectId) {
-          const proj = (AppState.projects || []).find(p => p.id === task.projectId);
-          if (proj) {
-            projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
-          }
-        }
-
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
             <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
-              <button class="btn btn-xs btn-success" style="padding: 1px 4px; font-size: 9px; line-height: 1; border: none; border-radius: 4px; color: white; background: #10b981; cursor: pointer;" onclick="event.stopPropagation(); window.quickCompleteTask('${task.id}')">
-                <i class="fa-solid fa-check"></i> Xong
-              </button>
-            </div>
+            <span style="font-size:9.5px; color:var(--text-muted);">${task.dept.toUpperCase()}</span>
           </div>
           <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
-          ${projectInfoHtml}
           <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
             <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
@@ -3453,7 +2264,7 @@ function renderMyTasks() {
         }
 
         const card = document.createElement('div');
-        card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
+        card.className = 'kanban-card';
         card.style.cssText = 'cursor: pointer; border-left: 4px solid #a855f7; transition: transform 0.2s; margin-bottom: 8px;';
         card.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -3487,159 +2298,6 @@ function renderMyTasks() {
   document.getElementById('my-project-tasks-count').innerText = projectCount;
   if (projectCount === 0) {
     myProjectTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có việc dự án VIP nào cần làm.</span>`;
-  }
-
-  // 5. Tasks I assist (Việc Tôi Hỗ Trợ)
-  let helperCount = 0;
-  if (myHelperTasksList) {
-    myHelperTasksList.innerHTML = '';
-    if (AppState.single_tasks) {
-      AppState.single_tasks.forEach(task => {
-        if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
-
-        // Show tasks where current user is the helper, and not completed/canceled/archived
-        if (task.helperId === userId && task.status !== 'completed' && task.status !== 'canceled' && task.status !== 'archived') {
-          helperCount++;
-          const chkDone = task.checklist ? task.checklist.filter(c => c.done).length : 0;
-          const chkTotal = task.checklist ? task.checklist.length : 0;
-          
-          const pLabels = { low: 'Thấp', normal: 'Thường', high: 'Cao', urgent: 'Khẩn cấp' };
-          const pColors = { low: '#10b981', normal: '#3b82f6', high: '#f59e0b', urgent: '#ef4444' };
-
-          const isOverdue = task.deadline && new Date(task.deadline) < new Date();
-
-          const card = document.createElement('div');
-          card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
-          card.style.cssText = `cursor: pointer; border-left: 4px solid #06b6d4; transition: transform 0.2s; margin-bottom: 8px;`;
-
-          let projectInfoHtml = '';
-          if (task.projectId) {
-            const proj = (AppState.projects || []).find(p => p.id === task.projectId);
-            if (proj) {
-              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
-            }
-          }
-
-          const assignee = AppState.users.find(u => u.id === task.assigneeId);
-          const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
-
-          card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span class="badge" style="font-size:9px; padding:2px 4px; background:${pColors[task.priority] || '#fff'}; color:white;">Ưu tiên: ${pLabels[task.priority] || 'Bình thường'}</span>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span style="font-size:9.5px; color:var(--text-muted); font-weight:bold;">${task.dept.toUpperCase()}</span>
-              </div>
-            </div>
-            <div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold;">${task.title}</div>
-            ${projectInfoHtml}
-            <div style="font-size:11px; margin-top:4px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
-            <div style="font-size:11px; margin-top:4px;"><i class="fa-solid fa-list-check"></i> Checklist: ${chkDone}/${chkTotal} việc</div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
-            </div>
-          `;
-          
-          card.onclick = () => {
-            if (typeof openOpsTaskDetail === 'function') {
-              openOpsTaskDetail(task.id);
-            }
-          };
-          myHelperTasksList.appendChild(card);
-        }
-      });
-    }
-    const helperCountLabel = document.getElementById('my-helper-tasks-count');
-    if (helperCountLabel) {
-      helperCountLabel.innerText = helperCount;
-    }
-    if (helperCount === 0) {
-      myHelperTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Tuyệt vời! Không có công việc nào bạn hỗ trợ đang chờ.</span>`;
-    }
-  }
-
-  // 6. Tasks I assigned to others (Việc Tôi Đã Giao)
-  const myAssignedTasksList = document.getElementById('my-assigned-tasks-list');
-  let assignedCount = 0;
-  if (myAssignedTasksList) {
-    myAssignedTasksList.innerHTML = '';
-    
-    if (AppState.single_tasks) {
-      AppState.single_tasks.forEach(task => {
-        if (task.title && task.title.includes('Tình trạng KH sau báo giá')) return;
-
-        // Show tasks where current user is the creator but NOT the assignee, and not archived
-        if (task.creatorId === userId && task.assigneeId !== userId && task.status !== 'archived') {
-          assignedCount++;
-          const assignee = AppState.users.find(u => u.id === task.assigneeId);
-          const assigneeName = assignee ? assignee.name : (task.dept ? `Phòng ${task.dept.toUpperCase()}` : 'Chưa giao');
-
-          const isOverdue = task.deadline && new Date(task.deadline) < new Date() && task.status !== 'completed';
-
-          const card = document.createElement('div');
-          card.className = `kanban-card ${isOverdue ? 'overdue-card' : ''}`;
-          
-          const isCompleted = task.status === 'completed';
-          const borderLeftColor = isCompleted ? '#10b981' : '#a855f7';
-          // Completed cards have a soft green glow background and normal opacity for high readability
-          card.style.cssText = `cursor: pointer; border-left: 4px solid ${borderLeftColor}; transition: transform 0.2s; margin-bottom: 8px; ${isCompleted ? 'background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.2); border-left: 4px solid #10b981;' : ''}`;
-
-          let projectInfoHtml = '';
-          if (task.projectId) {
-            const proj = (AppState.projects || []).find(p => p.id === task.projectId);
-            if (proj) {
-              projectInfoHtml = `<div style="font-size:11px; margin-top:4px; color:#10b981; font-weight:bold;"><i class="fa-solid fa-folder-open"></i> Dự án: ${proj.name}</div>`;
-            }
-          }
-
-          const statusLabel = isCompleted ? '<span class="badge bg-emerald" style="font-size:9px; padding:2px 4px; font-weight:bold;">Đã hoàn thành</span>' : '<span class="badge bg-purple" style="font-size:9px; padding:2px 4px; background:#a855f7; color:white; font-weight:bold;">Đang làm</span>';
-
-          // Completed tasks show a green check icon next to title and have a button to "Acknowledge & Close" (Đã xem & Đóng)
-          let titleHtml = '';
-          let archiveBtnHtml = '';
-          if (isCompleted) {
-            titleHtml = `<div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; color:#10b981; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-circle-check text-success"></i> ${task.title}</div>`;
-            archiveBtnHtml = `
-              <button class="btn btn-xs btn-outline" style="margin-top: 10px; width: 100%; border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); font-weight: bold; height: 28px; font-size:11px;" onclick="event.stopPropagation(); window.archiveAssignedTask('${task.id}')">
-                <i class="fa-solid fa-eye"></i> Đã xem & Đóng việc
-              </button>
-            `;
-          } else {
-            titleHtml = `<div class="card-client-name" style="margin-top:6px; font-size:13px; font-weight:bold; color:#fff;">${task.title}</div>`;
-          }
-
-          card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              ${statusLabel}
-              <div style="display:flex; align-items:center; gap:6px;">
-                <span style="font-size:9.5px; color:var(--text-muted); font-weight:bold;">${task.dept.toUpperCase()}</span>
-              </div>
-            </div>
-            ${titleHtml}
-            ${projectInfoHtml}
-            <div style="font-size:11px; margin-top:6px; color: var(--text-secondary);"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; border-top:1px solid var(--border-color); padding-top:6px;">
-              <span style="font-size:10px; color:${isOverdue ? '#ef4444' : 'var(--text-muted)'};"><i class="fa-solid fa-calendar-xmark"></i> Hạn: ${task.deadline || 'Không có'}</span>
-            </div>
-            ${archiveBtnHtml}
-          `;
-          
-          card.onclick = () => {
-            if (typeof openOpsTaskDetail === 'function') {
-              openOpsTaskDetail(task.id);
-            }
-          };
-          myAssignedTasksList.appendChild(card);
-        }
-      });
-    }
-
-    const assignedCountLabel = document.getElementById('my-assigned-tasks-count');
-    if (assignedCountLabel) {
-      assignedCountLabel.innerText = assignedCount;
-    }
-    if (assignedCount === 0) {
-      myAssignedTasksList.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic; padding: 15px; text-align:center;">Bạn chưa giao công việc nào cho người khác.</span>`;
-    }
   }
 }
 
@@ -3698,10 +2356,9 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
   // Default deadline to 3 days from now
   const today = new Date();
   today.setDate(today.getDate() + 3);
-  today.setHours(9, 0, 0, 0);
   const deadlineInput = document.getElementById('ops-task-deadline');
   if (deadlineInput) {
-    deadlineInput.value = window.formatDateTimeLocal(today);
+    deadlineInput.value = today.toISOString().split('T')[0];
   }
 
   const titleHeader = document.querySelector('#modal-add-ops-task h3');
@@ -3729,13 +2386,13 @@ window.openGlobalAddOpsTaskModal = function(isProjectTask = false) {
 };
 
 window.openProjectDedicatedView = function(projId) {
-  const p = (AppState.projects || []).find(proj => proj.id === projId);
+  const p = AppState.projects.find(proj => proj.id === projId);
   if (!p) return;
 
   currentActiveProjectId = projId;
 
-  const nameEl = document.getElementById('active-project-name') || document.getElementById('dedicated-project-name');
-  if (nameEl) nameEl.innerText = p.name;
+  // Set titles
+  document.getElementById('dedicated-project-name').innerText = p.name;
   
   const manager = AppState.users.find(u => u.id === p.managerId);
   const managerName = manager ? manager.name : 'Chưa giao';
@@ -3744,84 +2401,39 @@ window.openProjectDedicatedView = function(projId) {
     const u = AppState.users.find(usr => usr.id === mid);
     return u ? u.name : null;
   }).filter(Boolean).join(', ') : '';
-
-  const managerEl = document.getElementById('active-project-manager');
-  if (managerEl) managerEl.innerText = managerName;
-
-  const membersEl = document.getElementById('active-project-members');
-  if (membersEl) membersEl.innerText = membersNames || 'Không có';
   
-  const statusEl = document.getElementById('active-project-status');
-  if (statusEl) statusEl.innerText = p.status || 'Đang chuẩn bị';
+  document.getElementById('dedicated-project-meta').innerText = `Quản lý: ${managerName} | Thành viên: ${membersNames || 'Không có'}`;
+  document.getElementById('dedicated-project-desc').innerText = (p.desc || 'Không có mô tả chi tiết.') + '\n' + (p.notes ? `Lưu ý: ${p.notes}` : '');
 
-  const typeEl = document.getElementById('active-project-type');
-  if (typeEl) typeEl.innerText = 'Loại: ' + (p.type || 'Phòng ban');
-  
-  const metaEl = document.getElementById('dedicated-project-meta');
-  if (metaEl) metaEl.innerText = 'Quản lý: ' + managerName + ' | Thành viên: ' + (membersNames || 'Không có');
-  
-  const viewMode = document.getElementById('project-desc-view-mode');
-  const editMode = document.getElementById('project-desc-edit-mode');
-  const btnEditDesc = document.getElementById('btn-edit-project-desc');
-  if (viewMode) viewMode.style.display = 'block';
-  if (editMode) editMode.style.display = 'none';
-  if (btnEditDesc) btnEditDesc.style.display = '';
-
-  const descEl = document.getElementById('dedicated-project-desc');
-  if (descEl) descEl.innerText = (p.desc || 'Không có mô tả chi tiết.') + (p.notes ? \nLưu ý: \ : '');
-
+  // Render tasks
+  const tasksContainer = document.getElementById('dedicated-project-tasks-list');
+  tasksContainer.innerHTML = '';
   const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
-  const totalTasks = projTasks.length;
-  const completedTasks = projTasks.filter(t => t.status === 'completed').length;
-  const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-  
-  const percentEl = document.getElementById('dedicated-project-progress-percent');
-  if (percentEl) percentEl.innerText = \%;
-  
-  const barEl = document.getElementById('dedicated-project-progress-bar');
-  if (barEl) barEl.style.width = \%;
-
-  if (typeof renderDedicatedProjectTasks === 'function') renderDedicatedProjectTasks(p);
-  if (typeof renderDedicatedProjectDocs === 'function') renderDedicatedProjectDocs(p);
-  if (typeof renderDedicatedProjectDiscussion === 'function') renderDedicatedProjectDiscussion(p);
-};
-      const statusColors = { 
-        todo: 'bg-blue',
-        pending: 'bg-gray', 
-        doing: 'bg-orange', 
-        waiting: 'bg-purple',
-        checking: 'bg-purple', 
-        completed: 'bg-emerald', 
-        overdue: 'bg-rose',
-        canceled: 'bg-gray' 
-      };
+  if (projTasks.length === 0) {
+    tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12.5px; font-style: italic; text-align: center; padding: 20px 0; width: 100%;">Chưa có công việc nào liên kết với dự án này.</span>`;
+  } else {
+    projTasks.forEach(task => {
+      const div = document.createElement('div');
+      div.className = 'mini-task-item';
+      div.style.cssText = 'padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 12.5px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 6px;';
       
-      const isCompleted = task.status === 'completed';
-      const completeButton = isCompleted ? '' : `
-        <button class="btn btn-xs btn-primary" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; background: #059669; cursor: pointer; color: white;">
-          <i class="fa-solid fa-check"></i> Xong
-        </button>
-      `;
-
-      const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
-      const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
-
+      const statusLabels = { pending: 'Chưa làm', doing: 'Đang làm', checking: 'Chờ duyệt', completed: 'Hoàn thành', canceled: 'Đã hủy' };
+      const statusColors = { pending: 'bg-gray', doing: 'bg-blue', checking: 'bg-purple', completed: 'bg-emerald', canceled: 'bg-rose' };
+      
       div.innerHTML = `
         <div>
           <strong>${task.title}</strong>
           <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
-          <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          ${completeButton}
           <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
-          <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
+          <span style="font-size: 10.5px; color: var(--text-muted);">${task.deadline || 'Hạn: -'}</span>
         </div>
       `;
       div.onclick = (e) => {
         // Prevent event bubbling so it doesn't try to open the task details while modal switching
         e.stopPropagation();
-        if (typeof navigateToView === 'function') { navigateToView('tasks-projects'); } else { document.getElementById('view-project-dedicated').style.display = 'none'; }
+        closeModal('modal-project-dedicated-view');
         if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
       };
       tasksContainer.appendChild(div);
@@ -3857,26 +2469,7 @@ window.openProjectDedicatedView = function(projId) {
   // Render discussion
   renderDedicatedProjectDiscussion(p);
 
-  if (typeof navigateToView === 'function') { navigateToView('project-dedicated'); } else { document.getElementById('view-project-dedicated').style.display = 'flex'; }
-};
-
-window.handleQuickCompleteTask = function(event, taskId) {
-  event.stopPropagation();
-  const task = AppState.single_tasks.find(t => t.id === taskId);
-  if (task) {
-    task.status = 'completed';
-    if (task.assigneeId === AppState.currentUserId) {
-      if (typeof window.updateStreakOnActivity === 'function') {
-        window.updateStreakOnActivity(AppState.currentUserId);
-      }
-    }
-    if (typeof window.awardPointsForCompletedTask === 'function') {
-      window.awardPointsForCompletedTask(task);
-    }
-    saveState();
-    showToast('Đã đánh dấu hoàn thành công việc!', 'success');
-    openProjectDedicatedView(currentActiveProjectId);
-  }
+  openModal('modal-project-dedicated-view');
 };
 
 window.handleDeleteDedicatedProjectDoc = function(idx) {
@@ -3898,8 +2491,7 @@ function renderDedicatedProjectDiscussion(p) {
   } else {
     p.comments.forEach(c => {
       const div = document.createElement('div');
-      div.className = 'chat-msg-row';
-      div.style.cssText = 'padding: 8px 12px; margin-bottom: 8px; font-size:11.5px;';
+      div.style.cssText = 'padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); font-size:11.5px;';
       div.innerHTML = `
         <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
           <strong style="color:var(--color-primary);">${c.author}</strong>
@@ -3918,7 +2510,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnAddTask = document.getElementById('btn-dedicated-project-add-task');
   if (btnAddTask) {
     btnAddTask.onclick = () => {
-      if (typeof navigateToView === 'function') { navigateToView('tasks-projects'); } else { document.getElementById('view-project-dedicated').style.display = 'none'; }
+      closeModal('modal-project-dedicated-view');
       openGlobalAddOpsTaskModal(true);
       setTimeout(() => {
         const select = document.getElementById('ops-task-project');
@@ -3959,255 +2551,5 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
   }
-
-  // Edit project description event listeners binding
-  const btnEditDesc = document.getElementById('btn-edit-project-desc');
-  const btnSaveDesc = document.getElementById('btn-save-project-desc');
-  const btnCancelDesc = document.getElementById('btn-cancel-project-desc');
-  
-  if (btnEditDesc) {
-    btnEditDesc.onclick = () => {
-      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
-      if (p) {
-        document.getElementById('edit-project-desc-input').value = p.desc || '';
-        document.getElementById('edit-project-notes-input').value = p.notes || '';
-        document.getElementById('project-desc-view-mode').style.display = 'none';
-        document.getElementById('project-desc-edit-mode').style.display = 'flex';
-        btnEditDesc.style.display = 'none';
-      }
-    };
-  }
-  
-  if (btnCancelDesc) {
-    btnCancelDesc.onclick = () => {
-      document.getElementById('project-desc-view-mode').style.display = 'block';
-      document.getElementById('project-desc-edit-mode').style.display = 'none';
-      if (btnEditDesc) btnEditDesc.style.display = '';
-    };
-  }
-  
-  if (btnSaveDesc) {
-    btnSaveDesc.onclick = () => {
-      const p = AppState.projects.find(proj => proj.id === currentActiveProjectId);
-      if (p) {
-        p.desc = document.getElementById('edit-project-desc-input').value.trim();
-        p.notes = document.getElementById('edit-project-notes-input').value.trim();
-        saveState();
-        showToast('Đã lưu thông tin dự án!', 'success');
-        
-        // Refresh view
-        openProjectDedicatedView(p.id);
-      }
-    };
-  }
-});
-
-window.quickCompleteTask = function(taskId) {
-  let task = AppState.single_tasks && AppState.single_tasks.find(t => t.id === taskId);
-  if (!task && AppState.tasks) {
-    task = AppState.tasks.find(t => t.id === taskId);
-  }
-  if (!task) return;
-  
-  task.status = 'completed';
-  if (task.checklist) {
-    task.checklist.forEach(item => item.done = true);
-  }
-  
-  if (typeof window.awardPointsForCompletedTask === 'function') {
-    window.awardPointsForCompletedTask(task);
-  }
-  
-  saveState();
-  
-  if (typeof renderMyTasks === 'function') renderMyTasks();
-  if (typeof renderOpsBoard === 'function') renderOpsBoard();
-  
-  showToast('Đã hoàn thành công việc!', 'success');
-};
-
-let currentSortField = null;
-let currentSortAsc = true;
-
-window.toggleTaskSort = function(field) {
-  if (currentSortField === field) {
-    currentSortAsc = !currentSortAsc;
-  } else {
-    currentSortField = field;
-    currentSortAsc = true;
-  }
-  renderOpsSingleTasks();
-  updateSortHeadersUI();
-};
-
-function updateSortHeadersUI() {
-  const headers = document.querySelectorAll('.leaderboard-table th');
-  if (headers.length < 7) return;
-  const fields = ['title', 'dept', 'assignee', 'helper', 'priority', 'deadline', 'status'];
-  fields.forEach((field, index) => {
-    const icon = headers[index].querySelector('i');
-    if (!icon) return;
-    if (currentSortField === field) {
-      icon.className = currentSortAsc ? 'fa-solid fa-sort-up' : 'fa-solid fa-sort-down';
-      icon.style.opacity = '1';
-      icon.style.color = '#fbbf24';
-    } else {
-      icon.className = 'fa-solid fa-sort';
-      icon.style.opacity = '0.4';
-      icon.style.color = '';
-    }
-  });
-}
-
-window.archiveAssignedTask = function(taskId) {
-  const task = AppState.single_tasks && AppState.single_tasks.find(t => t.id === taskId);
-  if (task) {
-    task.status = 'archived';
-    saveState();
-    if (typeof renderMyTasks === 'function') renderMyTasks();
-    showToast('Đã đóng công việc và lưu trữ thành công.', 'success');
-  }
-};
-
-window.toggleManagerVerify = function(flowId, checked) {
-  const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(f => f.id === flowId);
-  if (!flow) return;
-
-  const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
-  const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
-
-  if (!isAdminOrManager) {
-    showToast('Chỉ Quản lý mới có quyền duyệt thời gian!', 'warning');
-    renderOpsWorkflows();
-    return;
-  }
-
-  flow.managerVerified = !!checked;
-  saveState();
-  renderOpsWorkflows();
-  showToast(flow.managerVerified ? 'Đã duyệt thời gian phản hồi!' : 'Đã hủy duyệt thời gian phản hồi!', 'success');
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function renderOpsStats() {
-  const container = document.getElementById('ops-stats-container-real');
-  if (!container) return;
-
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
-  let cnGenerated = 0;
-  let cnSuccess = 0;
-  let cnProfit = 0;
-  let totalOpsAdded = 0;
-
-  if (AppState.shipment_workflows) {
-    AppState.shipment_workflows.forEach(w => {
-      const createdDate = new Date(w.createdTime || (w.history && w.history[0] ? w.history[0].substring(0, 10) : new Date()));
-      const isThisMonth = createdDate.getFullYear() === currentYear && createdDate.getMonth() === currentMonth;
-      const isChinhNgach = ((w.serviceType && (w.serviceType.toLowerCase().includes('ch') || w.serviceType.toLowerCase().includes('chính'))));
-
-      if (isThisMonth) {
-        if (isChinhNgach) {
-          cnGenerated++;
-          cnProfit += (parseFloat(w.profit) || (parseFloat(w.revenue) - parseFloat(w.valTotal)) || 0);
-        }
-        totalOpsAdded++;
-      }
-      if (isChinhNgach && w.stage >= 4 && w.stage !== 12 && isThisMonth) {
-        cnSuccess++;
-      }
-    });
-  }
-
-  container.innerHTML = `
-    <div class="dashboard-grid grid-1-4">
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
-        <div class="stat-icon bg-blue"><i class="fa-solid fa-file-invoice"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lô chính ngạch phát sinh</span>
-          <h3>${cnGenerated}</h3>
-          <span class="stat-trend trend-up">Tháng ${currentMonth + 1}/${currentYear}</span>
-        </div>
-      </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_success')">
-        <div class="stat-icon bg-green"><i class="fa-solid fa-check-double"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lô chính ngạch chốt được</span>
-          <h3>${cnSuccess}</h3>
-          <span class="stat-trend trend-up">Tỷ lệ: ${cnGenerated > 0 ? Math.round((cnSuccess/cnGenerated)*100) : 0}%</span>
-        </div>
-      </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('cn_generated')">
-        <div class="stat-icon bg-gold"><i class="fa-solid fa-sack-dollar"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lợi nhuận chính ngạch</span>
-          <h3>${cnProfit.toLocaleString()} đ</h3>
-          <span class="stat-trend trend-up">Đơn hàng CN (Tháng)</span>
-        </div>
-      </div>
-      <div class="stat-card" style="cursor: pointer;" onclick="if(window.showStatsModal) window.showStatsModal('ops_added')">
-        <div class="stat-icon" style="background: #a855f7; color: white;"><i class="fa-solid fa-boxes-stacked"></i></div>
-        <div class="stat-data">
-          <span class="stat-label">Lô hàng add vào CRM Khách cũ</span>
-          <h3>${totalOpsAdded}</h3>
-          <span class="stat-trend trend-up">Vận hành (Tháng)</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-window.openStatDetail = function(type, id) {
-  closeModal('modal-stats-details'); // Close the stats list popup
-  if (type === 'workflow') {
-    const flow = AppState.shipment_workflows.find(f => f.id === id);
-    if (flow) {
-      if (typeof openFlowDetailModal === 'function') openFlowDetailModal(id);
-    }
-  } else if (type === 'lead') {
-    const lead = AppState.leads.find(l => l.id === id);
-    if (lead) {
-      if (typeof openLeadDetailModal === 'function') openLeadDetailModal(id);
-    }
-  }
-};
-
-
-// Sync Top Scrollbar in Ops Workflows
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(() => {
-    const topWrapper = document.getElementById('ops-top-scrollbar-wrapper');
-    const topContent = document.getElementById('ops-top-scrollbar-content');
-    const bottomWrapper = document.getElementById('ops-kanban-wrapper');
-    const bottomBoard = document.getElementById('ops-workflows-kanban');
-    
-    if (topWrapper && topContent && bottomWrapper && bottomBoard) {
-      const updateScrollbar = () => {
-        topContent.style.width = bottomBoard.scrollWidth + 'px';
-      };
-      
-      // We need to update whenever the ops workflows is rendered
-      // We can override renderOpsWorkflows or just use MutationObserver
-      const observer = new MutationObserver(updateScrollbar);
-      observer.observe(bottomBoard, { childList: true, subtree: true, characterData: true });
-      window.addEventListener('resize', updateScrollbar);
-      setTimeout(updateScrollbar, 500);
-      
-      topWrapper.addEventListener('scroll', () => { bottomWrapper.scrollLeft = topWrapper.scrollLeft; });
-      bottomWrapper.addEventListener('scroll', () => { topWrapper.scrollLeft = bottomWrapper.scrollLeft; });
-    }
-  }, 1000);
 });
 
