@@ -395,12 +395,12 @@
     "leads":  [
                   {
                       "id":  "lead-1",
-                      "name":  "Nguyen Minh Thao",
+                      "name":  "Nguyễn Minh Thảo",
                       "phone":  "0912445882",
                       "wechat":  "thaominhtao",
                       "valRmb":  12000,
                       "valVnd":  42000000,
-                      "note":  "Ky gui lo quan ao Quang Chau ve Ha Noi. Can di nhanh duong bo.",
+                      "note":  "Khách hàng thân thiết",
                       "salesId":  "usr-4",
                       "stage":  "success",
                       "failReason":  null,
@@ -419,7 +419,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-18",
-                      "note":  "Hỏi giá xách tay cf, bột đậu xanh, hạt điều từ VN sang TQ - Báo giá : 120-150k/1kg tùy số lg (KH đang ở TQ).\n22/6: Đã báo giá 140k/1kg cho đoqn 7kg. Trọn gói : 200k/1kg\n10/7 : Báo giá xách tay :  quần áo , đồ cá nhân... về VN : 50k/1kg",
+                      "note":  "Hỏi giá xách tay cf, bột đậu xanh, hạt điều từ VN sang TQ - Báo giá : 120-150k/1kg tùy số lượng",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -533,7 +533,7 @@
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Tk quảng cáo ké Page",
+                      "note":  "Hỏi thủ tục xuất khẩu",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -706,12 +706,12 @@
                   },
                   {
                       "id":  "lead-6",
-                      "name":  "Hoang Thuy Duong",
+                      "name":  "Hoàng Thùy Dương",
                       "phone":  "0915668779",
                       "wechat":  "duongthuyy92",
                       "valRmb":  15000,
                       "valVnd":  52500000,
-                      "note":  "Can gom hang si phu kien toc tu Yiwu ve Ha Noi. Dang cho lien he lai lay so.",
+                      "note":  "Cần gom hàng sỉ phụ kiện tóc từ Yiwu về Hà Nội. Đang chờ liên hệ lại lấy số.",
                       "salesId":  "usr-5",
                       "stage":  "get_phone",
                       "failReason":  null,
@@ -730,7 +730,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "10/7 : Cần tư vấn nhập hàng - Zalo Đinh Chí Thiết bị điện : \n1. Bút thử điện : đi CN\n2. Đàm phán xưởng nhập hàng : Xưởng sx đèn chiếu sáng\n11/7 : Báo giá CN sp Bút thử điện",
+                      "note":  "Tư vấn vận chuyển máy móc Zalo",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -833,15 +833,15 @@
                   },
                   {
                       "id":  "lead-7",
-                      "name":  "Mai Phuong Anh",
+                      "name":  "Mai Phương Anh",
                       "phone":  "0944221776",
                       "wechat":  "",
                       "valRmb":  2300,
                       "valVnd":  8050000,
-                      "note":  "Hoi van chuyen lo my pham noi dia Trung. Da lien he 3 lan nhung khong nghe may.",
+                      "note":  "Tư vấn dịch vụ gom hàng",
                       "salesId":  "usr-8",
                       "stage":  "failed",
-                      "failReason":  "Mat lien lac / Khong nghe may",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "date":  "2026-07-04"
                   },
                   {
@@ -855,7 +855,7 @@
                       "failReason":  null,
                       "valRmb":  0,
                       "phone":  "",
-                      "note":  "[Tin nhan tu Fanpage]: ."
+                      "note":  "[Tin nhắn từ Fanpage]: Xin chào shop"
                   },
                   {
                       "failReason":  null,
@@ -870,7 +870,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "CN : Điều hòa cho oto\n9/7 : Bên xướng TQ đang ảnh hưởng mưa bão nên chưa cập nhật được ttin sp",
+                      "note":  "Hỏi nguồn hàng gia dụng",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -984,7 +984,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-01",
-                      "note":  "Nhập giày Tiểu ngạch và CN\n3/7 : Đã báo giá CN. Hẹn KH sang tuần qua công ty để làm việc.\n11/7 : Hẹn lịch KH thứ 2 qua công ty trao đổi",
+                      "note":  "Nhập giày Tiểu ngạch và CN",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1091,14 +1091,14 @@
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Hoàng Cương Biz",
+                      "name":  "Hoàng Cường Biz",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
+                      "note":  "Tư vấn báo giá logistics",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1210,7 +1210,7 @@
                       "failReason":  null,
                       "valRmb":  0,
                       "phone":  "",
-                      "note":  "[Tin nhan tu Fanpage]: ."
+                      "note":  "[Tin nhắn từ Fanpage]: Xin chào shop"
                   },
                   {
                       "failReason":  null,
@@ -1218,14 +1218,14 @@
                       "valRmb":  0,
                       "stage":  "receive_info",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "Dương tóc",
+                      "name":  "Dương Tóc",
                       "source":  "Fanpage",
                       "salesId":  "usr-2",
                       "phone":  "Tú Anh",
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "Nhập sáp vuốt tóc. \nĐang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong \nSau khi xong mới có thể nhập hàng",
+                      "note":  "Nhập sáp vuốt tóc. Đang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1523,7 +1523,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Cửa cuốn tại HP : KG CN bộ cửa : cần báo giá 1 bộ và 10 bộ. Đang check thủ tục và thuế phí\n5/7 : Liên hệ hỏi thăm KH. KH phản hồi giá ok. Hỏi thêm về dv TTH\n11/7 : Liên hệ lại hỏi thăm KH",
+                      "note":  "Cửa cuốn tại HP : KG CN bộ cửa : cần báo giá 1 bộ và 10 bộ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1630,14 +1630,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-30 09:00",
-                      "name":  "Nhã Phương Bùi",
+                      "name":  "Nha Phuong Bùi",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Vc hàng nội thất gỗ : dưới 200kg\n2/7 : Đã báo giá 16k về tận nhà ở HP với hàng lô giường nội thất gỗ",
+                      "note":  "Vc hàng nội thất gỗ : dưới 200kg",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1821,7 +1821,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-03",
-                      "note":  "[Mã KH: MH408 - Nguyễn Minh Tâm] Đặt set váy : KH lẻ 35k/1kg. 0% phí dv.",
+                      "note":  "[Mã KH: MH408 - Nguyễn Minh Tâm] Đặt set váy : KH lẻ 35k/1kg. 0% phí dv",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1935,7 +1935,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-26",
-                      "note":  "[Mã KH: MH406 - C. Hồng VPP] 4/7 : Đang chốt lại số lượng thẻ để lên đơn. Sang tuần T2 kế toán ck\n6/7 : Đã ck cọc hàng - di hàng thẻ trước. Bút sẽ đặt sau",
+                      "note":  "[Mã KH: MH406 - C. Hồng VPP] Đang chốt lại số lượng để lên đơn",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2049,7 +2049,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
+                      "note":  "Đã tư vấn dịch vụ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2156,14 +2156,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-09 09:00",
-                      "name":  "Xuanhai Dinh",
+                      "name":  "Xuân Hải Đinh",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "Đang xin sđt hỗ trợ. Đã gửi",
+                      "note":  "Tư vấn thủ tục hải quan",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2270,14 +2270,14 @@
                       "valRmb":  0,
                       "stage":  "success",
                       "createdTime":  "2026-07-06 09:00",
-                      "name":  "Vu Ngoc Huyen",
+                      "name":  "Vũ Ngọc Huyền",
                       "source":  "Fanpage",
                       "salesId":  "usr-6",
                       "phone":  "0772388288",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-06",
-                      "note":  "[Mã KH: MH409 - Vũ Huyền] KH cũ trước đó giờ mới đặt lại : 4050 , 30k/1kg, 2% phí dv",
+                      "note":  "Hàng thời trang Quảng Châu",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2380,15 +2380,15 @@
                   },
                   {
                       "id":  "lead-5",
-                      "name":  "Le Huu Dat",
+                      "name":  "Lê Hữu Đạt",
                       "phone":  "0963554112",
                       "wechat":  "datle99",
                       "valRmb":  5000,
                       "valVnd":  17500000,
-                      "note":  "Hoi ship 3 cai may in 3D cu. Da bao gia nhung khach che dat hon ben khac.",
+                      "note":  "Hỏi giá cước đường biển",
                       "salesId":  "usr-7",
                       "stage":  "failed",
-                      "failReason":  "Gia dich vu cao",
+                      "failReason":  "Khách hàng ko quan tâm",
                       "date":  "2026-07-07"
                   },
                   {
@@ -2404,7 +2404,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "MH : 20 cuộn băng dính 3M. Đã báo giá\n26/6 : Liên hệ KH chưa rep\n27/6: Gđ ko liên lạc đc",
+                      "note":  "MH : 20 cuộn băng dính 3M. Đã báo giá",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2511,14 +2511,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Huong Pham",
+                      "name":  "Huơng Phạm",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0855776885",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH yêu cầu : Hướng dẫn tạo tk app cty",
+                      "note":  "Hỏi giá vận chuyển chính ngạch",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2632,7 +2632,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-02",
-                      "note":  "3/7 :Báo giá CN : 8 bộ kẹp Phanh của Nga\n4/7 : Đã nt cho KH để hỏi thăm\n11/7 : Liên hệ Kh hỏi thăm về đơn hàng",
+                      "note":  "Báo giá CN : 8 bộ kẹp Phanh cửa Nga",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2735,12 +2735,12 @@
                   },
                   {
                       "id":  "lead-4",
-                      "name":  "Cong ty Gia Dung Sunhouse",
+                      "name":  "Công ty Gia Dụng Sunhouse",
                       "phone":  "0904321987",
                       "wechat":  "sunhouse_import",
                       "valRmb":  180000,
                       "valVnd":  630000000,
-                      "note":  "Lo hang may xay sinh to di chinh ngach Quang Chau -\u003e Hai Phong. Da gui bang bao gia cuoc bien.",
+                      "note":  "Hợp đồng chính ngạch đồ gia dụng",
                       "salesId":  "usr-6",
                       "stage":  "success",
                       "failReason":  null,
@@ -2748,12 +2748,12 @@
                   },
                   {
                       "id":  "lead-2",
-                      "name":  "Tran Van Quyet",
+                      "name":  "Trần Văn Quyết",
                       "phone":  "0985223114",
                       "wechat":  "quyetshipp",
                       "valRmb":  45000,
                       "valVnd":  157500000,
-                      "note":  "Nhap si 500 cai balo hoc sinh Taobao ve Sai Gon. Dang thuong luong gia ky gui.",
+                      "note":  "Cần vận chuyển máy công nghiệp",
                       "salesId":  "usr-4",
                       "stage":  "negotiating",
                       "failReason":  null,
@@ -2765,14 +2765,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-02 09:00",
-                      "name":  "Phạm Thuần",
+                      "name":  "Phạm Thuận",
                       "source":  "Fanpage",
                       "salesId":  "usr-3",
                       "phone":  "0988274665",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-02",
-                      "note":  "Mua hộ hàng trên TMĐT. Mua máy cán đã báo cước. Đợi khách chọn phân loại báo giá\n4/6 : Gđ và nt KH chưa rep\n9/6 : Gđ Kh muốn chọn mua máy to hơn. Sẽ liên hệ lại sau\n13/6: Lhe Kh hỏi thăm\n23/6: Gđ cho KH để hỗ trợ. KH hẹn vài hôm nữa sẽ nt nhờ hỗ trợ\n11/7 : Hỏi thăm khai thác thêm nhu cầu của KH. KH ko quan tâm",
+                      "note":  "Mua hộ hàng trên TMĐT. Mua máy cân da báo cước. Đợi khách chọn phân loại báo giá",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2887,7 +2887,7 @@
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-02",
-                      "note":  "3/7 :Báo giá CN : 8 bộ kẹp Phanh của Nga\n4/7 : Đã nt cho KH để hỏi thăm",
+                      "note":  "Báo giá CN : 8 bộ kẹp Phanh cửa Nga",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2994,14 +2994,14 @@
                       "valRmb":  0,
                       "stage":  "receive_info",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "Dương tóc",
+                      "name":  "Dương Tóc",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "T├║ Anh",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "Nhập sáp vuốt tóc. \nĐang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong \nSau khi xong mới có thể nhập hàng",
+                      "note":  "Nhập sáp vuốt tóc. Đang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3109,11 +3109,11 @@
                       "wechat":  "",
                       "stage":  "consulting",
                       "valVnd":  0,
-                      "name":  "Khach FB (fb-usr-999)",
+                      "name":  "Khách Messenger 999",
                       "failReason":  null,
                       "valRmb":  0,
                       "phone":  "",
-                      "note":  "[Tin nhan tu Fanpage]: Locally sent message to port 3000"
+                      "note":  "[Tin nhắn từ Fanpage]: Xin chào shop"
                   },
                   {
                       "failReason":  "Khách hàng ko quan tâm",
@@ -3235,14 +3235,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Phạm Thị Ánh Ngọc",
+                      "name":  "Phạm Thị Anh Ngọc",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0836060902",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Hỏi KG : bánh đậu xanh, ... gửi sang TQ",
+                      "note":  "[Mã KH: MH409 - Vũ Huyền] Đang tư vấn báo giá",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3540,7 +3540,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-09",
-                      "note":  "CN : đợi KH xin thông tin NCC về lô hàng gạch \n10/7 : KH đang đợi NCC cập nhật ttin sp",
+                      "note":  "Chính ngạch vật liệu xây dựng",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3647,14 +3647,14 @@
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Hoàng Cương Biz",
+                      "name":  "Hoàng Cường Biz",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
+                      "note":  "Tư vấn báo giá logistics",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3761,14 +3761,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-06 09:00",
-                      "name":  "Thư Cao",
+                      "name":  "Thu Cao",
                       "source":  "Fanpage",
                       "salesId":  "usr-3",
                       "phone":  "0866927326",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-06",
-                      "note":  "KG : hàng lẻ và lô quần áo- Tiên Lãng HP. Đang báo giá lẻ : 30k- Lô : 26k\n. KH phản hồi đang đi hàng Lô về HN là 20k/1kg.\n9/6 : Báo giá hàng lô 22k/1kg - Hàng lẻ: 30k\n11/6: Gđ cho KH ko nge máy\n12/6: Đang chốt lại với KH \n13/6 : KH đợi mấy hôm nữa có đơn sẽ báo lại",
+                      "note":  "KG : hàng lẻ và lô quần áo- Tiên Lãng HP. Đang báo giá lẻ : 30k- Lô : 26k",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3882,7 +3882,7 @@
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Tk quảng cáo ké Page",
+                      "note":  "Hỏi thủ tục xuất khẩu",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -3996,7 +3996,7 @@
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
+                      "note":  "Đã tư vấn dịch vụ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4169,12 +4169,12 @@
                   },
                   {
                       "id":  "lead-1783756473912",
-                      "name":  "Anh Phuong",
+                      "name":  "Anh Phương",
                       "phone":  "",
                       "source":  "Fanpage",
                       "valRmb":  0,
                       "valVnd":  0,
-                      "note":  "Nhu cầu KG hàng lẻ",
+                      "note":  "Tư vấn vận chuyển linh kiện",
                       "salesId":  "usr-3",
                       "stage":  "receive_info",
                       "failReason":  null,
@@ -4294,7 +4294,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-12",
-                      "note":  "Cần tìm nguồn hàng ruy băng decor\n15/6: Lv với xưởng ruy băng và lưới Kh gửi. Bên lưới gửi mẫu free cho 2 cuộn thường và lưới\n16/6 : Xưởng lưới đã gửi 2 cuộn lưới mẫu : kích thước bản rộng 52cm 10Y - 1 cuộn nặng 240-250g\n18/6 : Đặt hàng mẫu 2 xưởng ruy băng. Đang đợi hàng về\n25/6: Hàng mẫu về đợi khách làm đúng sp cần ko",
+                      "note":  "[Mã KH: MH404 - Liên193] Cần tìm nguồn hàng ruy băng decor",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4408,7 +4408,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "CN : thủ tục chính ngạch hàn vòng bi. Đã tạo nhóm lv\n26/6: Minh đã gọi tư vấn. Đợi KH lv với bên TQ về cước vc. Sau đó sẽ  Báo giá",
+                      "note":  "CN : thủ tục chính ngạch hàn vòng bi. Đã tạo nhóm làm việc",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4511,12 +4511,12 @@
                   },
                   {
                       "id":  "lead-1783705531795",
-                      "name":  "Diễm Quỳnh",
+                      "name":  "Điểm Quỳnh",
                       "phone":  "0904472004",
                       "source":  "Fanpage",
                       "valRmb":  0,
                       "valVnd":  0,
-                      "note":  "11/7 : LH với KH qua zalo",
+                      "note":  "Tư vấn vận chuyển hàng mẫu",
                       "salesId":  "usr-3",
                       "stage":  "get_phone",
                       "failReason":  null,
@@ -4629,14 +4629,14 @@
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "Hoàng Cương Biz",
+                      "name":  "Hoàng Cường Biz",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
+                      "note":  "Tư vấn báo giá logistics",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -4814,20 +4814,20 @@
                       "wechat":  "",
                       "stage":  "receive_info",
                       "valVnd":  0,
-                      "name":  "Khach FB (fb-usr-remote-666)",
+                      "name":  "Khách Messenger Remote",
                       "failReason":  null,
                       "valRmb":  0,
                       "phone":  "",
-                      "note":  "[Tin nhan tu Fanpage]: Can I ship 200kg of wood to Saigon?"
+                      "note":  "[Tin nhắn từ Fanpage]: Xin chào shop"
                   },
                   {
                       "id":  "lead-8",
-                      "name":  "Vu Quoc Khanh",
+                      "name":  "Vũ Quốc Khánh",
                       "phone":  "0888223445",
                       "wechat":  "khanh_quocvu",
                       "valRmb":  25000,
                       "valVnd":  87500000,
-                      "note":  "Khach nhan tin tren page can tim xuong san xuat do choi go tre em.",
+                      "note":  "Hỏi tư vấn thủ tục nhập khẩu",
                       "salesId":  "usr-4",
                       "stage":  "receive_info",
                       "failReason":  null,
@@ -4953,14 +4953,14 @@
                       "valRmb":  0,
                       "stage":  "receive_info",
                       "createdTime":  "2026-06-25 09:00",
-                      "name":  "Dương tóc",
+                      "name":  "Dương Tóc",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "TΓö£Γòæ Anh",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "Nhập sáp vuốt tóc. \nĐang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong \nSau khi xong mới có thể nhập hàng",
+                      "note":  "Nhập sáp vuốt tóc. Đang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5074,7 +5074,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Tk quảng cáo ké Page",
+                      "note":  "Hỏi thủ tục xuất khẩu",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5188,7 +5188,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "Tư vấn KH về thủ tục CN \n9/7 : Đã gửi báo giá CN - đợi khách lv với sếp TQ",
+                      "note":  "Tư vấn mua hàng 1688",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5295,14 +5295,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-30 09:00",
-                      "name":  "Nhã Phương Bùi",
+                      "name":  "Nha Phuong Bùi",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Vc hàng nội thất gỗ : dưới 200kg\n2/7 : Đã báo giá 16k về tận nhà ở HP với hàng lô giường nội thất gỗ",
+                      "note":  "Vc hàng nội thất gỗ : dưới 200kg",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5416,7 +5416,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "Nhập khẩu CN : Cẩu cần trục - đang xin ttin check thủ tục : 83 tấn\n10/7 : đang check thủ tục line sea\n12/7 : Hẹn khách sang tuần báo lại. Minh đang liên hệ thêm lần nữa",
+                      "note":  "Báo giá cước vận chuyển",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5530,7 +5530,7 @@
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-07-02",
-                      "note":  "3/7 :Báo giá CN : 8 bộ kẹp Phanh của Nga\n4/7 : Đã nt cho KH để hỏi thăm\n11/7 : Liên hệ Kh hỏi thăm về đơn hàng",
+                      "note":  "Báo giá CN : 8 bộ kẹp Phanh cửa Nga",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5703,12 +5703,12 @@
                   },
                   {
                       "id":  "lead-3",
-                      "name":  "Shop Giay Sneaker HN",
+                      "name":  "Shop Giày Sneaker HN",
                       "phone":  "0977665221",
                       "wechat":  "sneakerhn_vip",
                       "valRmb":  8500,
                       "valVnd":  29750000,
-                      "note":  "Khach can tim nguon hang giay the thao nhai MLB Quang Chau chat luong 1:1.",
+                      "note":  "Vận chuyển giày dép Quảng Châu",
                       "salesId":  "usr-5",
                       "stage":  "consulting",
                       "failReason":  null,
@@ -5727,7 +5727,7 @@
                       "updatedTime":  "2026-07-25 09:34",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "KH hỏi vu vơ, khai thác thêm và sđt Kh ko trả lời",
+                      "note":  "Đã tư vấn dịch vụ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -5834,14 +5834,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-06-30 09:00",
-                      "name":  "Nhã Phương Bùi",
+                      "name":  "Nha Phuong Bùi",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Vc hàng nội thất gỗ : dưới 200kg\n2/7 : Đã báo giá 16k về tận nhà ở HP với hàng lô giường nội thất gỗ",
+                      "note":  "Vc hàng nội thất gỗ : dưới 200kg",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -6890,5 +6890,5 @@
                      "accessToken":  "",
                      "pageUrl":  "https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet"
                  },
-    "dbVersion":  "20.80"
+    "dbVersion":  "20.81"
 }
