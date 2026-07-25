@@ -3768,7 +3768,7 @@ window.openProjectDedicatedView = function(projId) {
   if (btnEditDesc) btnEditDesc.style.display = '';
 
   const descEl = document.getElementById('dedicated-project-desc');
-  if (descEl) descEl.innerText = (p.desc || 'Không có mô tả chi tiết.') + (p.notes ? \nLưu ý: \ : '');
+  if (descEl) descEl.innerText = (p.desc || 'Không có mô tả chi tiết.') + (p.notes ? `\nLưu ý: ${p.notes}` : '');
 
   const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
   const totalTasks = projTasks.length;
@@ -3776,10 +3776,10 @@ window.openProjectDedicatedView = function(projId) {
   const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
   const percentEl = document.getElementById('dedicated-project-progress-percent');
-  if (percentEl) percentEl.innerText = \%;
+  if (percentEl) percentEl.innerText = `${percent}%`;
   
   const barEl = document.getElementById('dedicated-project-progress-bar');
-  if (barEl) barEl.style.width = \%;
+  if (barEl) barEl.style.width = `${percent}%`;
 
   if (typeof renderDedicatedProjectTasks === 'function') renderDedicatedProjectTasks(p);
   if (typeof renderDedicatedProjectDocs === 'function') renderDedicatedProjectDocs(p);
