@@ -27,7 +27,7 @@ function readJsonFile(filePath) {
     }
     return JSON.parse(raw);
   } catch (err) {
-    console.error(Error reading/parsing :, err);
+    console.error('Error reading/parsing:', err);
     return {};
   }
 }
@@ -58,14 +58,14 @@ async function loadState() {
 
         if (!dbState || dbState.dbVersion !== '20.78') {
           console.log('Force updating Postgres DB state with clean db.json v20.78...');
-          await client.query('INSERT INTO app_state (id, state_json) VALUES (1, ) ON CONFLICT (id) DO UPDATE SET state_json = ', [JSON.stringify(localState)]);
+          await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
         }
         await client.end();
         return dbState;
       } else {
-        await client.query('INSERT INTO app_state (id, state_json) VALUES (1, )', [JSON.stringify(localState)]);
+        await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1)', [JSON.stringify(localState)]);
         await client.end();
         return localState;
       }
@@ -88,7 +88,7 @@ async function saveState(newState) {
     try {
       await client.connect();
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
-      await client.query('INSERT INTO app_state (id, state_json) VALUES (1, ) ON CONFLICT (id) DO UPDATE SET state_json = ', [JSON.stringify(newState)]);
+      await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(newState)]);
       await client.end();
     } catch (err) {
       console.error('Error saving state to Postgres:', err);
@@ -163,6 +163,5 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(Server listening on port );
+  console.log(`Server listening on port ${PORT}`);
 });
-// Force node container restart 20.78
