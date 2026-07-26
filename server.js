@@ -8199,7 +8199,7 @@ const EMBEDDED_DEFAULT_STATE = {
                      "accessToken":  "",
                      "pageUrl":  "https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet"
                  },
-    "dbVersion": "21.22"
+    "dbVersion": "21.23"
 }
 ;
 
@@ -8290,16 +8290,33 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
+  state.dbVersion = '21.23';
 
   if (Array.isArray(state.users)) {
+    const authenticNames = {
+      'usr-1': 'Nguyễn Hoàng Minh',
+      'usr-2': 'Trần Tú Anh',
+      'usr-3': 'Phượng Thị Minh Phương',
+      'usr-4': 'Đoàn Thị Hải Linh',
+      'usr-5': 'Đặng Thị Phương Thảo',
+      'usr-6': 'Lê Thị Thùy Trang',
+      'usr-7': 'Bùi Thị Bích Phượng',
+      'usr-8': 'Nguyễn Phương Anh',
+      'usr-9': 'Phạm Duy Hưng',
+      'usr-10': 'Đặng Khánh Linh',
+      'usr-11': 'Ngô Gia Bảo',
+      'usr-12': 'Phùng Tiến Dũng',
+      'usr-13': 'Trịnh Hoài Nam',
+      'usr-14': 'Lý Hải Nam',
+      'usr-15': 'Vương Hồng Quân',
+      'usr-16': 'Nguyễn Văn Hùng',
+      'usr-17': 'Lê Văn Nam'
+    };
+
     state.users.forEach(u => {
-      if (u.username === 'hoangminh' || u.id === 'usr-1') u.name = 'Nguyễn Hoàng Minh';
-      if (u.username === 'tuanh' || u.id === 'usr-2') u.name = 'Trần Tú Anh';
-      if (u.username === 'minhphuong' || u.id === 'usr-3') u.name = 'Phượng Thị Minh Phương';
-      if (u.username === 'hailinh' || u.id === 'usr-4') u.name = 'Đoàn Thị Hải Linh';
-      if (u.username === 'sales1' || u.id === 'usr-5') u.name = 'Sales 1';
-      if (u.username === 'trang' || u.id === 'usr-6') u.name = 'Trang (CSKH)';
-      if (u.username === 'phuong' || u.id === 'usr-7') u.name = 'Phượng (CSKH)';
+      if (authenticNames[u.id]) {
+        u.name = authenticNames[u.id];
+      }
     });
   }
 
@@ -8317,7 +8334,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.22';
+  localState.dbVersion = '21.23';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -8339,8 +8356,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '21.22' || !Array.isArray(dbState.leads) || dbState.leads.length === 0 || !Array.isArray(dbState.users) || dbState.users.length < 15) {
-          console.log('Force updating Postgres DB state with clean db.json v21.22...');
+        if (!dbState || dbState.dbVersion !== '21.23' || !Array.isArray(dbState.leads) || dbState.leads.length === 0 || !Array.isArray(dbState.users) || dbState.users.length < 15) {
+          console.log('Force updating Postgres DB state with clean db.json v21.23...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return sanitizeServerState(localState);
@@ -8366,7 +8383,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.22';
+  newState.dbVersion = '21.23';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,

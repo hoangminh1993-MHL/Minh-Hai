@@ -1,5 +1,9 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.23] - 2026-07-27
+### Sửa lỗi (Fixed)
+- Ép buộc phản hồi phiên bản máy chủ sanitizeServerState trả về v21.23 và đồng bộ 100% 17 nhân sự thực tế, xóa bỏ dứt điểm các tên nhân sự giả cũ (Sales 1, Trang CSKH) và ngăn đệm phiên bản cũ 21.15.
+
 ## [v21.22] - 2026-07-27
 ### Thêm mới (Added)
 - Tự động nạp bộ tiêu đề Anti-Cache (HTTP Headers 
