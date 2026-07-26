@@ -128,7 +128,28 @@ function cleanVietnameseText(text) {
        .replace(/ß╗a/g, 'ẩ').replace(/ß╗å/g, 'ổ').replace(/ß╗à/g, 'ề').replace(/ß╗ï/g, 'ị')
        .replace(/ß╗ì/g, 'ỉ').replace(/ß╗Å/g, 'ỏ').replace(/ß╗ü/g, 'ụ').replace(/ß╗ñ/g, 'ủ')
        .replace(/ß╗ª/g, 'ữ').replace(/ß╗¿/g, 'ừ').replace(/ß╗«/g, 'ứ').replace(/ß╗░/g, 'ử').replace(/ß╗▓/g, 'ữ')
-       .replace(/ß║ím/g, 'ạ').replace(/ß║í/g, 'ạ');
+       .replace(/ß║ím/g, 'ạ').replace(/ß║í/g, 'ạ')
+       .replace(/\u0393\u00F6\u00A3\u00E1/g, 'á')
+       .replace(/\u0393\u00F6\u00A3\u00ED/g, 'áo')
+       .replace(/\u0393\u00F6\u00A3\u252C\u00BC/g, 'ên')
+       .replace(/\u0393\u00F6\u00A3\u0393\u00F6\u00F1/g, 'ông')
+       .replace(/\u0393\u00F6\u00A3ng/g, 'ông')
+       .replace(/\u0393\u00F6\u00C7\u00EA/g, 'đ')
+       .replace(/\u251C\u0192\u0393\u00F2\u00E6\u252C\u2551/g, 'ần')
+       .replace(/\u251C\u0192\u0393\u00F2\u00E6\u0393\u00F6\u00C9/g, 'ế')
+       .replace(/\u251C\u0192\u0393\u00F2\u00E6\u00ED/g, 'ại')
+       .replace(/\u251C\u0192\u0393\u00F2\u00E6i/g, 'ại')
+       .replace(/\u251C\u0192\u0393\u00F2\u00E6\u252C\u00ED/g, 'ận')
+       .replace(/\u0393\u00F2\u20A7\u0393\u00FB\u00E6\u0393\u00F2\20A7\u00ED/g, 'ương')
+       .replace(/\u0393\u00F2\20A7\u0393\u00FB\u00E6ng/g, 'ương')
+       .replace(/\u0393\u00F2\20A7\u0393\u00FB\u00E6\u251C\u0192\u0393\u00F2\u00F9\u00FA/g, 'ượng')
+       .replace(/\u251C\u0192\u0393\u00F2\u00F9\u252C\u00F3i/g, 'ới')
+       .replace(/\u251C\u0192\u0393\u00F2\u00F9\u00FA/g, 'ệu')
+       .replace(/\u251C\u0192\u0393\u00F2\u00F9\u251C\u255D/g, 'ều')
+       .replace(/\u251C\u0192\u0393\u00F2\u00F9u/g, 'ều')
+       .replace(/\u251C\u0192\u0393\u00F2\u00F9\u252C\u00F3ng/g, 'ởng')
+       .replace(/\u251C\u0192\u0393\u00F2\u00E6\u00FAnh/g, 'ảnh')
+       .replace(/\u251C\u0192\u0393\u00F2\u00F9\u255E\u00C6ng/g, 'ưởng');
   return s;
 }
 
