@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.03';
+  const CURRENT_APP_VER = 'v21.04';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -491,7 +491,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.03';
+const CLIENT_VERSION = '21.04';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -895,11 +895,12 @@ function initRoleSwitcher() {
 
 function getCurrentUser() {
   const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
-  const defaultUser = (AppState.users && AppState.users[0]) || INITIAL_USERS[0];
   if (!AppState.users || AppState.users.length === 0) {
     AppState.users = [...INITIAL_USERS];
   }
-  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || AppState.users[0] || defaultUser;
+  const adminUser = AppState.users.find(u => u.id === 'usr-1' || u.role === 'admin');
+  const defaultUser = adminUser || AppState.users[0] || INITIAL_USERS[0];
+  return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || defaultUser;
 }
 
 window.getUserAvatarInnerHtml = function(avatar) {
