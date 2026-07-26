@@ -55,7 +55,26 @@ function sanitizeVietnameseString(str) {
     .replace(/Ho├óng C╞░╞íng Biz/gi, 'Hoàng Cường Biz')
     .replace(/V┼⌐ Ngß╗ìc Huyß╗ün/gi, 'Vũ Ngọc Huyền')
     .replace(/Trß║ºn Hiß║┐u/gi, 'Trần Hiếu')
-    .replace(/H╞░╞íng V┼⌐/gi, 'Hương Vũ');
+    .replace(/H╞░╞íng V┼⌐/gi, 'Hương Vũ')
+    .replace(/Cß║ºn t├¼m nguß╗ôn[\s\S]*?ko/gi, '[Mã KH: MH404 - Liên193] Cần tìm nguồn hàng ruy băng decor \n15/6 : Làm việc với xưởng ruy băng và lưới Kh gửi. Bên lưới gửi mẫu free cho 2 cuộn thường và lưới \n16/6 : Xưởng lưới đã gửi 2 cuộn lưới mẫu : kích thước bản rộng 52cm 10Y - 1 cuộn nặng 240-250g \n18/6 : Đặt hàng mẫu 2 xưởng ruy băng. Đang đợi hàng về \n25/6 : Hàng mẫu về đợi khách làm dòng sp cần ko')
+    .replace(/Nh├ƒΓò[\s\S]*?hΓö£ng/gi, 'Nhập sáp vuốt tóc.\nĐang làm thủ tục công bố ở VN : dự kiến 1,5 tháng nữa mới xong\nSau khi xong mới có thể nhập hàng')
+    .replace(/CN : \u0110i[\s\S]*?ttin sp/gi, 'CN : Điều hòa cho oto\n9/7 : Bên xưởng TQ đang ảnh hưởng mưa bão nên chưa cập nhật được ttin sp')
+    .replace(/\[M├\u00C2 KH: MH406[\s\S]*?đặt sau/gi, '[Mã KH: MH406 - C. Hồng VPP] 4/7 : Đang chốt lại số lượng thẻ để lên đơn. Sang tuần T2 kế toán ck\n6/7 : Đã ck cọc hàng - đi hàng thẻ trước. Bút sẽ đặt sau')
+    .replace(/10\/7 : Cß║ºn t╞░[\s\S]*?B├║t thß╗¡ ─iß╗n/gi, '10/7 : Cần tư vấn nhập hàng - Zalo Đinh Chí Thiết bị điện : \n1. Bút thử điện : đi CN\n2. Đàm phán xưởng nhập hàng : Xưởng sx đèn chiếu sáng\n11/7 : Báo giá CN sp Bút thử điện')
+    .replace(/CN : ─Éß╗i KH[\s\S]*?ttin sp/gi, 'CN : Đợi KH xin thông tin NCC về lô hàng gạch \n10/7 : KH đang đợi NCC cập nhật ttin sp')
+    .replace(/MH : 20 cuß╗Ön[\s\S]*?dc/gi, 'MH : 20 cuộn băng dính 3M. Đã báo giá\n26/6 : Liên hệ KH chưa rep\n27/6: Gđ ko liên lạc được')
+    .replace(/Hß╗Åi KG : b[\s\S]*?TQ/gi, 'Hỏi KG : bình dầu xanh, ... gửi sang TQ')
+    .replace(/KH y├¬u cß║ºu[\s\S]*?cty/gi, 'KH yêu cầu : Hướng dẫn tạo tk app cty')
+    .replace(/Dang xin sdt[\s\S]*?gß╗¡i/gi, 'Đang xin sđt hỗ trợ. Đã gửi')
+    .replace(/\[M├\u00C2 KH: MH409[\s\S]*?ph├¡ dv/gi, '[Mã KH: MH409 - Vũ Huyền] KH cũ trước đó giờ mới đặt lại : 4050 , 30k/1kg, 2% phí dv')
+    .replace(/\[M├\u00C2 KH: MH408[\s\S]*?ph├¡ dv\./gi, '[Mã KH: MH408 - Nguyễn Minh Tâm] Đặt set váy : KH lẻ 35k/1kg. 0% phí dv.')
+    .replace(/Nhß║⌐n giß║íy Tiß║æu[\s\S]*?trao dß╗òi/gi, 'Nhận giấy Tiểu ngạch và CN\n3/7 : Đã báo giá CN. Hẹn KH sang tuần qua công ty để làm việc.\n11/7 : Hẹn lịch KH thứ 2 qua công ty trao đổi')
+    .replace(/Mua hß╗Ö h[\s\S]*?quan t├óm/gi, 'Mua hộ hàng trên TMĐT. Mua máy cân da báo cước. Đợi khách chọn phân loại báo giá\n4/6 : Gđ và nt KH chưa rep\n9/6 : Gđ Kh muốn chọn mua máy to hơn. Sẽ liên hệ lại sau\n13/6: Lhe Kh hỏi thăm\n23/6: Gđ cho KH để hỗ trợ. KH hẹn vài hôm nữa sẽ nt nhờ hỗ trợ\n11/7 : Hỏi thăm khai thác thêm nhu cầu của KH. KH ko quan tâm')
+    .replace(/KG : h[\s\S]*?b[\s\S]*?o l[\s\S]*?i/gi, 'KG : hàng lẻ và lô quần áo- Tiên Lãng HP. Đang báo giá lẻ : 30k- Lô : 26k.\n. KH phản hồi đang đi hàng Lô về HN là 20k/1kg.\n9/6 : Báo giá hàng lô 22k/1kg - Hàng lẻ: 30k\n11/6: Gđ cho KH ko nghe máy\n12/6: Đang chốt lại với KH\n13/6 : KH đợi mấy hôm nữa có đơn sẽ báo lại')
+    .replace(/Nhß║¡p khß║⌐u CN : Cß║⌐u[\s\S]*?nß╗»a/gi, 'Nhập khẩu CN : Cẩu cần trục - đang xin ttin check thủ tục : 83 tấn\n10/7 : đang check thủ tục line sea\n12/7 : Hẹn khách sang tuần báo lại. Minh đang liên hệ thêm lần nữa')
+    .replace(/Cß╗¡a cu[\s\S]*?hß╗Åi th─âm KH/gi, 'Cửa cuốn tại HP : KG CN bộ cửa : cần báo giá 1 bộ và 10 bộ. Đang check thủ tục và thuế phí\n5/7 : Liên hệ hỏi thăm KH. KH phản hồi giá ok. Hỏi thêm về dv TTH\n11/7 : Liên hệ lại hỏi thăm KH')
+    .replace(/3\/7 :B[\s\S]*?o gi[\s\S]*? CN : 8 bß╗Ö[\s\S]*?d[\s\S]*?n h[\s\S]*?ng/gi, '3/7 : Báo giá CN : 8 bộ kẹp Phanh của Nga\n4/7 : Đã nt cho KH để hỏi thăm\n11/7 : Liên hệ Kh hỏi thăm về đơn hàng')
+    .replace(/Hß╗Åi b[\s\S]*?ng qu[\s\S]*?i/gi, 'Hỏi bóng quái');
 }
 
 // Helper to clean any residual Mojibake in server state
@@ -86,7 +105,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.99';
+  localState.dbVersion = '21.00';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -108,8 +127,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.99') {
-          console.log('Force updating Postgres DB state with clean db.json v20.99...');
+        if (!dbState || dbState.dbVersion !== '21.00') {
+          console.log('Force updating Postgres DB state with clean db.json v21.00...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return sanitizeServerState(localState);
@@ -131,7 +150,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.99';
+  newState.dbVersion = '21.00';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
