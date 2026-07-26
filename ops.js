@@ -3781,50 +3781,64 @@ window.openProjectDedicatedView = function(projId) {
   const barEl = document.getElementById('dedicated-project-progress-bar');
   if (barEl) barEl.style.width = `${percent}%`;
 
-  if (typeof renderDedicatedProjectTasks === 'function') renderDedicatedProjectTasks(p);
-  if (typeof renderDedicatedProjectDocs === 'function') renderDedicatedProjectDocs(p);
-  if (typeof renderDedicatedProjectDiscussion === 'function') renderDedicatedProjectDiscussion(p);
-      const statusColors = { 
-        todo: 'bg-blue',
-        pending: 'bg-gray', 
-        doing: 'bg-orange', 
-        waiting: 'bg-purple',
-        checking: 'bg-purple', 
-        completed: 'bg-emerald', 
-        overdue: 'bg-rose',
-        canceled: 'bg-gray' 
-      };
-      
-      const isCompleted = task.status === 'completed';
-      const completeButton = isCompleted ? '' : `
-        <button class="btn btn-xs btn-primary" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; background: #059669; cursor: pointer; color: white;">
-          <i class="fa-solid fa-check"></i> Xong
-        </button>
-      `;
+  const tasksContainer = document.getElementById('dedicated-project-tasks-list');
+  if (tasksContainer) {
+    tasksContainer.innerHTML = '';
+    const statusColors = { 
+      todo: 'bg-blue',
+      pending: 'bg-gray', 
+      doing: 'bg-orange', 
+      waiting: 'bg-purple',
+      checking: 'bg-purple', 
+      completed: 'bg-emerald', 
+      overdue: 'bg-rose',
+      canceled: 'bg-gray' 
+    };
+    const statusLabels = {
+      todo: 'Chưa làm',
+      pending: 'Chờ duyệt',
+      doing: 'Đang làm',
+      waiting: 'Đang chờ',
+      checking: 'Đang kiểm tra',
+      completed: 'Đã hoàn thành',
+      overdue: 'Quá hạn',
+      canceled: 'Đã hủy'
+    };
+    if (projTasks.length === 0) {
+      tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">Chưa có công việc nào trong dự án này.</span>`;
+    } else {
+      projTasks.forEach(task => {
+        const div = document.createElement('div');
+        div.className = 'project-task-card';
+        const isCompleted = task.status === 'completed';
+        const completeButton = isCompleted ? '' : `
+          <button class="btn btn-xs btn-primary" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; background: #059669; cursor: pointer; color: white;">
+            <i class="fa-solid fa-check"></i> Xong
+          </button>
+        `;
 
-      const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
-      const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
+        const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
+        const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
 
-      div.innerHTML = `
-        <div>
-          <strong>${task.title}</strong>
-          <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
-          <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
-        </div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          ${completeButton}
-          <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
-          <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
-        </div>
-      `;
-      div.onclick = (e) => {
-        // Prevent event bubbling so it doesn't try to open the task details while modal switching
-        e.stopPropagation();
-        if (typeof navigateToView === 'function') { navigateToView('tasks-projects'); } else { document.getElementById('view-project-dedicated').style.display = 'none'; }
-        if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
-      };
-      tasksContainer.appendChild(div);
-    });
+        div.innerHTML = `
+          <div>
+            <strong>${task.title}</strong>
+            <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
+            <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            ${completeButton}
+            <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
+            <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
+          </div>
+        `;
+        div.onclick = (e) => {
+          e.stopPropagation();
+          if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
+        };
+        tasksContainer.appendChild(div);
+      });
+    }
   }
 
   // Render docs
