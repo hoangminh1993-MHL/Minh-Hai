@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.18';
+  const CURRENT_APP_VER = 'v21.19';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -591,7 +591,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.18';
+const CLIENT_VERSION = '21.19';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -2446,6 +2446,22 @@ function openSecretGiftBox() {
 }
 
 // ==================== TOAST & NOTIFICATION SYSTEM ==================== //
+function openModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'flex';
+    modal.classList.add('active');
+  }
+}
+
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+  }
+}
+
 function initNotificationSystem() {
   const bell = document.getElementById('notification-bell');
   const dropdown = document.getElementById('notification-dropdown');

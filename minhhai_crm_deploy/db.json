@@ -440,7 +440,7 @@
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -453,7 +453,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -466,7 +466,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -492,7 +492,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -517,14 +517,14 @@
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-08 09:00",
-                      "name":  "H░ng V┼⌐",
+                      "name":  "H░ng V⌐",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0766266294",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "T vấtn KH v th tc CN \n9/7 : Đ gi b¡o gi¡ CN - ªi kh¡ch lv vói sp TQ",
+                      "note":  "T vấtn KH v th tc CN \n9/7 : Đ gi bo gi CN - i khch lv vói sp TQ",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -554,7 +554,7 @@
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-admin",
                                         "status":  "done",
                                         "checklist":  [
@@ -567,7 +567,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "done",
                                         "checklist":  [
@@ -580,7 +580,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-admin",
                                         "status":  "done",
                                         "checklist":  [
@@ -606,7 +606,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "doing",
                                         "checklist":  [
@@ -615,7 +615,7 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "T vấtn KH v th tc CN \n9/7 : Đ gi b¡o gi¡ CN - ªi kh¡ch lv vói sp TQ"
+                                        "note":  "T vấtn KH v th tc CN \n9/7 : Đ gi bo gi CN - i khch lv vói sp TQ"
                                     }
                                 ],
                       "files":  [
@@ -1006,7 +1006,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-25",
-                      "note":  "CN : th tc chnh ng¡ch hn vng bi. Đ t¡o nhém lv\n26/6: Minh ª g¼i t vấtn. Đi KH lv vói b¼n TQ v cóc vc. Sau ªé s  B¡o gi¡",
+                      "note":  "CN : th tc chnh ngch hn vng bi. Đ to nhém lv\n26/6: Minh  gi t vấtn. Đi KH lv vói bn TQ v cóc vc. Sau é s  Bo gi",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1032,11 +1032,11 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "CN : th tc chnh ng¡ch hn vng bi. Đ t¡o nhém lv\n26/6: Minh ª g¼i t vấtn. Đi KH lv vói b¼n TQ v cóc vc. Sau ªé s  B¡o gi¡"
+                                        "note":  "CN : th tc chnh ngch hn vng bi. Đ to nhém lv\n26/6: Minh  gi t vấtn. Đi KH lv vói bn TQ v cóc vc. Sau é s  Bo gi"
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -1049,7 +1049,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -1062,7 +1062,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -1088,7 +1088,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -1481,14 +1481,14 @@
                       "valRmb":  0,
                       "stage":  "failed",
                       "createdTime":  "2026-07-08 09:00",
-                      "name":  "Trºn Hiu",
+                      "name":  "Trn Hiu",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-08",
-                      "note":  "KH hÆ▓╣i vu v▓éº, khai th╢c th╢¼m v╢¡ s╢ç¬t Kh ko trÆ▓ª lÆ▓╣¼i",
+                      "note":  "KH hÆ▓i vu v▓é, khai thc thm v sçt Kh ko trÆ▓ lÆ▓i",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -1518,7 +1518,7 @@
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-admin",
                                         "status":  "done",
                                         "checklist":  [
@@ -1531,7 +1531,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "done",
                                         "checklist":  [
@@ -1544,7 +1544,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-admin",
                                         "status":  "done",
                                         "checklist":  [
@@ -1570,7 +1570,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "doing",
                                         "checklist":  [
@@ -1579,7 +1579,7 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "KH hài vu v¡, khai th¡c th¼m v sªt Kh ko tr lÑi"
+                                        "note":  "KH hài vu v, khai thc thm v st Kh ko tr lÑi"
                                     }
                                 ],
                       "files":  [
@@ -1976,14 +1976,14 @@
                       "valRmb":  0,
                       "stage":  "get_phone",
                       "createdTime":  "2026-07-05 09:00",
-                      "name":  "B¼nh Minh Trºn",
+                      "name":  "Bnh Minh Trn",
                       "source":  "Fanpage",
                       "salesId":  "usr-admin",
                       "phone":  "0329572532",
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-07-05",
-                      "note":  "Hài mua mn hnh m¡y tnh. KH check gi¡ ok. Đ b¡o gi¡. Đ gª t vấtn v trao ª▓i. KH tham kho sn phîm, cha cé nhu cu mua ngay. ĐãÆ kin mua l th¡ng 9 - mua ªó ch¡i Game",
+                      "note":  "Hài mua mn hnh my tnh. KH check gi ok. Đ bo gi. Đ g t vấtn v trao ▓i. KH tham kho sn phîm, cha cé nhu cu mua ngay. ĐãÆ kin mua l thng 9 - mua ó chi Game",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2009,11 +2009,11 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "Hài mua mn hnh m¡y tnh. KH check gi¡ ok. Đ b¡o gi¡. Đ gª t vấtn v trao ª▓i. KH tham kho sn phîm, cha cé nhu cu mua ngay. ĐãÆ kin mua l th¡ng 9 - mua ªó ch¡i Game"
+                                        "note":  "Hài mua mn hnh my tnh. KH check gi ok. Đ bo gi. Đ g t vấtn v trao ▓i. KH tham kho sn phîm, cha cé nhu cu mua ngay. ĐãÆ kin mua l thng 9 - mua ó chi Game"
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2026,7 +2026,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2039,7 +2039,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2065,7 +2065,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2097,7 +2097,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-18",
-                      "note":  "Hài gi¡ x¡ch tay cf, bt ªậnu xanh, h¡t ªiu t╜ VN sang TQ - B¡o gi¡ : 120-150k/1kg ty sª lg (KH ªang Æ TQ).\n22/6: Đ b¡o gi¡ 140k/1kg cho ªoqn 7kg. Tr¼n géi : 200k/1kg\n10/7 : B¡o gi¡ x¡ch tay :  qun ¡o , ª┤ c¡ nh│n... v VN : 50k/1kg",
+                      "note":  "Hài gi xch tay cf, bt ậnu xanh, ht iu t VN sang TQ - Bo gi : 120-150k/1kg ty s lg (KH ang Æ TQ).\n22/6: Đ bo gi 140k/1kg cho oqn 7kg. Trn géi : 200k/1kg\n10/7 : Bo gi xch tay :  qun o , ườ c nhn... v VN : 50k/1kg",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2123,11 +2123,11 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "Hài gi¡ x¡ch tay cf, bt ªậnu xanh, h¡t ªiu t╜ VN sang TQ - B¡o gi¡ : 120-150k/1kg ty sª lg (KH ªang Æ TQ).\n22/6: Đ b¡o gi¡ 140k/1kg cho ªoqn 7kg. Tr¼n géi : 200k/1kg\n10/7 : B¡o gi¡ x¡ch tay :  qun ¡o , ª┤ c¡ nh│n... v VN : 50k/1kg"
+                                        "note":  "Hài gi xch tay cf, bt ậnu xanh, ht iu t VN sang TQ - Bo gi : 120-150k/1kg ty s lg (KH ang Æ TQ).\n22/6: Đ bo gi 140k/1kg cho oqn 7kg. Trn géi : 200k/1kg\n10/7 : Bo gi xch tay :  qun o , ườ c nhn... v VN : 50k/1kg"
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2140,7 +2140,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2153,7 +2153,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2179,7 +2179,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-3",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2211,7 +2211,7 @@
                       "updatedTime":  "2026-07-25 15:35",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Ca cuªn t¡i HP : KG CN b ca : cn b¡o gi¡ 1 b v 10 b. Đang check th tc v thu ph\n5/7 : Li¼n hº hài thóm KH. KH phn h┤i gi¡ ok. Hài th¼m v dv TTH\n11/7 : Li¼n hº l¡i hài thóm KH",
+                      "note":  "Ca cun ti HP : KG CN b ca : cn bo gi 1 b v 10 b. Đang check th tc v thu ph\n5/7 : Lin h hài thóm KH. KH phn hười gi ok. Hài thm v dv TTH\n11/7 : Lin h li hài thóm KH",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2237,11 +2237,11 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "Ca cuªn t¡i HP : KG CN b ca : cn b¡o gi¡ 1 b v 10 b. Đang check th tc v thu ph\n5/7 : Li¼n hº hài thóm KH. KH phn h┤i gi¡ ok. Hài th¼m v dv TTH\n11/7 : Li¼n hº l¡i hài thóm KH"
+                                        "note":  "Ca cun ti HP : KG CN b ca : cn bo gi 1 b v 10 b. Đang check th tc v thu ph\n5/7 : Lin h hài thóm KH. KH phn hười gi ok. Hài thm v dv TTH\n11/7 : Lin h li hài thóm KH"
                                     },
                                     {
                                         "stepNum":  3,
-                                        "name":  "Khai th¡c thngng tin",
+                                        "name":  "Khai thc thngng tin",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2254,7 +2254,7 @@
                                     },
                                     {
                                         "stepNum":  4,
-                                        "name":  "B¡o gi¡",
+                                        "name":  "Bo gi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2267,7 +2267,7 @@
                                     },
                                     {
                                         "stepNum":  5,
-                                        "name":  "Th¡ng lng",
+                                        "name":  "Thng lng",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2293,7 +2293,7 @@
                                     },
                                     {
                                         "stepNum":  7,
-                                        "name":  "Thấtt b¡i",
+                                        "name":  "Thấtt bi",
                                         "assigneeId":  "usr-admin",
                                         "status":  "todo",
                                         "checklist":  [
@@ -2325,7 +2325,7 @@
                       "updatedTime":  "2026-07-11 00:37",
                       "valVnd":  0,
                       "date":  "2026-06-30",
-                      "note":  "Vc h╢¡ng nÆ▓╣╗i thÆ▓ªªt gÆ▓╣ : d▓éº╗ªÆ▓╣¼│i 200kg\n2/7 : ╢ç½╢ b╢o gi╢ 16k vÆ▓╣¥ tÆ▓ª¼¡n nh╢¡ Æ▓╣å HP vÆ▓╣¼│i h╢¡ng l╢╢▒ gi▓éº╗ªÆ▓╣¼ng nÆ▓╣╗i thÆ▓ªªt gÆ▓╣",
+                      "note":  "Vc hng nÆ▓ầi thÆ▓t gÆ▓ : d▓éầÆ▓i 200kg\n2/7 : çừ bo gi 16k vÆ▓ tÆ▓n nh Æ▓å HP vÆ▓i hng l▒ gi▓éầÆ▓ng nÆ▓ầi thÆ▓t gÆ▓",
                       "steps":  [
                                     {
                                         "stepNum":  1,
@@ -2334,12 +2334,12 @@
                                         "status":  "done",
                                         "checklist":  [
                                                           {
-                                                              "text":  "Xc ─╗ïnh nhu cºu c╗ºa khch",
+                                                              "text":  "Xc Đầïnh nhu cu cầa khch",
                                                               "done":  true,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "To ghi ch ban ─ºu v╗ hng h│a",
+                                                              "text":  "To ghi ch ban Đu vầ hng ha",
                                                               "done":  true,
                                                               "required":  false
                                                           }
@@ -2356,12 +2356,12 @@
                                         "status":  "doing",
                                         "checklist":  [
                                                           {
-                                                              "text":  "Xin s╗ ─i╗çn thoi/Zalo li¬n h╗ç",
+                                                              "text":  "Xin sầ Điầçn thoi/Zalo lin hầç",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "Xc nh¡n ph░ng th╗⌐c li¬n lc ch¡nh",
+                                                              "text":  "Xc nhn ph░ng thầ⌐c lin lc chnh",
                                                               "done":  false,
                                                               "required":  false
                                                           }
@@ -2369,7 +2369,7 @@
                                         "comments":  [
 
                                                      ],
-                                        "note":  "Vc hng n╗Öi thÑt g╗ : d░╗¢i 200kg\n2/7 : ─ bo gi 16k v╗ t¡n nh ╗ HP v╗¢i hng l┤ gi░╗¥ng n╗Öi thÑt g╗"
+                                        "note":  "Vc hng nầÖi thÑt gầ : d░ầi 200kg\n2/7 : Đ bo gi 16k vầ tn nh ầ HP vầi hng lườ gi░ầng nầÖi thÑt gầ"
                                     },
                                     {
                                         "stepNum":  3,
@@ -2378,17 +2378,17 @@
                                         "status":  "todo",
                                         "checklist":  [
                                                           {
-                                                              "text":  "T¼m hi╗âu loi m╖t hng \u0026 s╗ l░╗ng d╗▒ kin",
+                                                              "text":  "Tm hiầâu loi mt hng \u0026 sầ l░ầng dầ▒ kin",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "T¼m hi╗âu ─╗ïa ch╗ë nh¡n hng ti Vi╗çt Nam",
+                                                              "text":  "Tm hiầâu Đầïa chầë nhn hng ti Viầçt Nam",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "Hỏi v╗ tºn suÑt nh¡p hng (l╗ hay l┤)",
+                                                              "text":  "Hỏi vầ tn suÑt nhp hng (lầ hay lườ)",
                                                               "done":  false,
                                                               "required":  false
                                                           }
@@ -2405,17 +2405,17 @@
                                         "status":  "todo",
                                         "checklist":  [
                                                           {
-                                                              "text":  "T¼m ngu╗n hng / Lin hệ x░╗ng",
+                                                              "text":  "Tm nguần hng / Lin hệ x░ầng",
                                                               "done":  false,
                                                               "required":  false
                                                           },
                                                           {
-                                                              "text":  "T¡nh ton thu ph¡ \u0026 c░╗¢c v¡n chuy╗ân",
+                                                              "text":  "Tnh ton thu ph \u0026 c░ầc vn chuyầân",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "G╗¡i bo gi chi tit cho khch",
+                                                              "text":  "Gầi bo gi chi tit cho khch",
                                                               "done":  false,
                                                               "required":  true
                                                           }
@@ -2432,12 +2432,12 @@
                                         "status":  "todo",
                                         "checklist":  [
                                                           {
-                                                              "text":  "Tho lu¡n v╗ gi v ch¡nh sch c╗ìc",
+                                                              "text":  "Tho lun vầ gi v chnh sch cầìc",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "Gii ─p th»c m»c c╗ºa khch",
+                                                              "text":  "Gii Đp thắnc mắnc cầa khch",
                                                               "done":  false,
                                                               "required":  false
                                                           }
@@ -2454,12 +2454,12 @@
                                         "status":  "todo",
                                         "checklist":  [
                                                           {
-                                                              "text":  "Xc nh¡n khch ─ ─╗ng ╜ v c╗ìc (ho╖c l¬n ─n)",
+                                                              "text":  "Xc nhn khch Đ Đầng  v cầìc (hoc ln Đn)",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "Chuy╗ân khch sang danh sch Khch c┼⌐ / To l┤ hng m╗¢i",
+                                                              "text":  "Chuyầân khch sang danh sch Khch c⌐ / To lườ hng mầi",
                                                               "done":  false,
                                                               "required":  false
                                                           }
@@ -2476,12 +2476,12 @@
                                         "status":  "todo",
                                         "checklist":  [
                                                           {
-                                                              "text":  "Ch╗ìn l╜ do thÑt bi",
+                                                              "text":  "Chầìn l do thÑt bi",
                                                               "done":  false,
                                                               "required":  true
                                                           },
                                                           {
-                                                              "text":  "L░u l╗ïch s╗¡ phn h╗i ─╗â ch─âm s│c li sau",
+                                                              "text":  "L░u lầïch sầ phn hầi Đầâ chĐâm sc li sau",
                                                               "done":  false,
                                                               "required":  false
                                                           }
@@ -3226,5 +3226,5 @@
                      "accessToken":  "",
                      "pageUrl":  "https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet"
                  },
-    "dbVersion": "21.18"
+    "dbVersion": "21.19"
 }
