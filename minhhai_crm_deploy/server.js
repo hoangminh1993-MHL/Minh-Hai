@@ -35,7 +35,7 @@ function readJsonFile(filePath) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.93';
+  localState.dbVersion = '20.94';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -57,8 +57,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.93') {
-          console.log('Force updating Postgres DB state with clean db.json v20.93...');
+        if (!dbState || dbState.dbVersion !== '20.94') {
+          console.log('Force updating Postgres DB state with clean db.json v20.94...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -80,7 +80,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.93';
+  newState.dbVersion = '20.94';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
