@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.11';
+  const CURRENT_APP_VER = 'v21.12';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -91,33 +91,23 @@ const CONFIG = {
 
 // Initial Mock Data: 20 Employees
 const INITIAL_USERS = [
-  // Admin & Kế toán (3)
-  { id: 'usr-1', name: 'Nguyễn Đức Việt', role: 'admin', dept: 'admin', points: 350, avatar: 'fa-user-tie' },
-  { id: 'usr-2', name: 'Trần Thị Mai', role: 'admin', dept: 'admin', points: 280, avatar: 'fa-user-tie' },
-  { id: 'usr-3', name: 'Lê Hoàng Yến', role: 'admin', dept: 'admin', points: 150, avatar: 'fa-user-tie' },
-  
-  // Sales & CSKH (5)
-  { id: 'usr-4', name: 'Phạm Thanh Bình', role: 'sales', dept: 'sales', points: 420, avatar: 'fa-user-nurse' },
-  { id: 'usr-5', name: 'Hoàng Kim Oanh', role: 'sales', dept: 'sales', points: 310, avatar: 'fa-user-nurse' },
-  { id: 'usr-6', name: 'Lê Anh Tuấn', role: 'sales', dept: 'sales', points: 290, avatar: 'fa-user-ninja' },
-  { id: 'usr-7', name: 'Đỗ Hồng Hạnh', role: 'sales', dept: 'sales', points: 210, avatar: 'fa-user-nurse' },
-  { id: 'usr-8', name: 'Nguyễn Văn Dũng', role: 'sales', dept: 'sales', points: 180, avatar: 'fa-user-ninja' },
-  
-  // Sourcing & Đặt hàng (5)
-  { id: 'usr-9', name: 'Bùi Quốc Đạt', role: 'sourcing', dept: 'sourcing', points: 320, avatar: 'fa-user-astronaut' },
-  { id: 'usr-10', name: 'Đặng Khánh Linh', role: 'sourcing', dept: 'sourcing', points: 250, avatar: 'fa-user-nurse' },
-  { id: 'usr-11', name: 'Ngô Gia Bảo', role: 'sourcing', dept: 'sourcing', points: 230, avatar: 'fa-user-astronaut' },
-  { id: 'usr-12', name: 'Phùng Tiến Dũng', role: 'sourcing', dept: 'sourcing', points: 190, avatar: 'fa-user-ninja' },
-  { id: 'usr-13', name: 'Trịnh Hoài Nam', role: 'sourcing', dept: 'sourcing', points: 140, avatar: 'fa-user-ninja' },
-  
-  // Kho bãi (7)
-  { id: 'usr-14', name: 'Lý Hải Nam', role: 'warehouse', dept: 'warehouse', points: 240, avatar: 'fa-user-ninja', loc: 'Kho Quảng Châu' },
-  { id: 'usr-15', name: 'Vương Hồng Quân', role: 'warehouse', dept: 'warehouse', points: 260, avatar: 'fa-user-ninja', loc: 'Kho Thâm Quyến' },
-  { id: 'usr-16', name: 'Nguyễn Văn Hùng', role: 'warehouse', dept: 'warehouse', points: 180, avatar: 'fa-user-ninja', loc: 'Kho Hà Nội' },
-  { id: 'usr-17', name: 'Lê Văn Nam', role: 'warehouse', dept: 'warehouse', points: 190, avatar: 'fa-user-ninja', loc: 'Kho Hà Nội' },
-  { id: 'usr-18', name: 'Đinh Gia Huy', role: 'warehouse', dept: 'warehouse', points: 200, avatar: 'fa-user-ninja', loc: 'Kho Sài Gòn' },
-  { id: 'usr-19', name: 'Võ Minh Triết', role: 'warehouse', dept: 'warehouse', points: 150, avatar: 'fa-user-ninja', loc: 'Kho Sài Gòn' },
-  { id: 'usr-20', name: 'Trương Quốc Khánh', role: 'warehouse', dept: 'warehouse', points: 120, avatar: 'fa-user-ninja', loc: 'Kho Sài Gòn' }
+  { id: 'usr-1', name: 'Nguyễn Hoàng Minh', username: 'hoangminh', password: 'Hoangminh93!0911', role: 'admin', dept: 'admin', points: 350, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80' },
+  { id: 'usr-2', name: 'Trần Tú Anh', username: 'tuanh', password: 'a123', role: 'admin', dept: 'admin', points: 280, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80' },
+  { id: 'usr-3', name: 'Phượng Thị Minh Phương', username: 'minhphuong', password: 'a123', role: 'manager', dept: 'cskh', points: 150, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80' },
+  { id: 'usr-4', name: 'Đoàn Thị Hải Linh', username: 'hailinh', password: 'a123', role: 'cskh', dept: 'cskh', points: 420, avatar: 'fa-user-ninja' },
+  { id: 'usr-5', name: 'Đặng Thị Phương Thảo', username: 'phuongthao', password: 'a123', role: 'manager', dept: 'sales', points: 310, avatar: 'fa-user-nurse' },
+  { id: 'usr-6', name: 'Lê Thị Thùy Trang', username: 'thuytrang', password: 'a123', role: 'sales', dept: 'sales', points: 290, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80' },
+  { id: 'usr-7', name: 'Bùi Thị Bích Phượng', username: 'bichphuong', password: 'a123', role: 'sales', dept: 'sales', points: 210, avatar: 'fa-user-nurse' },
+  { id: 'usr-8', name: 'Nguyễn Phương Anh', username: 'phuonganh', password: 'a123', role: 'sales', dept: 'sales', points: 180, avatar: 'fa-user-ninja' },
+  { id: 'usr-9', name: 'Phạm Duy Hưng', username: 'duyhung', password: 'a123', role: 'sourcing', dept: 'sourcing', points: 320, avatar: 'fa-user-astronaut' },
+  { id: 'usr-10', name: 'Đặng Khánh Linh', username: 'khanhlinh', password: 'a123', role: 'sourcing', dept: 'sourcing', points: 250, avatar: 'fa-user-nurse' },
+  { id: 'usr-11', name: 'Ngô Gia Bảo', username: 'giabao', password: 'a123', role: 'sourcing', dept: 'sourcing', points: 230, avatar: 'fa-user-astronaut' },
+  { id: 'usr-12', name: 'Phùng Tiến Dũng', username: 'tiendung', password: 'a123', role: 'sourcing', dept: 'sourcing', points: 190, avatar: 'fa-user-ninja' },
+  { id: 'usr-13', name: 'Trịnh Hoài Nam', username: 'hoainam', password: 'a123', role: 'sourcing', dept: 'sourcing', points: 140, avatar: 'fa-user-ninja' },
+  { id: 'usr-14', name: 'Lý Hải Nam', username: 'hainam_kc', password: 'a123', role: 'warehouse', dept: 'warehouse', points: 240, avatar: 'fa-user-ninja', loc: 'Kho Quảng Châu' },
+  { id: 'usr-15', name: 'Vương Hồng Quân', username: 'hongquan_tq', password: 'a123', role: 'warehouse', dept: 'warehouse', points: 260, avatar: 'fa-user-ninja', loc: 'Kho Thâm Quyến' },
+  { id: 'usr-16', name: 'Nguyễn Văn Hùng', username: 'vanhung_hn', password: 'a123', role: 'warehouse', dept: 'warehouse', points: 180, avatar: 'fa-user-ninja', loc: 'Kho Hà Nội' },
+  { id: 'usr-17', name: 'Lê Văn Nam', username: 'vannam_hn', password: 'a123', role: 'warehouse', dept: 'warehouse', points: 190, avatar: 'fa-user-ninja', loc: 'Kho Hà Nội' }
 ];
 
 // Initial Workflows
@@ -601,7 +591,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.11';
+const CLIENT_VERSION = '21.12';
 
 async function checkCodeVersionUpdate() {
   try {
