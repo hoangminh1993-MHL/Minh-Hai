@@ -38,28 +38,28 @@ function sanitizeServerState(state) {
   const sanitizeStr = (str) => {
     if (!str || typeof str !== 'string') return str;
     return str
-      .replace(/Nguy\?n Ho\?ng Minh|Nguy\?n Hong Minh|Nguy\?n Ho\?\?ng Minh/g, 'Nguyễn Hoàng Minh')
-      .replace(/D├║ng T├║c|D├║ng t├║c|D╞░╞íng T├│c/g, 'Dương Tóc')
-      .replace(/Anh Ph╞░╞íng/g, 'Anh Phương')
-      .replace(/Minh Nguyß╗àn/g, 'Minh Nguyễn')
-      .replace(/Hu╞░╞íng Phß║ím|Hu╞░╞íng Phạ/g, 'Huơng Phạm')
-      .replace(/Xu├ón H├ái ─É├¡nh|Xu├ón Hß║úi Đinh|Xuân Hải Dinh/g, 'Xuân Hải Đinh')
-      .replace(/─É├¡nh Ph├║c An|Dinh Phúc An/g, 'Đinh Phúc An')
-      .replace(/Ho├óng Th├╣y Du╞░╞íng/g, 'Hoàng Thùy Dương')
-      .replace(/Phß║ím Thuß║¡n/g, 'Phạm Thuận')
-      .replace(/Mai Hß╗Öng VPP/g, 'Mai Hồng VPP')
-      .replace(/Ho├óng Ph├ít Koffmann/g, 'Hoàng Phát Koffmann')
-      .replace(/V├▓ng bi Ph├║ Qu├╜/g, 'Vòng bi Phú Quý')
-      .replace(/Nha Phuong B├╣i/g, 'Nha Phuong Bùi')
-      .replace(/Quß╗æc Kh├ính/g, 'Quốc Khánh')
-      .replace(/Minh T├ím/g, 'Minh Tâm')
-      .replace(/Bß║úo Ngß╗ìc Rice/g, 'Bảo Ngọc Rice')
-      .replace(/S╞í n Quang L├ím/g, 'Sơn Quang Lâm')
-      .replace(/Phß║ím Thß╗ï Anh Ngß╗ìc/g, 'Phạm Thị Anh Ngọc')
-      .replace(/Ho├óng C╞░╞íng Biz/g, 'Hoàng Cường Biz')
-      .replace(/V┼⌐ Ngß╗ìc Huyß╗ün/g, 'Vũ Ngọc Huyền')
-      .replace(/Trß║ºn Hiß║┐u/g, 'Trần Hiếu')
-      .replace(/H╞░╞íng V┼⌐/g, 'Hương Vũ');
+      .replace(/Nguy.*Ho.ng Minh|Nguy.*Minh/gi, 'Nguyễn Hoàng Minh')
+      .replace(/D.ng T.c/gi, 'Dương Tóc')
+      .replace(/Anh Ph.ng/gi, 'Anh Phương')
+      .replace(/Minh Nguy.n/gi, 'Minh Nguyễn')
+      .replace(/Hu.ng Ph.m|Hu.ng Ph/gi, 'Huơng Phạm')
+      .replace(/Xu.n H.i .inh|Xu.n H.i Đinh|Xuân Hải Dinh/gi, 'Xuân Hải Đinh')
+      .replace(/.inh Ph.c An|Dinh Phúc An/gi, 'Đinh Phúc An')
+      .replace(/Ho.ng Th.y Du.ng/gi, 'Hoàng Thùy Dương')
+      .replace(/Ph.m Thu.n/gi, 'Phạm Thuận')
+      .replace(/Mai H.ng VPP/gi, 'Mai Hồng VPP')
+      .replace(/Ho.ng Ph.t Koffmann/gi, 'Hoàng Phát Koffmann')
+      .replace(/V.ng bi Ph. Qu./gi, 'Vòng bi Phú Quý')
+      .replace(/Nha Phuong B.i/gi, 'Nha Phuong Bùi')
+      .replace(/Qu.c Kh.nh/gi, 'Quốc Khánh')
+      .replace(/Minh T.m/gi, 'Minh Tâm')
+      .replace(/B.o Ng.c Rice/gi, 'Bảo Ngọc Rice')
+      .replace(/S.n Quang L.m/gi, 'Sơn Quang Lâm')
+      .replace(/Ph.m Th. Anh Ng.c/gi, 'Phạm Thị Anh Ngọc')
+      .replace(/Ho.ng C.ng Biz/gi, 'Hoàng Cường Biz')
+      .replace(/V. Ng.c Huy.n/gi, 'Vũ Ngọc Huyền')
+      .replace(/Tr.n Hi.u/gi, 'Trần Hiếu')
+      .replace(/H.ng V./gi, 'Hương Vũ');
   };
 
   if (Array.isArray(state.users)) {
@@ -81,7 +81,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.95';
+  localState.dbVersion = '20.96';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -103,8 +103,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.95') {
-          console.log('Force updating Postgres DB state with clean db.json v20.95...');
+        if (!dbState || dbState.dbVersion !== '20.96') {
+          console.log('Force updating Postgres DB state with clean db.json v20.96...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -126,7 +126,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.95';
+  newState.dbVersion = '20.96';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,

@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v20.95';
+  const CURRENT_APP_VER = 'v20.96';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -491,7 +491,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '20.95';
+const CLIENT_VERSION = '20.96';
 
 async function checkCodeVersionUpdate() {
   try {
