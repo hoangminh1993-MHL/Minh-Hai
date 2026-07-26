@@ -279,34 +279,38 @@ function initOpsEvents() {
     };
   }
 
+  function safeAddListener(id, event, handler) {
+    const el = document.getElementById(id);
+    if (el) el[event] = handler;
+  }
+
   const formAddOpsTask = document.getElementById('form-add-ops-task');
   if (formAddOpsTask) {
     formAddOpsTask.onsubmit = handleAddSingleTaskSubmit;
   }
 
   // Layout toggles
-  document.getElementById('btn-layout-list').onclick = () => switchSingleTaskLayout('list');
-  document.getElementById('btn-layout-board').onclick = () => switchSingleTaskLayout('board');
-  document.getElementById('btn-layout-calendar').onclick = () => switchSingleTaskLayout('calendar');
+  safeAddListener('btn-layout-list', 'onclick', () => switchSingleTaskLayout('list'));
+  safeAddListener('btn-layout-board', 'onclick', () => switchSingleTaskLayout('board'));
+  safeAddListener('btn-layout-calendar', 'onclick', () => switchSingleTaskLayout('calendar'));
 
   // Calendar navigations
-  document.getElementById('btn-calendar-prev').onclick = () => navigateCalendar(-1);
-  document.getElementById('btn-calendar-next').onclick = () => navigateCalendar(1);
+  safeAddListener('btn-calendar-prev', 'onclick', () => navigateCalendar(-1));
+  safeAddListener('btn-calendar-next', 'onclick', () => navigateCalendar(1));
 
   // Single tasks filters
-  document.getElementById('tasks-single-search').oninput = renderOpsSingleTasks;
-  document.getElementById('tasks-single-filter-dept').onchange = renderOpsSingleTasks;
-  document.getElementById('tasks-single-filter-assignee').onchange = renderOpsSingleTasks;
-  document.getElementById('tasks-single-filter-priority').onchange = renderOpsSingleTasks;
-  const statusFilterEl = document.getElementById('tasks-single-filter-status');
-  if (statusFilterEl) statusFilterEl.onchange = renderOpsSingleTasks;
+  safeAddListener('tasks-single-search', 'oninput', renderOpsSingleTasks);
+  safeAddListener('tasks-single-filter-dept', 'onchange', renderOpsSingleTasks);
+  safeAddListener('tasks-single-filter-assignee', 'onchange', renderOpsSingleTasks);
+  safeAddListener('tasks-single-filter-priority', 'onchange', renderOpsSingleTasks);
+  safeAddListener('tasks-single-filter-status', 'onchange', renderOpsSingleTasks);
 
   // Save/Delete Task Detail Handlers
-  document.getElementById('btn-ops-task-save').onclick = handleSaveTaskDetails;
-  document.getElementById('btn-ops-task-delete').onclick = handleDeleteTask;
-  document.getElementById('btn-ops-task-detail-add-chk').onclick = handleAddTaskChecklistItem;
-  document.getElementById('btn-ops-task-add-file').onclick = handleAddTaskFile;
-  document.getElementById('btn-ops-task-add-comment').onclick = handleAddTaskComment;
+  safeAddListener('btn-ops-task-save', 'onclick', handleSaveTaskDetails);
+  safeAddListener('btn-ops-task-delete', 'onclick', handleDeleteTask);
+  safeAddListener('btn-ops-task-detail-add-chk', 'onclick', handleAddTaskChecklistItem);
+  safeAddListener('btn-ops-task-add-file', 'onclick', handleAddTaskFile);
+  safeAddListener('btn-ops-task-add-comment', 'onclick', handleAddTaskComment);
 
   // Task description edit handlers
   const btnEditDesc = document.getElementById('btn-ops-task-detail-edit-desc');
