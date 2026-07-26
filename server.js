@@ -8199,7 +8199,7 @@ const EMBEDDED_DEFAULT_STATE = {
                      "accessToken":  "",
                      "pageUrl":  "https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet"
                  },
-    "dbVersion": "21.19"
+    "dbVersion": "21.20"
 }
 ;
 
@@ -8317,7 +8317,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.19';
+  localState.dbVersion = '21.20';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -8339,8 +8339,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '21.19' || !Array.isArray(dbState.leads) || dbState.leads.length === 0 || !Array.isArray(dbState.users) || dbState.users.length < 15) {
-          console.log('Force updating Postgres DB state with clean db.json v21.19...');
+        if (!dbState || dbState.dbVersion !== '21.20' || !Array.isArray(dbState.leads) || dbState.leads.length === 0 || !Array.isArray(dbState.users) || dbState.users.length < 15) {
+          console.log('Force updating Postgres DB state with clean db.json v21.20...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return sanitizeServerState(localState);
@@ -8366,7 +8366,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.19';
+  newState.dbVersion = '21.20';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
