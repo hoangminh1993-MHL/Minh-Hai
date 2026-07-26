@@ -35,7 +35,7 @@ function readJsonFile(filePath) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.92';
+  localState.dbVersion = '20.93';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -44,6 +44,7 @@ async function loadState() {
     });
     try {
       await client.connect();
+      await client.query("SET client_encoding = 'UTF8'");
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
       const res = await client.query('SELECT state_json FROM app_state WHERE id = 1');
       if (res.rows.length > 0) {
@@ -56,8 +57,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.92') {
-          console.log('Force updating Postgres DB state with clean db.json v20.92...');
+        if (!dbState || dbState.dbVersion !== '20.93') {
+          console.log('Force updating Postgres DB state with clean db.json v20.93...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -79,7 +80,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.92';
+  newState.dbVersion = '20.93';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -87,6 +88,7 @@ async function saveState(newState) {
     });
     try {
       await client.connect();
+      await client.query("SET client_encoding = 'UTF8'");
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
       await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(newState)]);
       await client.end();
@@ -105,6 +107,7 @@ async function saveState(newState) {
 // GET /api/state: Load entire CRM database
 app.get('/api/state', async (req, res) => {
   try {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
     const state = await loadState();
     res.json(state || {});
   } catch (err) {
