@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.10';
+  const CURRENT_APP_VER = 'v21.11';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -333,6 +333,7 @@ async function syncLoadState() {
       localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions));
       updateMyTasksBadge();
       window.BaseState = JSON.parse(JSON.stringify(AppState));
+      renderUserSwitcher();
       return;
     }
   } catch (err) {
@@ -365,6 +366,115 @@ function loadState() {
 
   updateMyTasksBadge();
   backfillGamificationData();
+  renderUserSwitcher();
+}
+
+function updateSidebarUserInfo(user) {
+  if (!user) return;
+  const nameEl = document.getElementById('current-user-name');
+  const roleEl = document.getElementById('current-user-role-badge');
+  const pointsEl = document.getElementById('current-user-points');
+  const avatarEl = document.getElementById('current-user-avatar');
+
+  if (nameEl) nameEl.textContent = user.name || 'Người dùng';
+  
+  if (roleEl) {
+    let roleName = 'Nhân viên';
+    let roleClass = 'badge-staff';
+    if (user.role === 'admin') { roleName = 'Quản Trị Viên'; roleClass = 'badge-admin'; }
+    else if (user.role === 'manager') { roleName = 'Quản Lý'; roleClass = 'badge-manager'; }
+    else if (user.role === 'sales') { roleName = 'Sales'; roleClass = 'badge-sales'; }
+    else if (user.role === 'cskh') { roleName = 'CSKH'; roleClass = 'badge-cskh'; }
+    else if (user.role === 'sourcing') { roleName = 'Đặt Hàng'; roleClass = 'badge-sourcing'; }
+    else if (user.role === 'warehouse') { roleName = 'Quản Lý Kho'; roleClass = 'badge-warehouse'; }
+    
+    roleEl.textContent = roleName;
+    roleEl.className = `role-badge ${roleClass}`;
+  }
+
+  if (pointsEl) pointsEl.textContent = user.points || 0;
+
+  if (avatarEl) {
+    if (user.avatar && user.avatar.startsWith('http')) {
+      avatarEl.innerHTML = `<img src="${user.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+    } else if (user.avatar && user.avatar.startsWith('fa-')) {
+      avatarEl.innerHTML = `<i class="fa-solid ${user.avatar}"></i>`;
+    } else {
+      avatarEl.innerHTML = `<i class="fa-solid fa-user-tie"></i>`;
+    }
+  }
+}
+
+function renderUserSwitcher() {
+  const switcher = document.getElementById('user-switcher');
+  if (!switcher) return;
+
+  switcher.innerHTML = '';
+  
+  const users = (AppState.users && AppState.users.length > 0) ? AppState.users : (typeof INITIAL_USERS !== 'undefined' ? INITIAL_USERS : []);
+  if (!users || users.length === 0) {
+    switcher.innerHTML = '<option value="">(Không có người dùng)</option>';
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+
+  users.forEach(user => {
+    const option = document.createElement('option');
+    option.value = user.id;
+    let roleText = 'Nhân viên';
+    if (user.role === 'admin') roleText = 'Quản Trị';
+    else if (user.role === 'manager') roleText = 'Quản Lý';
+    else if (user.role === 'sales') roleText = 'Sales';
+    else if (user.role === 'cskh') roleText = 'CSKH';
+    else if (user.role === 'sourcing') roleText = 'Đặt Hàng';
+    else if (user.role === 'warehouse') roleText = 'Kho';
+    
+    option.textContent = `${user.name} (${roleText})`;
+    if (user.id === currentUser.id) {
+      option.selected = true;
+    }
+    switcher.appendChild(option);
+  });
+  
+  updateSidebarUserInfo(currentUser);
+}
+
+function initUserSwitcherEvents() {
+  const switcher = document.getElementById('user-switcher');
+  if (!switcher) return;
+
+  switcher.addEventListener('change', (e) => {
+    const selectedUserId = e.target.value;
+    if (!selectedUserId) return;
+
+    const users = (AppState.users && AppState.users.length > 0) ? AppState.users : (typeof INITIAL_USERS !== 'undefined' ? INITIAL_USERS : []);
+    const targetUser = users.find(u => u.id === selectedUserId);
+    if (targetUser) {
+      // Update session in localStorage
+      localStorage.setItem('minhhai_user', JSON.stringify(targetUser));
+      localStorage.setItem(CONFIG.LS_KEY_CURRENT_USER, targetUser.id);
+      localStorage.setItem('votr_current_user_id', targetUser.id);
+      
+      // Update AppState
+      AppState.currentUserId = targetUser.id;
+
+      // Update sidebar
+      updateSidebarUserInfo(targetUser);
+
+      // Re-render views
+      updateMyTasksBadge();
+      const currentHash = window.location.hash.replace('#', '') || 'dashboard';
+      if (typeof showView === 'function') {
+        showView(currentHash);
+      }
+
+      // Show Toast Notification
+      if (typeof showToast === 'function') {
+        showToast(`Đã chuyển vai trò giả lập sang: ${targetUser.name}`, 'success');
+      }
+    }
+  });
 }
 
 function backfillGamificationData() {
@@ -491,7 +601,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.10';
+const CLIENT_VERSION = '21.11';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3506,6 +3616,9 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAdminStaffWorkloadTable();
     };
   });
+
+  // Bind simulated role user switcher dropdown events
+  initUserSwitcherEvents();
 });
 
 
