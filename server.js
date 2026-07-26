@@ -38,28 +38,28 @@ function sanitizeServerState(state) {
   const sanitizeStr = (str) => {
     if (!str || typeof str !== 'string') return str;
     return str
-      .replace(/Nguy.*Ho.ng Minh|Nguy.*Minh/gi, 'Nguyễn Hoàng Minh')
-      .replace(/D.ng T.c/gi, 'Dương Tóc')
-      .replace(/Anh Ph.ng/gi, 'Anh Phương')
-      .replace(/Minh Nguy.n/gi, 'Minh Nguyễn')
-      .replace(/Hu.ng Ph.m|Hu.ng Ph/gi, 'Huơng Phạm')
-      .replace(/Xu.n H.i .inh|Xu.n H.i Đinh|Xuân Hải Dinh/gi, 'Xuân Hải Đinh')
-      .replace(/.inh Ph.c An|Dinh Phúc An/gi, 'Đinh Phúc An')
-      .replace(/Ho.ng Th.y Du.ng/gi, 'Hoàng Thùy Dương')
-      .replace(/Ph.m Thu.n/gi, 'Phạm Thuận')
-      .replace(/Mai H.ng VPP/gi, 'Mai Hồng VPP')
-      .replace(/Ho.ng Ph.t Koffmann/gi, 'Hoàng Phát Koffmann')
-      .replace(/V.ng bi Ph. Qu./gi, 'Vòng bi Phú Quý')
-      .replace(/Nha Phuong B.i/gi, 'Nha Phuong Bùi')
-      .replace(/Qu.c Kh.nh/gi, 'Quốc Khánh')
-      .replace(/Minh T.m/gi, 'Minh Tâm')
-      .replace(/B.o Ng.c Rice/gi, 'Bảo Ngọc Rice')
-      .replace(/S.n Quang L.m/gi, 'Sơn Quang Lâm')
-      .replace(/Ph.m Th. Anh Ng.c/gi, 'Phạm Thị Anh Ngọc')
-      .replace(/Ho.ng C.ng Biz/gi, 'Hoàng Cường Biz')
-      .replace(/V. Ng.c Huy.n/gi, 'Vũ Ngọc Huyền')
-      .replace(/Tr.n Hi.u/gi, 'Trần Hiếu')
-      .replace(/H.ng V./gi, 'Hương Vũ');
+      .replace(/Nguy[\s\S]*?Minh/gi, 'Nguyễn Hoàng Minh')
+      .replace(/D[\s\S]*?T.c/gi, 'Dương Tóc')
+      .replace(/Anh Ph[\s\S]*?ng/gi, 'Anh Phương')
+      .replace(/Minh Nguy[\s\S]*?n/gi, 'Minh Nguyễn')
+      .replace(/Hu[\s\S]*?Ph[\s\S]*?m|Hu[\s\S]*?Ph/gi, 'Huơng Phạm')
+      .replace(/Xu[\s\S]*?H[\s\S]*?i[\s\S]*?.inh|Xu[\s\S]*?H[\s\S]*?i Đinh|Xuân Hải Dinh/gi, 'Xuân Hải Đinh')
+      .replace(/[\s\S]*?inh Ph[\s\S]*?c An|Dinh Phúc An/gi, 'Đinh Phúc An')
+      .replace(/Ho[\s\S]*?ng Th[\s\S]*?y Du[\s\S]*?ng/gi, 'Hoàng Thùy Dương')
+      .replace(/Ph[\s\S]*?m Thu[\s\S]*?n/gi, 'Phạm Thuận')
+      .replace(/Mai H[\s\S]*?ng VPP/gi, 'Mai Hồng VPP')
+      .replace(/Ho[\s\S]*?ng Ph[\s\S]*?t Koffmann/gi, 'Hoàng Phát Koffmann')
+      .replace(/V[\s\S]*?ng bi Ph[\s\S]*? Qu[\s\S]*?/gi, 'Vòng bi Phú Quý')
+      .replace(/Nha Phuong B[\s\S]*?i/gi, 'Nha Phuong Bùi')
+      .replace(/Qu[\s\S]*?c Kh[\s\S]*?nh/gi, 'Quốc Khánh')
+      .replace(/Minh T[\s\S]*?m/gi, 'Minh Tâm')
+      .replace(/B[\s\S]*?o Ng[\s\S]*?c Rice/gi, 'Bảo Ngọc Rice')
+      .replace(/S[\s\S]*?n Quang L[\s\S]*?m/gi, 'Sơn Quang Lâm')
+      .replace(/Ph[\s\S]*?m Th[\s\S]*? Anh Ng[\s\S]*?c/gi, 'Phạm Thị Anh Ngọc')
+      .replace(/Ho[\s\S]*?ng C[\s\S]*?ng Biz/gi, 'Hoàng Cường Biz')
+      .replace(/V[\s\S]*? Ng[\s\S]*?c Huy[\s\S]*?n/gi, 'Vũ Ngọc Huyền')
+      .replace(/Tr[\s\S]*?n Hi[\s\S]*?u/gi, 'Trần Hiếu')
+      .replace(/H[\s\S]*?ng V[\s\S]*?/gi, 'Hương Vũ');
   };
 
   if (Array.isArray(state.users)) {
@@ -81,7 +81,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.96';
+  localState.dbVersion = '20.97';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -103,8 +103,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.96') {
-          console.log('Force updating Postgres DB state with clean db.json v20.96...');
+        if (!dbState || dbState.dbVersion !== '20.97') {
+          console.log('Force updating Postgres DB state with clean db.json v20.97...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -126,7 +126,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.96';
+  newState.dbVersion = '20.97';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
