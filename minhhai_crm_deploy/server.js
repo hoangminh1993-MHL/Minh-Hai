@@ -32,47 +32,52 @@ function readJsonFile(filePath) {
   }
 }
 
+function sanitizeVietnameseString(str) {
+  if (!str || typeof str !== 'string') return str;
+  return str
+    .replace(/D├║ng T├║c|D├║ng t├║c|D╞░╞íng T├│c|Dung Tóc/gi, 'Dương Tóc')
+    .replace(/Anh Ph╞░╞íng|Anh Phuong/gi, 'Anh Phương')
+    .replace(/Minh Nguyß╗àn|Minh Nguyen/gi, 'Minh Nguyễn')
+    .replace(/Hu╞░╞íng Phß║ím|Hu╞░╞íng Phạ|Huong Pham/gi, 'Huơng Phạm')
+    .replace(/Xu├ón H├ái ─É├¡nh|Xu├ón Hß║úi Đinh|Xuân Hải Dinh/gi, 'Xuân Hải Đinh')
+    .replace(/─É├¡nh Ph├║c An|Dinh Phúc An/gi, 'Đinh Phúc An')
+    .replace(/Ho├óng Th├╣y Du╞░╞íng/gi, 'Hoàng Thùy Dương')
+    .replace(/Phß║ím Thuß║¡n/gi, 'Phạm Thuận')
+    .replace(/Mai Hß╗Öng VPP/gi, 'Mai Hồng VPP')
+    .replace(/Ho├óng Ph├ít Koffmann/gi, 'Hoàng Phát Koffmann')
+    .replace(/V├▓ng bi Ph├║ Qu├╜/gi, 'Vòng bi Phú Quý')
+    .replace(/Nha Phuong B├╣i/gi, 'Nha Phuong Bùi')
+    .replace(/Quß╗æc Kh├ính/gi, 'Quốc Khánh')
+    .replace(/Minh T├ím/gi, 'Minh Tâm')
+    .replace(/Bß║úo Ngß╗ìc Rice/gi, 'Bảo Ngọc Rice')
+    .replace(/S╞í n Quang L├ím/gi, 'Sơn Quang Lâm')
+    .replace(/Phß║ím Thß╗ï Anh Ngß╗ìc/gi, 'Phạm Thị Anh Ngọc')
+    .replace(/Ho├óng C╞░╞íng Biz/gi, 'Hoàng Cường Biz')
+    .replace(/V┼⌐ Ngß╗ìc Huyß╗ün/gi, 'Vũ Ngọc Huyền')
+    .replace(/Trß║ºn Hiß║┐u/gi, 'Trần Hiếu')
+    .replace(/H╞░╞íng V┼⌐/gi, 'Hương Vũ');
+}
+
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  const sanitizeStr = (str) => {
-    if (!str || typeof str !== 'string') return str;
-    return str
-      .replace(/Nguy[\s\S]*?Minh/gi, 'Nguyễn Hoàng Minh')
-      .replace(/D[\s\S]*?T.c/gi, 'Dương Tóc')
-      .replace(/Anh Ph[\s\S]*?ng/gi, 'Anh Phương')
-      .replace(/Minh Nguy[\s\S]*?n/gi, 'Minh Nguyễn')
-      .replace(/Hu[\s\S]*?Ph[\s\S]*?m|Hu[\s\S]*?Ph/gi, 'Huơng Phạm')
-      .replace(/Xu[\s\S]*?H[\s\S]*?i[\s\S]*?.inh|Xu[\s\S]*?H[\s\S]*?i Đinh|Xuân Hải Dinh/gi, 'Xuân Hải Đinh')
-      .replace(/[\s\S]*?inh Ph[\s\S]*?c An|Dinh Phúc An/gi, 'Đinh Phúc An')
-      .replace(/Ho[\s\S]*?ng Th[\s\S]*?y Du[\s\S]*?ng/gi, 'Hoàng Thùy Dương')
-      .replace(/Ph[\s\S]*?m Thu[\s\S]*?n/gi, 'Phạm Thuận')
-      .replace(/Mai H[\s\S]*?ng VPP/gi, 'Mai Hồng VPP')
-      .replace(/Ho[\s\S]*?ng Ph[\s\S]*?t Koffmann/gi, 'Hoàng Phát Koffmann')
-      .replace(/V[\s\S]*?ng bi Ph[\s\S]*? Qu[\s\S]*?/gi, 'Vòng bi Phú Quý')
-      .replace(/Nha Phuong B[\s\S]*?i/gi, 'Nha Phuong Bùi')
-      .replace(/Qu[\s\S]*?c Kh[\s\S]*?nh/gi, 'Quốc Khánh')
-      .replace(/Minh T[\s\S]*?m/gi, 'Minh Tâm')
-      .replace(/B[\s\S]*?o Ng[\s\S]*?c Rice/gi, 'Bảo Ngọc Rice')
-      .replace(/S[\s\S]*?n Quang L[\s\S]*?m/gi, 'Sơn Quang Lâm')
-      .replace(/Ph[\s\S]*?m Th[\s\S]*? Anh Ng[\s\S]*?c/gi, 'Phạm Thị Anh Ngọc')
-      .replace(/Ho[\s\S]*?ng C[\s\S]*?ng Biz/gi, 'Hoàng Cường Biz')
-      .replace(/V[\s\S]*? Ng[\s\S]*?c Huy[\s\S]*?n/gi, 'Vũ Ngọc Huyền')
-      .replace(/Tr[\s\S]*?n Hi[\s\S]*?u/gi, 'Trần Hiếu')
-      .replace(/H[\s\S]*?ng V[\s\S]*?/gi, 'Hương Vũ');
-  };
 
   if (Array.isArray(state.users)) {
     state.users.forEach(u => {
-      if (u.name) u.name = sanitizeStr(u.name);
+      if (u.username === 'hoangminh' || u.id === 'usr-1') u.name = 'Nguyễn Hoàng Minh';
+      if (u.username === 'tuanh' || u.id === 'usr-2') u.name = 'Trần Tú Anh';
+      if (u.username === 'minhphuong' || u.id === 'usr-3') u.name = 'M.Phương (CSKH)';
+      if (u.username === 'trang' || u.id === 'usr-6') u.name = 'Trang (CSKH)';
+      if (u.username === 'phuong' || u.id === 'usr-7') u.name = 'Phượng (CSKH)';
     });
   }
+
   if (Array.isArray(state.leads)) {
     state.leads.forEach(l => {
-      if (l.name) l.name = sanitizeStr(l.name);
-      if (l.stage) l.stage = sanitizeStr(l.stage);
-      if (l.note) l.note = sanitizeStr(l.note);
-      if (l.failReason) l.failReason = sanitizeStr(l.failReason);
+      if (l.name) l.name = sanitizeVietnameseString(l.name);
+      if (l.stage) l.stage = sanitizeVietnameseString(l.stage);
+      if (l.note) l.note = sanitizeVietnameseString(l.note);
+      if (l.failReason) l.failReason = sanitizeVietnameseString(l.failReason);
     });
   }
   return state;
@@ -81,7 +86,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.97';
+  localState.dbVersion = '20.98';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -103,8 +108,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.97') {
-          console.log('Force updating Postgres DB state with clean db.json v20.97...');
+        if (!dbState || dbState.dbVersion !== '20.98') {
+          console.log('Force updating Postgres DB state with clean db.json v20.98...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -126,7 +131,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.97';
+  newState.dbVersion = '20.98';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
