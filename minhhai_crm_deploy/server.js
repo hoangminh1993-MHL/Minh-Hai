@@ -127,8 +127,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '21.04') {
-          console.log('Force updating Postgres DB state with clean db.json v21.04...');
+        if (!dbState || dbState.dbVersion !== '21.05' || !dbState.leads || dbState.leads.length === 0) {
+          console.log('Force updating Postgres DB state with clean db.json v21.05...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return sanitizeServerState(localState);
@@ -150,7 +150,11 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '21.04';
+  if (!newState || !newState.leads || !Array.isArray(newState.leads) || newState.leads.length === 0) {
+    console.warn('Rejected attempt to save empty state to database!');
+    return false;
+  }
+  newState.dbVersion = '21.05';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
