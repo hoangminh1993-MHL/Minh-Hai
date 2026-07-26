@@ -7,7 +7,11 @@ const INITIAL_USERS = [
 ];
 
 function getApiUrl(path) {
-  const customApiBase = localStorage.getItem('minhhai_custom_api_base');
+  let customApiBase = localStorage.getItem('minhhai_custom_api_base');
+  if (customApiBase === 'undefined' || customApiBase === 'null' || customApiBase === '/api' || customApiBase === '/api/') {
+    localStorage.removeItem('minhhai_custom_api_base');
+    customApiBase = null;
+  }
   if (customApiBase) {
     const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
     return `${base}${path}`;
@@ -47,9 +51,20 @@ document.getElementById('login-form').onsubmit = async (e) => {
     console.warn('Không thể kết nối đến API Server, chuyển sang kiểm tra tài khoản offline:', err);
   }
   
-  // 2. Offline / Local fallback: Chỉ cần đúng tài khoản (username) là cho vào!
-  const localUsers = JSON.parse(localStorage.getItem('votr_users_db')) || INITIAL_USERS;
-  const foundUser = localUsers.find(usr => usr.username.toLowerCase() === u.toLowerCase());
+  // 2. Offline / Local fallback: Robust against corrupted votr_users_db
+  let localUsers = null;
+  try {
+    const stored = localStorage.getItem('votr_users_db');
+    if (stored && stored !== 'undefined' && stored !== 'null') {
+      localUsers = JSON.parse(stored);
+    }
+  } catch (err) {
+    console.warn('Lỗi đọc votr_users_db, tự động lập về mặc định:', err);
+    localStorage.removeItem('votr_users_db');
+  }
+  if (!localUsers || !Array.isArray(localUsers)) localUsers = INITIAL_USERS;
+
+  const foundUser = localUsers.find(usr => usr.username && usr.username.toLowerCase() === u.toLowerCase());
   
   if (foundUser) {
     localStorage.setItem('minhhai_user', JSON.stringify(foundUser));
