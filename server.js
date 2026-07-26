@@ -104,7 +104,8 @@ function sanitizeServerState(state) {
 
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
-  const localState = loadLocalState();
+  const localState = readJsonFile(path.join(__dirname, 'db.json'));
+  localState.dbVersion = '21.07';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -126,8 +127,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '21.06' || !Array.isArray(dbState.leads) || dbState.leads.length === 0) {
-          console.log('Force updating Postgres DB state with clean db.json v21.06...');
+        if (!dbState || dbState.dbVersion !== '21.07' || !Array.isArray(dbState.leads) || dbState.leads.length === 0) {
+          console.log('Force updating Postgres DB state with clean db.json v21.07...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return sanitizeServerState(localState);
@@ -153,7 +154,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.06';
+  newState.dbVersion = '21.07';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -165,6 +166,7 @@ async function saveState(newState) {
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
       await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(newState)]);
       await client.end();
+      return true;
     } catch (err) {
       console.error('Error saving state to Postgres:', err);
       try { await client.end(); } catch (e) {}
@@ -182,6 +184,11 @@ app.get('/api/state', async (req, res) => {
   try {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     const state = await loadState();
+    if (!state || !Array.isArray(state.leads) || state.leads.length === 0) {
+      console.warn('/api/state loadState returned empty leads, serving local db.json fallback...');
+      const fallbackState = readJsonFile(path.join(__dirname, 'db.json'));
+      return res.json(sanitizeServerState(fallbackState));
+    }
     res.json(sanitizeServerState(state) || {});
   } catch (err) {
     console.error('Error in /api/state:', err);
