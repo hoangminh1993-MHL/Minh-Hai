@@ -32,10 +32,56 @@ function readJsonFile(filePath) {
   }
 }
 
+// Helper to clean any residual Mojibake in server state
+function sanitizeServerState(state) {
+  if (!state) return state;
+  const sanitizeStr = (str) => {
+    if (!str || typeof str !== 'string') return str;
+    return str
+      .replace(/Nguy\?n Ho\?ng Minh|Nguy\?n Hong Minh|Nguy\?n Ho\?\?ng Minh/g, 'Nguyễn Hoàng Minh')
+      .replace(/D├║ng T├║c|D├║ng t├║c|D╞░╞íng T├│c/g, 'Dương Tóc')
+      .replace(/Anh Ph╞░╞íng/g, 'Anh Phương')
+      .replace(/Minh Nguyß╗àn/g, 'Minh Nguyễn')
+      .replace(/Hu╞░╞íng Phß║ím|Hu╞░╞íng Phạ/g, 'Huơng Phạm')
+      .replace(/Xu├ón H├ái ─É├¡nh|Xu├ón Hß║úi Đinh|Xuân Hải Dinh/g, 'Xuân Hải Đinh')
+      .replace(/─É├¡nh Ph├║c An|Dinh Phúc An/g, 'Đinh Phúc An')
+      .replace(/Ho├óng Th├╣y Du╞░╞íng/g, 'Hoàng Thùy Dương')
+      .replace(/Phß║ím Thuß║¡n/g, 'Phạm Thuận')
+      .replace(/Mai Hß╗Öng VPP/g, 'Mai Hồng VPP')
+      .replace(/Ho├óng Ph├ít Koffmann/g, 'Hoàng Phát Koffmann')
+      .replace(/V├▓ng bi Ph├║ Qu├╜/g, 'Vòng bi Phú Quý')
+      .replace(/Nha Phuong B├╣i/g, 'Nha Phuong Bùi')
+      .replace(/Quß╗æc Kh├ính/g, 'Quốc Khánh')
+      .replace(/Minh T├ím/g, 'Minh Tâm')
+      .replace(/Bß║úo Ngß╗ìc Rice/g, 'Bảo Ngọc Rice')
+      .replace(/S╞í n Quang L├ím/g, 'Sơn Quang Lâm')
+      .replace(/Phß║ím Thß╗ï Anh Ngß╗ìc/g, 'Phạm Thị Anh Ngọc')
+      .replace(/Ho├óng C╞░╞íng Biz/g, 'Hoàng Cường Biz')
+      .replace(/V┼⌐ Ngß╗ìc Huyß╗ün/g, 'Vũ Ngọc Huyền')
+      .replace(/Trß║ºn Hiß║┐u/g, 'Trần Hiếu')
+      .replace(/H╞░╞íng V┼⌐/g, 'Hương Vũ');
+  };
+
+  if (Array.isArray(state.users)) {
+    state.users.forEach(u => {
+      if (u.name) u.name = sanitizeStr(u.name);
+    });
+  }
+  if (Array.isArray(state.leads)) {
+    state.leads.forEach(l => {
+      if (l.name) l.name = sanitizeStr(l.name);
+      if (l.stage) l.stage = sanitizeStr(l.stage);
+      if (l.note) l.note = sanitizeStr(l.note);
+      if (l.failReason) l.failReason = sanitizeStr(l.failReason);
+    });
+  }
+  return state;
+}
+
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '20.94';
+  localState.dbVersion = '20.95';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -57,8 +103,8 @@ async function loadState() {
           console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '20.94') {
-          console.log('Force updating Postgres DB state with clean db.json v20.94...');
+        if (!dbState || dbState.dbVersion !== '20.95') {
+          console.log('Force updating Postgres DB state with clean db.json v20.95...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return localState;
@@ -80,7 +126,7 @@ async function loadState() {
 }
 
 async function saveState(newState) {
-  newState.dbVersion = '20.94';
+  newState.dbVersion = '20.95';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -109,7 +155,7 @@ app.get('/api/state', async (req, res) => {
   try {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     const state = await loadState();
-    res.json(state || {});
+    res.json(sanitizeServerState(state) || {});
   } catch (err) {
     console.error('Error in /api/state:', err);
     res.status(500).json({ error: err.message });
