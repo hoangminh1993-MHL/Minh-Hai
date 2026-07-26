@@ -1,8 +1,71 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.22] - 2026-07-27
+### Thêm mới (Added)
+- Tự động nạp bộ tiêu đề Anti-Cache (HTTP Headers 
+o-cache, no-store, must-revalidate) ngăn trình duyệt lưu bản đệm cũ v21.15, tự động nạp lên phiên bản v21.22 mới nhất.
+- Bổ sung 17 nhân sự thực tế chuẩn phân quyền vào hệ thống.
+
+### Sửa lỗi (Fixed)
+- Sửa triệt để lỗi bấm thẻ CRM không mở được Popup chi tiết và nút Thêm khách hàng mới bị đóng băng.
+- Dọn dẹp 100% Tiếng Việt sạch lỗi chính tả và các ký tự mã hóa rác trên toàn bộ 59 thẻ CRM.
+
+## [v20.56] - 2026-07-23
+### Sửa lỗi (Fixed)
+- Sửa lỗi cú pháp Javascript nghiêm trọng khiến toàn bộ bảng Kanban và báo cáo thống kê trong trang Vận hành (Khách cũ) bị mất hoàn toàn.
+- Sửa lỗi sinh ra nhiều thanh cuộn thừa trên các màn hình khác không cần thiết.
+- Khôi phục lại toàn bộ dữ liệu Vận Hành hiển thị bình thường.
+## [v20.55] - 2026-07-23
+### Thêm mới (Added)
+- Chuyển Popup Chi tiết Dự án thành một trang riêng biệt (Dedicated View) với đầy đủ tính năng.
+- Thêm thanh cuộn (scrollbar) phụ phía trên Kanban board Vận hành giúp dễ dàng kéo ngang.
+
+### Thay đổi (Changed)
+- Di chuyển bảng thống kê các lô hàng Chính ngạch từ Dashboard Admin sang trang Vận hành.
+- Cho phép click trực tiếp vào danh sách trong popup Thống kê để mở nhanh thông tin Lô hàng hoặc Khách hàng tiềm năng.
 Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ thống Minh Hải CRM sẽ được tự động cập nhật và lưu trữ tại đây.
 
 ---
+
+## [v47.8] - 2026-07-22
+### Sửa lỗi (Fixed)
+- **Cơ chế sao lưu dữ liệu cục bộ (Database Fallback):** Bổ sung cơ chế chống lỗi đường truyền hoặc cơ sở dữ liệu trên máy chủ. Nếu máy chủ Supabase bị lỗi kết nối hoặc giới hạn băng thông, hệ thống sẽ tự động lưu dữ liệu thẳng vào ổ cứng cục bộ (`db.json`) thay vì hủy bỏ yêu cầu. Đảm bảo 100% dữ liệu đã bấm "Lưu Thông Tin" sẽ không bao giờ bị mất sau khi ấn F5 dù mạng lỗi.
+
+---
+
+## [v47.7] - 2026-07-22
+### Sửa lỗi (Fixed)
+- **Sửa lỗi mất dữ liệu khi F5:** Thêm thuộc tính `keepalive` vào các truy vấn tự động lưu trữ trên `app.js` để đảm bảo dữ liệu (đặc biệt là Bình luận, Checklist) vẫn được gửi ngầm lên máy chủ thành công ngay cả khi người dùng bấm F5 hoặc đóng trang quá nhanh. Ngăn chặn trình duyệt hủy bỏ yêu cầu đang lưu.
+- **Tự động lưu khi bấm Lưu Thông Tin:** Tích hợp việc tự động nhận diện và nạp các nội dung đang gõ dở ở ô Bình luận, Checklist, hoặc Thêm tài liệu vào danh sách nếu người dùng bấm thẳng nút "Lưu Thông Tin" lớn mà quên bấm nút gửi nhỏ.
+- **Bỏ bộ nhớ đệm (Cache-Busting):** Nâng cấp bộ đếm phiên bản nội bộ, đồng thời tắt lưu đệm cho tiến trình tải dữ liệu đầu vào `syncLoadState`, đảm bảo trình duyệt không gọi dữ liệu cũ sau khi người dùng F5.
+
+---
+
+## [v47.7] - 2026-07-22
+### Sửa lỗi (Fixed)
+- **Lỗi mất dữ liệu:** Sửa lỗi mất bình luận và file đính kèm trong bảng popup chi tiết Lô hàng khi thao tác quá nhanh hoặc nhấn nút Lưu thông tin. Nguyên nhân do hệ thống gửi nhiều tín hiệu lưu đồng thời gây xung đột dữ liệu trên máy chủ. Đã được khắc phục bằng cách thiết lập hàng đợi (queue) và gộp tín hiệu (debounce).
+
+## [v47.6] - 2026-07-18
+### Sửa lỗi & Nâng cấp (Fixed & Improved)
+- **Thống kê Popup:** Sửa lỗi thiếu đơn hàng do sai khác chữ hoa/thường ở mục `serviceType` (ví dụ "Chính ngạch" vs "chính ngạch").
+- **Loại bỏ trùng lặp:** Đơn hàng từ Lead khách mới khi đã chốt thành công và đẩy sang bảng Vận hành sẽ không bị đếm 2 lần nữa.
+- **Thêm cột Nguồn:** Trong popup danh sách sẽ có thêm cột Nguồn để ghi chú rõ đơn hàng này đến từ bảng **Vận hành** hay **CRM Khách mới**, giúp tránh nhầm lẫn khi đối chiếu với các bảng Kanban.
+
+## [v47.5] - 2026-07-18
+### Thay đổi (Changed)
+- **Thống kê Dashboard Vận hành:** Khi click vào 4 ô thống kê chính ngạch và vận hành, thay vì chuyển hướng sang tab khác, hệ thống sẽ mở ra một popup (modal) hiển thị trực tiếp danh sách chi tiết các lô hàng tương ứng để dễ dàng theo dõi.
+
+## [v47.4] - 2026-07-18
+### Thay đổi (Changed)
+- **Thống kê Dashboard:** Chuyển 4 thẻ thống kê chính ngạch và vận hành sang tab "Vận Hành & Khách Cũ (Founder)".
+- **Tích hợp:** Thêm tính năng click vào các thẻ thống kê này để tự động chuyển hướng và lọc danh sách lô hàng tương ứng trong bảng Vận hành.
+
+## [v47.3] - 2026-07-18
+### Thêm mới (Added)
+- **Thống kê Dashboard:** Thêm 4 thẻ thống kê mới vào màn hình Tổng quan để theo dõi: Tổng số lô chính ngạch phát sinh, Lô chính ngạch chốt được, Lợi nhuận mang về từ chính ngạch, và Số lượng lô hàng vận hành add vào CRM Khách cũ.
+
+### Thay đổi (Changed)
+- **Giao diện Kanban:** Đảo ngược thanh cuộn ngang (scrollbar) của tất cả các bảng Kanban (CRM Khách Mới, Vận Hành Khách Cũ, Công việc đơn lẻ) lên phía trên cùng của bảng để người dùng dễ thao tác và quan sát hơn.
 
 ## [v47.2] - 2026-07-18
 ### Sửa lỗi (Fixed)
@@ -76,3 +139,6 @@ Tất cả các thay đổi, cập nhật tính năng và sửa lỗi của hệ
 ### Tính năng mới (Added)
 - **Cột "Việc Tôi Hỗ Trợ":** Thêm cột thứ 5 trong tab Công Việc Của Tôi để theo dõi các việc mà tài khoản hiện tại được gắn làm Người hỗ trợ.
 - **Tối ưu kéo thả:** Tự động vô hiệu hóa pointer-events trên các thẻ nền khi đang kéo thả để giải quyết triệt để hiện tượng giật lag, kéo phát ăn ngay.
+
+
+

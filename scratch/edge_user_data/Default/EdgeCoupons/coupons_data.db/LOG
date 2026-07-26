@@ -1,0 +1,5 @@
+2026/07/26-23:55:54.242 aee0 Creating DB d:\antigravity\scratch\edge_user_data\Default\EdgeCoupons/coupons_data.db since it was missing.
+2026/07/26-23:55:54.253 aee0 Reusing MANIFEST d:\antigravity\scratch\edge_user_data\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/07/26-23:55:54.637 7928 Level-0 table #5: started
+2026/07/26-23:55:54.641 7928 Level-0 table #5: 683041 bytes OK
+2026/07/26-23:55:54.645 7928 Delete type=0 #3

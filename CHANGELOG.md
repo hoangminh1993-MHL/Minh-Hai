@@ -1,5 +1,15 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.22] - 2026-07-27
+### Thêm mới (Added)
+- Tự động nạp bộ tiêu đề Anti-Cache (HTTP Headers 
+o-cache, no-store, must-revalidate) ngăn trình duyệt lưu bản đệm cũ v21.15, tự động nạp lên phiên bản v21.22 mới nhất.
+- Bổ sung 17 nhân sự thực tế chuẩn phân quyền vào hệ thống.
+
+### Sửa lỗi (Fixed)
+- Sửa triệt để lỗi bấm thẻ CRM không mở được Popup chi tiết và nút Thêm khách hàng mới bị đóng băng.
+- Dọn dẹp 100% Tiếng Việt sạch lỗi chính tả và các ký tự mã hóa rác trên toàn bộ 59 thẻ CRM.
+
 ## [v20.56] - 2026-07-23
 ### Sửa lỗi (Fixed)
 - Sửa lỗi cú pháp Javascript nghiêm trọng khiến toàn bộ bảng Kanban và báo cáo thống kê trong trang Vận hành (Khách cũ) bị mất hoàn toàn.

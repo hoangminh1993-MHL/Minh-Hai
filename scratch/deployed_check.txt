@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <script>
+    const loggedInUser = localStorage.getItem('minhhai_user');
+    if (!loggedInUser) {
+      window.location.href = 'login.html';
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minh Háº£i Logistics - CRM & Quáº£n LÃ½ CÃ´ng Viá»‡c</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <!-- Google Fonts - Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Raleway:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-container">
+    <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon" style="display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; overflow: hidden; border-radius: var(--radius-sm);">
+          <img src="/logo.png" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <div class="brand-name">
+          <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH Háº¢I</h2>
+          <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+            <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
+            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); 
