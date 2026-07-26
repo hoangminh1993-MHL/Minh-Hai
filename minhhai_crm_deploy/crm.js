@@ -9,7 +9,15 @@ let failPromptCallback = null; // Callback for confirm button on fail modal
 function cleanVietnameseText(text) {
   if (!text || typeof text !== 'string') return text || '';
   let s = text.trim();
-  s = s.replace(/Kh├ích Messenger Remote/g, 'Khách Messenger Remote')
+  s = s.replace(/\u0393\u00F2\u00E6\u252C\u2551/g, 'ầ')
+       .replace(/\u0393\u00F6\u00A3\u252C\u00B1/g, 'ầ')
+       .replace(/\u0393\u00F2\u00F9\u00F4/g, 'uồ')
+       .replace(/\u0393\u00F6\u00A3/g, 'à')
+       .replace(/\u0393\u00F6\u00C7\u00EA/g, 'Đ')
+       .replace(/\u0393\u00F2Pt\u0393\u00FB\u00E6/g, ' tư')
+       .replace(/\u0393\u00F2\u00E6\u00E6/g, ' vấ')
+       .replace(/\u0393\u00F2\u00E6\u252C\u00AD/g, 'n nhậ')
+       .replace(/Kh├ích Messenger Remote/g, 'Khách Messenger Remote')
        .replace(/Kh├ích Messenger/g, 'Khách Messenger')
        .replace(/D├║ng T├║c/g, 'Dương Tóc')
        .replace(/D├║ng t├║c/g, 'Dương Tóc')
