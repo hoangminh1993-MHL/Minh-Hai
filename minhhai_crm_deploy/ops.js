@@ -3471,7 +3471,7 @@ function renderMyTasks() {
         `;
         
         card.onclick = () => {
-          window.location.hash = 'tasks';
+          if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
         };
 
         mySingleTasksList.appendChild(card);

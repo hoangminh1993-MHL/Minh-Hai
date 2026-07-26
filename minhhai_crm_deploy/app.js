@@ -1,10 +1,57 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v20.86';
+  const CURRENT_APP_VER = 'v20.87';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
     localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
   }
+
+function sanitizeVietnameseString(str) {
+  if (!str || typeof str !== 'string') return str || '';
+  let s = str;
+  s = s.replace(/Kh├ích Messenger Remote/g, 'Khách Messenger Remote')
+       .replace(/Kh├ích Messenger 999/g, 'Khách Messenger 999')
+       .replace(/Kh├ích Messenger/g, 'Khách Messenger')
+       .replace(/D├║ng T├║c/g, 'Dương Tóc').replace(/D├║ng t├║c/g, 'Dương Tóc').replace(/D╞░╞íng T├│c/g, 'Dương Tóc')
+       .replace(/Anh Ph╞░╞íng/g, 'Anh Phương')
+       .replace(/Minh Nguyß╗àn/g, 'Minh Nguyễn')
+       .replace(/Hu╞░╞íng Phß║ím/g, 'Huơng Phạm').replace(/Hu╞░╞íng Phạ/g, 'Huơng Phạm')
+       .replace(/Xu├ón H├ái ─É├¡nh/g, 'Xuân Hải Đinh').replace(/Xu├ón Hß║úi Đinh/g, 'Xuân Hải Đinh').replace(/Xuân Hải Dinh/g, 'Xuân Hải Đinh')
+       .replace(/─É├¡nh Ph├║c An/g, 'Đinh Phúc An').replace(/Dinh Phúc An/g, 'Đinh Phúc An')
+       .replace(/Ho├óng Th├╣y Du╞░╞íng/g, 'Hoàng Thùy Dương')
+       .replace(/Phß║ím Thuß║¡n/g, 'Phạm Thuận')
+       .replace(/Mai Hß╗Öng VPP/g, 'Mai Hồng VPP')
+       .replace(/Ho├óng Ph├ít Koffmann/g, 'Hoàng Phát Koffmann')
+       .replace(/V├▓ng bi Ph├║ Qu├╜/g, 'Vòng bi Phú Quý')
+       .replace(/Nha Phuong B├╣i/g, 'Nha Phuong Bùi')
+       .replace(/Quß╗æc Kh├ính/g, 'Quốc Khánh')
+       .replace(/Minh T├ím/g, 'Minh Tâm')
+       .replace(/Bß║úo Ngß╗ìc Rice/g, 'Bảo Ngọc Rice')
+       .replace(/S╞í n Quang L├ím/g, 'Sơn Quang Lâm')
+       .replace(/Phß║ím Thß╗ï Anh Ngß╗ìc/g, 'Phạm Thị Anh Ngọc')
+       .replace(/Ho├óng C╞░╞íng Biz/g, 'Hoàng Cường Biz')
+       .replace(/V┼⌐ Ngß╗ìc Huyß╗ün/g, 'Vũ Ngọc Huyền')
+       .replace(/Trß║ºn Hiß║┐u/g, 'Trần Hiếu')
+       .replace(/H╞░╞íng V┼⌐/g, 'Hương Vũ')
+       .replace(/Ruby Nguyß╗ün/g, 'Ruby Nguyễn')
+       .replace(/Diß╗åm Quß╗│nh/g, 'Điểm Quỳnh').replace(/Điß╗âm Quß╗│nh/g, 'Điểm Quỳnh')
+       .replace(/─É/g, 'Đ').replace(/─æ/g, 'đ')
+       .replace(/├║/g, 'ú').replace(/├í/g, 'á').replace(/├¡/g, 'í').replace(/├┤/g, 'ô')
+       .replace(/├¬/g, 'ê').replace(/├á/g, 'à').replace(/├¿/g, 'è').replace(/├╣/g, 'ù').replace(/├╜/g, 'ý')
+       .replace(/ß╗a/g, 'ẩ').replace(/ß╗å/g, 'ổ').replace(/ß╗à/g, 'ề').replace(/ß╗ï/g, 'ị')
+       .replace(/ß╗ì/g, 'ỉ').replace(/ß╗Å/g, 'ỏ').replace(/ß╗ü/g, 'ụ').replace(/ß╗ñ/g, 'ủ')
+       .replace(/ß╗ª/g, 'ữ').replace(/ß╗¿/g, 'ừ').replace(/ß╗«/g, 'ứ').replace(/ß╗░/g, 'ử').replace(/ß╗▓/g, 'ữ')
+       .replace(/ß║ím/g, 'ạm').replace(/ß║í/g, 'ạ');
+  return s;
+}
+
+function sanitizeLead(lead) {
+  if (!lead) return lead;
+  if (lead.name) lead.name = sanitizeVietnameseString(lead.name);
+  if (lead.note) lead.note = sanitizeVietnameseString(lead.note);
+  if (lead.failReason) lead.failReason = sanitizeVietnameseString(lead.failReason);
+  return lead;
+}
 window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
@@ -516,15 +563,20 @@ function startStatePolling() {
           AppState.daily_lottery_tickets = data.daily_lottery_tickets || [];
           AppState.bet_pools = data.bet_pools || [];
           
-          if (window.initLeadSteps && AppState.leads) {
-            AppState.leads.forEach(window.initLeadSteps);
+          if (AppState.leads) {
+            AppState.leads.forEach(sanitizeLead);
+            if (window.initLeadSteps) AppState.leads.forEach(window.initLeadSteps);
           }
 
-          // Re-render active view
+          // Re-render active view WITHOUT full tab switching that causes menu hopping
           const activeTabElement = document.querySelector('.nav-item.active');
           if (activeTabElement) {
             const currentViewId = activeTabElement.getAttribute('data-view');
-            navigateToView(currentViewId, false);
+            if (currentViewId === 'crm' && typeof renderCRMBoard === 'function') {
+              renderCRMBoard();
+            } else if (currentViewId === 'dashboard' && typeof renderDashboard === 'function') {
+              renderDashboard();
+            }
           }
           
           // Refresh user context and notification dropdown
