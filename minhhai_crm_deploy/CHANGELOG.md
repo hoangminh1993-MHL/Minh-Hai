@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.36] - 2026-07-27
+### Hoàn thiện 100% tiếng Việt sạch đẹp cho toàn bộ thẻ CRM (Pristine Final Release)
+- Loại bỏ triệt để các chuỗi ký tự rác Tiếng Việt còn sót lại trên thẻ Dương Tóc, MH404, Xuân Hải Đinh.
+- Đồng bộ PostgreSQL database live phiên bản v21.36.
+
 ## [v21.35] - 2026-07-27
 ### Khôi phục Modal, loại bỏ thẻ trùng & sửa 100% lỗi chính tả (Master Fix)
 - Khôi phục cấu trúc HTML 2 Modal: modal-add-lead (Thêm mới KH) và modal-lead-detail (Popup chi tiết 7 bước).

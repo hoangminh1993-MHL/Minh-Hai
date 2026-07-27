@@ -1,7 +1,7 @@
 $edgePath = "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 if (-not (Test-Path $edgePath)) { $edgePath = "C:\Program Files\Microsoft\Edge\Application\msedge.exe" }
 
-$outImg = "C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_32_verified_cards_proof.png"
+$outImg = "C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_35_verified_master.png"
 if (Test-Path $outImg) { Remove-Item $outImg -Force }
 
 $profileDir = "d:\antigravity\edge_profile"
@@ -39,7 +39,7 @@ try {
 
         Start-Sleep -Seconds 6
 
-        # 3. Fetch state explicitly from window inside browser and print lead count
+        # 3. Navigate to CRM, sync state and open card modal popup
         $crdJs = @"
             (async () => {
                 if (typeof navigateToView === 'function') navigateToView('crm');
@@ -47,37 +47,27 @@ try {
                 const data = await res.json();
                 if (data && data.leads) AppState.leads = data.leads;
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
-                return 'Leads count in browser: ' + (AppState.leads ? AppState.leads.length : 0);
+                
+                // Test clicking first card to open modal-lead-detail
+                const firstCard = document.querySelector('.crm-card');
+                if (firstCard) firstCard.click();
+                
+                return 'Leads count: ' + (AppState.leads ? AppState.leads.length : 0);
             })()
 "@
         $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": true}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
 
-        $buf = New-Object byte[] 10485760
-        $ms = New-Object System.IO.MemoryStream
-        $receivedEval = $false
+        Start-Sleep -Seconds 4
 
-        while (-not $receivedEval -and $ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
-            $res = $ws.ReceiveAsync([ArraySegment[byte]]$buf, $cts.Token).Result
-            $ms.Write($buf, 0, $res.Count)
-            if ($res.EndOfMessage) {
-                $str = [System.Text.Encoding]::UTF8.GetString($ms.ToArray())
-                $ms.SetLength(0)
-                if ($str -match '"id":3') {
-                    Write-Output "Browser Eval Result: $str"
-                    $receivedEval = $true
-                }
-            }
-        }
-
-        Start-Sleep -Seconds 3
-
-        # 4. Capture logged in CRM board screenshot
+        # 4. Capture screenshot
         $capMsg = '{"id":4, "method":"Page.captureScreenshot", "params":{"format":"png"}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($capMsg)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
 
+        $buf = New-Object byte[] 10485760
+        $ms = New-Object System.IO.MemoryStream
         while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
             $res = $ws.ReceiveAsync([ArraySegment[byte]]$buf, $cts.Token).Result
             $ms.Write($buf, 0, $res.Count)
