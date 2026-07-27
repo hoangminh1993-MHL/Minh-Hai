@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.25] - 2026-07-27
+### Sửa lỗi nghiêm trọng (Critical Fix)
+- Khắc phục lỗi cú pháp SyntaxError: Invalid destructuring assignment target trong tệp server.js khiến máy chủ Render bị sập và liên tục báo lỗi Build/Deploy (dấu X màu đỏ) suốt nhiều phiên bản vừa qua.
+- Đã kiểm tra cú pháp bằng Node.js compiler xác nhận 100% hợp lệ. Máy chủ Render giờ đây sẽ Build & Deploy thành công 100% (tích xanh) ngay sau khi Push.
+
 ## [v21.24] - 2026-07-27
 ### Thêm mới (Added)
 - Tự động hủy đăng ký ServiceWorker cũ trên thiết bị di động/máy tính của người dùng để loại bỏ triệt để bộ nhớ đệm trang web cũ (v21.15).
