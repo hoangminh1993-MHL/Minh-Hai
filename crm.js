@@ -393,8 +393,8 @@ function renderCRMBoard() {
   // Filter leads by search query and user role permission
   const currentUser = getCurrentUser() || {};
   const filteredLeads = AppState.leads.filter(lead => {
-    const isSpecialAccess = !currentUser || !currentUser.id || currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'hoangminh' || currentUser.username === 'minhphuong' || currentUser.username === 'phuong';
-    if (currentUser && currentUser.id && !isSpecialAccess && lead.salesId !== currentUser.id) {
+    const isSpecialAccess = true; // Ensure all CRM leads are visible across all user accounts
+    if (currentUser && currentUser.id && !isSpecialAccess && lead.salesId && lead.salesId !== currentUser.id) {
       return false;
     }
     const nameVal = String(lead.name || '').toLowerCase();

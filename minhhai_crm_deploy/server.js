@@ -1,4 +1,4 @@
-// Cleaned server.js v21.30
+// Cleaned server.js v21.31
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.30';
+  state.dbVersion = '21.31';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.30';
+  localState.dbVersion = '21.31';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,7 +170,7 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        dbState.dbVersion = '21.30';
+        dbState.dbVersion = '21.31';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -192,7 +192,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.30';
+  newState.dbVersion = '21.31';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,

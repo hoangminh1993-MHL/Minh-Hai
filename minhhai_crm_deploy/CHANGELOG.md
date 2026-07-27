@@ -1,5 +1,9 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.31] - 2026-07-27
+### Bảo đảm hiển thị 100% khách hàng cho tất cả tài khoản (Universal Visibility)
+- Cho phép hiển thị 100% tất cả 59 thẻ khách hàng cho mọi tài khoản nhân viên và quản trị viên, tránh việc bộ lọc phân quyền ẩn các thẻ chưa gán salesId.
+
 ## [v21.30] - 2026-07-27
 ### Khắc phục lỗi gọi hàm getCurrentUser (Critical Bug Fix)
 - Bổ sung hàm getCurrentUser() toàn cục trong pp.js và crm.js.

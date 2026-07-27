@@ -14,18 +14,22 @@ class CaptureLoggedInBoardCdp {
             string edgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
             if (!File.Exists(edgePath)) edgePath = @"C:\Program Files\Microsoft\Edge\Application\msedge.exe";
 
-            string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_27_verified_cards_proof.png";
+            string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_30_final_fresh_proof.png";
             if (File.Exists(outImg)) File.Delete(outImg);
+
+            // Add unique query parameter to bypass Edge browser cache completely
+            long nowTicks = DateTime.Now.Ticks;
+            string url = "https://minh-hai.onrender.com/index.html?v=21.30&t=" + nowTicks + "#crm";
 
             ProcessStartInfo psi = new ProcessStartInfo {
                 FileName = edgePath,
-                Arguments = "--headless --disable-gpu --remote-debugging-port=9222 --window-size=1680,1050 \"https://minh-hai.onrender.com/index.html?v=21.27#crm\"",
+                Arguments = "--headless --disable-gpu --disable-cache --remote-debugging-port=9222 --window-size=1680,1050 \"" + url + "\"",
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
 
             Process proc = Process.Start(psi);
-            Console.WriteLine("Launched Edge with CDP for verified cards proof...");
+            Console.WriteLine("Launched Edge with CDP for fresh v21.30 proof...");
 
             await Task.Delay(4000);
 
@@ -45,10 +49,12 @@ class CaptureLoggedInBoardCdp {
                     await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(enableCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
 
-                    // Inject user login in localStorage, fetch live state and force render
+                    // Inject user login in localStorage, clear stale votr cache, fetch live state and force render
                     string jsCode = @"
-                        localStorage.setItem('minhhai_user', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin'}));
-                        localStorage.setItem('currentUser', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin'}));
+                        localStorage.clear();
+                        localStorage.setItem('minhhai_user', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin', username:'hoangminh'}));
+                        localStorage.setItem('currentUser', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin', username:'hoangminh'}));
+                        localStorage.setItem('minhhai_app_version', 'v21.30');
                         fetch('/api/state?t=' + Date.now()).then(r => r.json()).then(data => {
                             if (data && data.leads) AppState.leads = data.leads;
                             if (data && data.users) AppState.users = data.users;
@@ -80,7 +86,7 @@ class CaptureLoggedInBoardCdp {
                                 if (mData.Success) {
                                     byte[] imageBytes = Convert.FromBase64String(mData.Groups[1].Value);
                                     File.WriteAllBytes(outImg, imageBytes);
-                                    Console.WriteLine("SUCCESS! Saved verified cards screenshot proof for v21.27! Size: " + imageBytes.Length + " bytes");
+                                    Console.WriteLine("SUCCESS! Saved fresh screenshot proof for v21.30! Size: " + imageBytes.Length + " bytes");
                                     break;
                                 }
                             }
