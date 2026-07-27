@@ -42,10 +42,14 @@ try {
         # 3. Navigate to CRM, sync state and open card modal popup
         $crdJs = @"
             (async () => {
+                localStorage.clear();
                 if (typeof navigateToView === 'function') navigateToView('crm');
                 const res = await fetch('/api/state?t=' + Date.now());
                 const data = await res.json();
-                if (data && data.leads) AppState.leads = data.leads;
+                if (data && data.leads) {
+                    AppState.leads = data.leads;
+                    localStorage.setItem('minhhai_leads', JSON.stringify(data.leads));
+                }
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 
                 // Test clicking first card to open modal-lead-detail

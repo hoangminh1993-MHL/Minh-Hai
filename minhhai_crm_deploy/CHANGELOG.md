@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.42] - 2026-07-27
+### Khôi phục 100% tiếng Việt chuẩn đẹp không lỗi chính tả cho tất cả các thẻ CRM (100% Clean)
+- Đã sửa Hương Phạm và Xuân Hải Đinh không còn rác ký tự encoding.
+- Đồng bộ cơ sở dữ liệu live v21.42 trên Render.
+
 ## [v21.41] - 2026-07-27
 ### Khắc phục triệt để bằng ID cho toàn bộ thẻ CRM (100% ID Sanitization)
 - Khôi phục chính xác 100% tên & ghi chú Tiếng Việt cho lead-excel-6-494, lead-1783756473912, lead-fb-37d916ff.

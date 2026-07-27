@@ -1,5 +1,5 @@
-2026/07/27-15:30:04.541 5454 Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
-2026/07/27-15:30:04.547 5454 Recovering log #20
-2026/07/27-15:30:04.548 5454 Level-0 table #22: started
-2026/07/27-15:30:04.553 5454 Level-0 table #22: 42028 bytes OK
-2026/07/27-15:30:04.558 5454 Delete type=0 #20
+2026/07/27-19:23:17.645 6880 Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/07/27-19:23:17.654 6880 Recovering log #26
+2026/07/27-19:23:17.656 6880 Level-0 table #29: started
+2026/07/27-19:23:17.660 6880 Level-0 table #29: 47258 bytes OK
+2026/07/27-19:23:17.663 6880 Delete type=0 #26
