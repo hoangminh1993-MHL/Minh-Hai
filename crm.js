@@ -1162,30 +1162,44 @@ function openLeadDetailModal(leadId) {
 
   renderActiveLeadStepPanel();
 
-  // Wire delete button
-  document.getElementById('btn-lead-delete').onclick = () => {
-    if (confirm(`Bạn chắc chắn muốn xóa cơ hội khách hàng "${lead.name}"? Dữ liệu sẽ mất vĩnh viễn.`)) {
-      AppState.leads = AppState.leads.filter(l => l.id !== leadId);
-      saveState();
-      closeModal('modal-lead-detail');
-      renderCRMBoard();
-      addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
-    }
-  };
+  // Wire delete button defensively
+  const btnDeleteLead = document.getElementById('btn-lead-delete');
+  if (btnDeleteLead) {
+    btnDeleteLead.onclick = () => {
+      if (confirm(`Bạn chắc chắn muốn xóa cơ hội khách hàng "${lead.name}"? Dữ liệu sẽ mất vĩnh viễn.`)) {
+        AppState.leads = AppState.leads.filter(l => l.id !== leadId);
+        saveState();
+        closeModal('modal-lead-detail');
+        renderCRMBoard();
+        addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
+      }
+    };
+  }
 
-  // Wire buttons inside modal
-  document.getElementById('btn-lead-step-save').onclick = handleSaveActiveLeadStepData;
+  // Wire buttons inside modal defensively
+  const btnSaveStep = document.getElementById('btn-lead-step-save');
+  if (btnSaveStep) btnSaveStep.onclick = handleSaveActiveLeadStepData;
   
   const chkInput = document.getElementById('lead-step-new-chk');
-  document.getElementById('btn-lead-step-add-chk').onclick = handleLeadAddStepChecklistItem;
-  chkInput.onkeyup = (e) => {
-    if (e.key === 'Enter') handleLeadAddStepChecklistItem();
-  };
+  const btnAddChk = document.getElementById('btn-lead-step-add-chk');
+  if (btnAddChk) btnAddChk.onclick = handleLeadAddStepChecklistItem;
+  if (chkInput) {
+    chkInput.onkeyup = (e) => {
+      if (e.key === 'Enter') handleLeadAddStepChecklistItem();
+    };
+  }
 
-  document.getElementById('btn-lead-step-add-file').onclick = handleLeadAddStepFile;
-  document.getElementById('btn-lead-step-add-comment').onclick = handleLeadAddStepComment;
+  const btnAddFile = document.getElementById('btn-lead-step-add-file');
+  if (btnAddFile) btnAddFile.onclick = handleLeadAddStepFile;
 
-  openModal('modal-lead-detail');
+  const btnAddComment = document.getElementById('btn-lead-step-add-comment');
+  if (btnAddComment) btnAddComment.onclick = handleLeadAddStepComment;
+
+  if (typeof openModal === 'function') {
+    openModal('modal-lead-detail');
+  } else if (typeof window.openModal === 'function') {
+    window.openModal('modal-lead-detail');
+  }
 }
 
 function renderActiveLeadStepPanel() {

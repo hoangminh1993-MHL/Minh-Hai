@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.45] - 2026-07-27
+### Sửa 100% Lỗi 4 Thẻ Khách Hàng Báo Bởi Người Dùng & Sửa Lỗi Popup Detail
+1. Đã sửa Minh Tâm, Phạm Thị Ánh Ngọc, Hương Vũ, Nhã Phương Bùi hết sạch lỗi ký tự encoding.
+2. Thêm bảo vệ null safety cho các nút sự kiện trong Modal Popup Chi Tiết thẻ CRM.
+
 ## [v21.44] - 2026-07-27
 ### Bàn Giao 100% Hoàn Hảo Tất Cả 4 Mục CRM Khách Mới
 1. Loại bỏ thẻ khách ảo (Khách Messenger 999).
