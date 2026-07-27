@@ -1089,6 +1089,7 @@ window.initLeadSteps = function initLeadSteps(lead) {
 };
 
 function openLeadDetailModal(leadId) {
+  window.openLeadDetailModal = openLeadDetailModal;
   const lead = AppState.leads.find(l => l.id === leadId);
   if (!lead) return;
 
