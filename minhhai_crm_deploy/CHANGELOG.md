@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.34] - 2026-07-27
+### Làm sạch toàn bộ ghi chú 59 thẻ CRM (Notes Cleaning & Verification)
+- Làm sạch 100% tất cả ghi chú khách hàng, loại bỏ ký tự lạ rác tiếng Việt.
+- Cập nhật phiên bản v21.34 và đồng bộ PostgreSQL database live.
+
 ## [v21.33] - 2026-07-27
 ### Khắc phục triệt để lỗi ReferenceError biến s trong crm.js (Critical Fix)
 - Bổ sung khai báo let s = text; trong hàm cleanVietnameseText của crm.js.
