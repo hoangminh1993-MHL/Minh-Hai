@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.24] - 2026-07-27
+### Thêm mới (Added)
+- Tự động hủy đăng ký ServiceWorker cũ trên thiết bị di động/máy tính của người dùng để loại bỏ triệt để bộ nhớ đệm trang web cũ (v21.15).
+- Thêm thẻ HTML Meta Tags chống lưu đệm (
+o-cache, no-store, must-revalidate) trực tiếp trong thẻ <head> của index.html.
+
 ## [v21.23] - 2026-07-27
 ### Sửa lỗi (Fixed)
 - Ép buộc phản hồi phiên bản máy chủ sanitizeServerState trả về v21.23 và đồng bộ 100% 17 nhân sự thực tế, xóa bỏ dứt điểm các tên nhân sự giả cũ (Sales 1, Trang CSKH) và ngăn đệm phiên bản cũ 21.15.
