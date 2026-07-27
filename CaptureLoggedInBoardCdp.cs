@@ -8,13 +8,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-class CaptureLiveCrmCardsCdp {
+class CaptureLoggedInBoardCdp {
     static void Main() {
         Task.Run(async () => {
             string edgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
             if (!File.Exists(edgePath)) edgePath = @"C:\Program Files\Microsoft\Edge\Application\msedge.exe";
 
-            string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_27_full_cards_proof.png";
+            string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_27_verified_cards_proof.png";
             if (File.Exists(outImg)) File.Delete(outImg);
 
             ProcessStartInfo psi = new ProcessStartInfo {
@@ -25,10 +25,9 @@ class CaptureLiveCrmCardsCdp {
             };
 
             Process proc = Process.Start(psi);
-            Console.WriteLine("Launched Edge for v21.27 full cards proof...");
+            Console.WriteLine("Launched Edge with CDP for verified cards proof...");
 
-            // Wait 12 seconds for network fetch /api/state to return and cards to render
-            await Task.Delay(12000);
+            await Task.Delay(4000);
 
             try {
                 WebClient client = new WebClient();
@@ -46,7 +45,24 @@ class CaptureLiveCrmCardsCdp {
                     await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(enableCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
 
-                    string captureCmd = "{\"id\": 2, \"method\": \"Page.captureScreenshot\", \"params\": {\"format\": \"png\"}}";
+                    // Inject user login in localStorage, fetch live state and force render
+                    string jsCode = @"
+                        localStorage.setItem('minhhai_user', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin'}));
+                        localStorage.setItem('currentUser', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin'}));
+                        fetch('/api/state?t=' + Date.now()).then(r => r.json()).then(data => {
+                            if (data && data.leads) AppState.leads = data.leads;
+                            if (data && data.users) AppState.users = data.users;
+                            if (typeof renderCRMBoard === 'function') renderCRMBoard();
+                        });
+                    ";
+
+                    string evalCmd = "{\"id\": 2, \"method\": \"Runtime.evaluate\", \"params\": {\"expression\": " + new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(jsCode) + "}}";
+                    await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(evalCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
+                    await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
+
+                    await Task.Delay(6000);
+
+                    string captureCmd = "{\"id\": 3, \"method\": \"Page.captureScreenshot\", \"params\": {\"format\": \"png\"}}";
                     await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(captureCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
 
                     byte[] buffer = new byte[20 * 1024 * 1024];
@@ -59,12 +75,12 @@ class CaptureLiveCrmCardsCdp {
                             string msg = Encoding.UTF8.GetString(ms.ToArray());
                             ms.SetLength(0);
 
-                            if (msg.Contains("\"id\":2") || msg.Contains("\"data\":")) {
+                            if (msg.Contains("\"id\":3") || msg.Contains("\"data\":")) {
                                 Match mData = Regex.Match(msg, @"""data"":\s*""([^""]+)""");
                                 if (mData.Success) {
                                     byte[] imageBytes = Convert.FromBase64String(mData.Groups[1].Value);
                                     File.WriteAllBytes(outImg, imageBytes);
-                                    Console.WriteLine("SUCCESS! Saved full cards screenshot proof for v21.27! Size: " + imageBytes.Length + " bytes");
+                                    Console.WriteLine("SUCCESS! Saved verified cards screenshot proof for v21.27! Size: " + imageBytes.Length + " bytes");
                                     break;
                                 }
                             }
