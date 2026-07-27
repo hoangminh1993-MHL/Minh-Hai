@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.34';
+  const CURRENT_APP_VER = 'v21.35';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -63,6 +63,32 @@ window.getCurrentUser = function getCurrentUser() {
   }
   return { id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin', username: 'hoangminh' };
 };
+
+window.openModal = function(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+  }
+};
+
+window.closeModal = function(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+};
+
+document.addEventListener('click', (e) => {
+  const closeBtn = e.target.closest('.btn-close-modal');
+  if (closeBtn) {
+    const modalId = closeBtn.getAttribute('data-modal') || closeBtn.closest('.modal')?.id;
+    if (modalId) window.closeModal(modalId);
+  } else if (e.target.classList && e.target.classList.contains('modal')) {
+    window.closeModal(e.target.id);
+  }
+});
 
 window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
@@ -608,7 +634,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.34';
+const CLIENT_VERSION = '21.35';
 
 async function checkCodeVersionUpdate() {
   try {

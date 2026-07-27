@@ -17,7 +17,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc (v21.34)</title>
+  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc (v21.35)</title>
   <link rel="icon" type="image/png" href="logo.png">
   <!-- Google Fonts - Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
           <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
             <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
-            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v21.34</span>
+            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v21.35</span>
           </div>
         </div>
       </div>
@@ -2434,17 +2434,195 @@
     </div>
   </div>
 
+  <!-- MODAL: ADD CLIENT (CRM LEAD) -->
+  <div class="modal" id="modal-add-lead">
+    <div class="modal-content" style="max-width: 550px;">
+      <div class="modal-header">
+        <h3>Thêm Khách Hàng Mới</h3>
+        <button class="btn-close-modal" data-modal="modal-add-lead" onclick="closeModal('modal-add-lead')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-add-lead">
+          <div class="form-group">
+            <label for="lead-name">Tên khách hàng <span class="text-rose">*</span></label>
+            <input type="text" id="lead-name" class="form-control" placeholder="Nhập tên khách hàng" required>
+          </div>
+          <div class="form-group">
+            <label for="lead-phone">Số điện thoại</label>
+            <input type="text" id="lead-phone" class="form-control" placeholder="Nhập số điện thoại (ví dụ: 0987xxxxxx)">
+          </div>
+          <div class="form-group">
+            <label for="lead-source">Nguồn KH</label>
+            <select id="lead-source" class="form-control">
+              <option value="Fanpage">Fanpage</option>
+              <option value="KH cũ">KH cũ</option>
+              <option value="BNI">BNI</option>
+              <option value="GT">GT</option>
+              <option value="Cá nhân">Cá nhân</option>
+              <option value="Giới thiệu">Giới thiệu</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="lead-val-rmb">Giá trị đơn hàng dự kiến (RMB - Tệ)</label>
+              <input type="number" id="lead-val-rmb" class="form-control" placeholder="0" min="0">
+            </div>
+            <div class="form-group col-6">
+              <label for="lead-val-vnd">Giá trị đơn hàng dự kiến (VND)</label>
+              <input type="number" id="lead-val-vnd" class="form-control" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="lead-note">Ghi chú nhu cầu khách hàng</label>
+            <textarea id="lead-note" class="form-control" rows="3" placeholder="Ví dụ: Cần tìm nguồn giày thể thao Quảng Châu, ký gửi vận chuyển về Hà Nội..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="lead-sales">Sales phụ trách</label>
+            <select id="lead-sales" class="form-control">
+              <!-- Dynamically populated in app.js with Sales users -->
+            </select>
+          </div>
+          <div class="modal-footer" style="margin-top: 15px; display:flex; justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-add-lead" onclick="closeModal('modal-add-lead')">Hủy</button>
+            <button type="submit" class="btn btn-primary">Thêm cơ hội</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CRM LEAD DETAIL (Khách Hàng Mới) -->
+  <div class="modal" id="modal-lead-detail">
+    <div class="modal-content" style="width: 850px; max-width: 95%; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <div>
+          <h3 id="lead-detail-title">Khách hàng mới</h3>
+          <span class="card-subtitle" id="lead-detail-subtitle">Nguồn - SĐT</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:12px; color:var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+          <select id="modal-lead-stage-select" style="font-size: 12px; padding: 4px 8px; background: #111827; color: white; border: 1px solid #4b5563; border-radius: 6px; cursor: pointer; outline: none; width: 165px; height: 30px;">
+            <option value="" disabled selected>Chọn bước...</option>
+            <option value="receive_info">1. Nhận thông tin</option>
+            <option value="get_phone">2. Lấy SĐT</option>
+            <option value="explore_info">3. Khai thác thông tin</option>
+            <option value="quotation">4. Báo giá</option>
+            <option value="negotiating">5. Thương lượng</option>
+            <option value="success">6. Thành công</option>
+            <option value="failed">7. Thất bại</option>
+          </select>
+          <button class="btn-close-modal" data-modal="modal-lead-detail" onclick="closeModal('modal-lead-detail')" style="margin-left: 8px;">&times;</button>
+        </div>
+      </div>
+      <div class="modal-body" style="padding-top: 10px;">
+        <!-- Timeline Steps view -->
+        <div class="lead-steps-timeline" style="display:flex; justify-content:space-between; align-items:center; background:#111827; padding:12px; border-radius:var(--radius-md); overflow-x:auto; margin-bottom:20px; gap:8px;">
+          <!-- 7 Steps bubbles -->
+        </div>
+
+        <div class="dashboard-grid grid-1-3" style="gap:20px;">
+          <!-- Left: Step settings & checklists -->
+          <div style="background: rgba(31, 41, 55, 0.2); padding: 15px; border-radius: var(--radius-md); border:1px solid var(--border-color);">
+            <h4 id="lead-step-panel-title" style="font-size:15px; font-weight:bold; border-bottom:1px solid var(--border-color); padding-bottom:6px; margin-bottom:12px; color:var(--color-primary);">Bước 1: Nhận thông tin</h4>
+            
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="lead-step-assignee">Người phụ trách</label>
+                <select id="lead-step-assignee" class="form-control"></select>
+              </div>
+              <div class="form-group col-6">
+                <label for="lead-step-phone">Số điện thoại</label>
+                <input type="text" id="lead-step-phone" class="form-control" placeholder="Chưa có SĐT">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label for="lead-step-deadline">Hạn chót bước này</label>
+                <input type="date" id="lead-step-deadline" class="form-control">
+              </div>
+              <div class="form-group col-6">
+                <label for="lead-step-source">Nguồn khách hàng</label>
+                <select id="lead-step-source" class="form-control">
+                  <option value="Fanpage">Fanpage</option>
+                  <option value="Giới thiệu">Giới thiệu</option>
+                  <option value="Tự tìm kiếm">Tự tìm kiếm</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Value row for Success stage -->
+            <div class="form-row" id="lead-step-values-row" style="display: none;">
+              <div class="form-group col-6">
+                <label for="lead-step-val-rmb">Giá trị RMB</label>
+                <input type="number" id="lead-step-val-rmb" class="form-control" value="0">
+              </div>
+              <div class="form-group col-6">
+                <label for="lead-step-val-vnd">Giá trị VND</label>
+                <input type="number" id="lead-step-val-vnd" class="form-control" value="0">
+              </div>
+            </div>
+
+            <div style="margin-top: 15px;">
+              <label style="font-weight: bold; font-size: 13px;">Ghi chú & Nhu cầu bước này:</label>
+              <textarea id="lead-step-note" class="form-control" rows="3" style="margin-top: 5px;" placeholder="Nhập chi tiết nhu cầu hoặc tiến độ làm việc với khách hàng..."></textarea>
+            </div>
+          </div>
+
+          <!-- Right: Checklist, Files & History Comments -->
+          <div style="background: rgba(31, 41, 55, 0.2); padding: 15px; border-radius: var(--radius-md); border:1px solid var(--border-color);">
+            <h4 style="font-size:15px; font-weight:bold; border-bottom:1px solid var(--border-color); padding-bottom:6px; margin-bottom:12px;">Việc cần làm & Tài liệu</h4>
+            
+            <div style="margin-bottom: 15px;">
+              <label style="font-weight: bold; font-size: 12px; display:block; margin-bottom: 6px;">Danh sách việc cần làm (Checklist):</label>
+              <div id="lead-step-checklist-items" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;"></div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="lead-step-new-chk" class="form-control" placeholder="Thêm đầu việc mới..." style="font-size: 12px; height: 32px;">
+                <button type="button" class="btn btn-sm btn-outline" id="btn-lead-step-add-chk">+</button>
+              </div>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+              <label style="font-weight: bold; font-size: 12px; display:block; margin-bottom: 6px;">Tài liệu / Đính kèm:</label>
+              <div id="lead-step-files-list" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;"></div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="lead-step-file-url" class="form-control" placeholder="Dán link file / tài liệu..." style="font-size: 12px; height: 32px;">
+                <button type="button" class="btn btn-sm btn-outline" id="btn-lead-step-add-file"><i class="fa-solid fa-paperclip"></i> Đính</button>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-weight: bold; font-size: 12px; display:block; margin-bottom: 6px;">Lịch sử thảo luận (Comments):</label>
+              <div id="lead-step-comments-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; margin-bottom: 6px; font-size: 12px;"></div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="lead-step-new-comment" class="form-control" placeholder="Nhập trao đổi nội bộ..." style="font-size: 12px; height: 32px;">
+                <button type="button" class="btn btn-sm btn-primary" id="btn-lead-step-add-comment">Gửi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="margin-top: 20px; border-top:1px solid var(--border-color); padding-top:12px; display:flex; align-items:center;">
+          <button type="button" class="btn btn-danger" id="btn-lead-delete" style="margin-right:auto;"><i class="fa-solid fa-trash-can"></i> Xóa cơ hội</button>
+          <button type="button" class="btn btn-outline btn-close-modal" data-modal="modal-lead-detail" onclick="closeModal('modal-lead-detail')" style="margin-right: 8px;">Đóng</button>
+          <button type="button" class="btn btn-primary" id="btn-lead-step-save">Lưu Thông Tin Bước</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=21.34"></script>
-  <script src="crm.js?v=21.34"></script>
-  <script src="tasks.js?v=21.34"></script>
-  <script src="ops.js?v=21.34"></script>
-  <script src="inbox-sim.js?v=21.34"></script>
-  <script src="games.js?v=21.34"></script>
-  <script src="suggestions.js?v=21.34"></script>
+  <script src="app.js?v=21.35"></script>
+  <script src="crm.js?v=21.35"></script>
+  <script src="tasks.js?v=21.35"></script>
+  <script src="ops.js?v=21.35"></script>
+  <script src="inbox-sim.js?v=21.35"></script>
+  <script src="games.js?v=21.35"></script>
+  <script src="suggestions.js?v=21.35"></script>
   
   <script>
     function toggleMobileMenu() {

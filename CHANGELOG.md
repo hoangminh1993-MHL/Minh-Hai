@@ -1,5 +1,12 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.35] - 2026-07-27
+### Khôi phục Modal, loại bỏ thẻ trùng & sửa 100% lỗi chính tả (Master Fix)
+- Khôi phục cấu trúc HTML 2 Modal: modal-add-lead (Thêm mới KH) và modal-lead-detail (Popup chi tiết 7 bước).
+- Bổ sung hàm toàn cục openModal & closeModal trong pp.js sửa triệt để lỗi nút bấm không ăn.
+- Khôi phục văn bản Tiếng Việt chuẩn 100% sạch đẹp cho toàn bộ danh sách khách hàng.
+- Lọc trùng loại bỏ hoàn toàn các thẻ trùng lặp, giữ lại 47 thẻ khách hàng độc bản duy nhất.
+
 ## [v21.34] - 2026-07-27
 ### Làm sạch toàn bộ ghi chú 59 thẻ CRM (Notes Cleaning & Verification)
 - Làm sạch 100% tất cả ghi chú khách hàng, loại bỏ ký tự lạ rác tiếng Việt.
