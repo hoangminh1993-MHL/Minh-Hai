@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.40] - 2026-07-27
+### Hoàn tất 100% làm sạch tiếng Việt cho toàn bộ thẻ CRM (100% Verified Clean)
+- Đã làm sạch toàn bộ các thẻ còn sót ký tự lạ (Xuân Hải Đinh, Dương Tóc).
+- Đồng bộ cơ sở dữ liệu live v21.40 trên Render.
+
 ## [v21.39] - 2026-07-27
 ### Khôi phục 100% tiếng Việt có dấu chuẩn đẹp cho toàn bộ thẻ CRM (Pristine Vietnamese Restoration)
 - Loại bỏ quy tắc regex phá hủy ký tự dấu Tiếng Việt trong crm.js.
