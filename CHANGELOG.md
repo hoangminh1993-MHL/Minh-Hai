@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.26] - 2026-07-27
+### Bảo vệ dữ liệu (Data Protection Fix)
+- Khắc phục triệt để nguyên nhân làm mất dữ liệu khách hàng mới khi cập nhật phiên bản: Loại bỏ hoàn toàn điều kiện ghi đè cơ sở dữ liệu PostgreSQL (dbVersion !== CURRENT_VERSION).
+- Cơ sở dữ liệu PostgreSQL giờ đây sẽ luôn giữ lại 100% khách hàng và dữ liệu do người dùng tạo/chỉnh sửa qua tất cả các đợt cập nhật trong tương lai.
+
 ## [v21.25] - 2026-07-27
 ### Sửa lỗi nghiêm trọng (Critical Fix)
 - Khắc phục lỗi cú pháp SyntaxError: Invalid destructuring assignment target trong tệp server.js khiến máy chủ Render bị sập và liên tục báo lỗi Build/Deploy (dấu X màu đỏ) suốt nhiều phiên bản vừa qua.

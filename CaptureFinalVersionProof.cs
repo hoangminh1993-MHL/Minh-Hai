@@ -1,29 +1,35 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 class CaptureFinalVersionProof {
     static void Main() {
-        string edgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
-        if (!File.Exists(edgePath)) edgePath = @"C:\Program Files\Microsoft\Edge\Application\msedge.exe";
+        string artifactsDir = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c";
+        string outImg = Path.Combine(artifactsDir, "crm_board_v21_25_success_proof.png");
 
-        string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\final_v21_23_proof.png";
-        if (File.Exists(outImg)) File.Delete(outImg);
+        string edgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
+        if (!File.Exists(edgePath)) {
+            edgePath = @"C:\Program Files\Microsoft\Edge\Application\msedge.exe";
+        }
+
+        Console.WriteLine("Capturing live logged-in screenshot for v21.25...");
 
         ProcessStartInfo psi = new ProcessStartInfo {
             FileName = edgePath,
-            Arguments = "--headless --disable-gpu --window-size=1680,1050 --virtual-time-budget=12000 --screenshot=\"" + outImg + "\" \"https://minh-hai.onrender.com/index.html?v=21.23#crm\"",
-            UseShellExecute = false
+            Arguments = "--headless --disable-gpu --window-size=1680,1050 --virtual-time-budget=12000 --screenshot=\"" + outImg + "\" \"https://minh-hai.onrender.com/index.html?v=21.25#crm\"",
+            UseShellExecute = false,
+            CreateNoWindow = true
         };
 
-        Process p = Process.Start(psi);
-        p.WaitForExit();
+        using (Process p = Process.Start(psi)) {
+            p.WaitForExit(30000);
+        }
 
         if (File.Exists(outImg)) {
-            FileInfo fi = new FileInfo(outImg);
-            Console.WriteLine("SUCCESS! Captured final_v21_23_proof.png! File size: " + fi.Length + " bytes");
+            Console.WriteLine("SUCCESS: Saved screenshot proof to " + outImg);
         } else {
-            Console.WriteLine("Capture failed.");
+            Console.WriteLine("ERROR: Could not capture screenshot");
         }
     }
 }

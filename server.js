@@ -1,4 +1,4 @@
-// Cleaned server.js v21.25
+// Cleaned server.js v21.26
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.25';
+  state.dbVersion = '21.26';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.25';
+  localState.dbVersion = '21.26';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -161,15 +161,16 @@ async function loadState() {
           if (rawDb && rawDb.charCodeAt(0) === 0xFEFF) rawDb = rawDb.slice(1);
           dbState = JSON.parse(rawDb);
         } catch (e) {
-          console.warn('Could not parse Postgres state_json, will force sync local db.json:', e.message);
+          console.warn('Could not parse Postgres state_json:', e.message);
         }
 
-        if (!dbState || dbState.dbVersion !== '21.25' || !Array.isArray(dbState.leads) || dbState.leads.length === 0 || !Array.isArray(dbState.users) || dbState.users.length < 15) {
-          console.log('Force updating Postgres DB state with clean db.json v21.25...');
+        if (!dbState || !Array.isArray(dbState.leads) || dbState.leads.length === 0 || !Array.isArray(dbState.users) || dbState.users.length === 0) {
+          console.log('Postgres DB state is empty, initializing with local db.json...');
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(localState)]);
           await client.end();
           return sanitizeServerState(localState);
         }
+        dbState.dbVersion = '21.26';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -191,7 +192,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.25';
+  newState.dbVersion = '21.26';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,

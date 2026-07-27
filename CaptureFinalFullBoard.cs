@@ -8,13 +8,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-class CaptureLiveCrmCardsCdp {
+class CaptureFinalFullBoard {
     static void Main() {
         Task.Run(async () => {
             string edgePath = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
             if (!File.Exists(edgePath)) edgePath = @"C:\Program Files\Microsoft\Edge\Application\msedge.exe";
 
-            string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_25_live_green_proof.png";
+            string outImg = @"C:\Users\admin\.gemini\antigravity-ide\brain\9c13f1e0-284e-4ab0-9990-4cd3a100827c\crm_board_v21_25_final_proof.png";
             if (File.Exists(outImg)) File.Delete(outImg);
 
             ProcessStartInfo psi = new ProcessStartInfo {
@@ -25,9 +25,9 @@ class CaptureLiveCrmCardsCdp {
             };
 
             Process proc = Process.Start(psi);
-            Console.WriteLine("Launched Edge with CDP...");
+            Console.WriteLine("Launched Edge for v21.25 final proof...");
 
-            await Task.Delay(8000);
+            await Task.Delay(10000);
 
             try {
                 WebClient client = new WebClient();
@@ -63,7 +63,7 @@ class CaptureLiveCrmCardsCdp {
                                 if (mData.Success) {
                                     byte[] imageBytes = Convert.FromBase64String(mData.Groups[1].Value);
                                     File.WriteAllBytes(outImg, imageBytes);
-                                    Console.WriteLine("SUCCESS! Saved screenshot proof for v21.25! Size: " + imageBytes.Length + " bytes");
+                                    Console.WriteLine("SUCCESS! Saved final CRM board screenshot for v21.25! Size: " + imageBytes.Length + " bytes");
                                     break;
                                 }
                             }
