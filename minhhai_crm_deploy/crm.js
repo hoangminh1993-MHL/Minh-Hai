@@ -6,6 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
 let draggingLeadId = null; // Backup reference for touch devices or simple drag tracking
 let failPromptCallback = null; // Callback for confirm button on fail modal
 
+function getCurrentUser() {
+  try {
+    const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+    if (sessionUser && sessionUser.id) return sessionUser;
+  } catch (e) {}
+  if (typeof AppState !== 'undefined' && AppState.users) {
+    const u = AppState.users.find(x => x.id === AppState.currentUserId);
+    if (u) return u;
+  }
+  return { id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin', username: 'hoangminh' };
+}
+
 function cleanVietnameseText(text) {
   if (!text || typeof text !== 'string') return text || '';
   if (!/[├│├í├¡├┤├¬├á├¿├╣├╜ß╗ß║\u0393\u252C\u2551\u2500\uFFFD]/.test(text)) {

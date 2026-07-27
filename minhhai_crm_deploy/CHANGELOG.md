@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.30] - 2026-07-27
+### Khắc phục lỗi gọi hàm getCurrentUser (Critical Bug Fix)
+- Bổ sung hàm getCurrentUser() toàn cục trong pp.js và crm.js.
+- Loại bỏ hoàn toàn lỗi dừng tiến trình vẽ giao diện ReferenceError: getCurrentUser is not defined, đảm bảo 59 thẻ khách hàng tự động hiển thị 100% khi vừa vào trang web.
+
 ## [v21.29] - 2026-07-27
 ### Khắc phục hiển thị dữ liệu CRM (Auto Re-render Fix)
 - Khắc phục triệt để lỗi thẻ CRM không tự hiển thị trên trình duyệt người dùng sau khi tải dữ liệu từ máy chủ API.

@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.29';
+  const CURRENT_APP_VER = 'v21.30';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -52,6 +52,18 @@ function sanitizeLead(lead) {
   if (lead.failReason) lead.failReason = sanitizeVietnameseString(lead.failReason);
   return lead;
 }
+window.getCurrentUser = function getCurrentUser() {
+  try {
+    const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+    if (sessionUser && sessionUser.id) return sessionUser;
+  } catch (e) {}
+  if (typeof AppState !== 'undefined' && AppState && AppState.users) {
+    const u = AppState.users.find(x => x.id === AppState.currentUserId);
+    if (u) return u;
+  }
+  return { id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin', username: 'hoangminh' };
+};
+
 window.BaseState = null;
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
@@ -596,7 +608,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.29';
+const CLIENT_VERSION = '21.30';
 
 async function checkCodeVersionUpdate() {
   try {
