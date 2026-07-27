@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.27] - 2026-07-27
+### Khôi phục dữ liệu (Data Restored)
+- Đã khôi phục thành công toàn bộ 59 khách hàng chuẩn Tiếng Việt trên Bảng CRM Kanban (Bao gồm 4 khách hàng tại cột Khách mới/Nhận thông tin, 12 báo giá, 11 lấy SĐT, 14 khai thác thông tin, 1 thương lượng, 6 thành công và 11 thất bại).
+- Chuẩn hóa mã bước giai đoạn (stage normalization) đảm bảo hiển thị 100% tất cả các thẻ khách hàng tại đúng vị trí cột trên giao diện.
+
 ## [v21.26] - 2026-07-27
 ### Bảo vệ dữ liệu (Data Protection Fix)
 - Khắc phục triệt để nguyên nhân làm mất dữ liệu khách hàng mới khi cập nhật phiên bản: Loại bỏ hoàn toàn điều kiện ghi đè cơ sở dữ liệu PostgreSQL (dbVersion !== CURRENT_VERSION).

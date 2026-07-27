@@ -346,9 +346,10 @@ function renderCRMBoard() {
   // Sanitize stage and checklists for all leads
   if (AppState.leads) {
     AppState.leads.forEach(lead => {
-      if (lead.stage === 'negotiation') {
-        lead.stage = 'negotiating';
-      }
+      if (lead.stage === 'negotiation') lead.stage = 'negotiating';
+      if (lead.stage === 'quote') lead.stage = 'quotation';
+      if (lead.stage === 'consulting') lead.stage = 'explore_info';
+      if (lead.stage === 'khach_moi' || lead.stage === 'Khách mới' || lead.stage === 'Chưa tiếp cận' || lead.stage === 'new') lead.stage = 'receive_info';
       if (typeof window.initLeadSteps === 'function') {
         window.initLeadSteps(lead);
       }
