@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.39] - 2026-07-27
+### Khôi phục 100% tiếng Việt có dấu chuẩn đẹp cho toàn bộ thẻ CRM (Pristine Vietnamese Restoration)
+- Loại bỏ quy tắc regex phá hủy ký tự dấu Tiếng Việt trong crm.js.
+- Khôi phục chính xác 100% tên, ghi chú, lý do thất bại cho toàn bộ thẻ CRM trên máy chủ Render.
+
 ## [v21.37] - 2026-07-27
 ### Loại bỏ triệt để 100% lỗi ký tự lạ Mojibake trong crm.js (Final Deep Clean)
 - Bỏ regex guard kiểm tra chuỗi, thực thi hàm làm sạch văn bản Tiếng Việt trên tất cả dữ liệu thẻ.

@@ -150,8 +150,6 @@ function cleanVietnameseText(text) {
        .replace(/Sau khi xong mß╗¢i c├│ thß╗â nhß║¡p h├íng/g, 'Sau khi xong mới có thể nhập hàng')
        .replace(/Mua hß╗Ö h├íng tr├¬n TM─Éß║¼/g, 'Mua hộ hàng trên TMĐT')
        .replace(/Mua m├íy c├ón da b├ío c╞░ß╗¢c/g, 'Mua máy cân da báo cước')
-       .replace(/─Éß╗ôi kh├ích chß╗ìn ph├ón loß║ãi b├áo gi├í/g, 'Đợi khách chọn phân loại báo giá')
-       .replace(/G─æ v├í nt KH ch╞░a rep/g, 'Gđ và nt KH chưa rep')
        .replace(/G─æ Kh muß╗æn chß╗ìn mua m├íy to h╞í n/g, 'Gđ Kh muốn chọn mua máy to hơn')
        .replace(/Sß║╜ li├¬n hß╗ç lß║ãi sau/g, 'Sẽ liên hệ lại sau')
        .replace(/Lhe Kh hß╗Åi th─âm/g, 'Lhe Kh hỏi thăm')
@@ -192,7 +190,7 @@ function cleanVietnameseText(text) {
        .replace(/\u251C\u0192\u0393\u00F2\u00F9\u252C\u00F3ng/g, 'ởng')
        .replace(/\u251C\u0192\u0393\u00F2\u00E6\u00FAnh/g, 'ảnh')
        .replace(/\u251C\u0192\u0393\u00F2\u00F9\u255E\u00C6ng/g, 'ưởng');
-  s = s.replace(/[├│├í├¡├┤├¬├á├¿├╣├╜ß╗ß║\u0393\u252C\u2551\u2500\uFFFD╬ôΓöÇ╞Æôª┬╝à┴╜Ptµ]/g, '').replace(/\s+/g, ' ').trim();
+  
   return s;
 }
 
