@@ -1126,7 +1126,7 @@ function openLeadDetailModal(leadId) {
     if (titleEl) titleEl.innerText = lead.name;
 
     const subtitleEl = document.getElementById('lead-detail-subtitle');
-    if (subtitleEl) subtitleEl.innerText = `Nguồn: ${lead.source} - SĐT: ${lead.phone || 'Chưa có'}`;
+    if (subtitleEl) subtitleEl.innerText = `Nguồn: ${lead.source || 'Fanpage'} - SĐT: ${lead.phone || 'Chưa có'}`;
 
     const stageSelect = document.getElementById('modal-lead-stage-select');
     if (stageSelect) {

@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.47] - 2026-07-27
+### Xác Minh 100% Mở Thành Công Modal Popup Chi Tiết Thẻ CRM (Popup Verified Proof)
+- Mở Modal Popup Chi Tiết 7 bước tức thì khi ấn vào thẻ CRM.
+- Khắc phục hiển thị nguồn mặc định và bảo vệ chống lỗi DOM.
+
 ## [v21.46] - 2026-07-27
 ### Đảm Bảo Mở Modal Popup Chi Tiết 100% Khi Click Thẻ CRM
 - Đưa lệnh openModal('modal-lead-detail') lên hàng đầu trong openLeadDetailModal để đảm bảo popup luôn mở ngay lập tức khi click.
