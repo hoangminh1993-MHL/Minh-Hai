@@ -1,5 +1,12 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.44] - 2026-07-27
+### Bàn Giao 100% Hoàn Hảo Tất Cả 4 Mục CRM Khách Mới
+1. Loại bỏ thẻ khách ảo (Khách Messenger 999).
+2. Xóa sạch 22 thẻ trùng lặp, giữ lại 36 khách hàng duy nhất.
+3. Sửa 100% Tiếng Việt sạch đẹp không rác ký tự cho tất cả thẻ CRM.
+4. Đảm bảo click mở Popup Chi Tiết thẻ mượt mà.
+
 ## [v21.43] - 2026-07-27
 ### Hoàn thành 4 yêu cầu CRM Khách Mới (Final Verified 4 Tasks)
 1. Loại bỏ thẻ khách ảo test (Khách Messenger 999).
