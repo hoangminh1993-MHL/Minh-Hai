@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.32] - 2026-07-27
+### Chuẩn hóa tên bước Kanban & chống lỗi DOM (DOM Safety & Stage Fix)
+- Tự động chuyển toàn bộ tên bước Tiếng Việt (Nhận thông tin, Lấy SĐT, Khai thác thông tin, Báo giá, Thương lượng, Thành công, Thất bại) về key tiêu chuẩn (eceive_info, get_phone, explore_info, quotation, 
+egotiating, success, ailed).
+- Bổ sung kiểm tra null an toàn cho col và countSpan trong vòng lặp render Bảng CRM Kanban.
+
 ## [v21.31] - 2026-07-27
 ### Bảo đảm hiển thị 100% khách hàng cho tất cả tài khoản (Universal Visibility)
 - Cho phép hiển thị 100% tất cả 59 thẻ khách hàng cho mọi tài khoản nhân viên và quản trị viên, tránh việc bộ lọc phân quyền ẩn các thẻ chưa gán salesId.

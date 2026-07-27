@@ -360,10 +360,13 @@ function renderCRMBoard() {
   // Sanitize stage and checklists for all leads
   if (AppState.leads) {
     AppState.leads.forEach(lead => {
-      if (lead.stage === 'negotiation') lead.stage = 'negotiating';
-      if (lead.stage === 'quote') lead.stage = 'quotation';
-      if (lead.stage === 'consulting') lead.stage = 'explore_info';
-      if (lead.stage === 'khach_moi' || lead.stage === 'Khách mới' || lead.stage === 'Chưa tiếp cận' || lead.stage === 'new') lead.stage = 'receive_info';
+      if (!lead.stage || lead.stage === 'Nhận thông tin' || lead.stage === 'khach_moi' || lead.stage === 'Khách mới' || lead.stage === 'Chưa tiếp cận' || lead.stage === 'new') lead.stage = 'receive_info';
+      if (lead.stage === 'Lấy SĐT' || lead.stage === 'Lấy sđt' || lead.stage === 'get_phone') lead.stage = 'get_phone';
+      if (lead.stage === 'Khai thác thông tin' || lead.stage === 'Khai thác TT' || lead.stage === 'consulting') lead.stage = 'explore_info';
+      if (lead.stage === 'Báo giá' || lead.stage === 'quote') lead.stage = 'quotation';
+      if (lead.stage === 'Thương lượng' || lead.stage === 'negotiation') lead.stage = 'negotiating';
+      if (lead.stage === 'Thành công') lead.stage = 'success';
+      if (lead.stage === 'Thất bại') lead.stage = 'failed';
       if (typeof window.initLeadSteps === 'function') {
         window.initLeadSteps(lead);
       }
@@ -702,11 +705,12 @@ function renderCRMBoard() {
   // Setup Column Dragover/Drop listeners
   stages.forEach(st => {
     const col = document.getElementById(`col-${st}`);
+    if (!col) return;
     const container = col.querySelector('.kanban-cards-container');
     
     const countSpan = document.getElementById(`count-${st}`);
-    const count = AppState.leads.filter(l => l.stage === st).length;
-    countSpan.innerText = count;
+    const count = filteredLeads.filter(l => l.stage === st).length;
+    if (countSpan) countSpan.innerText = count;
 
     if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
       col.ondragover = (e) => {
