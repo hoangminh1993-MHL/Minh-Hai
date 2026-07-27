@@ -1255,7 +1255,7 @@ function renderActiveLeadStepPanel() {
   if (deadlineEl) deadlineEl.value = stepData.deadline || '';
 
   const noteEl = document.getElementById('lead-step-note');
-  if (noteEl) noteEl.value = stepData.note || '';
+  if (noteEl) noteEl.value = cleanVietnameseText(stepData.note || lead.note || '');
 
   const valRow = document.getElementById('lead-step-values-row');
   if (currentActiveLeadStepNum === 6) {

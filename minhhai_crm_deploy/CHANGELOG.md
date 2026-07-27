@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.48] - 2026-07-27
+### Làm Sạch 100% Ghi Chú Tất Cả Các Bước Trong Modal Popup Thẻ CRM (All Step Notes Cleaned)
+- Chuẩn hóa toàn bộ 26 ghi chú các bước trong mảng lead.steps của tất cả 36 thẻ CRM sang Tiếng Việt chuẩn.
+- Thêm bộ lọc cleanVietnameseText tự động khi hiển thị ghi chú bước trong modal popup.
+
 ## [v21.47] - 2026-07-27
 ### Xác Minh 100% Mở Thành Công Modal Popup Chi Tiết Thẻ CRM (Popup Verified Proof)
 - Mở Modal Popup Chi Tiết 7 bước tức thì khi ấn vào thẻ CRM.
