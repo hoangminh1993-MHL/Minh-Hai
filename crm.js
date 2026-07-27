@@ -582,7 +582,7 @@ function renderCRMBoard() {
 
     const card = document.createElement('div');
     const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
-    card.className = `kanban-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
+    card.className = `kanban-card crm-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
     card.setAttribute('draggable', (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') ? 'true' : 'false');
     card.setAttribute('data-id', lead.id);
 
@@ -1093,112 +1093,127 @@ function openLeadDetailModal(leadId) {
   const lead = AppState.leads.find(l => l.id === leadId);
   if (!lead) return;
 
-  // Initialize steps if missing
-  window.initLeadSteps(lead);
-
-  currentActiveLeadId = leadId;
-  
-  const stageToStepNum = {
-    receive_info: 1,
-    get_phone: 2,
-    explore_info: 3,
-    quotation: 4,
-    negotiating: 5,
-    success: 6,
-    failed: 7
-  };
-  currentActiveLeadStepNum = stageToStepNum[lead.stage] || 1;
-
-  document.getElementById('lead-detail-title').innerText = lead.name;
-  document.getElementById('lead-detail-subtitle').innerText = `Nguồn: ${lead.source} - SĐT: ${lead.phone || 'Chưa có'}`;
-
-  const stageSelect = document.getElementById('modal-lead-stage-select');
-  if (stageSelect) {
-    stageSelect.value = lead.stage;
-    stageSelect.onchange = (e) => {
-      const val = e.target.value;
-      if (val && val !== lead.stage) {
-        handleLeadMove(lead.id, val);
-        const updatedLead = AppState.leads.find(l => l.id === lead.id);
-        if (updatedLead) {
-          openLeadDetailModal(updatedLead.id);
-        }
-      }
-    };
-  }
-
-  // Render 7 steps timeline bubbles
-  const timeline = document.querySelector('.lead-steps-timeline');
-  timeline.innerHTML = '';
-  
-  const stepNames = [
-    "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
-  ];
-
-  for (let i = 1; i <= 7; i++) {
-    const bubble = document.createElement('div');
-    const stepData = lead.steps.find(s => s.stepNum === i) || {};
-    
-    const leadStepNum = stageToStepNum[lead.stage] || 1;
-    let stepStatusClass = 'todo';
-    if (i < leadStepNum) stepStatusClass = 'done';
-    else if (i === leadStepNum) stepStatusClass = 'doing';
-    
-    bubble.className = `flow-step-bubble ${stepStatusClass} ${i === currentActiveLeadStepNum ? 'active' : ''}`;
-    bubble.innerHTML = `
-      <div class="flow-step-circle">${i}</div>
-      <span class="flow-step-lbl" style="font-size: 10px;">${stepNames[i - 1]}</span>
-    `;
-
-    bubble.onclick = () => {
-      document.querySelectorAll('#modal-lead-detail .flow-step-bubble').forEach(b => b.classList.remove('active'));
-      bubble.classList.add('active');
-      currentActiveLeadStepNum = i;
-      renderActiveLeadStepPanel();
-    };
-
-    timeline.appendChild(bubble);
-  }
-
-  renderActiveLeadStepPanel();
-
-  // Wire delete button defensively
-  const btnDeleteLead = document.getElementById('btn-lead-delete');
-  if (btnDeleteLead) {
-    btnDeleteLead.onclick = () => {
-      if (confirm(`Bạn chắc chắn muốn xóa cơ hội khách hàng "${lead.name}"? Dữ liệu sẽ mất vĩnh viễn.`)) {
-        AppState.leads = AppState.leads.filter(l => l.id !== leadId);
-        saveState();
-        closeModal('modal-lead-detail');
-        renderCRMBoard();
-        addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
-      }
-    };
-  }
-
-  // Wire buttons inside modal defensively
-  const btnSaveStep = document.getElementById('btn-lead-step-save');
-  if (btnSaveStep) btnSaveStep.onclick = handleSaveActiveLeadStepData;
-  
-  const chkInput = document.getElementById('lead-step-new-chk');
-  const btnAddChk = document.getElementById('btn-lead-step-add-chk');
-  if (btnAddChk) btnAddChk.onclick = handleLeadAddStepChecklistItem;
-  if (chkInput) {
-    chkInput.onkeyup = (e) => {
-      if (e.key === 'Enter') handleLeadAddStepChecklistItem();
-    };
-  }
-
-  const btnAddFile = document.getElementById('btn-lead-step-add-file');
-  if (btnAddFile) btnAddFile.onclick = handleLeadAddStepFile;
-
-  const btnAddComment = document.getElementById('btn-lead-step-add-comment');
-  if (btnAddComment) btnAddComment.onclick = handleLeadAddStepComment;
-
+  // 1. Open modal FIRST so popup is 100% guaranteed to open on card click!
   if (typeof openModal === 'function') {
     openModal('modal-lead-detail');
   } else if (typeof window.openModal === 'function') {
     window.openModal('modal-lead-detail');
+  } else {
+    const modalEl = document.getElementById('modal-lead-detail');
+    if (modalEl) {
+      modalEl.classList.add('active');
+      modalEl.style.display = 'flex';
+    }
+  }
+
+  // 2. Safe rendering of modal contents
+  try {
+    if (typeof window.initLeadSteps === 'function') window.initLeadSteps(lead);
+    currentActiveLeadId = leadId;
+    
+    const stageToStepNum = {
+      receive_info: 1,
+      get_phone: 2,
+      explore_info: 3,
+      quotation: 4,
+      negotiating: 5,
+      success: 6,
+      failed: 7
+    };
+    currentActiveLeadStepNum = stageToStepNum[lead.stage] || 1;
+
+    const titleEl = document.getElementById('lead-detail-title');
+    if (titleEl) titleEl.innerText = lead.name;
+
+    const subtitleEl = document.getElementById('lead-detail-subtitle');
+    if (subtitleEl) subtitleEl.innerText = `Nguồn: ${lead.source} - SĐT: ${lead.phone || 'Chưa có'}`;
+
+    const stageSelect = document.getElementById('modal-lead-stage-select');
+    if (stageSelect) {
+      stageSelect.value = lead.stage;
+      stageSelect.onchange = (e) => {
+        const val = e.target.value;
+        if (val && val !== lead.stage) {
+          handleLeadMove(lead.id, val);
+          const updatedLead = AppState.leads.find(l => l.id === lead.id);
+          if (updatedLead) {
+            openLeadDetailModal(updatedLead.id);
+          }
+        }
+      };
+    }
+
+    // Render 7 steps timeline bubbles
+    const timeline = document.querySelector('.lead-steps-timeline');
+    if (timeline) {
+      timeline.innerHTML = '';
+      
+      const stepNames = [
+        "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
+      ];
+
+      for (let i = 1; i <= 7; i++) {
+        const bubble = document.createElement('div');
+        const stepData = lead.steps ? (lead.steps.find(s => s.stepNum === i) || {}) : {};
+        
+        const leadStepNum = stageToStepNum[lead.stage] || 1;
+        let stepStatusClass = 'todo';
+        if (i < leadStepNum) stepStatusClass = 'done';
+        else if (i === leadStepNum) stepStatusClass = 'doing';
+        
+        bubble.className = `flow-step-bubble ${stepStatusClass} ${i === currentActiveLeadStepNum ? 'active' : ''}`;
+        bubble.innerHTML = `
+          <div class="flow-step-circle">${i}</div>
+          <span class="flow-step-lbl" style="font-size: 10px;">${stepNames[i - 1]}</span>
+        `;
+
+        bubble.onclick = () => {
+          document.querySelectorAll('#modal-lead-detail .flow-step-bubble').forEach(b => b.classList.remove('active'));
+          bubble.classList.add('active');
+          currentActiveLeadStepNum = i;
+          renderActiveLeadStepPanel();
+        };
+
+        timeline.appendChild(bubble);
+      }
+    }
+
+    renderActiveLeadStepPanel();
+
+    // Wire delete button defensively
+    const btnDeleteLead = document.getElementById('btn-lead-delete');
+    if (btnDeleteLead) {
+      btnDeleteLead.onclick = () => {
+        if (confirm(`Bạn chắc chắn muốn xóa cơ hội khách hàng "${lead.name}"? Dữ liệu sẽ mất vĩnh viễn.`)) {
+          AppState.leads = AppState.leads.filter(l => l.id !== leadId);
+          saveState();
+          closeModal('modal-lead-detail');
+          renderCRMBoard();
+          addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
+        }
+      };
+    }
+
+    // Wire buttons inside modal defensively
+    const btnSaveStep = document.getElementById('btn-lead-step-save');
+    if (btnSaveStep) btnSaveStep.onclick = handleSaveActiveLeadStepData;
+    
+    const chkInput = document.getElementById('lead-step-new-chk');
+    const btnAddChk = document.getElementById('btn-lead-step-add-chk');
+    if (btnAddChk) btnAddChk.onclick = handleLeadAddStepChecklistItem;
+    if (chkInput) {
+      chkInput.onkeyup = (e) => {
+        if (e.key === 'Enter') handleLeadAddStepChecklistItem();
+      };
+    }
+
+    const btnAddFile = document.getElementById('btn-lead-step-add-file');
+    if (btnAddFile) btnAddFile.onclick = handleLeadAddStepFile;
+
+    const btnAddComment = document.getElementById('btn-lead-step-add-comment');
+    if (btnAddComment) btnAddComment.onclick = handleLeadAddStepComment;
+  } catch (err) {
+    console.warn('openLeadDetailModal populating warning:', err);
   }
 }
 
@@ -1213,22 +1228,34 @@ function renderActiveLeadStepPanel() {
     "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
   ];
 
-  document.getElementById('lead-step-panel-title').innerText = `Bước ${currentActiveLeadStepNum}: ${stepNames[currentActiveLeadStepNum - 1]}`;
+  const titleEl = document.getElementById('lead-step-panel-title');
+  if (titleEl) titleEl.innerText = `Bước ${currentActiveLeadStepNum}: ${stepNames[currentActiveLeadStepNum - 1]}`;
 
   const assigneeSelect = document.getElementById('lead-step-assignee');
-  assigneeSelect.innerHTML = '';
-  AppState.users.forEach(u => {
-    const opt = document.createElement('option');
-    opt.value = u.id;
-    opt.innerText = u.name;
-    if (u.id === (stepData.assigneeId || lead.salesId)) opt.selected = true;
-    assigneeSelect.appendChild(opt);
-  });
+  if (assigneeSelect) {
+    assigneeSelect.innerHTML = '';
+    if (AppState && AppState.users) {
+      AppState.users.forEach(u => {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.innerText = u.name;
+        if (u.id === (stepData.assigneeId || lead.salesId)) opt.selected = true;
+        assigneeSelect.appendChild(opt);
+      });
+    }
+  }
 
-  document.getElementById('lead-step-phone').value = lead.phone || '';
-  document.getElementById('lead-step-source').value = lead.source || 'Fanpage';
-  document.getElementById('lead-step-deadline').value = stepData.deadline || '';
-  document.getElementById('lead-step-note').value = stepData.note || '';
+  const phoneEl = document.getElementById('lead-step-phone');
+  if (phoneEl) phoneEl.value = lead.phone || '';
+
+  const sourceEl = document.getElementById('lead-step-source');
+  if (sourceEl) sourceEl.value = lead.source || 'Fanpage';
+
+  const deadlineEl = document.getElementById('lead-step-deadline');
+  if (deadlineEl) deadlineEl.value = stepData.deadline || '';
+
+  const noteEl = document.getElementById('lead-step-note');
+  if (noteEl) noteEl.value = stepData.note || '';
 
   const valRow = document.getElementById('lead-step-values-row');
   if (currentActiveLeadStepNum === 6) {

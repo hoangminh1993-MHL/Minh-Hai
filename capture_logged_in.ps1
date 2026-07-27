@@ -53,8 +53,15 @@ try {
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 
                 // Test clicking first card to open modal-lead-detail
-                const firstCard = document.querySelector('.crm-card');
-                if (firstCard) firstCard.click();
+                const firstCard = document.querySelector('.crm-card') || document.querySelector('.kanban-card');
+                if (firstCard) {
+                    const leadId = firstCard.getAttribute('data-id');
+                    if (typeof openLeadDetailModal === 'function') {
+                        openLeadDetailModal(leadId);
+                    } else {
+                        firstCard.click();
+                    }
+                }
                 
                 return 'Leads count: ' + (AppState.leads ? AppState.leads.length : 0);
             })()
