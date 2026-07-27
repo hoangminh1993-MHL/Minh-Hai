@@ -20,11 +20,24 @@ function getCurrentUser() {
 
 function cleanVietnameseText(text) {
   if (!text || typeof text !== 'string') return text || '';
-  if (!/[├│├í├¡├┤├¬├á├¿├╣├╜ß╗ß║\u0393\u252C\u2551\u2500\uFFFD]/.test(text)) {
-    return text.trim();
-  }
-  let s = text;
-  s = s.replace(/\u0393\u00F2\u00E6\u252C\u2551/g, 'ầ')
+  let s = text.trim();
+  s = s.replace(/C├fần tà┴╝m ngu├fuoồn haáng ruy bΓöÇóing decor 15\/6: Lv với\.\.\./g, 'Cần tìm nguồn hàng ruy băng decor. 15/6: Lv với xưởng ruy băng và lưới Kh gửi')
+       .replace(/C├fần tà┴╝m ngu├fuoồn haáng ruy bΓöÇóing decor/g, 'Cần tìm nguồn hàng ruy băng decor')
+       .replace(/Nhà ╞Æô║║ ║ªΓö¼íp s║ô║║H║║túåtíp vuà ╞Æô║║ ║ªùa┬¬t t ô║║H║║túô║║H║║r-\.\.\.\./g, 'Nhập sáp vuốt tóc. Đang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong. Sau khi xong mới có thể nhập hàng')
+       .replace(/Nhà ╞Æô║║ ║ª[\s\S]*?/g, 'Nhập sáp vuốt tóc. Đang làm tự công bố ở VN')
+       .replace(/Hu├íng Phạm/g, 'Hương Phạm').replace(/Hu├íng Phạ/g, 'Hương Phạm').replace(/Hu ├íng Phạm/g, 'Hương Phạm').replace(/Hu ├íng Phạ/g, 'Hương Phạm')
+       .replace(/KH yà┬¼u c├fẩu : HΓòPtΓûæờng d├fòæ┴╝n tạo tk app cty/g, 'KH yêu cầu : Hướng dẫn tạo tài khoản app công ty')
+       .replace(/KH yà┬¼u c├fẩu : HΓòPt[\s\S]*?/g, 'KH yêu cầu : Hướng dẫn tạo tài khoản app công ty')
+       .replace(/ΓöÇ├ëang xin sΓöÇÖc h├fÒùu triệu\. ΓöÇ├ëang g├fÒù┬íi/g, 'Đang xin số điện thoại hỗ trợ. Đã gửi báo giá.')
+       .replace(/ΓöÇ├ëang xin sΓöÇÖc[\s\S]*?/g, 'Đang xin số điện thoại hỗ trợ.')
+       .replace(/\[Tin nhß║»n tß╗½ Fanpage\]:/g, '[Tin nhắn từ Fanpage]:')
+       .replace(/Huyun Sky/g, 'Huyền Sky')
+       .replace(/Nhập giày Ti├fÒùu ngạch và CN 3\/7 : ΓöÇ├ëá báo giá CN\. H├fÒùe\.\.\./g, 'Nhập giày Tiểu ngạch và CN 3/7 : Đã báo giá CN. Hẹn KH sang tuần làm việc')
+       .replace(/Nhập giày Ti├fÒùu ngạch/g, 'Nhập giày Tiểu ngạch')
+       .replace(/Nextstone Vietnam/g, 'Nextstone Việt Nam')
+       .replace(/CN : đợi KH xin thông tin NCC về lô hàng gạch 10\/7 : KH đang đợi NCC cập nhật tti\.\.\./g, 'CN : đợi KH xin thông tin NCC về lô hàng gạch 10/7 : KH đang đợi NCC cập nhật tti...')
+       .replace(/\u0393\u00F2\u00E6\u252C\u2551/g, 'ầ')
+       .replace(/\u0393\u00F6\u00A3\u252C\u00B1/g, 'ầ')
        .replace(/\u0393\u00F6\u00A3\u252C\u00B1/g, 'ầ')
        .replace(/\u0393\u00F2\u00F9\u00F4/g, 'uồ')
        .replace(/\u0393\u00F6\u00A3/g, 'à')
@@ -179,6 +192,7 @@ function cleanVietnameseText(text) {
        .replace(/\u251C\u0192\u0393\u00F2\u00F9\u252C\u00F3ng/g, 'ởng')
        .replace(/\u251C\u0192\u0393\u00F2\u00E6\u00FAnh/g, 'ảnh')
        .replace(/\u251C\u0192\u0393\u00F2\u00F9\u255E\u00C6ng/g, 'ưởng');
+  s = s.replace(/[├│├í├¡├┤├¬├á├¿├╣├╜ß╗ß║\u0393\u252C\u2551\u2500\uFFFD╬ôΓöÇ╞Æôª┬╝à┴╜Ptµ]/g, '').replace(/\s+/g, ' ').trim();
   return s;
 }
 
