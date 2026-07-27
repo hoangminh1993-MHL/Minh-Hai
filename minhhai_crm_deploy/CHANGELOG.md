@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.29] - 2026-07-27
+### Khắc phục hiển thị dữ liệu CRM (Auto Re-render Fix)
+- Khắc phục triệt để lỗi thẻ CRM không tự hiển thị trên trình duyệt người dùng sau khi tải dữ liệu từ máy chủ API.
+- Tự động xóa bộ nhớ đệm cũ (localStorage cache purge) và gọi hàm vẽ lại Bảng CRM Kanban (enderCRMBoard()) ngay khi máy chủ trả về dữ liệu 59 khách hàng.
+
 ## [v21.27] - 2026-07-27
 ### Khôi phục dữ liệu (Data Restored)
 - Đã khôi phục thành công toàn bộ 59 khách hàng chuẩn Tiếng Việt trên Bảng CRM Kanban (Bao gồm 4 khách hàng tại cột Khách mới/Nhận thông tin, 12 báo giá, 11 lấy SĐT, 14 khai thác thông tin, 1 thương lượng, 6 thành công và 11 thất bại).

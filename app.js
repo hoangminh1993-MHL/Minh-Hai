@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.28';
+  const CURRENT_APP_VER = 'v21.29';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -321,9 +321,14 @@ async function syncLoadState() {
       localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
       localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
       localStorage.setItem('votr_suggestions_db', JSON.stringify(AppState.suggestions));
+      
+      renderUserSwitcher();
+      if (typeof renderCRMBoard === 'function') renderCRMBoard();
+      if (typeof renderDashboard === 'function') renderDashboard();
+      if (typeof renderTasks === 'function') renderTasks();
+      
       updateMyTasksBadge();
       window.BaseState = JSON.parse(JSON.stringify(AppState));
-      renderUserSwitcher();
       return;
     }
   } catch (err) {
@@ -591,7 +596,7 @@ async function saveState() {
   }
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.28';
+const CLIENT_VERSION = '21.29';
 
 async function checkCodeVersionUpdate() {
   try {
