@@ -1,0 +1,51 @@
+{
+   "checksum": "c4f6c60d9e31d8aac8d2905f50300f4f",
+   "roots": {
+      "bookmark_bar": {
+         "children": [  ],
+         "date_added": "13429611989194069",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Favorites bar",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [  ],
+         "date_added": "13429611989194069",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13429611989194069",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13429611989194069",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "Workspaces",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "CkEKHgiIgQISCBkRiaKfAQAAKg4QABgBIAAoBTAAOABAABIAKhhZdGw1NkQ3S2VLbVhtbFRGRU1SOU1BPT1IA6AGDBKOAQgDEokBChxuamdEdTg4ZUNydlhwODZwRDdmSEdjcUZwODg9EiQyNDNkNzliMC00M2YyLTU1ZTMtOGYxNy02ZTNiZGI5ZTU0NDkYACAAKAAw6sGF+d4yOPXKhfneMkD1yoX53jJKHHl6TkIwMWNuNTRBN2NSVTB1VCsvUGdtVHRVbz1aAGUAAAAAwj4CYAASjgEIBRKJAQocd1JCclpMKzZQQTlhdktnak5QN0pYRExjZnZzPRIkNjYxZTVhYWMtNzA3OC01NzYwLWI0ZmYtNzEwMjRhNzI1NGFjGAAgACgAMOSTis2sMzjqlorNrDNA6paKzawzShxubXg2NXNRRHZ4SThUZ0VlditBK250dG9TbjQ9WgBlAAAAAMI+AmAAEo4BCAESiQEKHHl4Si82ZnZrZWNyN2twNUVRekI0dFdMcGRiRT0SJDk2ZTYxNGY0LTZkYTgtNTQyNC05NzIxLTU5ZjcwYTA4ODAwMBgAIAAoADDkwYX53jI4ucqF+d4yQLnKhfneMkocYVJDV0xnaEY5YjVJbnFLSUR2dUovanZRa0ZjPVoAZQAAAADCPgJgABKOAQgCEokBChxZY1NUb252RVNQd3FDczRMMmNyVmh2NjhMOTg9EiQyMGFjMmM4ZS1kMWJlLTU1YmEtYjY4OC04MjIwYjc2NWRkY2QYACAAKAAw5cGF+d4yOM3KhfneMkDNyoX53jJKHG9QVmtod0JSYlY2NUtDV1IyK0lPTkhXb091OD1aAGUAAAAAwj4CYAAwADgA",
+   "version": 1
+}

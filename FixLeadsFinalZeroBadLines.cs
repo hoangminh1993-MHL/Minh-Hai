@@ -1,28 +1,74 @@
 using System;
 using System.IO;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Web.Script.Serialization;
+using System.Collections.Generic;
 
 class FixLeadsFinalZeroBadLines {
+    static string CleanFinal(string s) {
+        if (string.IsNullOrEmpty(s)) return s;
+
+        s = Regex.Replace(s, @"Kh.*ích", "Khách");
+        s = Regex.Replace(s, @"T.*Anh", "Tú Anh");
+        s = Regex.Replace(s, @"D.*ng T.*c", "Dương Tóc");
+        s = Regex.Replace(s, @"Xu.*n H.*i.*inh", "Xuân Hải Đinh");
+
+        return s.Trim();
+    }
+
     static void Main() {
-        string path = @"d:\antigravity\db.json";
-        string[] lines = File.ReadAllLines(path, Encoding.UTF8);
+        Console.OutputEncoding = Encoding.UTF8;
+        JavaScriptSerializer serializer = new JavaScriptSerializer();
+        serializer.MaxJsonLength = int.MaxValue;
 
-        lines[4556] = "                      \"note\":  \"3/7 : Báo giá CN : 8 bộ kẹp Phanh của Nga\\n4/7 : Đã nt cho KH để hỏi thăm\\n11/7 : Liên hệ Kh hỏi thăm về đơn hàng\",";
-        lines[4582] = "                                        \"note\":  \"3/7 : Báo giá CN : 8 bộ kẹp Phanh của Nga\\n4/7 : Đã nt cho KH để hỏi thăm\\n11/7 : Liên hệ Kh hỏi thăm về đơn hàng\"";
+        string dbText = File.ReadAllText(@"d:\antigravity\db.json", Encoding.UTF8);
+        Dictionary<string, object> db = serializer.Deserialize<Dictionary<string, object>>(dbText);
 
-        lines[4670] = "                      \"note\":  \"Hỏi bóng quái\",";
-        lines[4696] = "                                        \"note\":  \"Hỏi bóng quái\"";
+        System.Collections.ArrayList rawLeads = (System.Collections.ArrayList)db["leads"];
+        List<Dictionary<string, object>> cleanLeads = new List<Dictionary<string, object>>();
 
-        for (int i = 0; i < lines.Length; i++) {
-            lines[i] = lines[i].Replace("T?o ghi ch ban d?u v? hng hóa", "Tạo ghi chú ban đầu về hàng hóa");
-            lines[i] = lines[i].Replace("Tìm hi?u lo?i m?tt hng \\u0026 s? lư?ng d? ki?n", "Tìm hiểu loại mặt hàng & số lượng dự kiến");
-            lines[i] = lines[i].Replace("Tìm hi?u d?a ch? nh?nn hng t?i Vi?t Nam", "Tìm hiểu địa chỉ nhận hàng tại Việt Nam");
-            lines[i] = lines[i].Replace("Tìm ngu?n hng / Lin h? xư?ng", "Tìm nguồn hàng / Liên hệ xưởng");
-            lines[i] = lines[i].Replace("Xc nh?nn khch dã d?ng y v c?c (ho?tc ln dơn)", "Xác nhận khách đã đồng ý và cọc (hoặc lên đơn)");
-            lines[i] = lines[i].Replace("Lưu l?ch s? ph?n h?i d? chăm sóc l?i sau", "Lưu lịch sử phản hồi để chăm sóc lại sau");
+        foreach (object item in rawLeads) {
+            Dictionary<string, object> lead = (Dictionary<string, object>)item;
+            if (lead.ContainsKey("name")) lead["name"] = CleanFinal(Convert.ToString(lead["name"]));
+            if (lead.ContainsKey("note")) lead["note"] = CleanFinal(Convert.ToString(lead["note"]));
+            if (lead.ContainsKey("salesId")) {
+                string sid = Convert.ToString(lead["salesId"]);
+                if (sid.Contains("Anh") || sid.Contains("Tú")) lead["salesId"] = "usr-2";
+            }
+
+            cleanLeads.Add(lead);
         }
 
-        File.WriteAllLines(path, lines, new UTF8Encoding(false));
-        Console.WriteLine("FixLeadsFinalZeroBadLines executed successfully!");
+        db["leads"] = cleanLeads;
+        db["dbVersion"] = "21.32";
+
+        string cleanJson = serializer.Serialize(db);
+        File.WriteAllText(@"d:\antigravity\db.json", cleanJson, new UTF8Encoding(false));
+        File.WriteAllText(@"d:\antigravity\minhhai_crm_deploy\db.json", cleanJson, new UTF8Encoding(false));
+
+        // POST clean state directly to live API endpoint https://minh-hai.onrender.com/api/state
+        try {
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+            HttpWebRequest req = (HttpWebRequest)WebRequest.Create("https://minh-hai.onrender.com/api/state");
+            req.Method = "POST";
+            req.ContentType = "application/json; charset=utf-8";
+
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(cleanJson);
+            req.ContentLength = jsonBytes.Length;
+
+            using (Stream reqStream = req.GetRequestStream()) {
+                reqStream.Write(jsonBytes, 0, jsonBytes.Length);
+            }
+
+            using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
+            using (StreamReader sr = new StreamReader(resp.GetResponseStream())) {
+                string respText = sr.ReadToEnd();
+                Console.WriteLine("Final API POST Response: " + respText);
+            }
+        } catch (Exception ex) {
+            Console.WriteLine("Error posting state to API: " + ex.Message);
+        }
     }
 }

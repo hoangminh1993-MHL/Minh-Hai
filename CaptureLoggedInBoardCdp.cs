@@ -28,7 +28,7 @@ class CaptureLoggedInBoardCdp {
             };
 
             Process proc = Process.Start(psi);
-            Console.WriteLine("Launched Edge with CDP for v21.32 proof...");
+            Console.WriteLine("Launched Edge with CDP for logged-in v21.32 proof...");
 
             await Task.Delay(2000);
 
@@ -48,34 +48,30 @@ class CaptureLoggedInBoardCdp {
                     await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(enableCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
 
-                    string consoleCmd = "{\"id\": 2, \"method\": \"Console.enable\"}";
-                    await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(consoleCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
+                    // Add script on new document to pre-seed logged in user before index.html auth check runs
+                    string preSeedScript = @"
+                        localStorage.setItem('minhhai_user', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin', username:'hoangminh'}));
+                        localStorage.setItem('currentUser', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin', username:'hoangminh'}));
+                        localStorage.setItem('minhhai_app_version', 'v21.32');
+                    ";
+                    string addScriptCmd = "{\"id\": 2, \"method\": \"Page.addScriptToEvaluateOnNewDocument\", \"params\": {\"source\": " + new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(preSeedScript) + "}}";
+                    await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(addScriptCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
 
+                    // Navigate to index.html with logged in session
                     string navCmd = "{\"id\": 3, \"method\": \"Page.navigate\", \"params\": {\"url\": \"" + url + "\"}}";
                     await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(navCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
 
-                    await Task.Delay(4000);
+                    // Wait 6 seconds for live state fetch and board render
+                    await Task.Delay(6000);
 
-                    // Inject user login in localStorage, clear stale votr cache, fetch live state and force render
-                    string jsCode = @"
-                        localStorage.clear();
-                        localStorage.setItem('minhhai_user', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin', username:'hoangminh'}));
-                        localStorage.setItem('currentUser', JSON.stringify({id:'usr-1', name:'Nguyễn Hoàng Minh', role:'admin', username:'hoangminh'}));
-                        localStorage.setItem('minhhai_app_version', 'v21.32');
-                        fetch('/api/state?t=' + Date.now()).then(r => r.json()).then(data => {
-                            if (data && data.leads) AppState.leads = data.leads;
-                            if (data && data.users) AppState.users = data.users;
-                            if (typeof renderCRMBoard === 'function') renderCRMBoard();
-                        });
-                    ";
-
-                    string evalCmd = "{\"id\": 4, \"method\": \"Runtime.evaluate\", \"params\": {\"expression\": " + new System.Web.Script.Serialization.JavaScriptSerializer().Serialize(jsCode) + "}}";
-                    await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(evalCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
+                    // Trigger render explicitly just in case
+                    string forceRenderCmd = "{\"id\": 4, \"method\": \"Runtime.evaluate\", \"params\": {\"expression\": \"if(typeof renderCRMBoard==='function') renderCRMBoard();\"}}";
+                    await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(forceRenderCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
                     await ws.ReceiveAsync(new ArraySegment<byte>(tempBuf), CancellationToken.None);
 
-                    await Task.Delay(6000);
+                    await Task.Delay(2000);
 
                     string captureCmd = "{\"id\": 5, \"method\": \"Page.captureScreenshot\", \"params\": {\"format\": \"png\"}}";
                     await ws.SendAsync(new ArraySegment<byte>(Encoding.UTF8.GetBytes(captureCmd)), WebSocketMessageType.Text, true, CancellationToken.None);
@@ -95,7 +91,7 @@ class CaptureLoggedInBoardCdp {
                                 if (mData.Success) {
                                     byte[] imageBytes = Convert.FromBase64String(mData.Groups[1].Value);
                                     File.WriteAllBytes(outImg, imageBytes);
-                                    Console.WriteLine("SUCCESS! Saved screenshot proof for v21.32! Size: " + imageBytes.Length + " bytes");
+                                    Console.WriteLine("SUCCESS! Saved authenticated screenshot proof for v21.32! Size: " + imageBytes.Length + " bytes");
                                     break;
                                 }
                             }

@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.33] - 2026-07-27
+### Khắc phục triệt để lỗi ReferenceError biến s trong crm.js (Critical Fix)
+- Bổ sung khai báo let s = text; trong hàm cleanVietnameseText của crm.js.
+- Loại bỏ hoàn toàn ngoại lệ ReferenceError: s is not defined ngắt quãng tiến trình vẽ 59 thẻ khách hàng CRM.
+
 ## [v21.32] - 2026-07-27
 ### Chuẩn hóa tên bước Kanban & chống lỗi DOM (DOM Safety & Stage Fix)
 - Tự động chuyển toàn bộ tên bước Tiếng Việt (Nhận thông tin, Lấy SĐT, Khai thác thông tin, Báo giá, Thương lượng, Thành công, Thất bại) về key tiêu chuẩn (eceive_info, get_phone, explore_info, quotation, 

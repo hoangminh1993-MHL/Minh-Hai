@@ -23,6 +23,7 @@ function cleanVietnameseText(text) {
   if (!/[├│├í├¡├┤├¬├á├¿├╣├╜ß╗ß║\u0393\u252C\u2551\u2500\uFFFD]/.test(text)) {
     return text.trim();
   }
+  let s = text;
   s = s.replace(/\u0393\u00F2\u00E6\u252C\u2551/g, 'ầ')
        .replace(/\u0393\u00F6\u00A3\u252C\u00B1/g, 'ầ')
        .replace(/\u0393\u00F2\u00F9\u00F4/g, 'uồ')
