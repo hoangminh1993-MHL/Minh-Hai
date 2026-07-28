@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.57] - 2026-07-28
+### Kiểm Tra Và Khắc Phục Triệt Để 100% Cho Khách Hàng Test & Mọi Khách Hàng Mới
+- Đã cố định ID khách hàng active (currentActiveLeadId) và kiểm tra chuỗi linh hoạt khi mở popup.
+- Đã kiểm tra quy trình ghim link tài liệu, gửi tin nhắn thảo luận và lưu thông tin bước trên khách hàng test.
+
 ## [v21.56] - 2026-07-28
 ### Loại Bỏ Khối Kiểm Tra Thời Gian & Sửa Triệt Để Lỗi Lưu Popup, Ghim Link, Thảo Luận Nội Bộ (v21.56)
 - Đã bỏ hoàn toàn khối Kiểm Tra Thời Gian Phản Hồi (Bước 1) khỏi giao diện modal popup theo đúng yêu cầu.

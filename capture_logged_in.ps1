@@ -52,38 +52,49 @@ try {
                 }
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 
-                // Test clicking first card to open modal-lead-detail
-                const firstCard = document.querySelector('.crm-card') || document.querySelector('.kanban-card');
-                if (firstCard) {
-                    const leadId = firstCard.getAttribute('data-id');
-                    if (typeof openLeadDetailModal === 'function') {
-                        openLeadDetailModal(leadId);
-                    } else {
-                        firstCard.click();
-                    }
-                }
+                // Create a NEW test lead to verify full flow: Create -> Open -> Ghim -> Comment -> Save!
+                const newTestLead = {
+                    id: 'lead-test-' + Date.now(),
+                    name: 'Khách Hàng Test Ghim & Lưu',
+                    phone: '0912345678',
+                    source: 'Fanpage',
+                    salesId: 'usr-admin',
+                    stage: 'receive_info',
+                    stageEntryTimes: { receive_info: Date.now() },
+                    date: new Date().toISOString().split('T')[0],
+                    createdTime: new Date().toISOString(),
+                    updatedTime: new Date().toISOString()
+                };
+                if (typeof window.initLeadSteps === 'function') window.initLeadSteps(newTestLead);
+                if (!AppState.leads) AppState.leads = [];
+                AppState.leads.unshift(newTestLead);
+                if (typeof saveState === 'function') saveState();
+                if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 
-                // 1. Test Ghim button (File Attach)
+                // Open modal for this test lead
+                if (typeof openLeadDetailModal === 'function') openLeadDetailModal(newTestLead.id);
+                
+                // 1. Ghim file
                 const fileNameInput = document.getElementById('lead-step-file-name');
                 const fileUrlInput = document.getElementById('lead-step-file-url');
                 const addFileBtn = document.getElementById('btn-lead-step-add-file');
                 if (fileUrlInput && addFileBtn) {
-                    if (fileNameInput) fileNameInput.value = 'Hop_Dong_Minh_Hai.pdf';
-                    fileUrlInput.value = 'https://drive.google.com/file/d/123/view';
+                    if (fileNameInput) fileNameInput.value = 'Bao_Gia_Chinh_Thuc_Minh_Hai.pdf';
+                    fileUrlInput.value = 'https://drive.google.com/file/d/test_bao_gia/view';
                     addFileBtn.click();
                 }
 
-                // 2. Test Gửi button (Internal Comment)
+                // 2. Gửi comment
                 const commentInput = document.getElementById('lead-step-new-comment');
                 const addCommentBtn = document.getElementById('btn-lead-step-add-comment');
                 if (commentInput && addCommentBtn) {
-                    commentInput.value = 'Thảo luận nội bộ: Đã tiếp nhận và xử lý yêu cầu khách hàng.';
+                    commentInput.value = 'Đã chốt gửi báo giá và hợp đồng thử nghiệm thành công!';
                     addCommentBtn.click();
                 }
 
-                // 3. Test Note
+                // 3. Save Note
                 const noteInput = document.getElementById('lead-step-note');
-                if (noteInput) noteInput.value = 'Ghi chú bước 1: Đã liên hệ khách hàng thành công.';
+                if (noteInput) noteInput.value = 'Ghi chú kiểm tra: Đã chốt nhu cầu vận chuyển hàng chính ngạch.';
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');
                 if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();

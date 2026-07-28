@@ -1090,7 +1090,12 @@ window.initLeadSteps = function initLeadSteps(lead) {
 
 function openLeadDetailModal(leadId) {
   window.openLeadDetailModal = openLeadDetailModal;
-  const lead = AppState.leads.find(l => l.id === leadId);
+  if (leadId) currentActiveLeadId = leadId;
+  let lead = AppState.leads ? AppState.leads.find(l => String(l.id) === String(leadId)) : null;
+  if (!lead && AppState.leads && AppState.leads.length > 0) {
+    lead = AppState.leads.find(l => String(l.id) === String(currentActiveLeadId)) || AppState.leads[0];
+    if (lead) currentActiveLeadId = lead.id;
+  }
   if (!lead) return;
 
   // 1. Open modal FIRST so popup is 100% guaranteed to open on card click!
@@ -1109,7 +1114,7 @@ function openLeadDetailModal(leadId) {
   // 2. Safe rendering of modal contents
   try {
     if (typeof window.initLeadSteps === 'function') window.initLeadSteps(lead);
-    currentActiveLeadId = leadId;
+    currentActiveLeadId = lead.id;
     
     const stageToStepNum = {
       receive_info: 1,
@@ -1227,11 +1232,19 @@ function openLeadDetailModal(leadId) {
 }
 
 function renderActiveLeadStepPanel() {
-  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
+  let lead = AppState.leads ? AppState.leads.find(l => String(l.id) === String(currentActiveLeadId)) : null;
+  if (!lead && AppState.leads && AppState.leads.length > 0) {
+    lead = AppState.leads[0];
+    currentActiveLeadId = lead.id;
+  }
   if (!lead) return;
 
-  const stepData = lead.steps.find(s => s.stepNum === currentActiveLeadStepNum);
-  if (!stepData) return;
+  let stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
+  if (!stepData) {
+    if (!lead.steps) lead.steps = [];
+    stepData = { stepNum: currentActiveLeadStepNum || 1, name: 'Nhận thông tin', note: '', checklist: [], comments: [], files: [] };
+    lead.steps.push(stepData);
+  }
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng", "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
