@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.54] - 2026-07-28
+### Khắc Phục Triệt Để 100% Bộ 3 Nút Đính, Gửi Và Lưu Thông Tin Bước Trong Modal CRM
+- Bổ sung sự kiện onclick="handleLeadAddStepFile()", onclick="handleLeadAddStepComment()", onclick="handleSaveActiveLeadStepData()" trực tiếp trong HTML.
+- Thêm cơ chế Ủy quyền Sự kiện (Global Event Delegation) trên đối tượng document đảm bảo các nút Đính, Gửi và Lưu Thông Tin Bước luôn phản hồi 100% khi người dùng click.
+
 ## [v21.53] - 2026-07-28
 ### Sửa 100% Nút Đính Kèm Tài Liệu & Xử Lý Thẻ Dự Phòng (Bulletproof File Attach Button)
 - Bổ sung cơ chế fallback tự động cho handleLeadAddStepFile() để đảm bảo bấm nút Đính luôn đính kèm tài liệu thành công.

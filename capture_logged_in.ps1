@@ -63,13 +63,20 @@ try {
                     }
                 }
                 
-                // Type 'Tai_lieu_Bao_gia.pdf' and click button
+                // 1. Test clicking 'Đính' button
                 const fileInput = document.getElementById('lead-step-file-url');
-                const addBtn = document.getElementById('btn-lead-step-add-file');
-                if (fileInput) {
-                    fileInput.value = 'Tai_lieu_Bao_gia.pdf';
-                    if (addBtn) addBtn.click();
-                    else if (typeof handleLeadAddStepFile === 'function') handleLeadAddStepFile();
+                const addFileBtn = document.getElementById('btn-lead-step-add-file');
+                if (fileInput && addFileBtn) {
+                    fileInput.value = 'File_Dinh_Kem_Bao_Gia.pdf';
+                    addFileBtn.click();
+                }
+
+                // 2. Test clicking 'Gửi' comment button
+                const commentInput = document.getElementById('lead-step-new-comment');
+                const addCommentBtn = document.getElementById('btn-lead-step-add-comment');
+                if (commentInput && addCommentBtn) {
+                    commentInput.value = 'Đã gửi báo giá và tài liệu đính kèm cho khách hàng thành công.';
+                    addCommentBtn.click();
                 }
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');

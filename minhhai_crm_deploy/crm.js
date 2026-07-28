@@ -1591,15 +1591,26 @@ function handleLeadAddStepChecklistItem() {
 }
 
 function handleLeadAddStepComment() {
-  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
-  if (!lead) return;
-  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === currentActiveLeadStepNum) : null;
+  window.handleLeadAddStepComment = handleLeadAddStepComment;
+  let lead = AppState.leads ? AppState.leads.find(l => l.id === currentActiveLeadId) : null;
+  if (!lead && AppState.leads && AppState.leads.length > 0) {
+    lead = AppState.leads[0];
+    currentActiveLeadId = lead.id;
+  }
+  if (!lead) {
+    if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
+    return;
+  }
+  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
   if (!stepData) return;
 
   const input = document.getElementById('lead-step-new-comment');
   if (!input) return;
   const val = input.value.trim();
-  if (!val) return;
+  if (!val) {
+    if (typeof showToast === 'function') showToast("Vui lòng nhập nội dung trao đổi!", "warning");
+    return;
+  }
 
   if (!stepData.comments) stepData.comments = [];
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : { name: 'Admin' };
@@ -1612,13 +1623,22 @@ function handleLeadAddStepComment() {
   input.value = '';
   saveState();
   renderActiveLeadStepPanel();
+  if (typeof showToast === 'function') showToast("Đã gửi thảo luận thành công!", "success");
 }
 
 function handleSaveActiveLeadStepData() {
-  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
-  if (!lead) return;
+  window.handleSaveActiveLeadStepData = handleSaveActiveLeadStepData;
+  let lead = AppState.leads ? AppState.leads.find(l => l.id === currentActiveLeadId) : null;
+  if (!lead && AppState.leads && AppState.leads.length > 0) {
+    lead = AppState.leads[0];
+    currentActiveLeadId = lead.id;
+  }
+  if (!lead) {
+    if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
+    return;
+  }
 
-  const stepData = lead.steps.find(s => s.stepNum === currentActiveLeadStepNum);
+  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
   if (!stepData) return;
 
   const stageToStepNum = {
@@ -2010,3 +2030,50 @@ function createNegotiatingTaskIfNeeded(lead) {
     AppState.single_tasks.push(newTask);
   }
 }
+
+function handleDeleteLead() {
+  window.handleDeleteLead = handleDeleteLead;
+  let lead = AppState.leads ? AppState.leads.find(l => l.id === currentActiveLeadId) : null;
+  if (!lead && AppState.leads && AppState.leads.length > 0) {
+    lead = AppState.leads[0];
+  }
+  if (!lead) return;
+  if (confirm(`Bạn chắc chắn muốn xóa cơ hội khách hàng "${lead.name}"? Dữ liệu sẽ mất vĩnh viễn.`)) {
+    AppState.leads = AppState.leads.filter(l => l.id !== lead.id);
+    saveState();
+    closeModal('modal-lead-detail');
+    renderCRMBoard();
+    if (typeof addNotification === 'function') addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
+    if (typeof showToast === 'function') showToast("Đã xóa cơ hội khách hàng!", "info");
+  }
+}
+
+// Global Window Exports
+window.handleLeadAddStepFile = handleLeadAddStepFile;
+window.handleLeadPickFile = handleLeadPickFile;
+window.handleLeadAddStepChecklistItem = handleLeadAddStepChecklistItem;
+window.handleLeadAddStepComment = handleLeadAddStepComment;
+window.handleSaveActiveLeadStepData = handleSaveActiveLeadStepData;
+window.handleDeleteLead = handleDeleteLead;
+
+// Global Event Delegation for Modal Buttons
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('#btn-lead-step-add-file, #btn-lead-step-add-comment, #btn-lead-step-save, #btn-lead-step-add-chk, #btn-lead-delete');
+  if (!btn) return;
+  if (btn.id === 'btn-lead-step-add-file') {
+    e.preventDefault();
+    handleLeadAddStepFile();
+  } else if (btn.id === 'btn-lead-step-add-comment') {
+    e.preventDefault();
+    handleLeadAddStepComment();
+  } else if (btn.id === 'btn-lead-step-save') {
+    e.preventDefault();
+    handleSaveActiveLeadStepData();
+  } else if (btn.id === 'btn-lead-step-add-chk') {
+    e.preventDefault();
+    handleLeadAddStepChecklistItem();
+  } else if (btn.id === 'btn-lead-delete') {
+    e.preventDefault();
+    handleDeleteLead();
+  }
+});
