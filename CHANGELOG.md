@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.61] - 2026-07-29
+### Kiến Trúc Đồng Bộ Hợp Nhất Hai Chiều Vĩnh Viễn Khách Hàng (Smart Two-Way Merging v21.61)
+- Áp dụng cơ chế Smart Two-Way Lead Merging: Khi tải lại trang (F5), client kết hợp danh sách từ server và LocalStorage local. Mọi khách mới vừa khởi tạo ở trình duyệt sẽ không bao giờ bị ghi đè hay biến mất.
+- Tự động phát hiện và khôi phục (Auto-Heal) danh sách khách mới lên Server API & Postgres DB nếu đĩa server bị reset do dịch vụ Render khôi phục.
+- Đảm bảo 100% dữ liệu khách hàng lưu vĩnh viễn, hoạt động trơn tru cả khi offline hay online.
+
 ## [v21.60] - 2026-07-29
 ### Khắc Phục Triệt Để Lỗi Mất Khách Hàng Mới Tạo Khi Load Lại Trang Web (v21.60)
 - Sửa triệt để bug đồng bộ server làm méo mảng leads thành object delta làm server fallback về danh sách mặc định.

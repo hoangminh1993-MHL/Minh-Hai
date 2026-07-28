@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.60';
+  const CURRENT_APP_VER = 'v21.61';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cardFailed = document.getElementById('card-stat-failed');
   if (cardFailed) cardFailed.addEventListener('click', () => openLeadsListModal('failed'));
 
-  const cardSausage = document.getElementById('card-stat-sausage');
+    const cardSausage = document.getElementById('card-stat-sausage');
   if (cardSausage) cardSausage.addEventListener('click', () => navigateToView('rewards'));
 
   // Global modal close events
@@ -313,7 +313,7 @@ function initLocalStorage() {
     ]));
   }
   if (!localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER)) {
-    localStorage.setItem(CONFIG.LS_KEY_CURRENT_USER, 'usr-1'); // Default to Admin
+    localStorage.setItem(CONFIG.LS_KEY_CURRENT_USER, 'usr-1');
   }
 }
 
@@ -323,15 +323,33 @@ async function syncLoadState() {
     if (res.ok) {
       const data = await res.json();
       AppState.lastUpdated = data.lastUpdated || parseInt(localStorage.getItem('votr_last_updated')) || 0;
-      AppState.users = data.users;
-      AppState.leads = data.leads;
-      AppState.tasks = data.tasks;
-      AppState.workflows = data.workflows;
-      AppState.sausageLogs = data.sausageLogs;
-      AppState.notifications = data.notifications;
+      AppState.users = data.users || [];
+      
+      // Smart Two-Way Lead Merging: Keep newly created local leads that are missing from server
+      const localLeads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
+      const serverLeads = data.leads || [];
+      const leadMap = new Map();
+      
+      // 1. Put server leads first
+      serverLeads.forEach(l => { if (l && l.id) leadMap.set(String(l.id), l); });
+      
+      // 2. Preserve any local leads not on server yet (e.g. newly created lead)
+      let hasNewLocalLead = false;
+      localLeads.forEach(l => {
+        if (l && l.id && !leadMap.has(String(l.id))) {
+          leadMap.set(String(l.id), l);
+          hasNewLocalLead = true;
+        }
+      });
+      
+      AppState.leads = Array.from(leadMap.values());
+      
+      AppState.tasks = data.tasks || [];
+      AppState.workflows = data.workflows || {};
+      AppState.sausageLogs = data.sausageLogs || [];
+      AppState.notifications = data.notifications || [];
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
       
-      // Seed operational lists (v18)
       AppState.clients = data.clients || [];
       AppState.projects = data.projects || [];
       AppState.shipment_workflows = data.shipment_workflows || [];
@@ -346,7 +364,7 @@ async function syncLoadState() {
       const loggedUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
       AppState.currentUserId = localStorage.getItem(CONFIG.LS_KEY_CURRENT_USER) || loggedUser.id || (data.users && data.users[0]?.id) || 'usr-admin';
       
-      // Also cache locally
+      // Cache merged state back locally
       localStorage.setItem(CONFIG.LS_KEY_USERS, JSON.stringify(AppState.users));
       localStorage.setItem(CONFIG.LS_KEY_LEADS, JSON.stringify(AppState.leads));
       localStorage.setItem(CONFIG.LS_KEY_TASKS, JSON.stringify(AppState.tasks));
@@ -367,6 +385,11 @@ async function syncLoadState() {
       
       updateMyTasksBadge();
       window.BaseState = JSON.parse(JSON.stringify(AppState));
+
+      if (hasNewLocalLead) {
+        console.log('[Sync] Resynced newly created local leads to server API...');
+        saveState();
+      }
       return;
     }
   } catch (err) {
@@ -563,7 +586,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.60';
+const CLIENT_VERSION = '21.61';
 
 async function checkCodeVersionUpdate() {
   try {
