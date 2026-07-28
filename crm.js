@@ -1475,14 +1475,24 @@ function renderActiveLeadStepPanel() {
 }
 
 function handleLeadAddStepFile() {
+  window.handleLeadAddStepFile = handleLeadAddStepFile;
   const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
-  if (!lead) return;
+  if (!lead) {
+    if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
+    return;
+  }
 
   const input = document.getElementById('lead-step-file-url');
-  if (!input) return;
-  const val = input.value.trim();
+  const val = input ? input.value.trim() : '';
+  
   if (!val) {
-    if (typeof showToast === 'function') showToast("Vui lòng dán link file hoặc nhập tên tài liệu đính kèm!", "warning");
+    // If input is empty, open file picker dialog
+    const picker = document.getElementById('lead-step-file-picker');
+    if (picker) {
+      picker.click();
+      return;
+    }
+    if (typeof showToast === 'function') showToast("Vui lòng dán link file hoặc chọn tài liệu đính kèm!", "warning");
     return;
   }
 
@@ -1498,7 +1508,7 @@ function handleLeadAddStepFile() {
       fileName = val;
     }
   } else {
-    fileName = `Tài liệu: ${val}`;
+    fileName = val.length > 50 ? val.substring(0, 47) + '...' : val;
   }
 
   lead.files.push({
@@ -1507,12 +1517,38 @@ function handleLeadAddStepFile() {
     date: new Date().toLocaleString('vi-VN')
   });
 
-  input.value = '';
+  if (input) input.value = '';
   saveState();
   renderActiveLeadStepPanel();
   if (typeof addNotification === 'function') addNotification('Đính kèm tài liệu', `Đã đính kèm "${fileName}" cho khách hàng ${lead.name}`, 'info');
   if (typeof showToast === 'function') showToast(`Đã đính kèm tài liệu "${fileName}" thành công!`, 'success');
 }
+
+function handleLeadPickFile(fileInput) {
+  window.handleLeadPickFile = handleLeadPickFile;
+  if (!fileInput || !fileInput.files || fileInput.files.length === 0) return;
+  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
+  if (!lead) return;
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    if (!lead.files) lead.files = [];
+    lead.files.push({
+      name: file.name,
+      url: e.target.result,
+      date: new Date().toLocaleString('vi-VN')
+    });
+    fileInput.value = '';
+    saveState();
+    renderActiveLeadStepPanel();
+    if (typeof showToast === 'function') showToast(`Đã tải lên và đính kèm file "${file.name}"!`, 'success');
+  };
+  reader.readAsDataURL(file);
+}
+
+window.handleLeadAddStepFile = handleLeadAddStepFile;
+window.handleLeadPickFile = handleLeadPickFile;
 
 function handleLeadAddStepChecklistItem() {
   const lead = AppState.leads.find(l => l.id === currentActiveLeadId);

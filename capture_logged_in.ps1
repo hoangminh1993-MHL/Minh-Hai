@@ -63,12 +63,15 @@ try {
                     }
                 }
                 
-                // Add test attached document
+                // Add test attached document 'a'
                 const fileInput = document.getElementById('lead-step-file-url');
+                const addFileBtn = document.getElementById('btn-lead-step-add-file');
                 if (fileInput) {
-                    fileInput.value = 'https://drive.google.com/file/d/123_Tai_Lieu_Bao_Gia.pdf/view';
+                    fileInput.value = 'a';
                     if (typeof handleLeadAddStepFile === 'function') {
                         handleLeadAddStepFile();
+                    } else if (addFileBtn) {
+                        addFileBtn.click();
                     }
                 }
                 

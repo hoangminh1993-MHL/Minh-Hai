@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.51] - 2026-07-28
+### Sửa Triệt Để Nút Đính Kèm Tài Liệu Trong Modal CRM (Document Attach Button Fix)
+- Thêm thuộc tính onclick="handleLeadAddStepFile()" trực tiếp vào nút Đính trong index.html.
+- Gắn hàm handleLeadAddStepFile() toàn cục window và hỗ trợ chọn file trực tiếp từ máy tính nếu khung nhập trống.
+
 ## [v21.50] - 2026-07-28
 ### Xác Minh 100% Tính Năng Đính Kèm Tài Liệu Bước CRM (File Attachment Verified Proof)
 - Đính kèm file/tài liệu mượt mà, hiển thị danh sách đính kèm sắc nét với nút xóa và preview link.
