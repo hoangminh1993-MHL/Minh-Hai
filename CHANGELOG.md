@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.49] - 2026-07-28
+### Sửa Triệt Để Lỗi Đính Kèm Tài Liệu Trong Modal Popup Thẻ CRM (File Attachment Fix)
+- Bổ sung hàm xử lý đính kèm tài liệu handleLeadAddStepFile(), thêm checklist handleLeadAddStepChecklistItem() và thảo luận handleLeadAddStepComment().
+- Khắc phục các ID thùng chứa lead-step-files-list, lead-step-checklist-items, lead-step-comments-list khớp chính xác 100% giữa index.html và crm.js.
+
 ## [v21.48] - 2026-07-27
 ### Làm Sạch 100% Ghi Chú Tất Cả Các Bước Trong Modal Popup Thẻ CRM (All Step Notes Cleaned)
 - Chuẩn hóa toàn bộ 26 ghi chú các bước trong mảng lead.steps của tất cả 36 thẻ CRM sang Tiếng Việt chuẩn.

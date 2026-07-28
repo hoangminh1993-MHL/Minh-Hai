@@ -1325,145 +1325,239 @@ function renderActiveLeadStepPanel() {
     failGroup.style.display = 'none';
   }
 
-  const chkContainer = document.getElementById('lead-step-checklist-container');
-  chkContainer.innerHTML = '';
-  if (stepData.checklist && stepData.checklist.length > 0) {
-    stepData.checklist.forEach((item, idx) => {
+  const chkContainer = document.getElementById('lead-step-checklist-items') || document.getElementById('lead-step-checklist-container');
+  if (chkContainer) {
+    chkContainer.innerHTML = '';
+    if (stepData.checklist && stepData.checklist.length > 0) {
+      stepData.checklist.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px; margin-bottom: 4px;';
+        
+        const label = document.createElement('label');
+        label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer; margin: 0;';
+        label.innerHTML = `
+          <input type="checkbox" ${item.done ? 'checked' : ''}>
+          <span style="${item.done ? 'text-decoration:line-through; opacity:0.6;' : ''}">${item.text} ${item.required ? '<span style="color:#ef4444;">*</span>' : ''}</span>
+        `;
+        
+        label.querySelector('input').onchange = (e) => {
+          item.done = e.target.checked;
+          saveState();
+          renderActiveLeadStepPanel();
+        };
+
+        const btnDel = document.createElement('button');
+        btnDel.type = 'button';
+        btnDel.className = 'btn btn-sm btn-outline';
+        btnDel.style.cssText = 'padding: 2px 6px; font-size:10px; color:#ef4444; border-color:rgba(239,68,68,0.2);';
+        btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
+        btnDel.onclick = () => {
+          stepData.checklist.splice(idx, 1);
+          saveState();
+          renderActiveLeadStepPanel();
+        };
+
+        row.appendChild(label);
+        row.appendChild(btnDel);
+        chkContainer.appendChild(row);
+      });
+    }
+
+    // Inject system task textarea dynamically for Step 4 (Báo giá)
+    if (currentActiveLeadStepNum === 4) {
       const row = document.createElement('div');
-      row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:#111827; padding:4px 8px; border-radius:4px; margin-bottom: 4px;';
-      
-      const label = document.createElement('label');
-      label.style.cssText = 'display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer; margin: 0;';
-      label.innerHTML = `
-        <input type="checkbox" ${item.done ? 'checked' : ''}>
-        <span style="${item.done ? 'text-decoration:line-through; opacity:0.6;' : ''}">${item.text} ${item.required ? '<span style="color:#ef4444;">*</span>' : ''}</span>
+      row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px;';
+      row.innerHTML = `
+        <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
+          [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
+        </div>
+        <textarea id="lead-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${lead.quoteFeedback || ''}</textarea>
       `;
       
-      label.querySelector('input').onchange = (e) => {
-        item.done = e.target.checked;
-        renderActiveLeadStepPanel();
+      const textarea = row.querySelector('textarea');
+      textarea.oninput = (e) => {
+        const val = e.target.value;
+        lead.quoteFeedback = val;
       };
-
-      const btnDel = document.createElement('button');
-      btnDel.type = 'button';
-      btnDel.className = 'btn btn-sm btn-outline';
-      btnDel.style.cssText = 'padding: 2px 6px; font-size:10px; color:#ef4444; border-color:rgba(239,68,68,0.2);';
-      btnDel.innerHTML = '<i class="fa-solid fa-trash"></i>';
-      btnDel.onclick = () => {
-        stepData.checklist.splice(idx, 1);
-        renderActiveLeadStepPanel();
+      textarea.onchange = () => {
+        saveState();
       };
-
-      row.appendChild(label);
-      row.appendChild(btnDel);
+      
       chkContainer.appendChild(row);
-    });
-  }
+    }
 
-  // Inject system task textarea dynamically for Step 4 (Báo giá)
-  if (currentActiveLeadStepNum === 4) {
-    const row = document.createElement('div');
-    row.style.cssText = 'background:#1e1b4b; padding:8px; border-radius:4px; border: 1px dashed #6366f1; margin-bottom: 4px;';
-    row.innerHTML = `
-      <div style="font-size:12.5px; color:#a5b4fc; margin-bottom: 6px; font-weight: bold;">
-        [Hệ thống] Nhập tình trạng khách hàng sau báo giá <span style="color:#ef4444;">*</span>
-      </div>
-      <textarea id="lead-step-quote-feedback" rows="2" style="background:#111827; color:white; border:1px solid #4b5563; font-size:12px; width:100%; border-radius:4px; padding:6px; box-sizing:border-box;" placeholder="Nhập tình trạng chi tiết tại đây (ví dụ: khách chê giá hơi cao đang thương lượng, khách đồng ý cần lên hợp đồng...)...">${lead.quoteFeedback || ''}</textarea>
-    `;
-    
-    const textarea = row.querySelector('textarea');
-    textarea.oninput = (e) => {
-      const val = e.target.value;
-      lead.quoteFeedback = val;
-    };
-    textarea.onchange = () => {
-      saveState();
-    };
-    
-    chkContainer.appendChild(row);
-  }
-
-  // Handle empty state
-  if (chkContainer.innerHTML === '') {
-    chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
+    // Handle empty state
+    if (chkContainer.innerHTML === '') {
+      chkContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Không có checklist.</span>`;
+    }
   }
 
   const filesContainer = document.getElementById('lead-step-files-list');
-  filesContainer.innerHTML = '';
-  const stepFiles = lead.files || [];
-  if (stepFiles.length > 0) {
-    stepFiles.forEach((file, idx) => {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
-      
-      const nameLower = file.name.toLowerCase();
-      const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
-                      file.url.toLowerCase().includes('drive.google.com') || 
-                      file.url.toLowerCase().includes('googleusercontent.com') ||
-                      nameLower.includes('ảnh') || 
-                      nameLower.includes('anh') || 
-                      nameLower.includes('image') || 
-                      nameLower.includes('png') || 
-                      nameLower.includes('jpg') || 
-                      nameLower.includes('jpeg');
+  if (filesContainer) {
+    filesContainer.innerHTML = '';
+    const stepFiles = lead.files || [];
+    if (stepFiles.length > 0) {
+      stepFiles.forEach((file, idx) => {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
+        
+        const nameLower = file.name.toLowerCase();
+        const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
+                        file.url.toLowerCase().includes('drive.google.com') || 
+                        file.url.toLowerCase().includes('googleusercontent.com') ||
+                        nameLower.includes('ảnh') || 
+                        nameLower.includes('anh') || 
+                        nameLower.includes('image') || 
+                        nameLower.includes('png') || 
+                        nameLower.includes('jpg') || 
+                        nameLower.includes('jpeg');
 
-      // Resolve Google Drive direct preview link if applicable
-      let displayUrl = file.url;
-      if (file.url.toLowerCase().includes('drive.google.com')) {
-        let fileId = '';
-        const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
-        if (dMatch && dMatch[1]) {
-          fileId = dMatch[1];
-        } else {
-          const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-          if (idMatch && idMatch[1]) {
-            fileId = idMatch[1];
+        // Resolve Google Drive direct preview link if applicable
+        let displayUrl = file.url;
+        if (file.url.toLowerCase().includes('drive.google.com')) {
+          let fileId = '';
+          const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          if (dMatch && dMatch[1]) {
+            fileId = dMatch[1];
+          } else {
+            const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (idMatch && idMatch[1]) {
+              fileId = idMatch[1];
+            }
+          }
+          if (fileId) {
+            displayUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
           }
         }
-        if (fileId) {
-          displayUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w600`;
+
+        const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
+
+        const fileInfo = document.createElement('div');
+        fileInfo.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
+        fileInfo.innerHTML = `
+          <a href="${file.url}" target="_blank" style="color:var(--color-info); text-decoration:underline;"><i class="fa-solid fa-file-arrow-up"></i> ${file.name}</a>
+          <button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xóa file"><i class="fa-solid fa-trash"></i></button>
+        `;
+        
+        fileInfo.querySelector('button').onclick = () => {
+          lead.files.splice(idx, 1);
+          saveState();
+          renderActiveLeadStepPanel();
+        };
+        
+        row.appendChild(fileInfo);
+        if (imgPreview) {
+          const previewDiv = document.createElement('div');
+          previewDiv.innerHTML = imgPreview;
+          row.appendChild(previewDiv.firstChild);
         }
-      }
-
-      const imgPreview = isImage ? `<img src="${displayUrl}" onerror="this.style.display='none';" style="max-width:100%; max-height:100px; border-radius:4px; margin-top:4px; display:block; border:1px solid var(--border-color);" alt="ảnh hàng hóa" />` : '';
-
-      const fileInfo = document.createElement('div');
-      fileInfo.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
-      fileInfo.innerHTML = `
-        <a href="${file.url}" target="_blank" style="color:var(--color-info); text-decoration:underline;"><i class="fa-solid fa-file-arrow-up"></i> ${file.name}</a>
-        <button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xóa file"><i class="fa-solid fa-trash"></i></button>
-      `;
-      
-      fileInfo.querySelector('button').onclick = () => {
-        lead.files.splice(idx, 1);
-        saveState();
-        renderActiveLeadStepPanel();
-      };
-      
-      row.appendChild(fileInfo);
-      if (imgPreview) {
-        const previewDiv = document.createElement('div');
-        previewDiv.innerHTML = imgPreview;
-        row.appendChild(previewDiv.firstChild);
-      }
-      filesContainer.appendChild(row);
-    });
-  } else {
-    filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
+        filesContainer.appendChild(row);
+      });
+    } else {
+      filesContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có tài liệu nào.</span>`;
+    }
   }
 
-  const commentsContainer = document.getElementById('lead-step-comments');
-  commentsContainer.innerHTML = '';
-  if (stepData.comments && stepData.comments.length > 0) {
-    stepData.comments.forEach(c => {
-      const div = document.createElement('div');
-      div.style.cssText = 'font-size:12px; padding:4px 6px; background:rgba(255,255,255,0.03); border-radius:4px; margin-bottom:4px;';
-      div.innerHTML = `<strong style="color:var(--color-primary);">${c.user}:</strong> <span>${c.text}</span> <span style="font-size:10px; color:var(--text-muted); float:right; margin-top:2px;">${c.date}</span>`;
-      commentsContainer.appendChild(div);
-    });
-  } else {
-    commentsContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào ở bước này.</span>`;
+  const commentsContainer = document.getElementById('lead-step-comments-list') || document.getElementById('lead-step-comments');
+  if (commentsContainer) {
+    commentsContainer.innerHTML = '';
+    if (stepData.comments && stepData.comments.length > 0) {
+      stepData.comments.forEach(c => {
+        const div = document.createElement('div');
+        div.style.cssText = 'font-size:12px; padding:4px 6px; background:rgba(255,255,255,0.03); border-radius:4px; margin-bottom:4px;';
+        div.innerHTML = `<strong style="color:var(--color-primary);">${c.user}:</strong> <span>${c.text}</span> <span style="font-size:10px; color:var(--text-muted); float:right; margin-top:2px;">${c.date}</span>`;
+        commentsContainer.appendChild(div);
+      });
+    } else {
+      commentsContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào ở bước này.</span>`;
+    }
   }
+}
+
+function handleLeadAddStepFile() {
+  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
+  if (!lead) return;
+
+  const input = document.getElementById('lead-step-file-url');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) {
+    if (typeof showToast === 'function') showToast("Vui lòng dán link file hoặc nhập tên tài liệu đính kèm!", "warning");
+    return;
+  }
+
+  if (!lead.files) lead.files = [];
+
+  let fileName = val;
+  if (val.startsWith('http://') || val.startsWith('https://')) {
+    try {
+      const u = new URL(val);
+      fileName = u.pathname.split('/').pop() || val;
+      if (!fileName || fileName.length < 2) fileName = val;
+    } catch(e) {
+      fileName = val;
+    }
+  } else {
+    fileName = `Tài liệu: ${val}`;
+  }
+
+  lead.files.push({
+    name: fileName,
+    url: val.startsWith('http') ? val : '#',
+    date: new Date().toLocaleString('vi-VN')
+  });
+
+  input.value = '';
+  saveState();
+  renderActiveLeadStepPanel();
+  if (typeof addNotification === 'function') addNotification('Đính kèm tài liệu', `Đã đính kèm "${fileName}" cho khách hàng ${lead.name}`, 'info');
+  if (typeof showToast === 'function') showToast(`Đã đính kèm tài liệu "${fileName}" thành công!`, 'success');
+}
+
+function handleLeadAddStepChecklistItem() {
+  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
+  if (!lead) return;
+  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === currentActiveLeadStepNum) : null;
+  if (!stepData) return;
+
+  const input = document.getElementById('lead-step-new-chk');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+
+  if (!stepData.checklist) stepData.checklist = [];
+  stepData.checklist.push({
+    text: val,
+    done: false
+  });
+
+  input.value = '';
+  saveState();
+  renderActiveLeadStepPanel();
+}
+
+function handleLeadAddStepComment() {
+  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
+  if (!lead) return;
+  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === currentActiveLeadStepNum) : null;
+  if (!stepData) return;
+
+  const input = document.getElementById('lead-step-new-comment');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+
+  if (!stepData.comments) stepData.comments = [];
+  const user = typeof getCurrentUser === 'function' ? getCurrentUser() : { name: 'Admin' };
+  stepData.comments.push({
+    user: (user && (user.name || user.username)) ? (user.name || user.username) : 'Nhân viên',
+    text: val,
+    date: new Date().toLocaleString('vi-VN')
+  });
+
+  input.value = '';
+  saveState();
+  renderActiveLeadStepPanel();
 }
 
 function handleSaveActiveLeadStepData() {

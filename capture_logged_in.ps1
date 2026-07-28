@@ -63,6 +63,18 @@ try {
                     }
                 }
                 
+                // Add test attached document
+                const fileInput = document.getElementById('lead-step-file-url');
+                const addFileBtn = document.getElementById('btn-lead-step-add-file');
+                if (fileInput && addFileBtn) {
+                    fileInput.value = 'Tài liệu vận chuyển và báo giá.pdf';
+                    if (typeof handleLeadAddStepFile === 'function') {
+                        handleLeadAddStepFile();
+                    } else {
+                        addFileBtn.click();
+                    }
+                }
+                
                 return 'Leads count: ' + (AppState.leads ? AppState.leads.length : 0);
             })()
 "@
