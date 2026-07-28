@@ -52,49 +52,18 @@ try {
                 }
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 
-                // Create a NEW test lead to verify full flow: Create -> Open -> Ghim -> Comment -> Save!
-                const newTestLead = {
-                    id: 'lead-test-' + Date.now(),
-                    name: 'Khách Hàng Test Ghim & Lưu',
-                    phone: '0912345678',
-                    source: 'Fanpage',
-                    salesId: 'usr-admin',
-                    stage: 'receive_info',
-                    stageEntryTimes: { receive_info: Date.now() },
-                    date: new Date().toISOString().split('T')[0],
-                    createdTime: new Date().toISOString(),
-                    updatedTime: new Date().toISOString()
-                };
-                if (typeof window.initLeadSteps === 'function') window.initLeadSteps(newTestLead);
-                if (!AppState.leads) AppState.leads = [];
-                AppState.leads.unshift(newTestLead);
-                if (typeof saveState === 'function') saveState();
-                if (typeof renderCRMBoard === 'function') renderCRMBoard();
-                
-                // Open modal for this test lead
-                if (typeof openLeadDetailModal === 'function') openLeadDetailModal(newTestLead.id);
-                
-                // 1. Ghim file
-                const fileNameInput = document.getElementById('lead-step-file-name');
-                const fileUrlInput = document.getElementById('lead-step-file-url');
-                const addFileBtn = document.getElementById('btn-lead-step-add-file');
-                if (fileUrlInput && addFileBtn) {
-                    if (fileNameInput) fileNameInput.value = 'Bao_Gia_Chinh_Thuc_Minh_Hai.pdf';
-                    fileUrlInput.value = 'https://drive.google.com/file/d/test_bao_gia/view';
-                    addFileBtn.click();
+                // 1. Open Lead A and type temporary text
+                if (AppState.leads && AppState.leads.length > 0) {
+                    openLeadDetailModal(AppState.leads[0].id);
+                    const inp1 = document.getElementById('lead-step-file-name');
+                    if (inp1) inp1.value = 'File_Lead_A.pdf';
                 }
 
-                // 2. Gửi comment
-                const commentInput = document.getElementById('lead-step-new-comment');
-                const addCommentBtn = document.getElementById('btn-lead-step-add-comment');
-                if (commentInput && addCommentBtn) {
-                    commentInput.value = 'Đã chốt gửi báo giá và hợp đồng thử nghiệm thành công!';
-                    addCommentBtn.click();
+                // 2. Open Lead B (test) and verify inputs are automatically cleared and clean!
+                const testLead = (AppState.leads || []).find(l => l.name === 'test') || (AppState.leads || [])[1] || (AppState.leads || [])[0];
+                if (testLead) {
+                    openLeadDetailModal(testLead.id);
                 }
-
-                // 3. Save Note
-                const noteInput = document.getElementById('lead-step-note');
-                if (noteInput) noteInput.value = 'Ghi chú kiểm tra: Đã chốt nhu cầu vận chuyển hàng chính ngạch.';
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');
                 if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();

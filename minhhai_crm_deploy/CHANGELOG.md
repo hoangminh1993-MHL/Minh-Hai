@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.58] - 2026-07-28
+### Tự Động Xóa Ô Nhập Khi Đổi Khách Hàng & Đồng Bộ Chuẩn 7 Bước CRM Khách Mới (v21.58)
+- Tự động reset toàn bộ các ô nhập (Tên file, link, tin nhắn, checklist) về rỗng khi mở popup mới, không còn tình trạng bị lặp/dính dữ liệu nhập dở từ khách hàng cũ sang khách hàng mới.
+- Đồng bộ chuẩn quy trình thanh 7 bước cho CRM Khách Mới (1. Nhận thông tin, 2. Lấy SĐT, 3. Khai thác thông tin, 4. Báo giá, 5. Thương lượng, 6. Thành công, 7. Thất bại).
+
 ## [v21.57] - 2026-07-28
 ### Kiểm Tra Và Khắc Phục Triệt Để 100% Cho Khách Hàng Test & Mọi Khách Hàng Mới
 - Đã cố định ID khách hàng active (currentActiveLeadId) và kiểm tra chuỗi linh hoạt khi mở popup.

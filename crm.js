@@ -1098,6 +1098,19 @@ function openLeadDetailModal(leadId) {
   }
   if (!lead) return;
 
+  // ALWAYS clear temporary modal input fields so Lead A's typed text NEVER leaks to Lead B!
+  const inpFileName = document.getElementById('lead-step-file-name');
+  if (inpFileName) inpFileName.value = '';
+  
+  const inpFileUrl = document.getElementById('lead-step-file-url');
+  if (inpFileUrl) inpFileUrl.value = '';
+
+  const inpComment = document.getElementById('lead-step-new-comment');
+  if (inpComment) inpComment.value = '';
+
+  const inpChk = document.getElementById('lead-step-new-chk');
+  if (inpChk) inpChk.value = '';
+
   // 1. Open modal FIRST so popup is 100% guaranteed to open on card click!
   if (typeof openModal === 'function') {
     openModal('modal-lead-detail');
@@ -1140,7 +1153,7 @@ function openLeadDetailModal(leadId) {
         const val = e.target.value;
         if (val && val !== lead.stage) {
           handleLeadMove(lead.id, val);
-          const updatedLead = AppState.leads.find(l => l.id === lead.id);
+          const updatedLead = AppState.leads.find(l => String(l.id) === String(lead.id));
           if (updatedLead) {
             openLeadDetailModal(updatedLead.id);
           }
@@ -1247,11 +1260,14 @@ function renderActiveLeadStepPanel() {
   }
 
   const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng", "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+    "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
   ];
 
   const titleEl = document.getElementById('lead-step-panel-title');
   if (titleEl) titleEl.innerText = `Bước ${currentActiveLeadStepNum}: ${stepNames[currentActiveLeadStepNum - 1] || 'Nhận thông tin'}`;
+
+  const quoteStatusInput = document.getElementById('lead-step-quote-status');
+  if (quoteStatusInput) quoteStatusInput.value = lead.quoteStatus || lead.quoteFeedback || '';
 
   const assigneeSelect = document.getElementById('lead-step-assignee');
   if (assigneeSelect) {
