@@ -65,13 +65,10 @@ try {
                 
                 // Add test attached document
                 const fileInput = document.getElementById('lead-step-file-url');
-                const addFileBtn = document.getElementById('btn-lead-step-add-file');
-                if (fileInput && addFileBtn) {
-                    fileInput.value = 'Tài liệu vận chuyển và báo giá.pdf';
+                if (fileInput) {
+                    fileInput.value = 'https://drive.google.com/file/d/123_Tai_Lieu_Bao_Gia.pdf/view';
                     if (typeof handleLeadAddStepFile === 'function') {
                         handleLeadAddStepFile();
-                    } else {
-                        addFileBtn.click();
                     }
                 }
                 
