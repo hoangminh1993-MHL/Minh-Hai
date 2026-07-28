@@ -1674,22 +1674,29 @@ function handleSaveActiveLeadStepData() {
     7: 'failed'
   };
 
-  const currentStepNum = stageToStepNum[lead.stage] || 1;
+  const phoneInput = document.getElementById('lead-step-phone');
+  if (phoneInput) lead.phone = phoneInput.value.trim();
 
-  lead.phone = document.getElementById('lead-step-phone').value.trim();
-  lead.source = document.getElementById('lead-step-source').value;
+  const sourceInput = document.getElementById('lead-step-source');
+  if (sourceInput) lead.source = sourceInput.value;
   
-  const assigneeId = document.getElementById('lead-step-assignee').value;
-  stepData.assigneeId = assigneeId;
-  lead.salesId = assigneeId;
-  
-  stepData.deadline = document.getElementById('lead-step-deadline').value;
-  stepData.note = document.getElementById('lead-step-note').value;
-
-  if (currentActiveLeadStepNum === 6) {
-    lead.valRmb = parseFloat(document.getElementById('lead-step-val-rmb').value) || 0;
-    lead.valVnd = parseFloat(document.getElementById('lead-step-val-vnd').value) || 0;
+  const assigneeInput = document.getElementById('lead-step-assignee');
+  if (assigneeInput) {
+    stepData.assigneeId = assigneeInput.value;
+    lead.salesId = assigneeInput.value;
   }
+  
+  const deadlineInput = document.getElementById('lead-step-deadline');
+  if (deadlineInput) stepData.deadline = deadlineInput.value;
+
+  const noteInput = document.getElementById('lead-step-note');
+  if (noteInput) {
+    stepData.note = noteInput.value;
+    lead.note = noteInput.value;
+  }
+
+  const quoteStatusInput = document.getElementById('lead-step-quote-status');
+  if (quoteStatusInput) lead.quoteStatus = quoteStatusInput.value.trim();
   if (currentActiveLeadStepNum === 7) {
     const currentUser = getCurrentUser();
     const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong');

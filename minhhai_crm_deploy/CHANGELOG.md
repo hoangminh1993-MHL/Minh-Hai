@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.56] - 2026-07-28
+### Loại Bỏ Khối Kiểm Tra Thời Gian & Sửa Triệt Để Lỗi Lưu Popup, Ghim Link, Thảo Luận Nội Bộ (v21.56)
+- Đã bỏ hoàn toàn khối Kiểm Tra Thời Gian Phản Hồi (Bước 1) khỏi giao diện modal popup theo đúng yêu cầu.
+- Sửa triệt để lỗi NullPointer khiến nút Lưu Thông Tin Bước bị treo khi đọc các trường không còn tồn tại trên giao diện.
+- Đảm bảo các nút Ghim link/tài liệu, Gửi thảo luận nội bộ và Lưu Thông Tin Bước hoạt động mượt mà 100%.
+
 ## [v21.55] - 2026-07-28
 ### Nâng Cấp Giao Diện Popup Chi Tiết Thẻ CRM Theo Đúng Thiết Kế 12 Bước (100% UI Match)
 - Cập nhật quy trình thanh 12 bước (Nhận thông tin, Báo giá, Thương lượng, Thành công, Mua hàng, Shop gửi hàng, Về kho TQ, Về kho VN, Giao hàng, Thu nợ, Hoàn tất, Thất bại).

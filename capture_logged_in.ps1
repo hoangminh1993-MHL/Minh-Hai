@@ -63,21 +63,27 @@ try {
                     }
                 }
                 
-                // 1. Test clicking 'Đính' button
-                const fileInput = document.getElementById('lead-step-file-url');
+                // 1. Test Ghim button (File Attach)
+                const fileNameInput = document.getElementById('lead-step-file-name');
+                const fileUrlInput = document.getElementById('lead-step-file-url');
                 const addFileBtn = document.getElementById('btn-lead-step-add-file');
-                if (fileInput && addFileBtn) {
-                    fileInput.value = 'File_Dinh_Kem_Bao_Gia.pdf';
+                if (fileUrlInput && addFileBtn) {
+                    if (fileNameInput) fileNameInput.value = 'Hop_Dong_Minh_Hai.pdf';
+                    fileUrlInput.value = 'https://drive.google.com/file/d/123/view';
                     addFileBtn.click();
                 }
 
-                // 2. Test clicking 'Gửi' comment button
+                // 2. Test Gửi button (Internal Comment)
                 const commentInput = document.getElementById('lead-step-new-comment');
                 const addCommentBtn = document.getElementById('btn-lead-step-add-comment');
                 if (commentInput && addCommentBtn) {
-                    commentInput.value = 'Đã gửi báo giá và tài liệu đính kèm cho khách hàng thành công.';
+                    commentInput.value = 'Thảo luận nội bộ: Đã tiếp nhận và xử lý yêu cầu khách hàng.';
                     addCommentBtn.click();
                 }
+
+                // 3. Test Note
+                const noteInput = document.getElementById('lead-step-note');
+                if (noteInput) noteInput.value = 'Ghi chú bước 1: Đã liên hệ khách hàng thành công.';
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');
                 if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();
