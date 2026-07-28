@@ -1485,7 +1485,11 @@ function renderActiveLeadStepPanel() {
 
 function handleLeadAddStepFile() {
   window.handleLeadAddStepFile = handleLeadAddStepFile;
-  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
+  let lead = AppState.leads ? AppState.leads.find(l => l.id === currentActiveLeadId) : null;
+  if (!lead && AppState.leads && AppState.leads.length > 0) {
+    lead = AppState.leads[0];
+    currentActiveLeadId = lead.id;
+  }
   if (!lead) {
     if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
     return;
@@ -1506,6 +1510,8 @@ function handleLeadAddStepFile() {
   }
 
   if (!lead.files) lead.files = [];
+  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
+  if (stepData && !stepData.files) stepData.files = [];
 
   let fileName = val;
   if (val.startsWith('http://') || val.startsWith('https://')) {
@@ -1520,11 +1526,14 @@ function handleLeadAddStepFile() {
     fileName = val.length > 50 ? val.substring(0, 47) + '...' : val;
   }
 
-  lead.files.push({
+  const newFile = {
     name: fileName,
     url: val.startsWith('http') ? val : '#',
     date: new Date().toLocaleString('vi-VN')
-  });
+  };
+
+  lead.files.push(newFile);
+  if (stepData && stepData.files) stepData.files.push(newFile);
 
   if (input) input.value = '';
   saveState();

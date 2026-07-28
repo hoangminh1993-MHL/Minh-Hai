@@ -63,13 +63,13 @@ try {
                     }
                 }
                 
-                // Add test attached document
+                // Type 'Tai_lieu_Bao_gia.pdf' and click button
                 const fileInput = document.getElementById('lead-step-file-url');
+                const addBtn = document.getElementById('btn-lead-step-add-file');
                 if (fileInput) {
-                    fileInput.value = 'Bao_Gia_Hop_Dong_Transport_2026.pdf';
-                    if (typeof handleLeadAddStepFile === 'function') {
-                        handleLeadAddStepFile();
-                    }
+                    fileInput.value = 'Tai_lieu_Bao_gia.pdf';
+                    if (addBtn) addBtn.click();
+                    else if (typeof handleLeadAddStepFile === 'function') handleLeadAddStepFile();
                 }
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');

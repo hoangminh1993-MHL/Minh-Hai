@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.53] - 2026-07-28
+### Sửa 100% Nút Đính Kèm Tài Liệu & Xử Lý Thẻ Dự Phòng (Bulletproof File Attach Button)
+- Bổ sung cơ chế fallback tự động cho handleLeadAddStepFile() để đảm bảo bấm nút Đính luôn đính kèm tài liệu thành công.
+- Tự động xóa sạch ô nhập và hiển thị ngay danh sách file đính kèm với liên kết truy cập.
+
 ## [v21.52] - 2026-07-28
 ### Đồng Bộ 100% Hiển Thị Tài Liệu Đính Kèm Cả Cấp Thẻ Và Cấp Bước Trong Modal CRM
 - Tự động hiển thị tài liệu đính kèm trên danh sách ngay khi bấm đính kèm hoặc dán link.
