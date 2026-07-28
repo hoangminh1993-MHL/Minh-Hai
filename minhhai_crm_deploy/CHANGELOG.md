@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.62] - 2026-07-29
+### Tối Ưu Hóa Cache-Busting & Cập Nhật Tự Động Giao Diện Phiên Bản Mới (v21.62)
+- Tự động cập nhật thẻ phiên bản #app-version-tag trên Sidebar bằng JavaScript linh hoạt khi trang khởi chạy.
+- Bổ sung cơ chế tự động xóa ServiceWorker cũ và xóa Cache browser cũ khi phát hiện phiên bản mới.
+- Đảm bảo tất cả thiết bị của người dùng lập tức hiển thị v21.62 mà không bị lưu cache trình duyệt cũ.
+
 ## [v21.61] - 2026-07-29
 ### Kiến Trúc Đồng Bộ Hợp Nhất Hai Chiều Vĩnh Viễn Khách Hàng (Smart Two-Way Merging v21.61)
 - Áp dụng cơ chế Smart Two-Way Lead Merging: Khi tải lại trang (F5), client kết hợp danh sách từ server và LocalStorage local. Mọi khách mới vừa khởi tạo ở trình duyệt sẽ không bao giờ bị ghi đè hay biến mất.
