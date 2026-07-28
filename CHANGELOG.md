@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.55] - 2026-07-28
+### Nâng Cấp Giao Diện Popup Chi Tiết Thẻ CRM Theo Đúng Thiết Kế 12 Bước (100% UI Match)
+- Cập nhật quy trình thanh 12 bước (Nhận thông tin, Báo giá, Thương lượng, Thành công, Mua hàng, Shop gửi hàng, Về kho TQ, Về kho VN, Giao hàng, Thu nợ, Hoàn tất, Thất bại).
+- Tách khối Kiểm Tra Thời Gian Phản Hồi (Bước 1), Tình Trạng KH Sau Báo Giá, Checklist Nghiệp Vụ.
+- Khối bên phải gồm Tài liệu & Hình ảnh lô hàng (Nút Ghim vàng) và Thảo luận nội bộ (Nút Gửi vàng ✈).
+
 ## [v21.54] - 2026-07-28
 ### Khắc Phục Triệt Để 100% Bộ 3 Nút Đính, Gửi Và Lưu Thông Tin Bước Trong Modal CRM
 - Bổ sung sự kiện onclick="handleLeadAddStepFile()", onclick="handleLeadAddStepComment()", onclick="handleSaveActiveLeadStepData()" trực tiếp trong HTML.

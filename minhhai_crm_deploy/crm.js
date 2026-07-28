@@ -1143,33 +1143,42 @@ function openLeadDetailModal(leadId) {
       };
     }
 
-    // Render 7 steps timeline bubbles
-    const timeline = document.querySelector('.lead-steps-timeline');
+    // Render 12 steps timeline bubbles matching user screenshot
+    const timeline = document.querySelector('.lead-steps-timeline') || document.getElementById('lead-steps-timeline-container');
     if (timeline) {
       timeline.innerHTML = '';
       
       const stepNames = [
-        "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
+        "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng", "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
       ];
 
-      for (let i = 1; i <= 7; i++) {
+      for (let i = 1; i <= 12; i++) {
         const bubble = document.createElement('div');
-        const stepData = lead.steps ? (lead.steps.find(s => s.stepNum === i) || {}) : {};
-        
         const leadStepNum = stageToStepNum[lead.stage] || 1;
         let stepStatusClass = 'todo';
         if (i < leadStepNum) stepStatusClass = 'done';
         else if (i === leadStepNum) stepStatusClass = 'doing';
         
         bubble.className = `flow-step-bubble ${stepStatusClass} ${i === currentActiveLeadStepNum ? 'active' : ''}`;
+        bubble.style.cssText = 'display:flex; flex-direction:column; align-items:center; cursor:pointer; flex:1; min-width:60px;';
         bubble.innerHTML = `
-          <div class="flow-step-circle">${i}</div>
-          <span class="flow-step-lbl" style="font-size: 10px;">${stepNames[i - 1]}</span>
+          <div class="flow-step-circle" style="width:28px; height:28px; border-radius:50%; background:${i === currentActiveLeadStepNum ? '#eab308' : '#1e293b'}; color:${i === currentActiveLeadStepNum ? '#000' : '#94a3b8'}; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px; margin-bottom:4px; border:1px solid ${i === currentActiveLeadStepNum ? '#eab308' : '#334155'};">${i}</div>
+          <span class="flow-step-lbl" style="font-size: 10px; color:${i === currentActiveLeadStepNum ? '#eab308' : '#94a3b8'}; text-align:center; font-weight:${i === currentActiveLeadStepNum ? 'bold' : 'normal'}; whitespace:nowrap;">${stepNames[i - 1]}</span>
         `;
 
         bubble.onclick = () => {
-          document.querySelectorAll('#modal-lead-detail .flow-step-bubble').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('#modal-lead-detail .flow-step-bubble').forEach(b => {
+            b.classList.remove('active');
+            const circle = b.querySelector('.flow-step-circle');
+            const lbl = b.querySelector('.flow-step-lbl');
+            if (circle) { circle.style.background = '#1e293b'; circle.style.color = '#94a3b8'; circle.style.borderColor = '#334155'; }
+            if (lbl) { lbl.style.color = '#94a3b8'; lbl.style.fontWeight = 'normal'; }
+          });
           bubble.classList.add('active');
+          const curCircle = bubble.querySelector('.flow-step-circle');
+          const curLbl = bubble.querySelector('.flow-step-lbl');
+          if (curCircle) { curCircle.style.background = '#eab308'; curCircle.style.color = '#000'; curCircle.style.borderColor = '#eab308'; }
+          if (curLbl) { curLbl.style.color = '#eab308'; curLbl.style.fontWeight = 'bold'; }
           currentActiveLeadStepNum = i;
           renderActiveLeadStepPanel();
         };
@@ -1225,11 +1234,11 @@ function renderActiveLeadStepPanel() {
   if (!stepData) return;
 
   const stepNames = [
-    "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng", "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
   ];
 
   const titleEl = document.getElementById('lead-step-panel-title');
-  if (titleEl) titleEl.innerText = `Bước ${currentActiveLeadStepNum}: ${stepNames[currentActiveLeadStepNum - 1]}`;
+  if (titleEl) titleEl.innerText = `Bước ${currentActiveLeadStepNum}: ${stepNames[currentActiveLeadStepNum - 1] || 'Nhận thông tin'}`;
 
   const assigneeSelect = document.getElementById('lead-step-assignee');
   if (assigneeSelect) {
@@ -1495,8 +1504,13 @@ function handleLeadAddStepFile() {
     return;
   }
 
-  const input = document.getElementById('lead-step-file-url');
-  const val = input ? input.value.trim() : '';
+  const inputName = document.getElementById('lead-step-file-name');
+  const inputUrl = document.getElementById('lead-step-file-url');
+  
+  const nameVal = inputName ? inputName.value.trim() : '';
+  const urlVal = inputUrl ? inputUrl.value.trim() : '';
+  
+  const val = urlVal || nameVal;
   
   if (!val) {
     // If input is empty, open file picker dialog
@@ -1513,29 +1527,29 @@ function handleLeadAddStepFile() {
   const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
   if (stepData && !stepData.files) stepData.files = [];
 
-  let fileName = val;
-  if (val.startsWith('http://') || val.startsWith('https://')) {
-    try {
-      const u = new URL(val);
-      fileName = u.pathname.split('/').pop() || val;
-      if (!fileName || fileName.length < 2) fileName = val;
-    } catch(e) {
-      fileName = val;
+  let fileName = nameVal || urlVal;
+  if (urlVal && (urlVal.startsWith('http://') || urlVal.startsWith('https://'))) {
+    if (!nameVal) {
+      try {
+        const u = new URL(urlVal);
+        fileName = u.pathname.split('/').pop() || urlVal;
+      } catch(e) {
+        fileName = urlVal;
+      }
     }
-  } else {
-    fileName = val.length > 50 ? val.substring(0, 47) + '...' : val;
   }
 
   const newFile = {
     name: fileName,
-    url: val.startsWith('http') ? val : '#',
+    url: urlVal.startsWith('http') ? urlVal : '#',
     date: new Date().toLocaleString('vi-VN')
   };
 
   lead.files.push(newFile);
   if (stepData && stepData.files) stepData.files.push(newFile);
 
-  if (input) input.value = '';
+  if (inputName) inputName.value = '';
+  if (inputUrl) inputUrl.value = '';
   saveState();
   renderActiveLeadStepPanel();
   if (typeof addNotification === 'function') addNotification('Đính kèm tài liệu', `Đã đính kèm "${fileName}" cho khách hàng ${lead.name}`, 'info');

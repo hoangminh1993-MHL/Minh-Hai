@@ -17,7 +17,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc (v21.54)</title>
+  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc (v21.55)</title>
   <link rel="icon" type="image/png" href="logo.png">
   <!-- Google Fonts - Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
           <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
             <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
-            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v21.54</span>
+            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v21.55</span>
           </div>
         </div>
       </div>
@@ -2515,90 +2515,105 @@
         </div>
       </div>
       <div class="modal-body" style="padding-top: 10px;">
-        <!-- Timeline Steps view -->
-        <div class="lead-steps-timeline" style="display:flex; justify-content:space-between; align-items:center; background:#111827; padding:12px; border-radius:var(--radius-md); overflow-x:auto; margin-bottom:20px; gap:8px;">
-          <!-- 7 Steps bubbles -->
+        <!-- Timeline Steps view (12 steps stepper) -->
+        <div class="lead-steps-timeline" id="lead-steps-timeline-container" style="display:flex; justify-content:space-between; align-items:center; background:#0b1120; padding:12px 16px; border-radius:var(--radius-md); overflow-x:auto; margin-bottom:20px; gap:6px; border:1px solid rgba(255,255,255,0.08);">
+          <!-- Dynamic 12 step bubbles -->
         </div>
 
-        <div class="dashboard-grid grid-1-3" style="gap:20px;">
-          <!-- Left: Step settings & checklists -->
-          <div style="background: rgba(31, 41, 55, 0.2); padding: 15px; border-radius: var(--radius-md); border:1px solid var(--border-color);">
-            <h4 id="lead-step-panel-title" style="font-size:15px; font-weight:bold; border-bottom:1px solid var(--border-color); padding-bottom:6px; margin-bottom:12px; color:var(--color-primary);">Bước 1: Nhận thông tin</h4>
-            
-            <div class="form-row">
-              <div class="form-group col-6">
-                <label for="lead-step-assignee">Người phụ trách</label>
-                <select id="lead-step-assignee" class="form-control"></select>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+          <!-- Left Column -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <!-- Box 1: Bước X -->
+            <div style="background: #0f172a; padding: 16px; border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.08);">
+              <h4 id="lead-step-panel-title" style="font-size:15px; font-weight:bold; margin-bottom:14px; color:#f59e0b;">Bước 1: Nhận thông tin</h4>
+              
+              <div class="form-row" style="margin-bottom:12px;">
+                <div class="form-group col-6">
+                  <label for="lead-step-assignee" style="font-size:12px; font-weight:600; color:#cbd5e1; margin-bottom:4px; display:block;">Người phụ trách bước này</label>
+                  <select id="lead-step-assignee" class="form-control" style="font-size:12px; background:#1e293b; color:white; border:1px solid #334155; height:34px; border-radius:6px;"></select>
+                </div>
+                <div class="form-group col-6">
+                  <label for="lead-step-deadline" style="font-size:12px; font-weight:600; color:#cbd5e1; margin-bottom:4px; display:block;">Hạn chót cho bước này</label>
+                  <input type="date" id="lead-step-deadline" class="form-control" style="font-size:12px; background:#1e293b; color:white; border:1px solid #334155; height:34px; border-radius:6px;">
+                </div>
               </div>
-              <div class="form-group col-6">
-                <label for="lead-step-phone">Số điện thoại</label>
-                <input type="text" id="lead-step-phone" class="form-control" placeholder="Chưa có SĐT">
+
+              <div style="margin-top: 8px;">
+                <label for="lead-step-note" style="font-size:12px; font-weight:600; color:#cbd5e1; margin-bottom:4px; display:block;">Ghi chú bước:</label>
+                <textarea id="lead-step-note" class="form-control" rows="3" style="font-size:12px; background:#1e293b; color:white; border:1px solid #334155; border-radius:6px;" placeholder="Nhập ghi chú kết quả xử lý bước này..."></textarea>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group col-6">
-                <label for="lead-step-deadline">Hạn chót bước này</label>
-                <input type="date" id="lead-step-deadline" class="form-control">
+            <!-- Box 2: ⏰ Kiểm Tra Thời Gian Phản Hồi -->
+            <div style="background: #0f172a; padding: 16px; border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.08);">
+              <h4 style="font-size:13px; font-weight:bold; margin-bottom:12px; color:#38bdf8; display:flex; align-items:center; gap:6px;">
+                <span>⏱</span> Kiểm Tra Thời Gian Phản Hồi (Bước 1)
+              </h4>
+              <div class="form-row" style="margin-bottom:10px;">
+                <div class="form-group col-6">
+                  <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">Thời gian khách nhắn tin</label>
+                  <input type="datetime-local" id="lead-step-msg-time" class="form-control" style="font-size:11px; background:#1e293b; color:white; border:1px solid #334155; height:32px; border-radius:6px;">
+                </div>
+                <div class="form-group col-6">
+                  <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">Ảnh bằng chứng</label>
+                  <input type="text" id="lead-step-evidence-link" class="form-control" placeholder="Link ảnh/Drive..." style="font-size:11px; background:#1e293b; color:white; border:1px solid #334155; height:32px; border-radius:6px;">
+                </div>
               </div>
-              <div class="form-group col-6">
-                <label for="lead-step-source">Nguồn khách hàng</label>
-                <select id="lead-step-source" class="form-control">
-                  <option value="Fanpage">Fanpage</option>
-                  <option value="Giới thiệu">Giới thiệu</option>
-                  <option value="Tự tìm kiếm">Tự tìm kiếm</option>
-                  <option value="Khác">Khác</option>
-                </select>
+              <div class="form-row" style="margin-bottom:8px; align-items:center;">
+                <div class="form-group col-6">
+                  <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">Thời gian nhập thông tin</label>
+                  <input type="datetime-local" id="lead-step-input-time" class="form-control" style="font-size:11px; background:#1e293b; color:white; border:1px solid #334155; height:32px; border-radius:6px;">
+                </div>
+                <div class="form-group col-6" style="padding-top:16px;">
+                  <label style="font-size:11px; color:white; cursor:pointer; display:flex; align-items:center; gap:6px;">
+                    <input type="checkbox" id="lead-step-manager-checked" style="accent-color:#eab308;">
+                    <strong>Quản lý đã kiểm tra</strong>
+                  </label>
+                </div>
               </div>
+              <p style="font-size:11px; font-style:italic; color:#94a3b8; margin:0;">Nhập đầy đủ thông tin thời gian để kiểm tra.</p>
             </div>
 
-            <!-- Value row for Success stage -->
-            <div class="form-row" id="lead-step-values-row" style="display: none;">
-              <div class="form-group col-6">
-                <label for="lead-step-val-rmb">Giá trị RMB</label>
-                <input type="number" id="lead-step-val-rmb" class="form-control" value="0">
-              </div>
-              <div class="form-group col-6">
-                <label for="lead-step-val-vnd">Giá trị VND</label>
-                <input type="number" id="lead-step-val-vnd" class="form-control" value="0">
-              </div>
+            <!-- Box 3: 📄 Tình trạng khách hàng sau báo giá -->
+            <div style="background: #0f172a; padding: 16px; border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.08);">
+              <h4 style="font-size:13px; font-weight:bold; margin-bottom:10px; color:#cbd5e1;">
+                📄 Tình trạng khách hàng sau báo giá (Bước 2) <span style="color:#ef4444;">*</span>
+              </h4>
+              <textarea id="lead-step-quote-status" class="form-control" rows="2" style="font-size:12px; background:#1e293b; color:white; border:1px solid #334155; border-radius:6px;" placeholder="Nhập tình trạng chi tiết (ví dụ: khách chê giá, đồng ý cần lên hợp đồng...)..."></textarea>
             </div>
 
-            <div style="margin-top: 15px;">
-              <label style="font-weight: bold; font-size: 13px;">Ghi chú & Nhu cầu bước này:</label>
-              <textarea id="lead-step-note" class="form-control" rows="3" style="margin-top: 5px;" placeholder="Nhập chi tiết nhu cầu hoặc tiến độ làm việc với khách hàng..."></textarea>
+            <!-- Box 4: 📋 Checklist nghiệp vụ -->
+            <div style="background: #0f172a; padding: 16px; border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.08);">
+              <h4 style="font-size:13px; font-weight:bold; margin-bottom:10px; color:#cbd5e1;">📋 Checklist nghiệp vụ:</h4>
+              <div id="lead-step-checklist-items" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px;"></div>
+              <div style="display:flex; gap:6px;">
+                <input type="text" id="lead-step-new-chk" class="form-control" placeholder="Thêm việc cần làm..." style="font-size: 12px; height: 34px; background:#1e293b; color:white; border:1px solid #334155; border-radius:6px;" onkeyup="if(event.key==='Enter') handleLeadAddStepChecklistItem();">
+                <button type="button" class="btn btn-sm" id="btn-lead-step-add-chk" onclick="handleLeadAddStepChecklistItem();" style="background:#1e293b; color:white; border:1px solid #334155; padding:0 14px; border-radius:6px; font-weight:bold;">+</button>
+              </div>
             </div>
           </div>
 
-          <!-- Right: Checklist, Files & History Comments -->
-          <div style="background: rgba(31, 41, 55, 0.2); padding: 15px; border-radius: var(--radius-md); border:1px solid var(--border-color);">
-            <h4 style="font-size:15px; font-weight:bold; border-bottom:1px solid var(--border-color); padding-bottom:6px; margin-bottom:12px;">Việc cần làm & Tài liệu</h4>
-            
-            <div style="margin-bottom: 15px;">
-              <label style="font-weight: bold; font-size: 12px; display:block; margin-bottom: 6px;">Danh sách việc cần làm (Checklist):</label>
-              <div id="lead-step-checklist-items" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;"></div>
+          <!-- Right Column -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <!-- Box 1: 📎 Tài liệu & Hình ảnh của lô hàng -->
+            <div style="background: #0f172a; padding: 16px; border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.08);">
+              <h4 style="font-size:13px; font-weight:bold; margin-bottom:12px; color:#cbd5e1;">📎 Tài liệu & Hình ảnh của lô hàng:</h4>
+              <div id="lead-step-files-list" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;"></div>
               <div style="display:flex; gap:6px;">
-                <input type="text" id="lead-step-new-chk" class="form-control" placeholder="Thêm đầu việc mới..." style="font-size: 12px; height: 32px;" onkeyup="if(event.key==='Enter') handleLeadAddStepChecklistItem();">
-                <button type="button" class="btn btn-sm btn-outline" id="btn-lead-step-add-chk" onclick="handleLeadAddStepChecklistItem();">+</button>
-              </div>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-              <label style="font-weight: bold; font-size: 12px; display:block; margin-bottom: 6px;">Tài liệu / Đính kèm:</label>
-              <div id="lead-step-files-list" style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px;"></div>
-              <div style="display:flex; gap:6px;">
-                <input type="text" id="lead-step-file-url" class="form-control" placeholder="Dán link file / tài liệu hoặc bấm Đính..." style="font-size: 12px; height: 32px;" onkeyup="if(event.key==='Enter') handleLeadAddStepFile();">
+                <input type="text" id="lead-step-file-name" class="form-control" placeholder="Tên file/Link..." style="font-size: 12px; height: 34px; background:#1e293b; color:white; border:1px solid #334155; border-radius:6px; flex:1;">
+                <input type="text" id="lead-step-file-url" class="form-control" placeholder="https://..." style="font-size: 12px; height: 34px; background:#1e293b; color:white; border:1px solid #334155; border-radius:6px; flex:1;" onkeyup="if(event.key==='Enter') handleLeadAddStepFile();">
                 <input type="file" id="lead-step-file-picker" style="display:none;" onchange="handleLeadPickFile(this);">
-                <button type="button" class="btn btn-sm btn-outline" id="btn-lead-step-add-file" onclick="handleLeadAddStepFile();"><i class="fa-solid fa-paperclip"></i> Đính</button>
+                <button type="button" class="btn btn-sm" id="btn-lead-step-add-file" onclick="handleLeadAddStepFile();" style="background:#eab308; color:#000; font-weight:bold; border-radius:6px; padding:0 16px; border:none; height:34px; cursor:pointer;">Ghim</button>
               </div>
             </div>
 
-            <div>
-              <label style="font-weight: bold; font-size: 12px; display:block; margin-bottom: 6px;">Lịch sử thảo luận (Comments):</label>
-              <div id="lead-step-comments-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; margin-bottom: 6px; font-size: 12px;"></div>
+            <!-- Box 2: 💬 Thảo luận nội bộ -->
+            <div style="background: #0f172a; padding: 16px; border-radius: var(--radius-md); border:1px solid rgba(255,255,255,0.08); flex:1; display:flex; flex-direction:column;">
+              <h4 style="font-size:13px; font-weight:bold; margin-bottom:12px; color:#cbd5e1;">💬 Thảo luận nội bộ:</h4>
+              <div id="lead-step-comments-list" style="display: flex; flex-direction: column; gap: 8px; flex:1; min-height: 180px; max-height: 320px; overflow-y: auto; margin-bottom: 12px; font-size: 12px; background:#020617; padding:10px; border-radius:6px; border:1px solid #1e293b;"></div>
               <div style="display:flex; gap:6px;">
-                <input type="text" id="lead-step-new-comment" class="form-control" placeholder="Nhập trao đổi nội bộ..." style="font-size: 12px; height: 32px;" onkeyup="if(event.key==='Enter') handleLeadAddStepComment();">
-                <button type="button" class="btn btn-sm btn-primary" id="btn-lead-step-add-comment" onclick="handleLeadAddStepComment();">Gửi</button>
+                <input type="text" id="lead-step-new-comment" class="form-control" placeholder="Nhập tin nhắn trao đổi..." style="font-size: 12px; height: 34px; background:#1e293b; color:white; border:1px solid #334155; border-radius:6px; flex:1;" onkeyup="if(event.key==='Enter') handleLeadAddStepComment();">
+                <button type="button" class="btn btn-sm" id="btn-lead-step-add-comment" onclick="handleLeadAddStepComment();" style="background:#eab308; color:#000; font-weight:bold; border-radius:6px; padding:0 16px; border:none; height:34px; cursor:pointer; display:flex; align-items:center; gap:6px;"><i class="fa-solid fa-paper-plane"></i> Gửi</button>
               </div>
             </div>
           </div>
@@ -2617,13 +2632,13 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=21.54"></script>
-  <script src="crm.js?v=21.54"></script>
-  <script src="tasks.js?v=21.54"></script>
-  <script src="ops.js?v=21.54"></script>
-  <script src="inbox-sim.js?v=21.54"></script>
-  <script src="games.js?v=21.54"></script>
-  <script src="suggestions.js?v=21.54"></script>
+  <script src="app.js?v=21.55"></script>
+  <script src="crm.js?v=21.55"></script>
+  <script src="tasks.js?v=21.55"></script>
+  <script src="ops.js?v=21.55"></script>
+  <script src="inbox-sim.js?v=21.55"></script>
+  <script src="games.js?v=21.55"></script>
+  <script src="suggestions.js?v=21.55"></script>
   
   <script>
     function toggleMobileMenu() {
