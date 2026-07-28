@@ -1161,16 +1161,16 @@ function openLeadDetailModal(leadId) {
       };
     }
 
-    // Render 12 steps timeline bubbles matching user screenshot
+    // Render EXACT 7 STEPS timeline bubbles matching CRM Khách Mới
     const timeline = document.querySelector('.lead-steps-timeline') || document.getElementById('lead-steps-timeline-container');
     if (timeline) {
       timeline.innerHTML = '';
       
       const stepNames = [
-        "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng", "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+        "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
       ];
 
-      for (let i = 1; i <= 12; i++) {
+      for (let i = 1; i <= 7; i++) {
         const bubble = document.createElement('div');
         const leadStepNum = stageToStepNum[lead.stage] || 1;
         let stepStatusClass = 'todo';
