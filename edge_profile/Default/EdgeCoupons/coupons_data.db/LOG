@@ -1,6 +1,6 @@
-2026/07/28-23:10:32.043 8760 Reusing MANIFEST d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
-2026/07/28-23:10:32.044 8760 Recovering log #110
-2026/07/28-23:10:32.045 8760 Reusing old log d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/000110.log 
-2026/07/28-23:10:32.122 5918 Level-0 table #115: started
-2026/07/28-23:10:32.127 5918 Level-0 table #115: 683212 bytes OK
-2026/07/28-23:10:32.129 5918 Delete type=0 #110
+2026/07/28-23:12:02.703 3bc8 Reusing MANIFEST d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/07/28-23:12:02.704 3bc8 Recovering log #114
+2026/07/28-23:12:02.704 3bc8 Reusing old log d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/000114.log 
+2026/07/28-23:12:02.786 7810 Level-0 table #118: started
+2026/07/28-23:12:02.792 7810 Level-0 table #118: 683212 bytes OK
+2026/07/28-23:12:02.794 7810 Delete type=0 #114

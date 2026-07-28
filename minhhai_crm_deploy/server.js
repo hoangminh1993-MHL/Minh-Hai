@@ -1,4 +1,4 @@
-// Cleaned server.js v21.59
+// Cleaned server.js v21.60
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.59';
+  state.dbVersion = '21.60';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.59';
+  localState.dbVersion = '21.60';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,7 +170,7 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        dbState.dbVersion = '21.59';
+        dbState.dbVersion = '21.60';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -192,7 +192,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.59';
+  newState.dbVersion = '21.60';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -261,7 +261,31 @@ app.post('/api/sync', async (req, res) => {
       
       collections.forEach(key => {
         if (syncData[key]) {
-          currentState[key] = syncData[key];
+          const itemData = syncData[key];
+          if (Array.isArray(itemData)) {
+            currentState[key] = itemData;
+          } else if (itemData && typeof itemData === 'object') {
+            if (itemData.isObject && itemData.data) {
+              currentState[key] = itemData.data;
+            } else if (Array.isArray(itemData.modified) || Array.isArray(itemData.deletedIds)) {
+              let list = Array.isArray(currentState[key]) ? currentState[key] : [];
+              const modifiedList = itemData.modified || [];
+              const deletedIds = new Set(itemData.deletedIds || []);
+              
+              list = list.filter(i => !deletedIds.has(i.id));
+              
+              modifiedList.forEach(modItem => {
+                const idx = list.findIndex(i => i.id === modItem.id);
+                if (idx >= 0) {
+                  list[idx] = modItem;
+                } else {
+                  list.unshift(modItem);
+                }
+              });
+              
+              currentState[key] = list;
+            }
+          }
         }
       });
 

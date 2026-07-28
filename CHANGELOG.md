@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.60] - 2026-07-29
+### Khắc Phục Triệt Để Lỗi Mất Khách Hàng Mới Tạo Khi Load Lại Trang Web (v21.60)
+- Sửa triệt để bug đồng bộ server làm méo mảng leads thành object delta làm server fallback về danh sách mặc định.
+- Tự động đồng bộ và lưu ngay toàn bộ danh sách khách hàng mới lên Postgres DB và db.json sau mỗi lần tạo khách mới hoặc chỉnh sửa.
+- Đảm bảo 100% khách hàng mới tạo tồn tại vĩnh viễn, không bị mất khi F5 / load lại trang web.
+
 ## [v21.59] - 2026-07-28
 ### Đồng Bộ Chuẩn 7 Bước CRM Khách Mới & Khắc Phục Triệt Để Lọt Nhập Liệu Giữa Các Khách (v21.59)
 - Cập nhật quy trình thanh 7 bước (1. Nhận thông tin, 2. Lấy SĐT, 3. Khai thác thông tin, 4. Báo giá, 5. Thương lượng, 6. Thành công, 7. Thất bại) trên thanh timeline popup.
