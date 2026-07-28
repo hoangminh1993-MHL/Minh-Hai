@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.52] - 2026-07-28
+### Đồng Bộ 100% Hiển Thị Tài Liệu Đính Kèm Cả Cấp Thẻ Và Cấp Bước Trong Modal CRM
+- Tự động hiển thị tài liệu đính kèm trên danh sách ngay khi bấm đính kèm hoặc dán link.
+- Đồng bộ danh sách file toàn bộ các thẻ trên giao diện live.
+
 ## [v21.51] - 2026-07-28
 ### Sửa Triệt Để Nút Đính Kèm Tài Liệu Trong Modal CRM (Document Attach Button Fix)
 - Thêm thuộc tính onclick="handleLeadAddStepFile()" trực tiếp vào nút Đính trong index.html.

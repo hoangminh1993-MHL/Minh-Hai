@@ -1395,7 +1395,16 @@ function renderActiveLeadStepPanel() {
   const filesContainer = document.getElementById('lead-step-files-list');
   if (filesContainer) {
     filesContainer.innerHTML = '';
-    const stepFiles = lead.files || [];
+    const stepFiles = [];
+    const seenUrls = new Set();
+    ((lead.files || []).concat(stepData.files || [])).forEach(f => {
+      if (!f) return;
+      const k = (f.name || '') + '|' + (f.url || '');
+      if (!seenUrls.has(k)) {
+        seenUrls.add(k);
+        stepFiles.push(f);
+      }
+    });
     if (stepFiles.length > 0) {
       stepFiles.forEach((file, idx) => {
         const row = document.createElement('div');

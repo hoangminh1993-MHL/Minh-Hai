@@ -63,18 +63,17 @@ try {
                     }
                 }
                 
-                // Add test attached document 'a'
+                // Add test attached document
                 const fileInput = document.getElementById('lead-step-file-url');
-                const addFileBtn = document.getElementById('btn-lead-step-add-file');
                 if (fileInput) {
-                    fileInput.value = 'a';
+                    fileInput.value = 'Bao_Gia_Hop_Dong_Transport_2026.pdf';
                     if (typeof handleLeadAddStepFile === 'function') {
                         handleLeadAddStepFile();
-                    } else if (addFileBtn) {
-                        addFileBtn.click();
                     }
                 }
                 
+                if (typeof openModal === 'function') openModal('modal-lead-detail');
+                if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();
                 return 'Leads count: ' + (AppState.leads ? AppState.leads.length : 0);
             })()
 "@
