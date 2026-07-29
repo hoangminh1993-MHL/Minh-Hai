@@ -1,10 +1,6 @@
-  // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.74';
-  if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
-    console.log('New version detected! Purging stale local cache...');
-    Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
-    localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
-  }
+  // Update client version tag without wiping active leads data
+  const CURRENT_APP_VER = 'v21.75';
+  localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
   if (!str || typeof str !== 'string') return str || '';
@@ -392,7 +388,9 @@ async function syncLoadState() {
       
       renderUserSwitcher();
       if (typeof renderCRMBoard === 'function') renderCRMBoard();
+      else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();
       if (typeof renderDashboard === 'function') renderDashboard();
+      else if (typeof window.renderDashboard === 'function') window.renderDashboard();
       if (typeof renderTasks === 'function') renderTasks();
       
       updateMyTasksBadge();
@@ -416,6 +414,9 @@ function loadState() {
     AppState.users = [...INITIAL_USERS];
   }
   AppState.leads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
+  if (!AppState.leads || AppState.leads.length === 0) {
+    AppState.leads = (typeof INITIAL_LEADS !== 'undefined' && INITIAL_LEADS.length > 0) ? [...INITIAL_LEADS] : [];
+  }
   AppState.tasks = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_TASKS)) || [];
   AppState.workflows = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_WORKFLOWS)) || {};
   AppState.sausageLogs = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LOGS)) || [];
@@ -598,7 +599,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.74';
+const CLIENT_VERSION = '21.75';
 
 async function checkCodeVersionUpdate() {
   try {

@@ -1,6 +1,7 @@
 // ==================== CRM CONTROLLERS & RENDERERS ==================== //
 document.addEventListener('DOMContentLoaded', () => {
   initCRMEvents();
+  if (typeof renderCRMBoard === 'function') renderCRMBoard();
 });
 
 let draggingLeadId = null; // Backup reference for touch devices or simple drag tracking
@@ -400,7 +401,8 @@ function renderCRMBoard() {
   let stateChanged = false;
 
   const user = getCurrentUser();
-  const searchVal = document.getElementById('crm-search').value.toLowerCase().trim();
+  const searchInput = document.getElementById('crm-search');
+  const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
   
   // Stages definition
   const stages = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
@@ -413,15 +415,14 @@ function renderCRMBoard() {
 
   // Filter leads by search query and user role permission
   const currentUser = getCurrentUser() || {};
-  const filteredLeads = AppState.leads.filter(lead => {
-    const isSpecialAccess = true; // Ensure all CRM leads are visible across all user accounts
-    if (currentUser && currentUser.id && !isSpecialAccess && lead.salesId && lead.salesId !== currentUser.id) {
-      return false;
-    }
+  const leadsList = (AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
+  const filteredLeads = leadsList.filter(lead => {
+    if (!lead) return false;
     const nameVal = String(lead.name || '').toLowerCase();
     const phoneVal = String(lead.phone || '');
     const noteVal = String(lead.note || '').toLowerCase();
-    const matchesSearch = nameVal.includes(searchVal) || 
+    const matchesSearch = !searchVal || 
+                          nameVal.includes(searchVal) || 
                           phoneVal.includes(searchVal) ||
                           noteVal.includes(searchVal);
     return matchesSearch;

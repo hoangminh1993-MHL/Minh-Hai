@@ -50,15 +50,20 @@ try {
             (() => {
                 try {
                     if (typeof navigateToView === 'function') navigateToView('crm');
-                    if (typeof renderCRMBoard === 'function') renderCRMBoard();
                     
                     const firstLead = (AppState.leads || [])[0];
                     if (!firstLead) return 'No leads in AppState';
                     
-                    openLeadDetailModal(firstLead.id);
+                    if (typeof openLeadDetailModal === 'function') {
+                        openLeadDetailModal(firstLead.id);
+                    } else if (typeof window.openLeadDetailModal === 'function') {
+                        window.openLeadDetailModal(firstLead.id);
+                    }
                     
                     if (typeof handleLeadAddStepFile === 'function') {
                         handleLeadAddStepFile('Tai_Lieu_Bao_Gia_Lo_Hang.pdf', 'https://docs.google.com/document/d/123456');
+                    } else if (typeof window.handleLeadAddStepFile === 'function') {
+                        window.handleLeadAddStepFile('Tai_Lieu_Bao_Gia_Lo_Hang.pdf', 'https://docs.google.com/document/d/123456');
                     }
                     
                     const m = document.getElementById('modal-lead-detail');
