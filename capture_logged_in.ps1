@@ -67,80 +67,27 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Add test file & comment to lead, saveState, then RELOAD page and verify files/comments still exist!
-        Write-Output "Testing popup file/comment persistence after reload..."
-        $testJs = @"
+        # 4. Trigger manual backup & open Backup Manager modal
+        Write-Output "Creating a manual backup & opening Backup Manager modal..."
+        $backupJs = @"
             (async () => {
-                const lead = AppState.leads ? AppState.leads[0] : null;
-                if (!lead) return 'NO_LEAD';
-
-                currentActiveLeadId = lead.id;
-                currentActiveLeadStepNum = 1;
-
-                // Add test file
-                lead.files = lead.files || [];
-                if (!lead.files.some(f => f.name === 'Báo Giá & Hợp Đồng Vận Chuyển.pdf')) {
-                    lead.files.push({
-                        name: 'Báo Giá & Hợp Đồng Vận Chuyển.pdf',
-                        url: 'https://example.com/bao-gia-hop-dong.pdf',
-                        date: new Date().toLocaleString('vi-VN')
-                    });
+                if (typeof createManualBackupSnapshot === 'function') {
+                    await createManualBackupSnapshot();
                 }
-
-                // Add test comment to step 1
-                if (lead.steps && lead.steps[0]) {
-                    lead.steps[0].comments = lead.steps[0].comments || [];
-                    if (!lead.steps[0].comments.some(c => c.text === 'Đã kiểm tra chứng từ & báo giá cho khách hàng.')) {
-                        lead.steps[0].comments.push({
-                            user: 'Nguyễn Hoàng Minh',
-                            text: 'Đã kiểm tra chứng từ & báo giá cho khách hàng.',
-                            date: new Date().toLocaleString('vi-VN')
-                        });
-                    }
-                }
-
-                await saveState();
-                return 'ADDED_AND_SAVED';
+                const btn = document.getElementById('btn-open-backups-modal');
+                if (btn) btn.click();
+                return 'MODAL_OPENED';
             })()
 "@
-        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $testJs; awaitPromise = $true }
-        Write-Output "Add Test File/Comment Result: $($res4.result.result.value)"
+        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $backupJs; awaitPromise = $true }
+        Write-Output "Backup Modal Result: $($res4.result.result.value)"
 
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 4
 
-        # 5. RELOAD page and verify data persisted after reload
-        Write-Output "Reloading page to test persistence..."
-        Send-CdpMsg $ws 5 "Page.reload" @{ ignoreCache = $true } | Out-Null
-        Start-Sleep -Seconds 8
-
-        # 6. Verify lead files & comments & open lead detail modal
-        $verifyJs = @"
-            (() => {
-                const lead = AppState.leads ? AppState.leads[0] : null;
-                const fileCount = lead && lead.files ? lead.files.length : 0;
-                const commentCount = (lead && lead.steps && lead.steps[0] && lead.steps[0].comments) ? lead.steps[0].comments.length : 0;
-
-                if (lead && typeof openLeadDetailModal === 'function') {
-                    openLeadDetailModal(lead.id);
-                }
-
-                return JSON.stringify({
-                    leadId: lead ? lead.id : null,
-                    leadName: lead ? lead.name : null,
-                    fileCount: fileCount,
-                    commentCount: commentCount
-                });
-            })()
-"@
-        $res6 = Send-CdpMsg $ws 6 "Runtime.evaluate" @{ expression = $verifyJs }
-        Write-Output "Persistence Verification Result: $($res6.result.result.value)"
-
-        Start-Sleep -Seconds 3
-
-        # 7. Capture screenshot
+        # 5. Capture screenshot
         Write-Output "Capturing verified screenshot..."
-        $res7 = Send-CdpMsg $ws 7 "Page.captureScreenshot" @{ format = "png" }
-        $b64 = $res7.result.data
+        $res5 = Send-CdpMsg $ws 5 "Page.captureScreenshot" @{ format = "png" }
+        $b64 = $res5.result.data
         if ($b64) {
             [System.IO.File]::WriteAllBytes($outImg, [System.Convert]::FromBase64String($b64))
             Write-Output "SUCCESS! Verified screenshot saved! Size: $((Get-Item $outImg).Length) bytes"

@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## [v21.78] - 2026-07-29
+## [v21.79] - 2026-07-29
+
+### CRM Khách Mới - Tính Năng Tự Động Sao Lưu Dữ Liệu Tự Động 12h & 17h30 Hàng Ngày
+- **Tự Động Chụp Bản Sao Lưu Dữ Liệu:** Đã thiết lập trình tự động chạy ngầm trên Server Node.js tự động lưu toàn bộ dữ liệu hệ thống (khách hàng, giao dịch, file, bình luận, công việc...) vào khung giờ cố định **12:00 (nửa ngày)** và **17:30 (cuối ngày làm việc)** mỗi ngày.
+- **Giao Diện Quản Lý Sao Lưu & Phục Hồi (Backup Manager Modal):** Bổ sung nút **"Sao Lưu Dữ Liệu"** trên thanh topbar giúp xem danh sách các bản sao lưu, dung lượng, mốc thời gian, tạo bản sao lưu tức thì hoặc phục hồi 1 click.
+- **Tải File Sao Lưu Dự Phòng (.json):** Cho phép người dùng tải các file sao lưu JSON về máy tính cá nhân để lưu trữ an toàn offsite.
 
 ### CRM Khách Mới - Sửa Triệt Để Lỗi Mất Dữ Liệu Khi Load Lại Trang
 - **Hợp Nhất Dữ Liệu 2 Chiều Thông Minh (Deep Lead Merging):** Cập nhật hàm `syncLoadState()` trong `app.js` để tự động hợp nhất sâu (deep merge) các file đính kèm (`files`), thảo luận (`comments`), checklist (`checklist`), và ghi chú giữa LocalStorage và Server API.
