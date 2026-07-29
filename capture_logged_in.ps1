@@ -26,15 +26,13 @@ try {
 
         Start-Sleep -Seconds 4
 
-        # 2. Inject logged-in user session into localStorage
+        # 2. Inject logged-in user session into localStorage & reload
         $loginJs = @"
             (() => {
                 const userObj = { id: 'usr-1', username: 'hoangminh', role: 'admin', name: 'Nguyễn Hoàng Minh' };
                 localStorage.setItem('minhhai_user', JSON.stringify(userObj));
                 localStorage.setItem('votr_current_user', 'usr-1');
-                if (typeof syncLoadState === 'function') {
-                    syncLoadState();
-                }
+                location.href = 'https://minh-hai.onrender.com/index.html#crm';
                 return 'SESSION_SET';
             })()
 "@
@@ -42,16 +40,13 @@ try {
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
 
-        Write-Output "Waiting 6 seconds for CRM board loadState to settle..."
-        Start-Sleep -Seconds 6
+        Write-Output "Waiting 8 seconds for page reload and CRM board loadState to settle..."
+        Start-Sleep -Seconds 8
 
         # 3. Force navigate to CRM view and render board
         $crdJs = @"
-            (async () => {
+            (() => {
                 if (typeof navigateToView === 'function') navigateToView('crm');
-                if (typeof syncLoadState === 'function') {
-                    await syncLoadState();
-                }
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();
                 
@@ -60,15 +55,18 @@ try {
                 containers.forEach(c => { totalCardsInDom += c.children.length; });
 
                 return JSON.stringify({
-                    totalLeads: AppState.leads ? AppState.leads.length : 0,
+                    totalLeads: (typeof AppState !== 'undefined' && AppState.leads) ? AppState.leads.length : 0,
                     totalCardsInDom: totalCardsInDom,
-                    viewMode: AppState.crmViewMode || 'board'
+                    viewMode: (typeof AppState !== 'undefined') ? AppState.crmViewMode : 'board'
                 });
             })()
 "@
-        $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": false}}'
+        $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + '}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
+
+        Write-Output "Waiting 3 seconds for DOM rendering..."
+        Start-Sleep -Seconds 3
 
         $buf2 = New-Object byte[] 1048576
         $ms2 = New-Object System.IO.MemoryStream

@@ -1,4 +1,10 @@
 // ==================== CRM CONTROLLERS & RENDERERS ==================== //
+function cleanVietnameseText(str) {
+  if (!str || typeof str !== 'string') return str || '';
+  if (typeof sanitizeVietnameseString === 'function') return sanitizeVietnameseString(str);
+  return str;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initCRMEvents();
   if (typeof renderCRMBoard === 'function') renderCRMBoard();
@@ -578,149 +584,153 @@ function renderCRMBoard() {
 
   // Render cards
   filteredLeads.forEach(lead => {
-    const container = document.querySelector(`.kanban-cards-container[data-stage="${lead.stage}"]`);
-    if (!container) return;
+    try {
+      const container = document.querySelector(`.kanban-cards-container[data-stage="${lead.stage}"]`);
+      if (!container) return;
 
-    const card = document.createElement('div');
-    const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
-    card.className = `kanban-card crm-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
-    const userRole = user ? user.role : 'admin';
-    const isAllowedDrag = (userRole === 'admin' || userRole === 'manager' || userRole === 'staff');
-    card.setAttribute('draggable', isAllowedDrag ? 'true' : 'false');
-    card.setAttribute('data-id', lead.id);
+      const card = document.createElement('div');
+      const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
+      card.className = `kanban-card crm-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
+      const userRole = user ? user.role : 'admin';
+      const isAllowedDrag = (userRole === 'admin' || userRole === 'manager' || userRole === 'staff');
+      card.setAttribute('draggable', isAllowedDrag ? 'true' : 'false');
+      card.setAttribute('data-id', lead.id);
 
-    // Get assigned sales name
-    const salesUser = AppState.users.find(u => u.id === lead.salesId);
-    const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
+      // Get assigned sales name
+      const salesUser = AppState.users.find(u => u.id === lead.salesId);
+      const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
-    // Show fail reason badge if failed
-    let failReasonHtml = '';
-    if (lead.stage === 'failed') {
-      const appColor = lead.failApproved ? '#10b981' : '#f59e0b';
-      const appIcon = lead.failApproved ? 'fa-circle-check' : 'fa-clock';
-      const appText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
-      
-      failReasonHtml = `
-        <div class="card-fail-reason" title="Lý do: ${lead.failReason || 'Chưa rõ'}"><i class="fa-solid fa-circle-xmark"></i> ${lead.failReason || 'Chưa rõ'}</div>
-        <div class="card-fail-reason" style="background: rgba(31,41,55,0.2); border: 1px solid ${appColor}; color: ${appColor}; font-weight: bold; margin-top: 4px;" title="Trạng thái duyệt của quản lý">
-          <i class="fa-solid ${appIcon}"></i> ${appText}
+      // Show fail reason badge if failed
+      let failReasonHtml = '';
+      if (lead.stage === 'failed') {
+        const appColor = lead.failApproved ? '#10b981' : '#f59e0b';
+        const appIcon = lead.failApproved ? 'fa-circle-check' : 'fa-clock';
+        const appText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
+        
+        failReasonHtml = `
+          <div class="card-fail-reason" title="Lý do: ${cleanVietnameseText(lead.failReason) || 'Chưa rõ'}"><i class="fa-solid fa-circle-xmark"></i> ${cleanVietnameseText(lead.failReason) || 'Chưa rõ'}</div>
+          <div class="card-fail-reason" style="background: rgba(31,41,55,0.2); border: 1px solid ${appColor}; color: ${appColor}; font-weight: bold; margin-top: 4px;" title="Trạng thái duyệt của quản lý">
+            <i class="fa-solid ${appIcon}"></i> ${appText}
+          </div>
+        `;
+      }
+
+      // Values formatted
+      const valRmbStr = lead.valRmb > 0 ? formatRmb(lead.valRmb) : '';
+      const valVndStr = lead.valVnd > 0 ? formatVnd(lead.valVnd) : '';
+      const valDisplay = [valRmbStr, valVndStr].filter(Boolean).join(' / ');
+
+      // Highlight if updated today
+      const now = new Date();
+      const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+      const isUpdatedToday = (lead.updatedTime && lead.updatedTime.startsWith(todayStr)) || (lead.date && lead.date.startsWith(todayStr));
+      const timeClass = isUpdatedToday ? 'time-updated-today' : '';
+
+      const overdueBadge = isOverdue 
+        ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
+        : '';
+
+      card.innerHTML = `
+        <div class="card-client-name">${cleanVietnameseText(lead.name)}</div>
+        <div class="card-desc">${cleanVietnameseText(lead.note) || 'Không có ghi chú thêm.'}</div>
+        ${failReasonHtml}
+        ${overdueBadge}
+        <div class="card-meta">
+          <div class="card-phone">
+            <i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}
+          </div>
+          <div class="card-value">${valDisplay}</div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
+          <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
+          <div style="font-size: 11.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
+            <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
+            <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-share-nodes"></i> Nguồn KH:</span>
+            <select class="card-source-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+              <option value="Fanpage" ${lead.source === 'Fanpage' ? 'selected' : ''}>Fanpage</option>
+              <option value="KH cũ" ${lead.source === 'KH cũ' ? 'selected' : ''}>KH cũ</option>
+              <option value="BNI" ${lead.source === 'BNI' ? 'selected' : ''}>BNI</option>
+              <option value="GT" ${lead.source === 'GT' ? 'selected' : ''}>GT</option>
+              <option value="Cá nhân" ${lead.source === 'Cá nhân' ? 'selected' : ''}>Cá nhân</option>
+              <option value="Giới thiệu" ${lead.source === 'Giới thiệu' ? 'selected' : ''}>Giới thiệu</option>
+            </select>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
+            <select class="card-stage-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
+              <option value="" disabled selected>Chọn...</option>
+              <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
+              <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
+              <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác TT</option>
+              <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
+              <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
+              <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
+              <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
+            </select>
+          </div>
         </div>
       `;
-    }
 
-    // Values formatted
-    const valRmbStr = lead.valRmb > 0 ? formatRmb(lead.valRmb) : '';
-    const valVndStr = lead.valVnd > 0 ? formatVnd(lead.valVnd) : '';
-    const valDisplay = [valRmbStr, valVndStr].filter(Boolean).join(' / ');
-
-    // Highlight if updated today
-    const now = new Date();
-    const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-    const isUpdatedToday = (lead.updatedTime && lead.updatedTime.startsWith(todayStr)) || (lead.date && lead.date.startsWith(todayStr));
-    const timeClass = isUpdatedToday ? 'time-updated-today' : '';
-
-    const overdueBadge = isOverdue 
-      ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
-      : '';
-
-    card.innerHTML = `
-      <div class="card-client-name">${cleanVietnameseText(lead.name)}</div>
-      <div class="card-desc">${cleanVietnameseText(lead.note) || 'Không có ghi chú thêm.'}</div>
-      ${failReasonHtml}
-      ${overdueBadge}
-      <div class="card-meta">
-        <div class="card-phone">
-          <i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}
-        </div>
-        <div class="card-value">${valDisplay}</div>
-      </div>
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
-        <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
-        <div style="font-size: 11.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
-          <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
-          <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
-        </div>
-      </div>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
-        <div style="display: flex; flex-direction: column; gap: 2px;">
-          <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-share-nodes"></i> Nguồn KH:</span>
-          <select class="card-source-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-            <option value="Fanpage" ${lead.source === 'Fanpage' ? 'selected' : ''}>Fanpage</option>
-            <option value="KH cũ" ${lead.source === 'KH cũ' ? 'selected' : ''}>KH cũ</option>
-            <option value="BNI" ${lead.source === 'BNI' ? 'selected' : ''}>BNI</option>
-            <option value="GT" ${lead.source === 'GT' ? 'selected' : ''}>GT</option>
-            <option value="Cá nhân" ${lead.source === 'Cá nhân' ? 'selected' : ''}>Cá nhân</option>
-            <option value="Giới thiệu" ${lead.source === 'Giới thiệu' ? 'selected' : ''}>Giới thiệu</option>
-          </select>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 2px;">
-          <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
-          <select class="card-stage-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-            <option value="" disabled selected>Chọn...</option>
-            <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
-            <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
-            <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác TT</option>
-            <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
-            <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
-            <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
-            <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
-          </select>
-        </div>
-      </div>
-    `;
-
-    // Click card to open detail
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.card-stage-select') || e.target.closest('.card-source-select')) return;
-      if (card.classList.contains('dragging')) return;
-      openLeadDetailModal(lead.id);
-    });
-
-    const select = card.querySelector('.card-stage-select');
-    if (select) {
-      select.addEventListener('change', (e) => {
-        const val = e.target.value;
-        if (val) {
-          handleLeadMove(lead.id, val);
-        }
-      });
-    }
-
-    const sourceSelect = card.querySelector('.card-source-select');
-    if (sourceSelect) {
-      sourceSelect.addEventListener('change', (e) => {
-        const val = e.target.value;
-        if (val) {
-          lead.source = val;
-          lead.updatedTime = formatDateTime(new Date());
-          saveState();
-          
-          if (typeof renderDashboard === 'function') renderDashboard();
-          if (typeof renderCRMBoard === 'function') renderCRMBoard();
-          
-          addNotification('Cập nhật Nguồn', `Đã chuyển nguồn khách hàng ${lead.name} sang: ${val}`, 'info');
-        }
-      });
-    }
-
-    // Drag and Drop events
-    if (isAllowedDrag) {
-      card.addEventListener('dragstart', (e) => {
-        draggingLeadId = lead.id;
-        e.dataTransfer.setData('text/plain', lead.id);
-        card.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        document.getElementById('crm-kanban-board')?.classList.add('board-dragging');
+      // Click card to open detail
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.card-stage-select') || e.target.closest('.card-source-select')) return;
+        if (card.classList.contains('dragging')) return;
+        openLeadDetailModal(lead.id);
       });
 
-      card.addEventListener('dragend', () => {
-        card.classList.remove('dragging');
-        draggingLeadId = null;
-        document.getElementById('crm-kanban-board')?.classList.remove('board-dragging');
-      });
-    }
+      const select = card.querySelector('.card-stage-select');
+      if (select) {
+        select.addEventListener('change', (e) => {
+          const val = e.target.value;
+          if (val) {
+            handleLeadMove(lead.id, val);
+          }
+        });
+      }
 
-    container.appendChild(card);
+      const sourceSelect = card.querySelector('.card-source-select');
+      if (sourceSelect) {
+        sourceSelect.addEventListener('change', (e) => {
+          const val = e.target.value;
+          if (val) {
+            lead.source = val;
+            lead.updatedTime = formatDateTime(new Date());
+            saveState();
+            
+            if (typeof renderDashboard === 'function') renderDashboard();
+            if (typeof renderCRMBoard === 'function') renderCRMBoard();
+            
+            addNotification('Cập nhật Nguồn', `Đã chuyển nguồn khách hàng ${lead.name} sang: ${val}`, 'info');
+          }
+        });
+      }
+
+      // Drag and Drop events
+      if (isAllowedDrag) {
+        card.addEventListener('dragstart', (e) => {
+          draggingLeadId = lead.id;
+          e.dataTransfer.setData('text/plain', lead.id);
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+          document.getElementById('crm-kanban-board')?.classList.add('board-dragging');
+        });
+
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          draggingLeadId = null;
+          document.getElementById('crm-kanban-board')?.classList.remove('board-dragging');
+        });
+      }
+
+      container.appendChild(card);
+    } catch (errCard) {
+      console.error('Error rendering card for lead:', lead.id, errCard);
+    }
   });
 
   // Setup Column Dragover/Drop listeners
