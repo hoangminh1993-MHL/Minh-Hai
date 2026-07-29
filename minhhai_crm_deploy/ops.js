@@ -2867,14 +2867,6 @@ function renderOpsProjects() {
       } else if (typeof openProjectDedicatedView === 'function') {
         openProjectDedicatedView(p.id);
       }
-      
-      if (typeof showView === 'function') {
-        showView('project-dedicated');
-      } else {
-        document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-        const dedicatedView = document.getElementById('view-project-dedicated');
-        if (dedicatedView) dedicatedView.style.display = 'block';
-      }
     };
 
     listContainer.appendChild(card);
@@ -3911,15 +3903,20 @@ window.openProjectDedicatedView = function(projId) {
   // Render discussion
   renderDedicatedProjectDiscussion(p);
 
-  if (typeof showView === 'function') {
-    showView('project-dedicated');
-  } else if (typeof navigateToView === 'function') {
-    navigateToView('project-dedicated');
-  } else {
-    document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-    const dedicatedEl = document.getElementById('view-project-dedicated');
-    if (dedicatedEl) dedicatedEl.style.display = 'block';
+  // Instant < 10ms view switch without recursive showView loop
+  document.querySelectorAll('.app-view').forEach(v => {
+    v.classList.remove('active');
+    v.style.display = 'none';
+  });
+  const dedicatedEl = document.getElementById('view-project-dedicated');
+  if (dedicatedEl) {
+    dedicatedEl.style.display = 'block';
+    dedicatedEl.classList.add('active');
   }
+  const titleEl = document.getElementById('view-title');
+  if (titleEl) titleEl.innerText = 'Dự Án & Phòng Ban Dedicated';
+  const subEl = document.getElementById('view-description');
+  if (subEl) subEl.innerText = 'Tập trung theo dõi tiến độ, tài liệu và công việc thuộc phòng ban.';
 };
 
 window.handleQuickCompleteTask = function(event, taskId) {

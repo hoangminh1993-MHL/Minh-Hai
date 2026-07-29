@@ -1,4 +1,4 @@
-// Cleaned server.js v21.84
+// Cleaned server.js v21.85
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.84';
+  state.dbVersion = '21.85';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.84';
+  localState.dbVersion = '21.85';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,7 +170,7 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        dbState.dbVersion = '21.84';
+        dbState.dbVersion = '21.85';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -192,7 +192,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.84';
+  newState.dbVersion = '21.85';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -284,7 +284,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '21.84',
+        dbVersion: currentState.dbVersion || '21.85',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0
