@@ -53,6 +53,7 @@ try {
                 const userObj = { id: 'usr-1', username: 'hoangminh', role: 'admin', name: 'Nguyễn Hoàng Minh' };
                 localStorage.setItem('minhhai_user', JSON.stringify(userObj));
                 localStorage.setItem('votr_current_user_id', 'usr-1');
+                localStorage.setItem('votr_crm_view_mode', 'board');
                 return 'SESSION_SET';
             })()
 "@
@@ -81,6 +82,7 @@ try {
                     }
                 } catch (e) {}
                 
+                AppState.crmViewMode = 'board';
                 if (typeof navigateToView === 'function') navigateToView('crm');
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();

@@ -444,7 +444,10 @@ function renderCRMBoard() {
   // Synchronize toggle UI state
   const kanbanWrapper = document.getElementById('crm-kanban-wrapper');
   const listWrapper = document.getElementById('crm-list-wrapper');
-  const viewMode = (AppState.crmViewMode === 'list' && listWrapper) ? 'list' : 'board';
+  const viewMode = (AppState.crmViewMode === 'list' && listWrapper && document.getElementById('crm-list-table-body')) ? 'list' : 'board';
+  if (!listWrapper || !document.getElementById('crm-list-table-body')) {
+    AppState.crmViewMode = 'board';
+  }
   const btnBoard = document.getElementById('btn-crm-view-board');
   const btnList = document.getElementById('btn-crm-view-list');
 
@@ -588,7 +591,6 @@ function renderCRMBoard() {
         countSpan.innerText = count;
       }
     });
-    return;
   }
 
   // Render cards
