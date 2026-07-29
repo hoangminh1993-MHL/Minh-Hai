@@ -1282,8 +1282,9 @@ function renderActiveLeadStepPanel() {
     } else {
       approvedCheckbox.parentElement.removeAttribute('title');
     }
-  } else {
-    failGroup.style.display = 'none';
+    } else {
+      failGroup.style.display = 'none';
+    }
   }
 
   const chkContainer = document.getElementById('lead-step-checklist-items') || document.getElementById('lead-step-checklist-container');
