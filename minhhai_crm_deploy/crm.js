@@ -487,8 +487,9 @@ function renderCRMBoard() {
         valA = a.source || '';
         valB = b.source || '';
       } else if (crmSortField === 'sales') {
-        const uA = AppState.users.find(u => u.id === a.salesId);
-        const uB = AppState.users.find(u => u.id === b.salesId);
+        const uList = (typeof AppState !== 'undefined' && Array.isArray(AppState.users)) ? AppState.users : [];
+        const uA = uList.find(u => u.id === a.salesId);
+        const uB = uList.find(u => u.id === b.salesId);
         valA = uA ? uA.name : '';
         valB = uB ? uB.name : '';
       } else if (crmSortField === 'stage') {
@@ -527,7 +528,8 @@ function renderCRMBoard() {
         listBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy khách hàng nào.</td></tr>`;
       } else {
         filteredLeads.forEach(lead => {
-          const salesUser = AppState.users.find(u => u.id === lead.salesId);
+          const uList = (typeof AppState !== 'undefined' && Array.isArray(AppState.users)) ? AppState.users : [];
+          const salesUser = uList.find(u => u.id === lead.salesId);
           const salesName = salesUser ? salesUser.name : 'Chưa giao';
           
           const stageLabels = {
@@ -602,7 +604,8 @@ function renderCRMBoard() {
       card.setAttribute('data-id', lead.id);
 
       // Get assigned sales name
-      const salesUser = AppState.users.find(u => u.id === lead.salesId);
+      const usersList = (typeof AppState !== 'undefined' && Array.isArray(AppState.users)) ? AppState.users : [];
+      const salesUser = usersList.find(u => u.id === lead.salesId);
       const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
       // Show fail reason badge if failed

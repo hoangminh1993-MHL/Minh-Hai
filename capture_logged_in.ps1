@@ -66,26 +66,42 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Trigger render & check window.lastFilteredCount
-        Write-Output "Evaluating window.lastFilteredCount..."
+        # 4. Fetch state, assign AppState.leads, navigate to CRM, and render board
+        Write-Output "Populating AppState.leads and rendering native CRM board..."
         $crdJs = @"
             (async () => {
-                if (typeof syncLoadState === 'function') await syncLoadState();
+                try {
+                    const res = await fetch('/api/state');
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.leads && data.leads.length > 0) {
+                            AppState.leads = data.leads;
+                            AppState.users = data.users || AppState.users;
+                            localStorage.setItem('votr_leads_db', JSON.stringify(AppState.leads));
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error fetching state:', e);
+                }
+                
                 if (typeof navigateToView === 'function') navigateToView('crm');
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
+                else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();
                 
-                const recContainer = document.querySelector('.kanban-cards-container[data-stage="receive_info"]');
+                const containers = document.querySelectorAll('.kanban-cards-container');
+                let totalCardsInDom = 0;
+                containers.forEach(c => { totalCardsInDom += c.children.length; });
 
                 return JSON.stringify({
-                    lastFilteredCount: window.lastFilteredCount,
-                    recContainerChildren: recContainer ? recContainer.children.length : -1
+                    totalLeads: (typeof AppState !== 'undefined' && AppState.leads) ? AppState.leads.length : 0,
+                    totalCardsInDom: totalCardsInDom
                 });
             })()
 "@
         $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $crdJs; awaitPromise = $true }
-        Write-Output "Filter Count Diagnostic Response: $($res4.result.result.value)"
+        Write-Output "Render Eval Response: $($res4.result.result.value)"
 
-        Start-Sleep -Seconds 2
+        Start-Sleep -Seconds 3
 
         # 5. Capture screenshot
         Write-Output "Capturing screenshot..."
