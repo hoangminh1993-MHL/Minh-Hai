@@ -1,14 +1,5 @@
-2026/07/29-16:42:13.957 804c Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
-2026/07/29-16:42:13.981 804c Recovering log #101
-2026/07/29-16:42:13.983 804c Level-0 table #103: started
-2026/07/29-16:42:13.995 804c Level-0 table #103: 30234 bytes OK
-2026/07/29-16:42:14.006 804c Delete type=0 #101
-2026/07/29-16:42:14.009 85fc Compacting 4@0 + 1@1 files
-2026/07/29-16:42:14.029 85fc Generated table #105@0: 18 keys, 30774 bytes
-2026/07/29-16:42:14.029 85fc Compacted 4@0 + 1@1 files => 30774 bytes
-2026/07/29-16:42:14.032 85fc compacted to: files[ 0 1 0 0 0 0 0 ]
-2026/07/29-16:42:14.035 85fc Delete type=2 #92
-2026/07/29-16:42:14.035 85fc Delete type=2 #94
-2026/07/29-16:42:14.035 85fc Delete type=2 #97
-2026/07/29-16:42:14.036 85fc Delete type=2 #100
-2026/07/29-16:42:14.036 85fc Delete type=2 #103
+2026/07/29-16:43:46.319 2af0 Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/07/29-16:43:46.336 2af0 Recovering log #104
+2026/07/29-16:43:46.338 2af0 Level-0 table #107: started
+2026/07/29-16:43:46.346 2af0 Level-0 table #107: 30234 bytes OK
+2026/07/29-16:43:46.353 2af0 Delete type=0 #104

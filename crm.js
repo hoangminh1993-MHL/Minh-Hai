@@ -1596,8 +1596,30 @@ function handleLeadAddStepFile(customName, customUrl) {
 
   if (inputName) inputName.value = '';
   if (inputUrl) inputUrl.value = '';
+
   saveState();
   renderActiveLeadStepPanel();
+
+  // GUARANTEED DIRECT DOM FALLBACK: Ensures item is displayed instantly in #lead-step-files-list
+  const filesContainer = document.getElementById('lead-step-files-list');
+  if (filesContainer) {
+    const existingLinks = Array.from(filesContainer.querySelectorAll('a')).map(a => a.textContent.trim());
+    if (!existingLinks.includes(newFile.name)) {
+      if (filesContainer.innerHTML.includes('Chưa có tài liệu')) {
+        filesContainer.innerHTML = '';
+      }
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px; border:1px solid rgba(234,179,8,0.3);';
+      row.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <a href="${newFile.url}" target="_blank" style="color:var(--color-info); text-decoration:underline;"><i class="fa-solid fa-file-arrow-up"></i> ${newFile.name}</a>
+          <span style="font-size:10px; color:#f59e0b; font-weight:bold;">Đã ghim</span>
+        </div>
+      `;
+      filesContainer.appendChild(row);
+    }
+  }
+
   if (typeof window.showToast === 'function') window.showToast(`Đã đính kèm tài liệu "${fileName}" thành công!`, 'success');
 }
 
