@@ -605,137 +605,33 @@ function renderCRMBoard() {
       card.setAttribute('draggable', isAllowedDrag ? 'true' : 'false');
       card.setAttribute('data-id', lead.id);
 
-      // Get assigned sales name
       const usersList = (typeof AppState !== 'undefined' && Array.isArray(AppState.users)) ? AppState.users : [];
       const salesUser = usersList.find(u => u.id === lead.salesId);
       const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
-      // Show fail reason badge if failed
-      let failReasonHtml = '';
-      if (lead.stage === 'failed') {
-        const appColor = lead.failApproved ? '#10b981' : '#f59e0b';
-        const appIcon = lead.failApproved ? 'fa-circle-check' : 'fa-clock';
-        const appText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
-        
-        failReasonHtml = `
-          <div class="card-fail-reason" title="Lý do: ${cleanVietnameseText(lead.failReason) || 'Chưa rõ'}"><i class="fa-solid fa-circle-xmark"></i> ${cleanVietnameseText(lead.failReason) || 'Chưa rõ'}</div>
-          <div class="card-fail-reason" style="background: rgba(31,41,55,0.2); border: 1px solid ${appColor}; color: ${appColor}; font-weight: bold; margin-top: 4px;" title="Trạng thái duyệt của quản lý">
-            <i class="fa-solid ${appIcon}"></i> ${appText}
-          </div>
-        `;
-      }
-
-      // Values formatted
       const valRmbStr = lead.valRmb > 0 ? (typeof formatRmb === 'function' ? formatRmb(lead.valRmb) : `¥${lead.valRmb}`) : '';
       const valVndStr = lead.valVnd > 0 ? (typeof formatVnd === 'function' ? formatVnd(lead.valVnd) : `${lead.valVnd}đ`) : '';
       const valDisplay = [valRmbStr, valVndStr].filter(Boolean).join(' / ');
 
-      // Highlight if updated today
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-      const isUpdatedToday = (lead.updatedTime && lead.updatedTime.startsWith(todayStr)) || (lead.date && lead.date.startsWith(todayStr));
-      const timeClass = isUpdatedToday ? 'time-updated-today' : '';
-
-      const overdueBadge = isOverdue 
-        ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
-        : '';
+      const leadNameClean = typeof cleanVietnameseText === 'function' ? cleanVietnameseText(lead.name) : (lead.name || '');
+      const leadNoteClean = typeof cleanVietnameseText === 'function' ? cleanVietnameseText(lead.note) : (lead.note || '');
 
       card.innerHTML = `
-        <div class="card-client-name">${cleanVietnameseText(lead.name)}</div>
-        <div class="card-desc">${cleanVietnameseText(lead.note) || 'Không có ghi chú thêm.'}</div>
-        ${failReasonHtml}
-        ${overdueBadge}
-        <div class="card-meta">
-          <div class="card-phone">
-            <i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}
-          </div>
-          <div class="card-value">${valDisplay}</div>
+        <div class="card-client-name" style="font-weight: bold; color: #f3f4f6; font-size: 13px;">${leadNameClean}</div>
+        <div class="card-desc" style="font-size: 11.5px; color: #9ca3af; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${leadNoteClean || 'Không có ghi chú thêm.'}</div>
+        <div class="card-meta" style="display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-top: 8px;">
+          <div class="card-phone"><i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}</div>
+          <div class="card-value" style="color: #f59e0b; font-weight: 600;">${valDisplay}</div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
-          <span class="card-sales-assignee" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
-          <div style="font-size: 11.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
-            <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date}</div>
-            <div class="${timeClass}" style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date}</div>
-          </div>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05);">
-          <div style="display: flex; flex-direction: column; gap: 2px;">
-            <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-share-nodes"></i> Nguồn KH:</span>
-            <select class="card-source-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-              <option value="Fanpage" ${lead.source === 'Fanpage' ? 'selected' : ''}>Fanpage</option>
-              <option value="KH cũ" ${lead.source === 'KH cũ' ? 'selected' : ''}>KH cũ</option>
-              <option value="BNI" ${lead.source === 'BNI' ? 'selected' : ''}>BNI</option>
-              <option value="GT" ${lead.source === 'GT' ? 'selected' : ''}>GT</option>
-              <option value="Cá nhân" ${lead.source === 'Cá nhân' ? 'selected' : ''}>Cá nhân</option>
-              <option value="Giới thiệu" ${lead.source === 'Giới thiệu' ? 'selected' : ''}>Giới thiệu</option>
-            </select>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 2px;">
-            <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-right-left"></i> Chuyển bước:</span>
-            <select class="card-stage-select" style="font-size: 10px; width: 100%; padding: 2px 4px; background: #1f2937; color: #e5e7eb; border: 1px solid #4b5563; border-radius: 4px; cursor: pointer;" onclick="event.stopPropagation();">
-              <option value="" disabled selected>Chọn...</option>
-              <option value="receive_info" ${lead.stage === 'receive_info' ? 'disabled' : ''}>1. Nhận thông tin</option>
-              <option value="get_phone" ${lead.stage === 'get_phone' ? 'disabled' : ''}>2. Lấy SĐT</option>
-              <option value="explore_info" ${lead.stage === 'explore_info' ? 'disabled' : ''}>3. Khai thác TT</option>
-              <option value="quotation" ${lead.stage === 'quotation' ? 'disabled' : ''}>4. Báo giá</option>
-              <option value="negotiating" ${lead.stage === 'negotiating' ? 'disabled' : ''}>5. Thương lượng</option>
-              <option value="success" ${lead.stage === 'success' ? 'disabled' : ''}>6. Thành công</option>
-              <option value="failed" ${lead.stage === 'failed' ? 'disabled' : ''}>7. Thất bại</option>
-            </select>
-          </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 10.5px; color: var(--text-muted);">
+          <span><i class="fa-solid fa-user-tie"></i> ${salesName}</span>
+          <span><i class="fa-solid fa-clock"></i> ${lead.createdTime || lead.date || ''}</span>
         </div>
       `;
 
-      // Click card to open detail
       card.addEventListener('click', (e) => {
-        if (e.target.closest('.card-stage-select') || e.target.closest('.card-source-select')) return;
-        if (card.classList.contains('dragging')) return;
-        openLeadDetailModal(lead.id);
+        if (typeof openLeadDetailModal === 'function') openLeadDetailModal(lead.id);
       });
-
-      const select = card.querySelector('.card-stage-select');
-      if (select) {
-        select.addEventListener('change', (e) => {
-          const val = e.target.value;
-          if (val) {
-            handleLeadMove(lead.id, val);
-          }
-        });
-      }
-
-      const sourceSelect = card.querySelector('.card-source-select');
-      if (sourceSelect) {
-        sourceSelect.addEventListener('change', (e) => {
-          const val = e.target.value;
-          if (val) {
-            lead.source = val;
-            lead.updatedTime = formatDateTime(new Date());
-            saveState();
-            
-            if (typeof renderDashboard === 'function') renderDashboard();
-            if (typeof renderCRMBoard === 'function') renderCRMBoard();
-            
-            addNotification('Cập nhật Nguồn', `Đã chuyển nguồn khách hàng ${lead.name} sang: ${val}`, 'info');
-          }
-        });
-      }
-
-      // Drag and Drop events
-      if (isAllowedDrag) {
-        card.addEventListener('dragstart', (e) => {
-          draggingLeadId = lead.id;
-          e.dataTransfer.setData('text/plain', lead.id);
-          card.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-          document.getElementById('crm-kanban-board')?.classList.add('board-dragging');
-        });
-
-        card.addEventListener('dragend', () => {
-          card.classList.remove('dragging');
-          draggingLeadId = null;
-          document.getElementById('crm-kanban-board')?.classList.remove('board-dragging');
-        });
-      }
 
       container.appendChild(card);
     } catch (errCard) {
@@ -743,31 +639,26 @@ function renderCRMBoard() {
     }
   });
 
-  // Setup Column Dragover/Drop listeners
+  // Setup Column Dragover/Drop listeners & counts
   stages.forEach(st => {
     const col = document.getElementById(`col-${st}`);
-    if (!col) return;
-    const container = col.querySelector('.kanban-cards-container');
-    
     const countSpan = document.getElementById(`count-${st}`);
     const count = filteredLeads.filter(l => l.stage === st).length;
     if (countSpan) countSpan.innerText = count;
 
-    if (isAllowedDrag) {
+    if (col && (user ? (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') : true)) {
       col.ondragover = (e) => {
         e.preventDefault();
         col.classList.add('drag-over');
       };
-
       col.ondragleave = () => {
         col.classList.remove('drag-over');
       };
-
       col.ondrop = (e) => {
         e.preventDefault();
         col.classList.remove('drag-over');
         const id = e.dataTransfer.getData('text/plain') || draggingLeadId;
-        if (id) {
+        if (id && typeof handleLeadMove === 'function') {
           handleLeadMove(id, st);
         }
       };
