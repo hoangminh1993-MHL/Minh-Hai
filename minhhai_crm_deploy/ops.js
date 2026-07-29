@@ -3748,17 +3748,49 @@ window.openProjectDedicatedView = function(projId) {
   const manager = AppState.users.find(u => u.id === p.managerId);
   const managerName = manager ? manager.name : 'Chưa giao';
   
-  const membersNames = p.members ? p.members.map(mid => {
-    const u = AppState.users.find(usr => usr.id === mid);
-    return u ? u.name : null;
-  }).filter(Boolean).join(', ') : '';
+  // Populate header subline: Work Description instead of cluttering members
+  const descHeaderEl = document.getElementById('active-project-desc-header');
+  if (descHeaderEl) descHeaderEl.innerText = p.desc || 'Không có mô tả chi tiết.';
+
+  const memberUsers = p.members ? p.members.map(mid => AppState.users.find(usr => usr.id === mid)).filter(Boolean) : [];
+  const memberCountText = `${memberUsers.length} Thành viên`;
+  
+  const countTextEl = document.getElementById('active-project-members-count-text');
+  if (countTextEl) countTextEl.innerText = memberCountText;
+  
+  const sidebarCountEl = document.getElementById('dedicated-project-sidebar-members-badge');
+  if (sidebarCountEl) sidebarCountEl.innerText = memberCountText;
+
+  // Render members inside dedicated sidebar panel
+  const membersContainer = document.getElementById('dedicated-project-members-list');
+  if (membersContainer) {
+    membersContainer.innerHTML = '';
+    if (memberUsers.length === 0) {
+      membersContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic;">Chưa có thành viên nào được gán vào phòng ban.</span>`;
+    } else {
+      memberUsers.forEach(u => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding: 8px 12px; background: rgba(255,255,255,0.03); border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-between; font-size: 12px;';
+        div.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #1e40af); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 11px;">
+              ${(u.name || 'U').charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <strong style="color: #f8fafc; display: block;">${u.name || u.username}</strong>
+              <span style="font-size: 10px; color: #94a3b8;">${u.role === 'admin' ? 'Quản Trị Viên' : 'Nhân Viên'}</span>
+            </div>
+          </div>
+          <span class="badge bg-blue" style="font-size: 9px;">Hoạt động</span>
+        `;
+        membersContainer.appendChild(div);
+      });
+    }
+  }
 
   const managerEl = document.getElementById('active-project-manager');
   if (managerEl) managerEl.innerText = managerName;
 
-  const membersEl = document.getElementById('active-project-members');
-  if (membersEl) membersEl.innerText = membersNames || 'Không có';
-  
   const statusEl = document.getElementById('active-project-status');
   if (statusEl) statusEl.innerText = p.status ? p.status.toUpperCase() : 'ĐANG HOẠT ĐỘNG';
 
@@ -3997,14 +4029,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnBack = document.getElementById('btn-back-to-projects-list');
   if (btnBack) {
-    btnBack.onclick = () => {
-      if (typeof showView === 'function') {
-        showView('tasks-projects');
-      } else {
-        document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
-        const projView = document.getElementById('view-tasks-projects');
-        if (projView) projView.style.display = 'block';
+    btnBack.onclick = (e) => {
+      if (e) { e.preventDefault(); e.stopPropagation(); }
+      document.querySelectorAll('.app-view').forEach(v => {
+        v.classList.remove('active');
+        v.style.display = 'none';
+      });
+      const projView = document.getElementById('view-tasks-projects');
+      if (projView) {
+        projView.style.display = 'block';
+        projView.classList.add('active');
       }
+      const titleEl = document.getElementById('view-title');
+      if (titleEl) titleEl.innerText = 'Dự Án & Phòng Ban';
+      const subEl = document.getElementById('view-description');
+      if (subEl) subEl.innerText = 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.';
+      if (typeof renderOpsProjects === 'function') {
+        renderOpsProjects();
+      }
+    };
+  }
+
+  const membersBadge = document.getElementById('active-project-members-count-badge');
+  if (membersBadge) {
+    membersBadge.onclick = () => {
+      const membersBtn = document.querySelector('.project-sidebar-tab-btn[data-tab="members"]');
+      if (membersBtn) membersBtn.click();
     };
   }
   const btnAddTask = document.getElementById('btn-dedicated-project-add-task');

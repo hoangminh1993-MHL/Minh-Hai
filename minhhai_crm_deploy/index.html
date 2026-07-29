@@ -17,7 +17,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc (v21.85)</title>
+  <title>Minh Hải Logistics - CRM & Quản Lý Công Việc (v21.86)</title>
   <link rel="icon" type="image/png" href="logo.png">
   <!-- Google Fonts - Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,7 +45,7 @@
           <h2 style="letter-spacing: 0.5px; font-weight: 800;">MINH HẢI</h2>
           <div style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
             <span style="letter-spacing: 1.5px; font-size: 10px; color: var(--color-primary);">LOGISTICS</span>
-            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v21.85</span>
+            <span id="app-version-tag" style="font-size: 8.5px; opacity: 0.6; background: rgba(234,179,8,0.15); padding: 1px 4px; border-radius: 4px; color: #f59e0b; font-weight: bold; border: 1px solid rgba(234,179,8,0.25); cursor: pointer;" title="Xem lịch sử cập nhật">v21.86</span>
           </div>
         </div>
       </div>
@@ -1549,25 +1549,27 @@
             
             <!-- Header Top Bar -->
             <div class="card-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 14px 20px; background: #1e293b; display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 14px;">
-                <button class="btn btn-sm btn-outline" id="btn-back-to-projects-list" style="padding: 6px 12px; font-size: 12px; border-color: rgba(255,255,255,0.2); color: #f8fafc;"><i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> Quay lại danh sách</button>
-                <div>
+              <div style="display: flex; align-items: center; gap: 14px; flex: 1;">
+                <button class="btn btn-sm btn-outline" id="btn-back-to-projects-list" style="padding: 6px 12px; font-size: 12px; border-color: rgba(255,255,255,0.2); color: #f8fafc; white-space: nowrap;"><i class="fa-solid fa-arrow-left" style="margin-right: 6px;"></i> Quay lại danh sách</button>
+                <div style="flex: 1; overflow: hidden;">
                   <div style="display: flex; align-items: center; gap: 10px;">
-                    <h2 id="active-project-name" style="font-size: 20px; font-weight: 700; margin: 0; color: #f8fafc; letter-spacing: -0.3px;">Tên Dự Án / Phòng Ban</h2>
+                    <h2 id="active-project-name" style="font-size: 20px; font-weight: 700; margin: 0; color: #f8fafc; letter-spacing: -0.3px; white-space: nowrap;">Tên Dự Án / Phòng Ban</h2>
                     <span id="active-project-type" class="badge bg-blue" style="font-size: 11px; padding: 3px 8px;">PHÒNG BAN</span>
                     <span id="active-project-status" class="badge bg-emerald" style="font-size: 11px; padding: 3px 8px;">ĐANG HOẠT ĐỘNG</span>
+                    <span id="active-project-members-count-badge" class="badge bg-purple" style="font-size: 11px; padding: 3px 8px; cursor: pointer;" title="Bấm xem danh sách thành viên"><i class="fa-solid fa-users" style="margin-right: 4px;"></i> <span id="active-project-members-count-text">0 Thành viên</span></span>
                   </div>
-                  <div style="display: flex; gap: 12px; margin-top: 4px; font-size: 12px; color: #94a3b8;">
+                  <!-- Header Subline: Replacing old member list with Department Work Description -->
+                  <div style="display: flex; gap: 12px; margin-top: 5px; font-size: 12px; color: #94a3b8; align-items: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                     <span><i class="fa-solid fa-user-tie" style="color: #f59e0b; margin-right: 4px;"></i> Quản lý: <strong id="active-project-manager" style="color: #f8fafc;">Quản Trị Viên</strong></span>
                     <span style="color: rgba(255,255,255,0.2);">|</span>
-                    <span><i class="fa-solid fa-users" style="color: #38bdf8; margin-right: 4px;"></i> Thành viên: <strong id="active-project-members" style="color: #f8fafc;">...</strong></span>
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><i class="fa-solid fa-align-left" style="color: #38bdf8; margin-right: 4px;"></i> Mô tả công việc: <strong id="active-project-desc-header" style="color: #e2e8f0; font-weight: 500;">Không có mô tả chi tiết.</strong></span>
                   </div>
                 </div>
               </div>
 
               <!-- Top Action: Large Giao Việc Button -->
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="btn btn-primary" id="btn-dedicated-project-add-task" style="padding: 10px 20px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 12px; margin-left: 14px;">
+                <button class="btn btn-primary" id="btn-dedicated-project-add-task" style="padding: 10px 20px; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4); border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap;">
                   <i class="fa-solid fa-circle-plus" style="font-size: 16px;"></i> GIAO VIỆC MỚI CHO PHÒNG BAN
                 </button>
               </div>
@@ -1603,18 +1605,21 @@
                 </div>
               </div>
 
-              <!-- SIDEBAR: THÔNG TIN, TÀI LIỆU & THẢO LUẬN (32% Width) -->
+              <!-- SIDEBAR: THÔNG TIN, TÀI LIỆU, THÀNH VIÊN & THẢO LUẬN (32% Width) -->
               <div style="width: 32%; display: flex; flex-direction: column; overflow: hidden; background: #0f172a;">
 
-                <!-- Tab Header for Sidebar: Documents vs Description vs Chat -->
+                <!-- Tab Header for Sidebar: Documents vs Members vs Discussion vs Notes -->
                 <div style="display: flex; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: #1e293b;">
-                  <button class="project-sidebar-tab-btn active" data-tab="docs" style="flex: 1; padding: 12px; border: none; background: transparent; color: #f59e0b; font-size: 12.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid #f59e0b; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <button class="project-sidebar-tab-btn active" data-tab="docs" style="flex: 1; padding: 10px 4px; border: none; background: transparent; color: #f59e0b; font-size: 11.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid #f59e0b; display: flex; align-items: center; justify-content: center; gap: 4px;">
                     <i class="fa-solid fa-file-shield"></i> Tài Liệu
                   </button>
-                  <button class="project-sidebar-tab-btn" data-tab="chat" style="flex: 1; padding: 12px; border: none; background: transparent; color: #94a3b8; font-size: 12.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <button class="project-sidebar-tab-btn" data-tab="members" style="flex: 1; padding: 10px 4px; border: none; background: transparent; color: #94a3b8; font-size: 11.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                    <i class="fa-solid fa-users"></i> Thành Viên
+                  </button>
+                  <button class="project-sidebar-tab-btn" data-tab="chat" style="flex: 1; padding: 10px 4px; border: none; background: transparent; color: #94a3b8; font-size: 11.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; justify-content: center; gap: 4px;">
                     <i class="fa-solid fa-comments"></i> Thảo Luận
                   </button>
-                  <button class="project-sidebar-tab-btn" data-tab="desc" style="flex: 1; padding: 12px; border: none; background: transparent; color: #94a3b8; font-size: 12.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <button class="project-sidebar-tab-btn" data-tab="desc" style="flex: 1; padding: 10px 4px; border: none; background: transparent; color: #94a3b8; font-size: 11.5px; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; justify-content: center; gap: 4px;">
                     <i class="fa-solid fa-circle-info"></i> Ghi Chú
                   </button>
                 </div>
@@ -1630,6 +1635,17 @@
                     </div>
                     <div id="dedicated-project-docs-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
                       <!-- Docs render dynamically -->
+                    </div>
+                  </div>
+
+                  <!-- Panel 2: Dedicated Members List Panel -->
+                  <div id="project-sidebar-panel-members" class="project-sidebar-panel" style="display: none; flex-direction: column; gap: 12px; height: 100%;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <h4 style="margin: 0; font-size: 13px; color: #f8fafc; font-weight: 700;">THÀNH VIÊN PHÒNG BAN</h4>
+                      <span id="dedicated-project-sidebar-members-badge" class="badge bg-purple" style="font-size: 11px;">0 Thành viên</span>
+                    </div>
+                    <div id="dedicated-project-members-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                      <!-- Members list render dynamically -->
                     </div>
                   </div>
 
@@ -2675,13 +2691,13 @@
   <div class="toast-container" id="toast-container"></div>
 
   <!-- Custom Scripts -->
-  <script src="app.js?v=21.85"></script>
-  <script src="crm.js?v=21.85"></script>
-  <script src="tasks.js?v=21.85"></script>
-  <script src="ops.js?v=21.85"></script>
-  <script src="inbox-sim.js?v=21.85"></script>
-  <script src="games.js?v=21.85"></script>
-  <script src="suggestions.js?v=21.85"></script>
+  <script src="app.js?v=21.86"></script>
+  <script src="crm.js?v=21.86"></script>
+  <script src="tasks.js?v=21.86"></script>
+  <script src="ops.js?v=21.86"></script>
+  <script src="inbox-sim.js?v=21.86"></script>
+  <script src="games.js?v=21.86"></script>
+  <script src="suggestions.js?v=21.86"></script>
   
   <script>
     function toggleMobileMenu() {
