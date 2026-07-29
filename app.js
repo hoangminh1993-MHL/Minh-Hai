@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.81';
+  const CURRENT_APP_VER = 'v21.82';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -439,10 +439,35 @@ async function syncLoadState() {
       AppState.notifications = data.notifications || [];
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
       
-      AppState.clients = data.clients || [];
-      AppState.projects = data.projects || [];
-      AppState.shipment_workflows = data.shipment_workflows || [];
-      AppState.single_tasks = data.single_tasks || [];
+      // Safe two-way merging for Operational CRM collections
+      const localClients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
+      const serverClients = data.clients || [];
+      const clientMap = new Map();
+      serverClients.forEach(c => { if (c && c.id) clientMap.set(String(c.id), c); });
+      localClients.forEach(c => { if (c && c.id && !clientMap.has(String(c.id))) clientMap.set(String(c.id), c); });
+      AppState.clients = Array.from(clientMap.values());
+
+      const localProjects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
+      const serverProjects = data.projects || [];
+      const projectMap = new Map();
+      serverProjects.forEach(p => { if (p && p.id) projectMap.set(String(p.id), p); });
+      localProjects.forEach(p => { if (p && p.id && !projectMap.has(String(p.id))) projectMap.set(String(p.id), p); });
+      AppState.projects = Array.from(projectMap.values());
+
+      const localWorkflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
+      const serverWorkflows = data.shipment_workflows || [];
+      const workflowMap = new Map();
+      serverWorkflows.forEach(w => { if (w && w.id) workflowMap.set(String(w.id), w); });
+      localWorkflows.forEach(w => { if (w && w.id && !workflowMap.has(String(w.id))) workflowMap.set(String(w.id), w); });
+      AppState.shipment_workflows = Array.from(workflowMap.values());
+
+      const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
+      const serverSingleTasks = data.single_tasks || [];
+      const singleTaskMap = new Map();
+      serverSingleTasks.forEach(t => { if (t && t.id) singleTaskMap.set(String(t.id), t); });
+      localSingleTasks.forEach(t => { if (t && t.id && !singleTaskMap.has(String(t.id))) singleTaskMap.set(String(t.id), t); });
+      AppState.single_tasks = Array.from(singleTaskMap.values());
+
       AppState.suggestions = data.suggestions || [];
 
       if (window.initLeadSteps && AppState.leads) {
@@ -680,7 +705,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.81';
+const CLIENT_VERSION = '21.82';
 
 async function checkCodeVersionUpdate() {
   try {
