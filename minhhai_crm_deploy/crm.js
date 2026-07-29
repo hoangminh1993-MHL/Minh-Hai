@@ -1435,7 +1435,8 @@ function renderActiveLeadStepPanel() {
     filesContainer.innerHTML = '';
     const stepFiles = [];
     const seenUrls = new Set();
-    ((lead.files || []).concat(stepData.files || [])).forEach(f => {
+    const allFiles = (lead.files || []).concat(stepData && stepData.files ? stepData.files : []);
+    allFiles.forEach(f => {
       if (!f) return;
       let obj = f;
       if (typeof f === 'string') {

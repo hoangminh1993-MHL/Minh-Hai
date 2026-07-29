@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.69] - 2026-07-29
+### Sửa Lỗi TypeError Crash Trong Render Danh Sách Đính Kèm Nút Ghim (v21.69)
+- Khắc phục triệt để lỗi truy cập stepData.files khi stepData null, đảm bảo hiển thị tức thì tài liệu khi ghim.
+- Đã xác minh tự động bằng hình ảnh thực tế sau đăng nhập.
+
 ## [v21.68] - 2026-07-29
 ### Tối Ưu Nút Ghim Hàng Hóa & Đính Kèm File Tức Thời (v21.68)
 - Bổ sung cơ chế Render trực tiếp DOM nút Ghim đảm bảo tài liệu hiển thị 100% tức thì trong khung popup.

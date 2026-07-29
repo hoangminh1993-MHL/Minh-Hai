@@ -60,12 +60,25 @@ try {
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');
                 if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();
-                return 'Ghim executed successfully';
+                const container = document.getElementById('lead-step-files-list');
+                return 'Files container HTML: ' + (container ? container.innerHTML : 'container not found');
             })()
 "@
         $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": true}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
+
+        $buf2 = New-Object byte[] 1048576
+        $ms2 = New-Object System.IO.MemoryStream
+        while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
+            $res2 = $ws.ReceiveAsync([ArraySegment[byte]]$buf2, $cts.Token).Result
+            $ms2.Write($buf2, 0, $res2.Count)
+            if ($res2.EndOfMessage) {
+                $evalResStr = [System.Text.Encoding]::UTF8.GetString($ms2.ToArray())
+                Write-Output "CDP Eval Output: $evalResStr"
+                break
+            }
+        }
 
         Start-Sleep -Seconds 4
 
