@@ -53,39 +53,37 @@ try {
                 const userObj = { id: 'usr-1', username: 'hoangminh', role: 'admin', name: 'Nguyễn Hoàng Minh' };
                 localStorage.setItem('minhhai_user', JSON.stringify(userObj));
                 localStorage.setItem('votr_current_user_id', 'usr-1');
-                localStorage.setItem('votr_crm_view_mode', 'board');
                 return 'SESSION_SET';
             })()
 "@
         $res2 = Send-CdpMsg $ws 2 "Runtime.evaluate" @{ expression = $loginJs }
         Write-Output "Session Injection Result: $($res2.result.result.value)"
 
-        # 3. Navigate to CRM page
-        Write-Output "Navigating to index.html#crm..."
-        Send-CdpMsg $ws 3 "Page.navigate" @{ url = "https://minh-hai.onrender.com/index.html#crm" } | Out-Null
+        # 3. Navigate to Operational CRM page (#crm-clients-workflows)
+        Write-Output "Navigating to index.html#crm-clients-workflows..."
+        Send-CdpMsg $ws 3 "Page.navigate" @{ url = "https://minh-hai.onrender.com/index.html#crm-clients-workflows" } | Out-Null
         
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Open lead detail modal & click step 4
-        Write-Output "Opening lead detail modal & switching step..."
-        $leadJs = @"
+        # 4. Verify restored Operational CRM data
+        $opsJs = @"
             (() => {
-                const lead = AppState.leads ? AppState.leads[0] : null;
-                if (lead && typeof openLeadDetailModal === 'function') {
-                    openLeadDetailModal(lead.id);
-                    
-                    // Click step 4 (Báo giá)
-                    const bubbles = document.querySelectorAll('#modal-lead-detail .flow-step-bubble');
-                    if (bubbles && bubbles[3]) bubbles[3].click();
-                }
-                return 'LEAD_MODAL_OPENED';
+                if (typeof showView === 'function') showView('crm-clients-workflows');
+                if (typeof renderOpsKanban === 'function') renderOpsKanban();
+                
+                return JSON.stringify({
+                    clientsCount: AppState.clients ? AppState.clients.length : 0,
+                    projectsCount: AppState.projects ? AppState.projects.length : 0,
+                    workflowsCount: AppState.shipment_workflows ? AppState.shipment_workflows.length : 0,
+                    singleTasksCount: AppState.single_tasks ? AppState.single_tasks.length : 0
+                });
             })()
 "@
-        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $leadJs }
-        Write-Output "Lead Modal Result: $($res4.result.result.value)"
+        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $opsJs }
+        Write-Output "Operational CRM Verification Result: $($res4.result.result.value)"
 
-        Start-Sleep -Seconds 4
+        Start-Sleep -Seconds 3
 
         # 5. Capture screenshot
         Write-Output "Capturing verified screenshot..."

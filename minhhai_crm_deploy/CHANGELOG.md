@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [v21.81] - 2026-07-29
+## [v21.82] - 2026-07-29
+
+### CRM Vận Hành - Phục Hồi Đầy Đủ Dữ Liệu Tháng 7
+- **Quét & Khôi Phục Dữ Liệu Vận Hành Lịch Sử (Operational CRM Recovery):** Đã trích xuất và tổng hợp toàn bộ hồ sơ khách hàng cũ (`clients`), dự án vận hành (`projects`), quy trình vận chuyển lô hàng (`shipment_workflows`), và công việc đơn lẻ (`single_tasks`) đã nhập trong tháng 7 từ lịch sử cơ sở dữ liệu.
+- **Bảo Vệ Dữ Liệu CRM Vận Hành 2 Chiều:** Cập nhật cơ chế hợp nhất 2 chiều trong `app.js` và `server.js` để bảo toàn nguyên vẹn 100% dữ liệu CRM Khách Cũ & Lô Hàng, không bao giờ bị mất hoặc đè dữ liệu cũ khi tải lại trang.
 
 ### CRM Khách Mới - Nhất Quán Popup Bảng Chi Tiết Khách Hàng Xuyên Suốt Tất Cả Các Bước
 - **Giao Diện Bảng Popup Duy Nhất (Unified Lead Detail Popup):** Chuyển đổi toàn bộ tài liệu đính kèm (`files`), thảo luận nội bộ (`comments`), và ghi chú khách hàng (`note`) thành bảng dữ liệu tập trung duy nhất cho mỗi khách hàng.
