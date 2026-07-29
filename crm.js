@@ -8,6 +8,7 @@ function formatRmb(v) { return v ? '¥' + Number(v).toLocaleString('vi-VN') : ''
 function formatVnd(v) { return v ? Number(v).toLocaleString('vi-VN') + 'đ' : ''; }
 
 document.addEventListener('DOMContentLoaded', () => {
+  window.renderCRMBoard = renderCRMBoard;
   initCRMEvents();
   if (typeof renderCRMBoard === 'function') renderCRMBoard();
 });
@@ -384,6 +385,7 @@ function populateSalesDropdown(selectId, selectedId = '') {
 
 // ==================== RENDERING KANBAN ==================== //
 function renderCRMBoard() {
+  window.renderCRMBoard = renderCRMBoard;
   // Sanitize stage and checklists for all leads
   if (AppState.leads) {
     AppState.leads.forEach(lead => {
