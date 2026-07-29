@@ -1437,10 +1437,14 @@ function renderActiveLeadStepPanel() {
     const seenUrls = new Set();
     ((lead.files || []).concat(stepData.files || [])).forEach(f => {
       if (!f) return;
-      const k = (f.name || '') + '|' + (f.url || '');
+      let obj = f;
+      if (typeof f === 'string') {
+        obj = { name: f, url: f.startsWith('http') ? f : '#' };
+      }
+      const k = (obj.name || '') + '|' + (obj.url || '');
       if (!seenUrls.has(k)) {
         seenUrls.add(k);
-        stepFiles.push(f);
+        stepFiles.push(obj);
       }
     });
     if (stepFiles.length > 0) {
@@ -1448,10 +1452,14 @@ function renderActiveLeadStepPanel() {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
         
-        const nameLower = file.name.toLowerCase();
-        const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(file.url) || 
-                        file.url.toLowerCase().includes('drive.google.com') || 
-                        file.url.toLowerCase().includes('googleusercontent.com') ||
+        const fileName = file.name || file.url || 'Tài liệu đính kèm';
+        const fileUrl = file.url || '#';
+        const nameLower = String(fileName).toLowerCase();
+        const urlLower = String(fileUrl).toLowerCase();
+
+        const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(fileUrl) || 
+                        urlLower.includes('drive.google.com') || 
+                        urlLower.includes('googleusercontent.com') ||
                         nameLower.includes('ảnh') || 
                         nameLower.includes('anh') || 
                         nameLower.includes('image') || 
@@ -1460,14 +1468,14 @@ function renderActiveLeadStepPanel() {
                         nameLower.includes('jpeg');
 
         // Resolve Google Drive direct preview link if applicable
-        let displayUrl = file.url;
-        if (file.url.toLowerCase().includes('drive.google.com')) {
+        let displayUrl = fileUrl;
+        if (urlLower.includes('drive.google.com')) {
           let fileId = '';
-          const dMatch = file.url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+          const dMatch = fileUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
           if (dMatch && dMatch[1]) {
             fileId = dMatch[1];
           } else {
-            const idMatch = file.url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            const idMatch = fileUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
             if (idMatch && idMatch[1]) {
               fileId = idMatch[1];
             }
@@ -1482,12 +1490,15 @@ function renderActiveLeadStepPanel() {
         const fileInfo = document.createElement('div');
         fileInfo.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
         fileInfo.innerHTML = `
-          <a href="${file.url}" target="_blank" style="color:var(--color-info); text-decoration:underline;"><i class="fa-solid fa-file-arrow-up"></i> ${file.name}</a>
+          <a href="${fileUrl}" target="_blank" style="color:var(--color-info); text-decoration:underline;"><i class="fa-solid fa-file-arrow-up"></i> ${fileName}</a>
           <button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xóa file"><i class="fa-solid fa-trash"></i></button>
         `;
         
         fileInfo.querySelector('button').onclick = () => {
-          lead.files.splice(idx, 1);
+          lead.files = (lead.files || []).filter(item => item !== file && (typeof item !== 'object' || item.name !== file.name || item.url !== file.url));
+          if (stepData.files) {
+            stepData.files = stepData.files.filter(item => item !== file && (typeof item !== 'object' || item.name !== file.name || item.url !== file.url));
+          }
           saveState();
           renderActiveLeadStepPanel();
         };

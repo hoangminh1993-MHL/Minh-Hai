@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.67] - 2026-07-29
+### Khắc Phục Triệt Để Lỗi Render Tài Liệu Đính Kèm Của Nút Ghim (v21.67)
+- Chuẩn hóa định dạng file object/string linh hoạt, ngăn ngừa triệt để lỗi TypeError crash danh sách đính kèm.
+- Đảm bảo đính kèm file hiển thị 100% tức thì khi bấm nút Ghim.
+
 ## [v21.66] - 2026-07-29
 ### Tối Ưu Nút Ghim Hàng Hóa & Đính Kèm File Tức Thời (v21.66)
 - Tối ưu truyền tham số động và xử lý đồng bộ DOM danh sách tài liệu đính kèm.
