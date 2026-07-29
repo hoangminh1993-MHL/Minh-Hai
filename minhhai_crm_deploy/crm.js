@@ -1442,8 +1442,16 @@ function renderActiveLeadStepPanel() {
     filesContainer.innerHTML = '';
     const stepFiles = [];
     const seenUrls = new Set();
-    const allFiles = (lead.files || []).concat(stepData && stepData.files ? stepData.files : []);
-    allFiles.forEach(f => {
+
+    // Aggregate ALL files across the entire lead (lead.files + all step.files) into 1 unified board
+    const rawAllFiles = [...(lead.files || [])];
+    if (lead.steps) {
+      lead.steps.forEach(s => {
+        if (s && Array.isArray(s.files)) rawAllFiles.push(...s.files);
+      });
+    }
+
+    rawAllFiles.forEach(f => {
       if (!f) return;
       let obj = f;
       if (typeof f === 'string') {
@@ -1455,27 +1463,27 @@ function renderActiveLeadStepPanel() {
         stepFiles.push(obj);
       }
     });
+
     if (stepFiles.length > 0) {
       stepFiles.forEach((file, idx) => {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex; flex-direction:column; gap:6px; font-size:13px; background:#1e293b; padding:8px 12px; border-radius:6px; margin-top:8px; margin-bottom:8px; border:1px solid #f59e0b; box-shadow:0 2px 8px rgba(245,158,11,0.25);';
-        
+
         const fileName = file.name || file.url || 'Tài liệu đính kèm';
         const fileUrl = file.url || '#';
         const nameLower = String(fileName).toLowerCase();
         const urlLower = String(fileUrl).toLowerCase();
 
-        const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(fileUrl) || 
-                        urlLower.includes('drive.google.com') || 
+        const isImage = /\.(png|jpe?g|webp|gif)($|\?)/i.test(fileUrl) ||
+                        urlLower.includes('drive.google.com') ||
                         urlLower.includes('googleusercontent.com') ||
-                        nameLower.includes('ảnh') || 
-                        nameLower.includes('anh') || 
-                        nameLower.includes('image') || 
-                        nameLower.includes('png') || 
-                        nameLower.includes('jpg') || 
+                        nameLower.includes('ảnh') ||
+                        nameLower.includes('anh') ||
+                        nameLower.includes('image') ||
+                        nameLower.includes('png') ||
+                        nameLower.includes('jpg') ||
                         nameLower.includes('jpeg');
 
-        // Resolve Google Drive direct preview link if applicable
         let displayUrl = fileUrl;
         if (urlLower.includes('drive.google.com')) {
           let fileId = '';
@@ -1504,16 +1512,20 @@ function renderActiveLeadStepPanel() {
             <button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xóa file"><i class="fa-solid fa-trash"></i></button>
           </div>
         `;
-        
+
         fileInfo.querySelector('button').onclick = () => {
           lead.files = (lead.files || []).filter(item => item !== file && (typeof item !== 'object' || item.name !== file.name || item.url !== file.url));
-          if (stepData.files) {
-            stepData.files = stepData.files.filter(item => item !== file && (typeof item !== 'object' || item.name !== file.name || item.url !== file.url));
+          if (lead.steps) {
+            lead.steps.forEach(s => {
+              if (s && s.files) {
+                s.files = s.files.filter(item => item !== file && (typeof item !== 'object' || item.name !== file.name || item.url !== file.url));
+              }
+            });
           }
           saveState();
           renderActiveLeadStepPanel();
         };
-        
+
         row.appendChild(fileInfo);
         if (imgPreview) {
           const previewDiv = document.createElement('div');
@@ -1530,15 +1542,35 @@ function renderActiveLeadStepPanel() {
   const commentsContainer = document.getElementById('lead-step-comments-list') || document.getElementById('lead-step-comments');
   if (commentsContainer) {
     commentsContainer.innerHTML = '';
-    if (stepData.comments && stepData.comments.length > 0) {
-      stepData.comments.forEach(c => {
+
+    // Aggregate ALL comments across the entire lead into 1 unified discussion stream
+    const allComments = [];
+    const seenComm = new Set();
+    const rawAllComments = [...(lead.comments || [])];
+    if (lead.steps) {
+      lead.steps.forEach(s => {
+        if (s && Array.isArray(s.comments)) rawAllComments.push(...s.comments);
+      });
+    }
+
+    rawAllComments.forEach(c => {
+      if (!c || !c.text) return;
+      const k = (c.user || '') + '|' + (c.text || '') + '|' + (c.date || '');
+      if (!seenComm.has(k)) {
+        seenComm.add(k);
+        allComments.push(c);
+      }
+    });
+
+    if (allComments.length > 0) {
+      allComments.forEach(c => {
         const div = document.createElement('div');
-        div.style.cssText = 'font-size:12px; padding:4px 6px; background:rgba(255,255,255,0.03); border-radius:4px; margin-bottom:4px;';
-        div.innerHTML = `<strong style="color:var(--color-primary);">${c.user}:</strong> <span>${c.text}</span> <span style="font-size:10px; color:var(--text-muted); float:right; margin-top:2px;">${c.date}</span>`;
+        div.style.cssText = 'font-size:12.5px; padding:6px 10px; background:rgba(255,255,255,0.04); border-radius:6px; margin-bottom:6px; border:1px solid rgba(255,255,255,0.06);';
+        div.innerHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><strong style="color:#eab308;">${c.user}:</strong><span style="font-size:10px; color:#94a3b8;">${c.date || ''}</span></div><div style="color:#f8fafc; word-break:break-word;">${c.text}</div>`;
         commentsContainer.appendChild(div);
       });
     } else {
-      commentsContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào ở bước này.</span>`;
+      commentsContainer.innerHTML = `<span class="text-muted" style="font-size:12px; font-style:italic;">Chưa có thảo luận nào.</span>`;
     }
   }
 }
@@ -1705,12 +1737,16 @@ function handleLeadAddStepComment() {
   }
 
   if (!stepData.comments) stepData.comments = [];
+  if (!lead.comments) lead.comments = [];
   const user = typeof getCurrentUser === 'function' ? getCurrentUser() : { name: 'Admin' };
-  stepData.comments.push({
+  const newComment = {
     user: (user && (user.name || user.username)) ? (user.name || user.username) : 'Nhân viên',
     text: val,
     date: new Date().toLocaleString('vi-VN')
-  });
+  };
+
+  stepData.comments.push(newComment);
+  lead.comments.push(newComment);
 
   input.value = '';
   saveState();
