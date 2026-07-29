@@ -412,7 +412,7 @@ function renderCRMBoard() {
   // Auto-heal tasks for any lead currently in quotation stage
   let stateChanged = false;
 
-  const user = getCurrentUser();
+  const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : { id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin' };
   const searchInput = document.getElementById('crm-search');
   const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
   

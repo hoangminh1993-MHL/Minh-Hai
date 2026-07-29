@@ -1,15 +1,6 @@
-2026/07/29-21:57:45.707 6424 Reusing MANIFEST d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
-2026/07/29-21:57:45.708 6424 Recovering log #302
-2026/07/29-21:57:45.708 6424 Reusing old log d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/000302.log 
-2026/07/29-21:57:45.886 6670 Level-0 table #306: started
-2026/07/29-21:57:45.891 6670 Level-0 table #306: 683212 bytes OK
-2026/07/29-21:57:45.893 6670 Delete type=0 #302
-2026/07/29-21:57:45.893 6670 Compacting 4@0 + 1@1 files
-2026/07/29-21:57:45.897 6670 Generated table #307@0: 4 keys, 683119 bytes
-2026/07/29-21:57:45.897 6670 Compacted 4@0 + 1@1 files => 683119 bytes
-2026/07/29-21:57:45.898 6670 compacted to: files[ 0 1 1 0 0 0 0 ]
-2026/07/29-21:57:45.899 6670 Delete type=2 #294
-2026/07/29-21:57:45.899 6670 Delete type=2 #297
-2026/07/29-21:57:45.900 6670 Delete type=2 #300
-2026/07/29-21:57:45.900 6670 Delete type=2 #303
-2026/07/29-21:57:45.900 6670 Delete type=2 #306
+2026/07/29-21:59:49.364 23d0 Reusing MANIFEST d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2026/07/29-21:59:49.366 23d0 Recovering log #309
+2026/07/29-21:59:49.366 23d0 Reusing old log d:\antigravity\edge_profile\Default\EdgeCoupons/coupons_data.db/000309.log 
+2026/07/29-21:59:49.450 29d4 Level-0 table #313: started
+2026/07/29-21:59:49.455 29d4 Level-0 table #313: 683212 bytes OK
+2026/07/29-21:59:49.457 29d4 Delete type=0 #309

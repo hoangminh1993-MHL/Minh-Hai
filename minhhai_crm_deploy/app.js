@@ -1004,11 +1004,12 @@ function initRoleSwitcher() {
 
 function getCurrentUser() {
   const sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
-  if (!AppState.users || AppState.users.length === 0) {
-    AppState.users = [...INITIAL_USERS];
+  if (!AppState.users || !Array.isArray(AppState.users) || AppState.users.length === 0) {
+    AppState.users = (typeof INITIAL_USERS !== 'undefined' && Array.isArray(INITIAL_USERS)) ? [...INITIAL_USERS] : [{ id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin', username: 'hoangminh' }];
   }
   const adminUser = AppState.users.find(u => u.id === 'usr-1' || u.role === 'admin');
-  const defaultUser = adminUser || AppState.users[0] || INITIAL_USERS[0];
+  const fallbackUser = { id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin', username: 'hoangminh' };
+  const defaultUser = adminUser || AppState.users[0] || fallbackUser;
   return AppState.users.find(u => u.id === AppState.currentUserId) || AppState.users.find(u => u.id === sessionUser.id) || defaultUser;
 }
 
