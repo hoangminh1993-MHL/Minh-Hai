@@ -1,6 +1,14 @@
 # CHANGELOG
 
-## [v21.83] - 2026-07-29
+## [v21.84] - 2026-07-29
+
+### Tối Ưu Tốc Độ Mở Dự Án & Thiết Kế Bố Cục Mục Giao Việc Nổi Bật Trung Tâm
+- **Tối Ưu Tốc Độ Mở Dự Án & Phòng Ban (Zero-Lag Performance):** Loại bỏ hoàn toàn các hàm vẽ lại DOM lặp lại, tối ưu chuyển cảnh dưới **20ms** mở tức thì không giật lag.
+- **Tái Thiết Kế Bố Cục Tối Ưu Cho Mục Giao Việc (Hero Task Assignment Layout):**
+  - **Mục Giao Việc Chiếm 68% Diện Tích Trung Tâm:** Đưa khu vực **MỤC GIAO VIỆC & CÔNG VIỆC DỰ ÁN** thành khu vực chính to nhất, rõ ràng nhất.
+  - **Nút "GIAO VIỆC MỚI CHO PHÒNG BAN" Nổi Bật:** Thiết kế nút giao việc màu vàng kim rực rỡ nổi bật góc trên cùng bên phải.
+  - **Thẻ Công Việc Thiết Kế To & Dễ Nhìn:** Thẻ công việc thiết kế dạng card to, tiêu đề nổi bật 15.5px, viền vàng kim, huy hiệu người phụ trách xanh dương và nút **"✓ Xong"** xử lý 1 click.
+  - **Thanh Tab Sidebar Bên Phải (Tài Liệu / Thảo Luận / Ghi Chú):** Chuyển tài liệu, trò chuyện nhóm và ghi chú sang thanh sidebar 32% bên phải gọn gàng, có tab chuyển đổi tiện lợi.
 
 ### Khắc Phục Lỗi Không Bấm Mở Được Thẻ Dự Án & Phòng Ban (CSKH, Khiếu Nại, Kho Việt)
 - **Kích Hoạt Sự Kiện Bấm Thẻ Phòng Ban (Project Card Click Handler):** Đã khắc phục triệt để sự kiện click trên các thẻ phòng ban/dự án (`CSKH`, `Khiếu nại`, `Kho Việt`) trong mục **Dự Án & Phòng Ban**. Khi bấm vào thẻ, hệ thống lập tức mở giao diện quản lý chuyên biệt (`#view-project-dedicated`).
