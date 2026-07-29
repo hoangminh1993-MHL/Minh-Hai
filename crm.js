@@ -4,6 +4,8 @@ function cleanVietnameseText(str) {
   if (typeof sanitizeVietnameseString === 'function') return sanitizeVietnameseString(str);
   return str;
 }
+function formatRmb(v) { return v ? '¥' + Number(v).toLocaleString('vi-VN') : ''; }
+function formatVnd(v) { return v ? Number(v).toLocaleString('vi-VN') + 'đ' : ''; }
 
 document.addEventListener('DOMContentLoaded', () => {
   initCRMEvents();
@@ -616,8 +618,8 @@ function renderCRMBoard() {
       }
 
       // Values formatted
-      const valRmbStr = lead.valRmb > 0 ? formatRmb(lead.valRmb) : '';
-      const valVndStr = lead.valVnd > 0 ? formatVnd(lead.valVnd) : '';
+      const valRmbStr = lead.valRmb > 0 ? (typeof formatRmb === 'function' ? formatRmb(lead.valRmb) : `¥${lead.valRmb}`) : '';
+      const valVndStr = lead.valVnd > 0 ? (typeof formatVnd === 'function' ? formatVnd(lead.valVnd) : `${lead.valVnd}đ`) : '';
       const valDisplay = [valRmbStr, valVndStr].filter(Boolean).join(' / ');
 
       // Highlight if updated today
