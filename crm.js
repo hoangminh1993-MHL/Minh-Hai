@@ -1720,7 +1720,7 @@ function handleLeadAddStepComment() {
 
 function handleSaveActiveLeadStepData() {
   window.handleSaveActiveLeadStepData = handleSaveActiveLeadStepData;
-  let lead = AppState.leads ? AppState.leads.find(l => l.id === currentActiveLeadId) : null;
+  let lead = AppState.leads ? AppState.leads.find(l => String(l.id) === String(currentActiveLeadId)) : null;
   if (!lead && AppState.leads && AppState.leads.length > 0) {
     lead = AppState.leads[0];
     currentActiveLeadId = lead.id;
@@ -1729,9 +1729,6 @@ function handleSaveActiveLeadStepData() {
     if (typeof showToast === 'function') window.showToast("Vui lòng chọn khách hàng!", "warning");
     return;
   }
-
-  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
-  if (!stepData) return;
 
   const stageToStepNum = {
     receive_info: 1,
@@ -1752,6 +1749,11 @@ function handleSaveActiveLeadStepData() {
     7: 'failed'
   };
 
+  const currentStepNum = stageToStepNum[lead.stage] || 1;
+  const targetStepNum = currentActiveLeadStepNum || currentStepNum;
+
+  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === targetStepNum) : null;
+
   const phoneInput = document.getElementById('lead-step-phone');
   if (phoneInput) lead.phone = phoneInput.value.trim();
 
@@ -1760,122 +1762,128 @@ function handleSaveActiveLeadStepData() {
   
   const assigneeInput = document.getElementById('lead-step-assignee');
   if (assigneeInput) {
-    stepData.assigneeId = assigneeInput.value;
+    if (stepData) stepData.assigneeId = assigneeInput.value;
     lead.salesId = assigneeInput.value;
   }
   
   const deadlineInput = document.getElementById('lead-step-deadline');
-  if (deadlineInput) stepData.deadline = deadlineInput.value;
+  if (deadlineInput && stepData) stepData.deadline = deadlineInput.value;
 
   const noteInput = document.getElementById('lead-step-note');
   if (noteInput) {
-    stepData.note = noteInput.value;
+    if (stepData) stepData.note = noteInput.value;
     lead.note = noteInput.value;
   }
 
-  const quoteStatusInput = document.getElementById('lead-step-quote-status');
-  if (quoteStatusInput) lead.quoteStatus = quoteStatusInput.value.trim();
-  if (currentActiveLeadStepNum === 7) {
+  const quoteStatusInput = document.getElementById('lead-step-quote-status') || document.getElementById('lead-step-quote-feedback');
+  if (quoteStatusInput) {
+    lead.quoteStatus = quoteStatusInput.value.trim();
+    lead.quoteFeedback = quoteStatusInput.value.trim();
+  }
+
+  if (targetStepNum === 7) {
     const currentUser = getCurrentUser();
     const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong');
     if (!isAdminOrManager) {
-      window.showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      if (typeof showToast === 'function') window.showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
       return;
     }
 
     const reasonSelect = document.getElementById('lead-step-fail-reason');
-    const reasonVal = reasonSelect.value;
-    if (!reasonVal) {
-      window.showToast('Vui lòng chọn lý do thất bại!', 'warning');
-      return;
-    }
-    
-    let finalReason = reasonVal;
-    if (reasonVal === 'Khác') {
-      const reasonOtherVal = document.getElementById('lead-step-fail-reason-other').value.trim();
-      if (!reasonOtherVal) {
-        window.showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
+    if (reasonSelect) {
+      const reasonVal = reasonSelect.value;
+      if (!reasonVal) {
+        if (typeof showToast === 'function') window.showToast('Vui lòng chọn lý do thất bại!', 'warning');
         return;
       }
-      finalReason = reasonOtherVal;
+      
+      let finalReason = reasonVal;
+      if (reasonVal === 'Khác') {
+        const reasonOtherEl = document.getElementById('lead-step-fail-reason-other');
+        const reasonOtherVal = reasonOtherEl ? reasonOtherEl.value.trim() : '';
+        if (!reasonOtherVal) {
+          if (typeof showToast === 'function') window.showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
+          return;
+        }
+        finalReason = reasonOtherVal;
+      }
+      lead.failReason = finalReason;
+    }
+
+    const evidenceInput = document.getElementById('lead-step-fail-evidence');
+    if (evidenceInput) {
+      const evidenceVal = evidenceInput.value.trim();
+      if (!evidenceVal) {
+        if (typeof showToast === 'function') window.showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+        return;
+      }
+      lead.failEvidence = evidenceVal;
     }
     
-    const evidenceVal = document.getElementById('lead-step-fail-evidence').value.trim();
-    if (!evidenceVal) {
-      window.showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
-      return;
-    }
-    
-    lead.failReason = finalReason;
-    lead.failEvidence = evidenceVal;
-    
-    // Only verify failApproved if changed by Manager/Admin
-    if (isAdminOrManager) {
-      lead.failApproved = document.getElementById('lead-step-fail-approved').checked;
+    const approvedCb = document.getElementById('lead-step-fail-approved');
+    if (approvedCb && isAdminOrManager) {
+      lead.failApproved = approvedCb.checked;
     }
   }
 
-  if (currentActiveLeadStepNum !== currentStepNum) {
-    if (currentActiveLeadStepNum > currentStepNum) {
-      const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
-      const requiredPending = currentStepData.checklist.filter(c => c.required && !c.done);
-      if (requiredPending.length > 0) {
-        window.showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${currentStepData.name}) trước khi chuyển sang bước tiếp theo!`, 'warning');
-        return;
+  if (targetStepNum !== currentStepNum) {
+    if (targetStepNum > currentStepNum) {
+      const curData = lead.steps ? lead.steps.find(s => s.stepNum === currentStepNum) : null;
+      if (curData && Array.isArray(curData.checklist)) {
+        const requiredPending = curData.checklist.filter(c => c.required && !c.done);
+        if (requiredPending.length > 0) {
+          if (typeof showToast === 'function') window.showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${curData.name}) trước khi chuyển sang bước tiếp theo!`, 'warning');
+          return;
+        }
       }
     }
 
-    // Validate files when transitioning from explore_info (Step 3) to quotation (Step 4)
-    if (currentStepNum === 3 && currentActiveLeadStepNum === 4) {
+    if (currentStepNum === 3 && targetStepNum === 4) {
       const files = lead.files || [];
       if (files.length === 0) {
-        window.showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+        if (typeof showToast === 'function') window.showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
         return;
       }
     }
 
-    // Validate files and tasks when transitioning from quotation (Step 4) to negotiating (Step 5) or success (Step 6)
-    if (currentStepNum === 4 && (currentActiveLeadStepNum === 5 || currentActiveLeadStepNum === 6)) {
+    if (currentStepNum === 4 && (targetStepNum === 5 || targetStepNum === 6)) {
       const files = lead.files || [];
       const hasImage = files.some(f => 
-        /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url) || 
-        f.name.toLowerCase().includes('ảnh') || 
-        f.name.toLowerCase().includes('hình') ||
-        f.name.toLowerCase().includes('image') ||
-        f.name.toLowerCase().includes('img') ||
-        f.name.toLowerCase().includes('báo giá') ||
-        f.name.toLowerCase().includes('bao gia')
+        /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(f.url || f.name || '') || 
+        (f.name || '').toLowerCase().includes('ảnh') || 
+        (f.name || '').toLowerCase().includes('hình') ||
+        (f.name || '').toLowerCase().includes('image') ||
+        (f.name || '').toLowerCase().includes('img') ||
+        (f.name || '').toLowerCase().includes('báo giá') ||
+        (f.name || '').toLowerCase().includes('bao gia')
       );
       if (!hasImage) {
-        window.showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+        if (typeof showToast === 'function') window.showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
         return;
       }
 
-      const quoteFeedback = (lead.quoteFeedback || '').trim();
+      const quoteFeedback = (lead.quoteFeedback || lead.quoteStatus || '').trim();
       if (quoteFeedback.length < 3) {
-        window.showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+        if (typeof showToast === 'function') window.showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
         return;
       }
-
-      saveState();
     }
 
-    const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
-    currentStepData.status = 'done';
+    const curData = lead.steps ? lead.steps.find(s => s.stepNum === currentStepNum) : null;
+    if (curData) curData.status = 'done';
 
-    const targetStage = stepNumToStage[currentActiveLeadStepNum];
-    lead.stageEntryTimes = lead.stageEntryTimes || {};
-    lead.stageEntryTimes[targetStage] = Date.now();
-    
-    if (targetStage === 'success') {
-      if (lead.stage !== 'success') {
+    const targetStage = stepNumToStage[targetStepNum];
+    if (targetStage) {
+      lead.stageEntryTimes = lead.stageEntryTimes || {};
+      lead.stageEntryTimes[targetStage] = Date.now();
+
+      if (targetStage === 'success' && lead.stage !== 'success') {
         const salesRep = AppState.users.find(u => u.id === lead.salesId);
         if (salesRep) {
           salesRep.points = (salesRep.points || 0) + 50;
-          
           const now = new Date();
           const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-          
+          AppState.sausageLogs = AppState.sausageLogs || [];
           AppState.sausageLogs.push({
             id: `log-${Date.now()}`,
             userId: salesRep.id,
@@ -1886,23 +1894,25 @@ function handleSaveActiveLeadStepData() {
           });
         }
       }
+
+      lead.stage = targetStage;
+      if (stepData) stepData.status = 'doing';
+      lead.updatedTime = formatDateTime(new Date());
+
+      const stepNames = [
+        "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
+      ];
+      if (typeof addNotification === 'function') {
+        addNotification('Cập nhật CRM', `Di chuyển khách hàng ${lead.name} sang bước: ${stepNames[targetStepNum - 1]}`, 'info');
+      }
     }
-
-    lead.stage = targetStage;
-    stepData.status = 'doing';
-    lead.updatedTime = formatDateTime(new Date());
-
-    const stepNames = [
-      "Nhận thông tin", "Lấy SĐT", "Khai thác thông tin", "Báo giá", "Thương lượng", "Thành công", "Thất bại"
-    ];
-    addNotification('Cập nhật CRM', `Di chuyển khách hàng ${lead.name} sang bước: ${stepNames[currentActiveLeadStepNum - 1]}`, 'info');
   }
 
   saveState();
-  renderCRMBoard();
-  closeModal('modal-lead-detail');
-  window.showToast('Lưu thông tin bước thành công!', 'success');
-  renderCurrentUser();
+  if (typeof renderCRMBoard === 'function') renderCRMBoard();
+  if (typeof closeModal === 'function') closeModal('modal-lead-detail');
+  if (typeof showToast === 'function') window.showToast('Lưu thông tin bước thành công!', 'success');
+  if (typeof renderCurrentUser === 'function') renderCurrentUser();
 }
 
 function handleLeadAddStepChecklistItem() {
