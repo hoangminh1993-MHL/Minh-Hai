@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.82';
+  const CURRENT_APP_VER = 'v21.83';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -705,7 +705,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.82';
+const CLIENT_VERSION = '21.83';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -879,6 +879,7 @@ function navigateToView(viewId, updateHash = true) {
     'crm-clients-workflows': { main: 'CRM Khách Cũ & Lô Hàng', sub: 'Quản lý quy trình vận chuyển 11 bước cho khách hàng thân thiết.' },
     'tasks-single': { main: 'Quản Lý Công Việc Đơn Lẻ', sub: 'Theo dõi, giao việc phát sinh hàng ngày của nhân viên.' },
     'tasks-projects': { main: 'Dự Án & Phòng Ban', sub: 'Tập trung quản lý tài liệu, công việc, thảo luận theo phòng ban/khách VIP.' },
+    'project-dedicated': { main: 'Dự Án & Phòng Ban Dedicated', sub: 'Tập trung theo dõi tiến độ, tài liệu và công việc thuộc phòng ban.' },
     'my-tasks': { main: 'Công Việc Của Tôi', sub: 'Danh sách tổng hợp các khâu vận chuyển lô hàng, việc đơn lẻ và dự án do bạn phụ trách.' },
     'customer-health': { main: 'Sức Khỏe Khách Hàng', sub: 'Phân tích dữ liệu vận chuyển các tháng và cảnh báo nguy cơ sụt giảm sản lượng hoặc mất khách.' },
     'mini-games': { main: 'Khu Vui Chơi & Giải Trí', sub: 'Đấu trí cờ caro cược điểm, chơi xổ số bao/đề 18h hàng ngày, và tổ chức bet kèo nội bộ.' },
@@ -905,6 +906,12 @@ function navigateToView(viewId, updateHash = true) {
     if (typeof renderOpsSingleTasks === 'function') renderOpsSingleTasks();
   } else if (viewId === 'tasks-projects') {
     if (typeof renderOpsProjects === 'function') renderOpsProjects();
+  } else if (viewId === 'project-dedicated') {
+    if (typeof window.openProjectDedicatedView === 'function' && currentActiveProjectId) {
+      window.openProjectDedicatedView(currentActiveProjectId);
+    } else if (typeof openProjectDedicatedView === 'function' && currentActiveProjectId) {
+      openProjectDedicatedView(currentActiveProjectId);
+    }
   } else if (viewId === 'my-tasks') {
     if (typeof renderMyTasks === 'function') renderMyTasks();
   } else if (viewId === 'rewards') {

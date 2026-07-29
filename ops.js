@@ -2837,7 +2837,7 @@ function renderOpsProjects() {
   if (!listContainer) return;
   listContainer.innerHTML = '';
 
-  if (AppState.projects.length === 0) {
+  if (!AppState.projects || AppState.projects.length === 0) {
     listContainer.innerHTML = `<span class="text-muted" style="padding:15px; font-style:italic;">Chưa có dự án nào.</span>`;
     return;
   }
@@ -2845,24 +2845,36 @@ function renderOpsProjects() {
   AppState.projects.forEach(p => {
     const card = document.createElement('div');
     card.className = `dashboard-card project-card-item ${currentActiveProjectId === p.id ? 'active' : ''}`;
-    card.style.cssText = `cursor:pointer; border: 1px solid ${currentActiveProjectId === p.id ? 'var(--color-primary)' : 'var(--border-color)'}; padding:12px;`;
+    card.style.cssText = `cursor:pointer; border: 1px solid ${currentActiveProjectId === p.id ? 'var(--color-primary)' : 'var(--border-color)'}; padding:14px; border-radius:8px; background:#111827; transition:all 0.2s ease;`;
     
     const manager = AppState.users.find(u => u.id === p.managerId) || { name: 'Chưa giao' };
 
     card.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <strong>${p.name}</strong>
-        <span class="badge bg-blue" style="font-size:9.5px;">${p.type}</span>
+        <strong style="font-size:15px; color:#f8fafc;">${p.name}</strong>
+        <span class="badge bg-blue" style="font-size:9.5px;">${p.type || 'Phòng ban'}</span>
       </div>
-      <div style="font-size:11px; color:var(--text-secondary); margin-top:6px;">Quản lý: ${manager.name} | Thành viên: ${p.members ? p.members.length : 0}</div>
+      <div style="font-size:11.5px; color:var(--text-secondary); margin-top:8px;">Quản lý: ${manager.name} | Thành viên: ${p.members ? p.members.length : 0}</div>
     `;
 
     card.onclick = () => {
       currentActiveProjectId = p.id;
       document.querySelectorAll('.project-card-item').forEach(c => c.style.borderColor = 'var(--border-color)');
       card.style.borderColor = 'var(--color-primary)';
-      openProjectDetails(p.id);
-      openProjectDedicatedView(p.id);
+      
+      if (typeof window.openProjectDedicatedView === 'function') {
+        window.openProjectDedicatedView(p.id);
+      } else if (typeof openProjectDedicatedView === 'function') {
+        openProjectDedicatedView(p.id);
+      }
+      
+      if (typeof showView === 'function') {
+        showView('project-dedicated');
+      } else {
+        document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
+        const dedicatedView = document.getElementById('view-project-dedicated');
+        if (dedicatedView) dedicatedView.style.display = 'block';
+      }
     };
 
     listContainer.appendChild(card);
@@ -3847,34 +3859,44 @@ window.openProjectDedicatedView = function(projId) {
 
   // Render docs
   const docsContainer = document.getElementById('dedicated-project-docs-list');
-  docsContainer.innerHTML = '';
-  if (!p.documents || p.documents.length === 0) {
-    docsContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">Chưa ghim tài liệu hoặc liên kết nào.</span>`;
-  } else {
-    p.documents.forEach((doc, idx) => {
-      const div = document.createElement('div');
-      div.className = 'mini-task-item';
-      div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 12px; display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 4px;';
-      div.innerHTML = `
-        <div>
-          <i class="fa-solid fa-file-lines text-emerald" style="margin-right:6px;"></i><strong>${doc.name}</strong>
-          ${doc.note ? `<span style="font-size:10.5px; opacity:0.8; margin-left:6px;">(${doc.note})</span>` : ''}
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <a href="${doc.url}" target="_blank" style="font-size:11.5px; color:var(--color-primary); font-weight:bold; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
-            <i class="fa-solid fa-square-share-nodes"></i> Mở link
-          </a>
-          <button class="btn btn-xs btn-link text-rose" onclick="handleDeleteDedicatedProjectDoc(${idx})" style="padding:0; border:none; background:none; font-size: 11px;"><i class="fa-solid fa-trash-can"></i> Xóa</button>
-        </div>
-      `;
-      docsContainer.appendChild(div);
-    });
+  if (docsContainer) {
+    docsContainer.innerHTML = '';
+    if (!p.documents || p.documents.length === 0) {
+      docsContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">Chưa ghim tài liệu hoặc liên kết nào.</span>`;
+    } else {
+      p.documents.forEach((doc, idx) => {
+        const div = document.createElement('div');
+        div.className = 'mini-task-item';
+        div.style.cssText = 'padding: 8px; border-bottom: 1px solid var(--border-color); font-size: 12px; display:flex; justify-content:space-between; align-items:center; background: rgba(255,255,255,0.02); border-radius: 4px; margin-bottom: 4px;';
+        div.innerHTML = `
+          <div>
+            <i class="fa-solid fa-file-lines text-emerald" style="margin-right:6px;"></i><strong>${doc.name}</strong>
+            ${doc.note ? `<span style="font-size:10.5px; opacity:0.8; margin-left:6px;">(${doc.note})</span>` : ''}
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <a href="${doc.url}" target="_blank" style="font-size:11.5px; color:var(--color-primary); font-weight:bold; display:inline-flex; align-items:center; gap:4px; text-decoration:none;">
+              <i class="fa-solid fa-square-share-nodes"></i> Mở link
+            </a>
+            <button class="btn btn-xs btn-link text-rose" onclick="handleDeleteDedicatedProjectDoc(${idx})" style="padding:0; border:none; background:none; font-size: 11px;"><i class="fa-solid fa-trash-can"></i> Xóa</button>
+          </div>
+        `;
+        docsContainer.appendChild(div);
+      });
+    }
   }
 
   // Render discussion
   renderDedicatedProjectDiscussion(p);
 
-  if (typeof navigateToView === 'function') { navigateToView('project-dedicated'); } else { document.getElementById('view-project-dedicated').style.display = 'flex'; }
+  if (typeof showView === 'function') {
+    showView('project-dedicated');
+  } else if (typeof navigateToView === 'function') {
+    navigateToView('project-dedicated');
+  } else {
+    document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
+    const dedicatedEl = document.getElementById('view-project-dedicated');
+    if (dedicatedEl) dedicatedEl.style.display = 'block';
+  }
 };
 
 window.handleQuickCompleteTask = function(event, taskId) {
@@ -3932,6 +3954,18 @@ function renderDedicatedProjectDiscussion(p) {
 
 // Bind dedicated project action buttons
 document.addEventListener('DOMContentLoaded', () => {
+  const btnBack = document.getElementById('btn-back-to-projects-list');
+  if (btnBack) {
+    btnBack.onclick = () => {
+      if (typeof showView === 'function') {
+        showView('tasks-projects');
+      } else {
+        document.querySelectorAll('.app-view').forEach(v => v.style.display = 'none');
+        const projView = document.getElementById('view-tasks-projects');
+        if (projView) projView.style.display = 'block';
+      }
+    };
+  }
   const btnAddTask = document.getElementById('btn-dedicated-project-add-task');
   if (btnAddTask) {
     btnAddTask.onclick = () => {
