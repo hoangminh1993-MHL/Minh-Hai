@@ -435,6 +435,7 @@ function renderCRMBoard() {
                           noteVal.includes(searchVal);
     return matchesSearch;
   });
+  window.lastFilteredCount = filteredLeads.length;
 
   // Synchronize toggle UI state
   const kanbanWrapper = document.getElementById('crm-kanban-wrapper');

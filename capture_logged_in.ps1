@@ -10,128 +10,98 @@ if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileD
 $proc = Start-Process -FilePath $edgePath -ArgumentList "--headless", "--disable-gpu", "--remote-debugging-port=9222", "--user-data-dir=$profileDir", "--window-size=1680,1050", "about:blank" -PassThru
 Start-Sleep -Seconds 2
 
+function Send-CdpMsg($ws, $id, $method, $params) {
+    $msg = @{ id = $id; method = $method }
+    if ($params) { $msg['params'] = $params }
+    $json = $msg | ConvertTo-Json -Compress -Depth 10
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+    $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, [System.Threading.CancellationToken]::None).Wait()
+
+    $buf = New-Object byte[] 2097152
+    $ms = New-Object System.IO.MemoryStream
+    while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
+        $res = $ws.ReceiveAsync([ArraySegment[byte]]$buf, [System.Threading.CancellationToken]::None).Result
+        $ms.Write($buf, 0, $res.Count)
+        if ($res.EndOfMessage) {
+            $str = [System.Text.Encoding]::UTF8.GetString($ms.ToArray())
+            $ms.SetLength(0)
+            if ($str -match "`"id`":\s*$id\b") {
+                return ($str | ConvertFrom-Json)
+            }
+        }
+    }
+    return $null
+}
+
 try {
     $wc = New-Object System.Net.WebClient
     $json = $wc.DownloadString("http://127.0.0.1:9222/json/list")
     if ($json -match '"webSocketDebuggerUrl":\s*"([^"]+)"') {
         $wsUrl = $matches[1]
         $ws = New-Object System.Net.WebSockets.ClientWebSocket
-        $cts = New-Object System.Threading.CancellationTokenSource
-        $ws.ConnectAsync([Uri]$wsUrl, $cts.Token).Wait()
+        $ws.ConnectAsync([Uri]$wsUrl, [System.Threading.CancellationToken]::None).Wait()
 
-        # 1. Navigate to index page
-        $navMsg = '{"id":1, "method":"Page.navigate", "params":{"url":"https://minh-hai.onrender.com/index.html#crm"}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($navMsg)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
+        # 1. Navigate to login page
+        Write-Output "Navigating to login.html..."
+        Send-CdpMsg $ws 1 "Page.navigate" @{ url = "https://minh-hai.onrender.com/login.html" } | Out-Null
+        Start-Sleep -Seconds 3
 
-        Start-Sleep -Seconds 4
-
-        # 2. Inject logged-in user session into localStorage & reload
+        # 2. Inject session into localStorage
+        Write-Output "Injecting admin session..."
         $loginJs = @"
             (() => {
                 const userObj = { id: 'usr-1', username: 'hoangminh', role: 'admin', name: 'Nguyễn Hoàng Minh' };
                 localStorage.setItem('minhhai_user', JSON.stringify(userObj));
-                localStorage.setItem('votr_current_user', 'usr-1');
-                location.href = 'https://minh-hai.onrender.com/index.html#crm';
+                localStorage.setItem('votr_current_user_id', 'usr-1');
                 return 'SESSION_SET';
             })()
 "@
-        $evalMsg = '{"id":2, "method":"Runtime.evaluate", "params":{"expression":' + ($loginJs | ConvertTo-Json) + '}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
+        $res2 = Send-CdpMsg $ws 2 "Runtime.evaluate" @{ expression = $loginJs }
+        Write-Output "Session Injection Result: $($res2.result.result.value)"
 
-        Write-Output "Waiting 8 seconds for page reload and CRM board loadState to settle..."
+        # 3. Navigate to CRM page
+        Write-Output "Navigating to index.html#crm..."
+        Send-CdpMsg $ws 3 "Page.navigate" @{ url = "https://minh-hai.onrender.com/index.html#crm" } | Out-Null
+        
+        Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 3. Force navigate to CRM view and render board
+        # 4. Trigger render & check window.lastFilteredCount
+        Write-Output "Evaluating window.lastFilteredCount..."
         $crdJs = @"
-            (() => {
+            (async () => {
+                if (typeof syncLoadState === 'function') await syncLoadState();
                 if (typeof navigateToView === 'function') navigateToView('crm');
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
-                else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();
                 
-                const containers = document.querySelectorAll('.kanban-cards-container');
-                let totalCardsInDom = 0;
-                containers.forEach(c => { totalCardsInDom += c.children.length; });
+                const recContainer = document.querySelector('.kanban-cards-container[data-stage="receive_info"]');
 
                 return JSON.stringify({
-                    totalLeads: (typeof AppState !== 'undefined' && AppState.leads) ? AppState.leads.length : 0,
-                    totalCardsInDom: totalCardsInDom,
-                    viewMode: (typeof AppState !== 'undefined') ? AppState.crmViewMode : 'board'
+                    lastFilteredCount: window.lastFilteredCount,
+                    recContainerChildren: recContainer ? recContainer.children.length : -1
                 });
             })()
 "@
-        $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + '}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
-
-        Write-Output "Waiting 3 seconds for DOM rendering..."
-        Start-Sleep -Seconds 3
-
-        $buf2 = New-Object byte[] 1048576
-        $ms2 = New-Object System.IO.MemoryStream
-        while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
-            $res2 = $ws.ReceiveAsync([ArraySegment[byte]]$buf2, $cts.Token).Result
-            $ms2.Write($buf2, 0, $res2.Count)
-            if ($res2.EndOfMessage) {
-                $evalResStr = [System.Text.Encoding]::UTF8.GetString($ms2.ToArray())
-                Write-Output "CDP Eval Result: $evalResStr"
-                if ($evalResStr -match '"id":3') { break }
-            }
-        }
-
-        Start-Sleep -Milliseconds 800
-
-        # 4. Capture screenshot
-        $capMsg = '{"id":4, "method":"Page.captureScreenshot", "params":{"format":"png"}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($capMsg)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
-        $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": true}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
-
-        $buf2 = New-Object byte[] 1048576
-        $ms2 = New-Object System.IO.MemoryStream
-        while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
-            $res2 = $ws.ReceiveAsync([ArraySegment[byte]]$buf2, $cts.Token).Result
-            $ms2.Write($buf2, 0, $res2.Count)
-            if ($res2.EndOfMessage) {
-                $evalResStr = [System.Text.Encoding]::UTF8.GetString($ms2.ToArray())
-                Write-Output "CDP Eval Output: $evalResStr"
-                break
-            }
-        }
+        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $crdJs; awaitPromise = $true }
+        Write-Output "Filter Count Diagnostic Response: $($res4.result.result.value)"
 
         Start-Sleep -Seconds 2
 
-        # 4. Capture screenshot
-        $capMsg = '{"id":4, "method":"Page.captureScreenshot", "params":{"format":"png"}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($capMsg)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
-
-        $buf = New-Object byte[] 10485760
-        $ms = New-Object System.IO.MemoryStream
-        while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
-            $res = $ws.ReceiveAsync([ArraySegment[byte]]$buf, $cts.Token).Result
-            $ms.Write($buf, 0, $res.Count)
-            if ($res.EndOfMessage) {
-                $str = [System.Text.Encoding]::UTF8.GetString($ms.ToArray())
-                $ms.SetLength(0)
-                if ($str -match '"data":\s*"([^"]+)"') {
-                    $b64 = $matches[1]
-                    [System.IO.File]::WriteAllBytes($outImg, [System.Convert]::FromBase64String($b64))
-                    Write-Output "SUCCESS! Actual logged-in feature screenshot saved! Size: $((Get-Item $outImg).Length) bytes"
-                    break
-                }
-            }
+        # 5. Capture screenshot
+        Write-Output "Capturing screenshot..."
+        $res5 = Send-CdpMsg $ws 5 "Page.captureScreenshot" @{ format = "png" }
+        $b64 = $res5.result.data
+        if ($b64) {
+            [System.IO.File]::WriteAllBytes($outImg, [System.Convert]::FromBase64String($b64))
+            Write-Output "SUCCESS! Verified screenshot saved! Size: $((Get-Item $outImg).Length) bytes"
+        } else {
+            Write-Error "Screenshot data was empty!"
         }
 
-        $ws.CloseAsync([System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure, "Done", $cts.Token).Wait()
-    } else {
-        Write-Error "Could not connect to WebSocket debugger."
+        $ws.CloseAsync([System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure, "Done", [System.Threading.CancellationToken]::None).Wait()
     }
 } catch {
-    Write-Error "CDP Automation Error: $_"
+    Write-Error "CDP Error: $_"
 } finally {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force }
 }
