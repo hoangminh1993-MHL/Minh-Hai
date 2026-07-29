@@ -1296,17 +1296,22 @@ function renderActiveLeadStepPanel() {
   if (noteEl) noteEl.value = cleanVietnameseText(stepData.note || lead.note || '');
 
   const valRow = document.getElementById('lead-step-values-row');
-  if (currentActiveLeadStepNum === 6) {
-    valRow.style.display = 'flex';
-    document.getElementById('lead-step-val-rmb').value = lead.valRmb || 0;
-    document.getElementById('lead-step-val-vnd').value = lead.valVnd || 0;
-  } else {
-    valRow.style.display = 'none';
+  if (valRow) {
+    if (currentActiveLeadStepNum === 6) {
+      valRow.style.display = 'flex';
+      const rmbInput = document.getElementById('lead-step-val-rmb');
+      if (rmbInput) rmbInput.value = lead.valRmb || 0;
+      const vndInput = document.getElementById('lead-step-val-vnd');
+      if (vndInput) vndInput.value = lead.valVnd || 0;
+    } else {
+      valRow.style.display = 'none';
+    }
   }
 
   const failGroup = document.getElementById('lead-step-fail-group');
-  if (currentActiveLeadStepNum === 7) {
-    failGroup.style.display = 'block';
+  if (failGroup) {
+    if (currentActiveLeadStepNum === 7) {
+      failGroup.style.display = 'block';
     
     const reasonSelect = document.getElementById('lead-step-fail-reason');
     const reasonOtherGroup = document.getElementById('lead-step-fail-reason-other-group');

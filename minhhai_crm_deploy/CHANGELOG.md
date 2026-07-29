@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.72] - 2026-07-29
+### Tối Ưu An Toàn Null-Check Trong Render Panel CRM (v21.72)
+- Thêm kiểm tra null an toàn cho alRow và ailGroup trong enderActiveLeadStepPanel.
+- Đảm bảo toàn bộ luồng hiển thị file đính kèm nút Ghim không bị ngắt quãng bởi bất kỳ lỗi JS nào.
+
 ## [v21.71] - 2026-07-29
 ### Xóa Bỏ Hàm Trùng Lặp Của Nút Ghim & Sửa Lỗi TypeError (v21.71)
 - Xóa hàm trùng lặp handleLeadAddStepFile gây lỗi TypeError: Cannot read properties of null (reading 'value').
