@@ -55,16 +55,17 @@ try {
                     openLeadDetailModal(testLead.id);
                     const inp1 = document.getElementById('lead-step-file-name');
                     const inp2 = document.getElementById('lead-step-file-url');
-                    if (inp1) inp1.value = 'Tài liệu hợp đồng lô hàng';
-                    if (inp2) inp2.value = 'https://docs.google.com/document/d/123';
-                    const btn = document.getElementById('btn-lead-step-add-file');
-                    if (btn) btn.click();
-                    if (typeof handleLeadAddStepFile === 'function') handleLeadAddStepFile();
+                    if (inp1) inp1.value = 'Tai_Lieu_Bao_Gia_Lo_Hang.pdf';
+                    if (inp2) inp2.value = 'https://docs.google.com/document/d/123456';
+                    
+                    if (typeof handleLeadAddStepFile === 'function') {
+                        handleLeadAddStepFile();
+                    }
                 }
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');
                 if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();
-                return 'Leads count: ' + (AppState.leads ? AppState.leads.length : 0);
+                return 'Ghim executed successfully';
             })()
 "@
         $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": true}}'

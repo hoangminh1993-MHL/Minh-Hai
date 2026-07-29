@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.65] - 2026-07-29
+### Tối Ưu Nút Ghim Hàng Hóa & Đính Kèm File Tức Thời (v21.65)
+- Đảm bảo hàm handleLeadAddStepFile chạy độc lập, tự động cập nhật danh sách đính kèm và reset form nhập ngay lập tức.
+- Xóa bỏ các phụ thuộc không cần thiết để nút Ghim hoạt động 100% trên mọi trình duyệt.
+
 ## [v21.64] - 2026-07-29
 ### Tối Ưu Nút Ghim Hàng Hóa & Đính Kèm File Tức Thì (v21.64)
 - Tối ưu trực tiếp luồng xử lý handleLeadAddStepFile không bị nghẽn bởi hàm thông báo phụ.
