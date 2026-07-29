@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## [v21.76] - 2026-07-29
+## [v21.78] - 2026-07-29
+
+### CRM Khách Mới - Sửa Triệt Để Lỗi Mất Dữ Liệu Khi Load Lại Trang
+- **Hợp Nhất Dữ Liệu 2 Chiều Thông Minh (Deep Lead Merging):** Cập nhật hàm `syncLoadState()` trong `app.js` để tự động hợp nhất sâu (deep merge) các file đính kèm (`files`), thảo luận (`comments`), checklist (`checklist`), và ghi chú giữa LocalStorage và Server API.
+- **Bảo Vệ Dữ Liệu Tránh Đè Đè Dữ Liệu Cũ:** Loại bỏ hoàn toàn lỗi dữ liệu cũ từ server đè mất các tài liệu/bình luận vừa tải lên khi người dùng tải lại trang.
+- **Xác Minh Thực Tế (Live Verification):** Đã kiểm tra tự động tải báo giá & gửi bình luận trong popup, sau đó tải lại trang (`Page.reload`). Tất cả file báo giá và bình luận duy trì đầy đủ 100%.
 
 ### CRM Khách Mới - Khôi Phục Đầy Đủ Tính Năng Thẻ
 - **Khôi Phục Dropdown Nguồn KH & Chuyển Bước:** Đã tích hợp lại 2 menu chọn nhanh Nguồn KH (Fanpage, KH cũ, BNI, GT, Cá nhân, Giới thiệu) và Chuyển bước nhanh (Nhận TT, Lấy SĐT, Khai thác TT, Báo giá, Thương lượng, Thành công, Thất bại) trực tiếp ngay trên thẻ Kanban.

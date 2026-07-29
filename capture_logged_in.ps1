@@ -67,60 +67,80 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Eval crm.js and render CRM board
-        Write-Output "Evaluating crm.js and rendering board..."
-        $crdJs = @"
+        # 4. Add test file & comment to lead, saveState, then RELOAD page and verify files/comments still exist!
+        Write-Output "Testing popup file/comment persistence after reload..."
+        $testJs = @"
             (async () => {
-                let evalErr = null;
-                try {
-                    const res = await fetch('crm.js?t=' + Date.now());
-                    const code = await res.text();
-                    try {
-                        eval(code);
-                    } catch(e) {
-                        evalErr = e.stack || e.message;
-                    }
-                } catch(e) {
-                    evalErr = 'fetch error: ' + e.message;
+                const lead = AppState.leads ? AppState.leads[0] : null;
+                if (!lead) return 'NO_LEAD';
+
+                currentActiveLeadId = lead.id;
+                currentActiveLeadStepNum = 1;
+
+                // Add test file
+                lead.files = lead.files || [];
+                if (!lead.files.some(f => f.name === 'Báo Giá & Hợp Đồng Vận Chuyển.pdf')) {
+                    lead.files.push({
+                        name: 'Báo Giá & Hợp Đồng Vận Chuyển.pdf',
+                        url: 'https://example.com/bao-gia-hop-dong.pdf',
+                        date: new Date().toLocaleString('vi-VN')
+                    });
                 }
 
-                try {
-                    const stateRes = await fetch('/api/state');
-                    if (stateRes.ok) {
-                        const data = await stateRes.json();
-                        if (data.leads && data.leads.length > 0) {
-                            AppState.leads = data.leads;
-                            AppState.users = data.users || AppState.users;
-                        }
+                // Add test comment to step 1
+                if (lead.steps && lead.steps[0]) {
+                    lead.steps[0].comments = lead.steps[0].comments || [];
+                    if (!lead.steps[0].comments.some(c => c.text === 'Đã kiểm tra chứng từ & báo giá cho khách hàng.')) {
+                        lead.steps[0].comments.push({
+                            user: 'Nguyễn Hoàng Minh',
+                            text: 'Đã kiểm tra chứng từ & báo giá cho khách hàng.',
+                            date: new Date().toLocaleString('vi-VN')
+                        });
                     }
-                } catch(e) {}
-
-                if (typeof renderCRMBoard === 'function') {
-                    renderCRMBoard();
-                } else if (typeof window.renderCRMBoard === 'function') {
-                    window.renderCRMBoard();
                 }
 
-                const containers = document.querySelectorAll('.kanban-cards-container');
-                let totalCardsInDom = 0;
-                containers.forEach(c => { totalCardsInDom += c.children.length; });
-
-                return JSON.stringify({
-                    evalErr: evalErr,
-                    typeof_renderCRMBoard: typeof window.renderCRMBoard,
-                    totalCardsInDom: totalCardsInDom
-                });
+                await saveState();
+                return 'ADDED_AND_SAVED';
             })()
 "@
-        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $crdJs; awaitPromise = $true }
-        Write-Output "Eval Response: $($res4.result.result.value)"
+        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $testJs; awaitPromise = $true }
+        Write-Output "Add Test File/Comment Result: $($res4.result.result.value)"
 
         Start-Sleep -Seconds 3
 
-        # 5. Capture screenshot
-        Write-Output "Capturing screenshot..."
-        $res5 = Send-CdpMsg $ws 5 "Page.captureScreenshot" @{ format = "png" }
-        $b64 = $res5.result.data
+        # 5. RELOAD page and verify data persisted after reload
+        Write-Output "Reloading page to test persistence..."
+        Send-CdpMsg $ws 5 "Page.reload" @{ ignoreCache = $true } | Out-Null
+        Start-Sleep -Seconds 8
+
+        # 6. Verify lead files & comments & open lead detail modal
+        $verifyJs = @"
+            (() => {
+                const lead = AppState.leads ? AppState.leads[0] : null;
+                const fileCount = lead && lead.files ? lead.files.length : 0;
+                const commentCount = (lead && lead.steps && lead.steps[0] && lead.steps[0].comments) ? lead.steps[0].comments.length : 0;
+
+                if (lead && typeof openLeadDetailModal === 'function') {
+                    openLeadDetailModal(lead.id);
+                }
+
+                return JSON.stringify({
+                    leadId: lead ? lead.id : null,
+                    leadName: lead ? lead.name : null,
+                    fileCount: fileCount,
+                    commentCount: commentCount
+                });
+            })()
+"@
+        $res6 = Send-CdpMsg $ws 6 "Runtime.evaluate" @{ expression = $verifyJs }
+        Write-Output "Persistence Verification Result: $($res6.result.result.value)"
+
+        Start-Sleep -Seconds 3
+
+        # 7. Capture screenshot
+        Write-Output "Capturing verified screenshot..."
+        $res7 = Send-CdpMsg $ws 7 "Page.captureScreenshot" @{ format = "png" }
+        $b64 = $res7.result.data
         if ($b64) {
             [System.IO.File]::WriteAllBytes($outImg, [System.Convert]::FromBase64String($b64))
             Write-Output "SUCCESS! Verified screenshot saved! Size: $((Get-Item $outImg).Length) bytes"
