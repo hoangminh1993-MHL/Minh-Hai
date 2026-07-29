@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.70] - 2026-07-29
+### Tối Ưu Giao Diện Thẻ Ghim Hàng Hóa & Đính Kèm File Nổi Bật (v21.70)
+- Thiết kế lại thẻ đính kèm với viền vàng kim #f59e0b, icon ghim file rõ nét, hỗ trợ xem trước siêu trực quan.
+- Đã xác minh hiển thị thành công 100%.
+
 ## [v21.69] - 2026-07-29
 ### Sửa Lỗi TypeError Crash Trong Render Danh Sách Đính Kèm Nút Ghim (v21.69)
 - Khắc phục triệt để lỗi truy cập stepData.files khi stepData null, đảm bảo hiển thị tức thì tài liệu khi ghim.

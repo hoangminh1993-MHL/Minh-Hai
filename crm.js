@@ -1451,7 +1451,7 @@ function renderActiveLeadStepPanel() {
     if (stepFiles.length > 0) {
       stepFiles.forEach((file, idx) => {
         const row = document.createElement('div');
-        row.style.cssText = 'display:flex; flex-direction:column; gap:4px; font-size:12px; background:#111827; padding:6px 8px; border-radius:4px; margin-bottom:4px;';
+        row.style.cssText = 'display:flex; flex-direction:column; gap:6px; font-size:13px; background:#1e293b; padding:8px 12px; border-radius:6px; margin-top:8px; margin-bottom:8px; border:1px solid #f59e0b; box-shadow:0 2px 8px rgba(245,158,11,0.25);';
         
         const fileName = file.name || file.url || 'Tài liệu đính kèm';
         const fileUrl = file.url || '#';
@@ -1491,8 +1491,11 @@ function renderActiveLeadStepPanel() {
         const fileInfo = document.createElement('div');
         fileInfo.style.cssText = 'display:flex; justify-content:space-between; align-items:center;';
         fileInfo.innerHTML = `
-          <a href="${fileUrl}" target="_blank" style="color:var(--color-info); text-decoration:underline;"><i class="fa-solid fa-file-arrow-up"></i> ${fileName}</a>
-          <button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xóa file"><i class="fa-solid fa-trash"></i></button>
+          <a href="${fileUrl}" target="_blank" style="color:#38bdf8; font-weight:600; text-decoration:none;"><i class="fa-solid fa-paperclip" style="color:#f59e0b; margin-right:6px;"></i> ${fileName}</a>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:10px; background:rgba(245,158,11,0.2); color:#f59e0b; padding:2px 6px; border-radius:4px; font-weight:bold;">Đã ghim</span>
+            <button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xóa file"><i class="fa-solid fa-trash"></i></button>
+          </div>
         `;
         
         fileInfo.querySelector('button').onclick = () => {
