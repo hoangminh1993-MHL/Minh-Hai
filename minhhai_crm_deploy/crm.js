@@ -386,7 +386,9 @@ function populateSalesDropdown(selectId, selectedId = '') {
 // ==================== RENDERING KANBAN ==================== //
 function renderCRMBoard() {
   window.renderCRMBoard = renderCRMBoard;
-  // Sanitize stage and checklists for all leads
+  window.lastCRMError = null;
+  try {
+    // Sanitize stage and checklists for all leads
   if (AppState.leads) {
     AppState.leads.forEach(lead => {
       if (!lead.stage || lead.stage === 'Nhận thông tin' || lead.stage === 'khach_moi' || lead.stage === 'Khách mới' || lead.stage === 'Chưa tiếp cận' || lead.stage === 'new') lead.stage = 'receive_info';
@@ -401,7 +403,7 @@ function renderCRMBoard() {
       }
       if (Array.isArray(lead.steps)) {
         lead.steps.forEach(s => {
-          s.checklist = [];
+          if (s) s.checklist = [];
         });
       }
     });
@@ -771,6 +773,10 @@ function renderCRMBoard() {
       };
     }
   });
+  } catch (err) {
+    console.error('Error in renderCRMBoard:', err);
+    window.lastCRMError = String(err.stack || err.message || err);
+  }
 }
 
 // ==================== DRAG & DROP LOGIC ==================== //

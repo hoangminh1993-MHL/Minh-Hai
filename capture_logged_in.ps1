@@ -66,7 +66,7 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Fetch state, assign AppState.leads, navigate to CRM, and render board
+        # 4. Render native CRM board and capture lastCRMError
         Write-Output "Populating AppState.leads and rendering native CRM board..."
         $crdJs = @"
             (async () => {
@@ -77,12 +77,9 @@ try {
                         if (data.leads && data.leads.length > 0) {
                             AppState.leads = data.leads;
                             AppState.users = data.users || AppState.users;
-                            localStorage.setItem('votr_leads_db', JSON.stringify(AppState.leads));
                         }
                     }
-                } catch (e) {
-                    console.error('Error fetching state:', e);
-                }
+                } catch (e) {}
                 
                 if (typeof navigateToView === 'function') navigateToView('crm');
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
@@ -94,7 +91,8 @@ try {
 
                 return JSON.stringify({
                     totalLeads: (typeof AppState !== 'undefined' && AppState.leads) ? AppState.leads.length : 0,
-                    totalCardsInDom: totalCardsInDom
+                    totalCardsInDom: totalCardsInDom,
+                    lastCRMError: window.lastCRMError
                 });
             })()
 "@
