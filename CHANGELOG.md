@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v21.76] - 2026-07-29
+
+### CRM Khách Mới - Khôi Phục Đầy Đủ Tính Năng Thẻ
+- **Khôi Phục Dropdown Nguồn KH & Chuyển Bước:** Đã tích hợp lại 2 menu chọn nhanh Nguồn KH (Fanpage, KH cũ, BNI, GT, Cá nhân, Giới thiệu) và Chuyển bước nhanh (Nhận TT, Lấy SĐT, Khai thác TT, Báo giá, Thương lượng, Thành công, Thất bại) trực tiếp ngay trên thẻ Kanban.
+- **Khôi Phục Badge Cảnh Báo & Thất Bại:** Hiển thị lại banner đỏ cảnh báo "Quá hạn" và trạng thái duyệt thất bại ("Đã duyệt thất bại" / "Chờ duyệt thất bại").
+- **Khôi Phục Mốc Thời Gian & Kéo Thả:** Hiển thị chi tiết thời gian Tạo & Cập nhật mới nhất, đồng thời bật đầy đủ tính năng kéo thả (Drag & Drop) chuyển cột giữa các khâu.
+
 ## [v21.75] - 2026-07-29
 
 ### CRM Khách Mới Fixes & Enhancements
