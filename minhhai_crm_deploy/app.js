@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.78';
+  const CURRENT_APP_VER = 'v21.79';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -680,7 +680,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.78';
+const CLIENT_VERSION = '21.79';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -3716,7 +3716,139 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Bind simulated role user switcher dropdown events
   initUserSwitcherEvents();
+
+  // Bind Backup Manager modal triggers
+  const btnOpenBackups = document.getElementById('btn-open-backups-modal');
+  if (btnOpenBackups) {
+    btnOpenBackups.onclick = () => {
+      if (typeof openModal === 'function') openModal('modal-backups-manager');
+      loadBackupsList();
+    };
+  }
+
+  const btnCreateManual = document.getElementById('btn-create-manual-backup');
+  if (btnCreateManual) {
+    btnCreateManual.onclick = createManualBackupSnapshot;
+  }
 });
+
+// ==================== BACKUP MANAGER CLIENT LOGIC ==================== //
+async function loadBackupsList() {
+  const tbody = document.getElementById('backups-list-table-body');
+  if (!tbody) return;
+
+  try {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải danh sách bản sao lưu...</td></tr>';
+    const res = await fetch(getApiUrl('/api/backups'), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Không lấy được danh sách sao lưu');
+    
+    const backups = await res.json();
+    if (!Array.isArray(backups) || backups.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#94a3b8;">Chưa có bản sao lưu nào. Hãy nhấn "Sao Lưu Ngay" để tạo bản đầu tiên!</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = '';
+    backups.forEach(b => {
+      const tr = document.createElement('tr');
+      tr.style.cssText = 'border-bottom:1px solid #334155; color:#f1f5f9;';
+
+      const sizeKb = (b.size / 1024).toFixed(1) + ' KB';
+      const isAuto = String(b.filename).includes('auto');
+      const badgeBg = isAuto ? 'rgba(16,185,129,0.2)' : 'rgba(56,189,248,0.2)';
+      const badgeColor = isAuto ? '#10b981' : '#38bdf8';
+      const badgeText = b.type || (isAuto ? 'Tự động (12h/17h30)' : 'Thủ công');
+
+      tr.innerHTML = `
+        <td style="padding:10px 14px; font-weight:600;"><i class="fa-solid fa-file-code" style="color:#f59e0b; margin-right:6px;"></i> ${b.date || b.filename}</td>
+        <td style="padding:10px 14px;"><span style="font-size:11px; padding:2px 8px; border-radius:12px; background:${badgeBg}; color:${badgeColor}; font-weight:bold;">${badgeText}</span></td>
+        <td style="padding:10px 14px; color:#38bdf8; font-weight:bold;">${b.totalLeads ? b.totalLeads + ' KH' : '—'}</td>
+        <td style="padding:10px 14px; color:#94a3b8;">${sizeKb}</td>
+        <td style="padding:10px 14px; text-align:right;">
+          <a href="${getApiUrl('/api/backups/download/' + b.filename)}" target="_blank" class="btn btn-sm btn-outline" style="padding:4px 10px; font-size:11px; margin-right:6px; color:#38bdf8; border-color:#38bdf8;" title="Tải file .json về máy">
+            <i class="fa-solid fa-download"></i> Tải về
+          </a>
+          <button type="button" class="btn btn-sm btn-warning btn-restore-backup" data-filename="${b.filename}" style="padding:4px 10px; font-size:11px; background:#f59e0b; border:none; color:#1e1b4b; font-weight:bold; cursor:pointer; border-radius:4px;" title="Khôi phục dữ liệu từ bản này">
+            <i class="fa-solid fa-rotate-left"></i> Phục Hồi
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    tbody.querySelectorAll('.btn-restore-backup').forEach(btn => {
+      btn.onclick = () => {
+        const fn = btn.getAttribute('data-filename');
+        if (fn) restoreBackupSnapshot(fn);
+      };
+    });
+
+  } catch (err) {
+    console.error('Error loading backups list:', err);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Lỗi: ${err.message}</td></tr>`;
+  }
+}
+
+async function createManualBackupSnapshot() {
+  try {
+    const btn = document.getElementById('btn-create-manual-backup');
+    if (btn) btn.disabled = true;
+    
+    if (typeof showToast === 'function') showToast('Đang tạo bản sao lưu dữ liệu...', 'info');
+    
+    const res = await fetch(getApiUrl('/api/backups/create'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ label: 'user_manual' })
+    });
+
+    if (!res.ok) throw new Error('Không thể tạo bản sao lưu');
+    
+    const data = await res.json();
+    if (data.success) {
+      if (typeof showToast === 'function') showToast('Đã tạo bản sao lưu tức thì thành công!', 'success');
+      loadBackupsList();
+    }
+  } catch (err) {
+    console.error('Error creating manual backup:', err);
+    if (typeof showToast === 'function') showToast('Lỗi tạo bản sao lưu: ' + err.message, 'error');
+  } finally {
+    const btn = document.getElementById('btn-create-manual-backup');
+    if (btn) btn.disabled = false;
+  }
+}
+
+async function restoreBackupSnapshot(filename) {
+  if (!confirm(`Bạn chắc chắn muốn phục hồi dữ liệu từ bản sao lưu "${filename}"?\n\nDữ liệu hiện tại trên giao diện sẽ được khôi phục chính xác theo thời điểm bản sao lưu này!`)) {
+    return;
+  }
+
+  try {
+    if (typeof showToast === 'function') showToast('Đang phục hồi dữ liệu từ bản sao lưu...', 'info');
+
+    const res = await fetch(getApiUrl('/api/backups/restore'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: filename })
+    });
+
+    if (!res.ok) throw new Error('Không thể phục hồi bản sao lưu');
+    
+    const data = await res.json();
+    if (data.success) {
+      if (typeof showToast === 'function') showToast(data.message || 'Đã phục hồi dữ liệu thành công!', 'success');
+      
+      // Reload state into memory and UI
+      await syncLoadState();
+      if (typeof renderCRMBoard === 'function') renderCRMBoard();
+      if (typeof closeModal === 'function') closeModal('modal-backups-manager');
+    }
+  } catch (err) {
+    console.error('Error restoring backup snapshot:', err);
+    if (typeof showToast === 'function') showToast('Lỗi phục hồi dữ liệu: ' + err.message, 'error');
+  }
+}
 
 
 

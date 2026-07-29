@@ -1,4 +1,4 @@
-// Cleaned server.js v21.78
+// Cleaned server.js v21.79
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.78';
+  state.dbVersion = '21.79';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.78';
+  localState.dbVersion = '21.79';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,7 +170,7 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        dbState.dbVersion = '21.78';
+        dbState.dbVersion = '21.79';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -192,7 +192,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.78';
+  newState.dbVersion = '21.79';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -250,57 +250,205 @@ app.post('/api/state', async (req, res) => {
   await saveStateQueue;
 });
 
-// POST /api/sync: Smart Delta Sync
-app.post('/api/sync', async (req, res) => {
-  saveStateQueue = saveStateQueue.then(async () => {
-    try {
-      const syncData = req.body || {};
-      const currentState = await loadState();
-      
-      const collections = ['users', 'leads', 'tasks', 'workflows', 'sausageLogs', 'notifications', 'clients', 'projects', 'shipment_workflows', 'single_tasks', 'suggestions'];
-      
-      collections.forEach(key => {
-        if (syncData[key]) {
-          const itemData = syncData[key];
-          if (Array.isArray(itemData)) {
-            currentState[key] = itemData;
-          } else if (itemData && typeof itemData === 'object') {
-            if (itemData.isObject && itemData.data) {
-              currentState[key] = itemData.data;
-            } else if (Array.isArray(itemData.modified) || Array.isArray(itemData.deletedIds)) {
-              let list = Array.isArray(currentState[key]) ? currentState[key] : [];
-              const modifiedList = itemData.modified || [];
-              const deletedIds = new Set(itemData.deletedIds || []);
-              
-              list = list.filter(i => !deletedIds.has(i.id));
-              
-              modifiedList.forEach(modItem => {
-                const idx = list.findIndex(i => i.id === modItem.id);
-                if (idx >= 0) {
-                  list[idx] = modItem;
-                } else {
-                  list.unshift(modItem);
-                }
-              });
-              
-              currentState[key] = list;
-            }
-          }
-        }
-      });
+// ==================== AUTO BACKUP SCHEDULER & MANAGEMENT ==================== //
+const BACKUP_DIR = path.join(__dirname, 'backups');
+if (!fs.existsSync(BACKUP_DIR)) {
+  try { fs.mkdirSync(BACKUP_DIR, { recursive: true }); } catch (e) {}
+}
 
-      if (syncData.currentUserId) currentState.currentUserId = syncData.currentUserId;
-      if (syncData.fbConfig) currentState.fbConfig = syncData.fbConfig;
-      currentState.lastUpdated = Date.now();
-
-      await saveState(currentState);
-      res.json({ success: true, lastUpdated: currentState.lastUpdated });
-    } catch (err) {
-      console.error('Sync Error:', err);
-      res.status(500).json({ error: err.message });
+async function createBackupSnapshot(type = 'auto', customLabel = '') {
+  try {
+    const currentState = await loadState();
+    if (!currentState || !Array.isArray(currentState.leads)) {
+      console.warn('[Backup] Cannot create backup of invalid or empty state.');
+      return null;
     }
-  });
-  await saveStateQueue;
+
+    const now = new Date();
+    const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const vnTime = new Date(utcMs + (7 * 3600000));
+
+    const yyyy = vnTime.getFullYear();
+    const mm = String(vnTime.getMonth() + 1).padStart(2, '0');
+    const dd = String(vnTime.getDate()).padStart(2, '0');
+    const hh = String(vnTime.getHours()).padStart(2, '0');
+    const min = String(vnTime.getMinutes()).padStart(2, '0');
+    const ss = String(vnTime.getSeconds()).padStart(2, '0');
+
+    const timestampStr = `${yyyy}-${mm}-${dd}_${hh}-${min}-${ss}`;
+    const filename = `${type}_backup_${timestampStr}${customLabel ? '_' + customLabel : ''}.json`;
+    const filePath = path.join(BACKUP_DIR, filename);
+
+    const snapshot = {
+      backupMeta: {
+        type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
+        createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
+        timestamp: vnTime.getTime(),
+        dbVersion: currentState.dbVersion || '21.79',
+        totalLeads: currentState.leads ? currentState.leads.length : 0,
+        totalTasks: currentState.tasks ? currentState.tasks.length : 0,
+        totalUsers: currentState.users ? currentState.users.length : 0
+      },
+      data: currentState
+    };
+
+    fs.writeFileSync(filePath, JSON.stringify(snapshot, null, 2), 'utf8');
+    console.log(`[Backup] Successfully created ${type} backup: ${filename}`);
+
+    cleanOldBackups(30);
+
+    return {
+      filename: filename,
+      meta: snapshot.backupMeta,
+      size: fs.statSync(filePath).size
+    };
+  } catch (err) {
+    console.error('[Backup] Error creating backup snapshot:', err);
+    return null;
+  }
+}
+
+function cleanOldBackups(daysToKeep = 30) {
+  try {
+    const files = fs.readdirSync(BACKUP_DIR);
+    const cutoff = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000);
+    files.forEach(file => {
+      if (file.endsWith('.json')) {
+        const fp = path.join(BACKUP_DIR, file);
+        const stat = fs.statSync(fp);
+        if (stat.mtimeMs < cutoff) {
+          try { fs.unlinkSync(fp); } catch (e) {}
+        }
+      }
+    });
+  } catch (err) {}
+}
+
+let lastAutoBackupSlot = '';
+setInterval(() => {
+  try {
+    const now = new Date();
+    const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const vnTime = new Date(utcMs + (7 * 3600000));
+
+    const hh = vnTime.getHours();
+    const mm = vnTime.getMinutes();
+    const dateStr = `${vnTime.getFullYear()}-${vnTime.getMonth() + 1}-${vnTime.getDate()}`;
+
+    // Auto backup at 12:00 PM and 17:30 PM ICT
+    if ((hh === 12 && mm === 0) || (hh === 17 && mm === 30)) {
+      const currentSlot = `${dateStr}_${hh}_${mm}`;
+      if (lastAutoBackupSlot !== currentSlot) {
+        lastAutoBackupSlot = currentSlot;
+        const slotName = (hh === 12) ? '12h00' : '17h30';
+        createBackupSnapshot('auto_daily', slotName);
+      }
+    }
+  } catch (e) {
+    console.error('[BackupScheduler] Error:', e);
+  }
+}, 45000);
+
+// API: List all backups
+app.get('/api/backups', (req, res) => {
+  try {
+    if (!fs.existsSync(BACKUP_DIR)) {
+      return res.json([]);
+    }
+    const files = fs.readdirSync(BACKUP_DIR).filter(f => f.endsWith('.json'));
+    const list = files.map(file => {
+      const fp = path.join(BACKUP_DIR, file);
+      const stat = fs.statSync(fp);
+      let meta = {
+        type: file.includes('auto') ? 'Khung giờ 12h/17h30' : 'Thủ công',
+        createdAt: stat.mtime.toLocaleString('vi-VN'),
+        timestamp: stat.mtimeMs,
+        totalLeads: 0
+      };
+      try {
+        const raw = fs.readFileSync(fp, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed.backupMeta) meta = parsed.backupMeta;
+      } catch (e) {}
+
+      return {
+        id: file,
+        filename: file,
+        size: stat.size,
+        date: meta.createdAt,
+        type: meta.type || (file.includes('auto') ? 'Khung giờ 12h/17h30' : 'Thủ công'),
+        totalLeads: meta.totalLeads || 0,
+        mtimeMs: stat.mtimeMs
+      };
+    }).sort((a, b) => b.mtimeMs - a.mtimeMs);
+
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Manual backup creation
+app.post('/api/backups/create', async (req, res) => {
+  try {
+    const label = (req.body && req.body.label) ? req.body.label : 'manual';
+    const result = await createBackupSnapshot('manual', label);
+    if (result) {
+      res.json({ success: true, backup: result });
+    } else {
+      res.status(500).json({ error: 'Không thể tạo bản sao lưu' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Restore backup
+app.post('/api/backups/restore', async (req, res) => {
+  try {
+    const filename = req.body ? (req.body.filename || req.body.id) : null;
+    if (!filename) {
+      return res.status(400).json({ error: 'Thiếu tên file sao lưu' });
+    }
+    const fp = path.join(BACKUP_DIR, filename);
+    if (!fs.existsSync(fp)) {
+      return res.status(404).json({ error: 'Bản sao lưu không tồn tại' });
+    }
+
+    const raw = fs.readFileSync(fp, 'utf8');
+    const parsed = JSON.parse(raw);
+    const stateToRestore = parsed.data || parsed;
+
+    if (!stateToRestore || !Array.isArray(stateToRestore.leads) || stateToRestore.leads.length === 0) {
+      return res.status(400).json({ error: 'Dữ liệu bản sao lưu bị trống hoặc không hợp lệ' });
+    }
+
+    stateToRestore.lastUpdated = Date.now();
+    await saveState(stateToRestore);
+
+    res.json({
+      success: true,
+      message: `Đã phục hồi thành công dữ liệu từ bản sao lưu ${filename}!`,
+      restoredLeads: stateToRestore.leads.length
+    });
+  } catch (err) {
+    console.error('Error restoring backup:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// API: Download backup file
+app.get('/api/backups/download/:filename', (req, res) => {
+  try {
+    const filename = req.params.filename;
+    const fp = path.join(BACKUP_DIR, filename);
+    if (!fs.existsSync(fp)) {
+      return res.status(404).send('File không tồn tại');
+    }
+    res.download(fp, filename);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 });
 
 
