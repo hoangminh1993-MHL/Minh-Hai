@@ -1521,7 +1521,7 @@ function renderActiveLeadStepPanel() {
   }
 }
 
-function handleLeadAddStepFile() {
+function handleLeadAddStepFile(customName, customUrl) {
   window.handleLeadAddStepFile = handleLeadAddStepFile;
   let lead = AppState.leads ? AppState.leads.find(l => String(l.id) === String(currentActiveLeadId)) : null;
   if (!lead && AppState.leads && AppState.leads.length > 0) {
@@ -1536,8 +1536,8 @@ function handleLeadAddStepFile() {
   const inputName = document.getElementById('lead-step-file-name');
   const inputUrl = document.getElementById('lead-step-file-url');
   
-  const nameVal = inputName ? inputName.value.trim() : '';
-  const urlVal = inputUrl ? inputUrl.value.trim() : '';
+  const nameVal = (typeof customName === 'string' && customName.trim()) ? customName.trim() : (inputName ? inputName.value.trim() : '');
+  const urlVal = (typeof customUrl === 'string' && customUrl.trim()) ? customUrl.trim() : (inputUrl ? inputUrl.value.trim() : '');
   
   const val = urlVal || nameVal;
   

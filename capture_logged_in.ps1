@@ -53,13 +53,8 @@ try {
                 const testLead = (AppState.leads || []).find(l => l.name === 'test') || (AppState.leads || [])[0];
                 if (testLead) {
                     openLeadDetailModal(testLead.id);
-                    const inp1 = document.getElementById('lead-step-file-name');
-                    const inp2 = document.getElementById('lead-step-file-url');
-                    if (inp1) inp1.value = 'Tai_Lieu_Bao_Gia_Lo_Hang.pdf';
-                    if (inp2) inp2.value = 'https://docs.google.com/document/d/123456';
-                    
                     if (typeof handleLeadAddStepFile === 'function') {
-                        handleLeadAddStepFile();
+                        handleLeadAddStepFile('Tai_Lieu_Bao_Gia_Lo_Hang.pdf', 'https://docs.google.com/document/d/123456');
                     }
                 }
                 
