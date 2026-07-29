@@ -1,4 +1,4 @@
-2026/07/29-21:59:06.091 182c Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
-2026/07/29-21:59:06.102 182c Recovering log #173
-2026/07/29-21:59:06.103 182c (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 1316 bytes; Corruption: checksum mismatch
-2026/07/29-21:59:06.105 182c Reusing old log d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log 
+2026/07/29-22:01:10.672 7bf8 Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/07/29-22:01:10.680 7bf8 Recovering log #173
+2026/07/29-22:01:10.681 7bf8 (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 1808 bytes; Corruption: checksum mismatch
+2026/07/29-22:01:10.683 7bf8 Reusing old log d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log 

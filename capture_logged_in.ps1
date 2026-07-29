@@ -67,10 +67,11 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Render native CRM board and capture detailed diagnostic info
-        Write-Output "Populating AppState.leads and rendering native CRM board..."
+        # 4. Render native CRM board and capture exact throw stack
+        Write-Output "Populating AppState.leads and evaluating renderCRMBoard..."
         $crdJs = @"
             (async () => {
+                let errLog = [];
                 try {
                     const res = await fetch('/api/state');
                     if (res.ok) {
@@ -80,31 +81,29 @@ try {
                             AppState.users = data.users || AppState.users;
                         }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    errLog.push('fetch error: ' + e.message);
+                }
                 
-                AppState.crmViewMode = 'board';
-                if (typeof navigateToView === 'function') navigateToView('crm');
-                if (typeof renderCRMBoard === 'function') renderCRMBoard();
-                
+                try {
+                    renderCRMBoard();
+                } catch (e) {
+                    errLog.push('renderCRMBoard throw: ' + (e.stack || e.message));
+                }
+
                 const containers = document.querySelectorAll('.kanban-cards-container');
                 let totalCardsInDom = 0;
                 containers.forEach(c => { totalCardsInDom += c.children.length; });
 
-                const sampleLeadStage = (AppState.leads && AppState.leads.length > 0) ? AppState.leads[0].stage : 'none';
-                const sampleContainer = document.querySelector('.kanban-cards-container[data-stage="' + sampleLeadStage + '"]');
-
                 return JSON.stringify({
                     totalLeads: (typeof AppState !== 'undefined' && AppState.leads) ? AppState.leads.length : 0,
-                    lastFilteredCount: window.lastFilteredCount,
-                    sampleLeadStage: sampleLeadStage,
-                    sampleContainerFound: Boolean(sampleContainer),
                     totalCardsInDom: totalCardsInDom,
-                    lastCRMError: window.lastCRMError
+                    errLog: errLog
                 });
             })()
 "@
         $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $crdJs; awaitPromise = $true }
-        Write-Output "Render Eval Diagnostic Response: $($res4.result.result.value)"
+        Write-Output "Render Eval Response: $($res4.result.result.value)"
 
         Start-Sleep -Seconds 3
 

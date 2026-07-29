@@ -671,6 +671,7 @@ function renderCRMBoard() {
     window.lastCRMError = String(err.stack || err.message || err);
   }
 }
+window.renderCRMBoard = renderCRMBoard;
 
 // ==================== DRAG & DROP LOGIC ==================== //
 function handleLeadMove(leadId, targetStage) {
