@@ -3750,7 +3750,7 @@ window.openProjectDedicatedView = function(projId) {
 
   currentActiveProjectId = projId;
 
-  const nameEl = document.getElementById('active-project-name') || document.getElementById('dedicated-project-name');
+  const nameEl = document.getElementById('active-project-name');
   if (nameEl) nameEl.innerText = p.name;
   
   const manager = AppState.users.find(u => u.id === p.managerId);
@@ -3768,14 +3768,11 @@ window.openProjectDedicatedView = function(projId) {
   if (membersEl) membersEl.innerText = membersNames || 'Không có';
   
   const statusEl = document.getElementById('active-project-status');
-  if (statusEl) statusEl.innerText = p.status || 'Đang chuẩn bị';
+  if (statusEl) statusEl.innerText = p.status ? p.status.toUpperCase() : 'ĐANG HOẠT ĐỘNG';
 
   const typeEl = document.getElementById('active-project-type');
-  if (typeEl) typeEl.innerText = 'Loại: ' + (p.type || 'Phòng ban');
-  
-  const metaEl = document.getElementById('dedicated-project-meta');
-  if (metaEl) metaEl.innerText = 'Quản lý: ' + managerName + ' | Thành viên: ' + (membersNames || 'Không có');
-  
+  if (typeEl) typeEl.innerText = (p.type || 'Phòng Ban').toUpperCase();
+
   const viewMode = document.getElementById('project-desc-view-mode');
   const editMode = document.getElementById('project-desc-edit-mode');
   const btnEditDesc = document.getElementById('btn-edit-project-desc');
@@ -3784,19 +3781,23 @@ window.openProjectDedicatedView = function(projId) {
   if (btnEditDesc) btnEditDesc.style.display = '';
 
   const descEl = document.getElementById('dedicated-project-desc');
-  if (descEl) descEl.innerText = (p.desc || 'Không có mô tả chi tiết.') + (p.notes ? `\nLưu ý: ${p.notes}` : '');
+  if (descEl) descEl.innerText = (p.desc || 'Không có mô tả chi tiết.') + (p.notes ? `\n\nLưu ý: ${p.notes}` : '');
 
   const projTasks = (AppState.single_tasks || []).filter(t => t.projectId === projId);
   const totalTasks = projTasks.length;
   const completedTasks = projTasks.filter(t => t.status === 'completed').length;
   const percent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
   
+  const badgeEl = document.getElementById('dedicated-project-tasks-count-badge');
+  if (badgeEl) badgeEl.innerText = `${totalTasks} Việc`;
+
   const percentEl = document.getElementById('dedicated-project-progress-percent');
   if (percentEl) percentEl.innerText = `${percent}%`;
   
   const barEl = document.getElementById('dedicated-project-progress-bar');
   if (barEl) barEl.style.width = `${percent}%`;
 
+  // Render Tasks List prominently
   const tasksContainer = document.getElementById('dedicated-project-tasks-list');
   if (tasksContainer) {
     tasksContainer.innerHTML = '';
@@ -3820,15 +3821,30 @@ window.openProjectDedicatedView = function(projId) {
       overdue: 'Quá hạn',
       canceled: 'Đã hủy'
     };
+
     if (projTasks.length === 0) {
-      tasksContainer.innerHTML = `<span class="text-muted" style="font-size: 12px; font-style: italic; text-align: center; padding: 15px 0; width: 100%;">Chưa có công việc nào trong dự án này.</span>`;
+      tasksContainer.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; background: #111827; border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1);">
+          <i class="fa-solid fa-clipboard-list" style="font-size: 36px; color: #475569; margin-bottom: 12px; display: block;"></i>
+          <span style="font-size: 14px; color: #94a3b8; font-weight: 500;">Chưa có công việc nào được giao trong phòng ban này.</span>
+          <br>
+          <button class="btn btn-sm btn-primary" onclick="openGlobalAddOpsTaskModal(true)" style="margin-top: 14px; padding: 8px 16px; font-size: 13px; font-weight: 600;"><i class="fa-solid fa-plus"></i> Giao Việc Ngay</button>
+        </div>
+      `;
     } else {
+      const fragment = document.createDocumentFragment();
       projTasks.forEach(task => {
-        const div = document.createElement('div');
-        div.className = 'project-task-card';
+        const card = document.createElement('div');
+        card.style.cssText = 'background: #1e293b; border: 1px solid rgba(255,255,255,0.08); border-left: 4px solid #f59e0b; border-radius: 10px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+        
         const isCompleted = task.status === 'completed';
-        const completeButton = isCompleted ? '' : `
-          <button class="btn btn-xs btn-primary" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 2px 6px; font-size: 10px; display: inline-flex; align-items: center; gap: 2px; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 4px; background: #059669; cursor: pointer; color: white;">
+        if (isCompleted) {
+          card.style.borderLeftColor = '#10b981';
+          card.style.opacity = '0.75';
+        }
+
+        const completeBtn = isCompleted ? '' : `
+          <button class="btn btn-sm" onclick="handleQuickCompleteTask(event, '${task.id}')" style="padding: 6px 12px; font-size: 11.5px; font-weight: 700; background: #059669; border: none; border-radius: 6px; color: white; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(5,150,105,0.3);">
             <i class="fa-solid fa-check"></i> Xong
           </button>
         `;
@@ -3836,24 +3852,31 @@ window.openProjectDedicatedView = function(projId) {
         const assigneeUser = AppState.users.find(u => u.id === task.assigneeId);
         const assigneeName = assigneeUser ? assigneeUser.name : 'Chưa giao';
 
-        div.innerHTML = `
-          <div>
-            <strong>${task.title}</strong>
-            <div style="font-size: 11px; opacity:0.8; margin-top:3px;">${task.desc || 'Không có mô tả'}</div>
-            <div style="font-size: 11px; color: var(--color-primary); margin-top:3px;"><i class="fa-solid fa-user-gear"></i> Phụ trách: <strong>${assigneeName}</strong></div>
+        card.innerHTML = `
+          <div style="flex: 1; margin-right: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+              <strong style="font-size: 15.5px; font-weight: 700; color: #f8fafc; line-height: 1.3;">${task.title}</strong>
+              <span class="badge ${statusColors[task.status] || 'bg-blue'}" style="font-size: 10.5px; font-weight: 600; padding: 3px 8px;">${statusLabels[task.status] || task.status}</span>
+            </div>
+            ${task.desc ? `<div style="font-size: 12.5px; color: #cbd5e1; margin-bottom: 6px; line-height: 1.4;">${task.desc}</div>` : ''}
+            <div style="display: flex; gap: 14px; font-size: 12px; color: #94a3b8; align-items: center; margin-top: 6px;">
+              <span><i class="fa-solid fa-user-gear" style="color: #f59e0b; margin-right: 4px;"></i> Phụ trách: <strong style="color: #38bdf8;">${assigneeName}</strong></span>
+              <span style="color: rgba(255,255,255,0.2);">|</span>
+              <span><i class="fa-solid fa-calendar-day" style="color: #ef4444; margin-right: 4px;"></i> Hạn chót: <strong style="color: #f8fafc;">${task.deadline || 'Chưa thiết lập'}</strong></span>
+            </div>
           </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            ${completeButton}
-            <span class="badge ${statusColors[task.status] || ''}" style="font-size:9.5px;">${statusLabels[task.status] || task.status}</span>
-            <span style="font-size: 10.5px; color: var(--text-muted);"><i class="fa-solid fa-calendar-day"></i> ${task.deadline || 'Hạn: -'}</span>
+          <div style="display: flex; align-items: center; gap: 10px;" onclick="event.stopPropagation();">
+            ${completeBtn}
+            <button class="btn btn-sm btn-outline" onclick="openOpsTaskDetail('${task.id}')" style="padding: 6px 12px; font-size: 11.5px; border-color: rgba(255,255,255,0.15); color: #cbd5e1;"><i class="fa-solid fa-eye"></i> Xem</button>
           </div>
         `;
-        div.onclick = (e) => {
-          e.stopPropagation();
+
+        card.onclick = () => {
           if (typeof openOpsTaskDetail === 'function') openOpsTaskDetail(task.id);
         };
-        tasksContainer.appendChild(div);
+        fragment.appendChild(card);
       });
+      tasksContainer.appendChild(fragment);
     }
   }
 
@@ -3954,6 +3977,27 @@ function renderDedicatedProjectDiscussion(p) {
 
 // Bind dedicated project action buttons
 document.addEventListener('DOMContentLoaded', () => {
+  // Sidebar Tabs (Tài liệu, Thảo luận, Ghi chú)
+  document.querySelectorAll('.project-sidebar-tab-btn').forEach(btn => {
+    btn.onclick = () => {
+      const tab = btn.getAttribute('data-tab');
+      document.querySelectorAll('.project-sidebar-tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.style.color = '#94a3b8';
+        b.style.borderBottomColor = 'transparent';
+      });
+      btn.classList.add('active');
+      btn.style.color = '#f59e0b';
+      btn.style.borderBottomColor = '#f59e0b';
+
+      document.querySelectorAll('.project-sidebar-panel').forEach(panel => {
+        panel.style.display = 'none';
+      });
+      const activePanel = document.getElementById(`project-sidebar-panel-${tab}`);
+      if (activePanel) activePanel.style.display = 'flex';
+    };
+  });
+
   const btnBack = document.getElementById('btn-back-to-projects-list');
   if (btnBack) {
     btnBack.onclick = () => {
