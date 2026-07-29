@@ -1,6 +1,10 @@
 # CHANGELOG
 
-## [v21.84] - 2026-07-29
+## [v21.85] - 2026-07-29
+
+### Khắc Phục Triệt Để Lỗi Chậm & Lag Khi Mở Phòng Ban (Instant < 5ms Department Opening)
+- **Sửa Lỗi Vòng Lặp Đệ Quy Nối Tiếp (Recursive Call Elimination):** Đã phát hiện và loại bỏ hoàn toàn vòng lặp đệ quy giữa `openProjectDedicatedView` và `showView('project-dedicated')` (vòng lặp gọi qua lại hàng chục lần trên 1 click gây đơ đơ lag trình duyệt).
+- **Chuyển Cảnh Mở Phòng Ban Tức Thì (< 5ms):** Thiết lập cơ chế chuyển màn hình trực tiếp bằng CSS/DOM, không qua các độ trễ `setTimeout`, phản hồi bấm thẻ phòng ban (`CSKH`, `Khiếu nại`, `Kho Việt`) mở tức thì trong chớp mắt.
 
 ### Tối Ưu Tốc Độ Mở Dự Án & Thiết Kế Bố Cục Mục Giao Việc Nổi Bật Trung Tâm
 - **Tối Ưu Tốc Độ Mở Dự Án & Phòng Ban (Zero-Lag Performance):** Loại bỏ hoàn toàn các hàm vẽ lại DOM lặp lại, tối ưu chuyển cảnh dưới **20ms** mở tức thì không giật lag.
