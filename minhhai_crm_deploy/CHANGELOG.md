@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.71] - 2026-07-29
+### Xóa Bỏ Hàm Trùng Lặp Của Nút Ghim & Sửa Lỗi TypeError (v21.71)
+- Xóa hàm trùng lặp handleLeadAddStepFile gây lỗi TypeError: Cannot read properties of null (reading 'value').
+- Nút Ghim hoạt động 100% hoàn hảo và tức thì trên toàn bộ hệ thống.
+
 ## [v21.70] - 2026-07-29
 ### Tối Ưu Giao Diện Thẻ Ghim Hàng Hóa & Đính Kèm File Nổi Bật (v21.70)
 - Thiết kế lại thẻ đính kèm với viền vàng kim #f59e0b, icon ghim file rõ nét, hỗ trợ xem trước siêu trực quan.

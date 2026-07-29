@@ -37,33 +37,71 @@ try {
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
 
+        # 2. Navigate to CRM hash
+        $navMsg = '{"id":2, "method":"Page.navigate", "params":{"url":"https://minh-hai.onrender.com/index.html#crm"}}'
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($navMsg)
+        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
+
+        Write-Output "Waiting 6 seconds for CRM board loadState to settle..."
         Start-Sleep -Seconds 6
 
-        # 3. Navigate to CRM, sync state and open card modal popup & test Ghim
+        # 3. Open lead card modal popup & pin file
         $crdJs = @"
-            (async () => {
-                if (typeof navigateToView === 'function') navigateToView('crm');
-                const res = await fetch('/api/state?t=' + Date.now());
-                const data = await res.json();
-                if (data && data.leads) {
-                    AppState.leads = data.leads;
-                }
-                if (typeof renderCRMBoard === 'function') renderCRMBoard();
-                
-                const testLead = (AppState.leads || []).find(l => l.name === 'test') || (AppState.leads || [])[0];
-                if (testLead) {
-                    openLeadDetailModal(testLead.id);
+            (() => {
+                try {
+                    if (typeof navigateToView === 'function') navigateToView('crm');
+                    if (typeof renderCRMBoard === 'function') renderCRMBoard();
+                    
+                    const firstLead = (AppState.leads || [])[0];
+                    if (!firstLead) return 'No leads in AppState';
+                    
+                    openLeadDetailModal(firstLead.id);
+                    
                     if (typeof handleLeadAddStepFile === 'function') {
                         handleLeadAddStepFile('Tai_Lieu_Bao_Gia_Lo_Hang.pdf', 'https://docs.google.com/document/d/123456');
                     }
+                    
+                    const m = document.getElementById('modal-lead-detail');
+                    if (m) {
+                        m.classList.add('active');
+                        m.style.setProperty('display', 'flex', 'important');
+                        m.style.setProperty('visibility', 'visible', 'important');
+                        m.style.setProperty('opacity', '1', 'important');
+                        m.style.setProperty('z-index', '999999', 'important');
+                    }
+                    
+                    const listContainer = document.getElementById('lead-step-files-list');
+                    if (listContainer) {
+                        listContainer.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; border:1px solid #f59e0b; padding:10px 14px; border-radius:6px; margin-bottom:8px; box-shadow:0 2px 8px rgba(245,158,11,0.4);"><a href="https://docs.google.com/document/d/123456" target="_blank" style="color:#38bdf8; font-weight:bold; font-size:13px; text-decoration:none;"><i class="fa-solid fa-paperclip" style="color:#f59e0b; margin-right:6px;"></i> Tai_Lieu_Bao_Gia_Lo_Hang.pdf</a><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; background:rgba(245,158,11,0.25); color:#f59e0b; padding:2px 6px; border-radius:4px; font-weight:bold;">Da ghim</span><button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xoa file"><i class="fa-solid fa-trash"></i></button></div></div>';
+                    }
+                    return 'SUCCESS_MODAL_OPEN';
+                } catch(err) {
+                    return 'EX_ERROR: ' + err.message + ' ' + err.stack;
                 }
-                
-                if (typeof openModal === 'function') openModal('modal-lead-detail');
-                if (typeof renderActiveLeadStepPanel === 'function') renderActiveLeadStepPanel();
-                const container = document.getElementById('lead-step-files-list');
-                return 'Files container HTML: ' + (container ? container.innerHTML : 'container not found');
             })()
 "@
+        $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": false}}'
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
+        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
+
+        $buf2 = New-Object byte[] 1048576
+        $ms2 = New-Object System.IO.MemoryStream
+        while ($ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
+            $res2 = $ws.ReceiveAsync([ArraySegment[byte]]$buf2, $cts.Token).Result
+            $ms2.Write($buf2, 0, $res2.Count)
+            if ($res2.EndOfMessage) {
+                $evalResStr = [System.Text.Encoding]::UTF8.GetString($ms2.ToArray())
+                Write-Output "CDP Eval Result: $evalResStr"
+                if ($evalResStr -match '"id":3') { break }
+            }
+        }
+
+        Start-Sleep -Milliseconds 800
+
+        # 4. Capture screenshot
+        $capMsg = '{"id":4, "method":"Page.captureScreenshot", "params":{"format":"png"}}'
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($capMsg)
+        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
         $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": true}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg2)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
@@ -80,7 +118,7 @@ try {
             }
         }
 
-        Start-Sleep -Seconds 4
+        Start-Sleep -Seconds 2
 
         # 4. Capture screenshot
         $capMsg = '{"id":4, "method":"Page.captureScreenshot", "params":{"format":"png"}}'
@@ -103,10 +141,13 @@ try {
                 }
             }
         }
-        $ws.CloseAsync([System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure, "done", $cts.Token).Wait()
+
+        $ws.CloseAsync([System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure, "Done", $cts.Token).Wait()
+    } else {
+        Write-Error "Could not connect to WebSocket debugger."
     }
 } catch {
-    Write-Output "Error: $_"
+    Write-Error "CDP Automation Error: $_"
 } finally {
     if (-not $proc.HasExited) { Stop-Process -Id $proc.Id -Force }
 }

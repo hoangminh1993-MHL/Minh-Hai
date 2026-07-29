@@ -1921,34 +1921,7 @@ function handleLeadAddStepChecklistItem() {
   renderActiveLeadStepPanel();
 }
 
-function handleLeadAddStepFile() {
-  const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
-  if (!lead) return;
-
-  const nameInput = document.getElementById('lead-step-new-file-name');
-  const urlInput = document.getElementById('lead-step-new-file-url');
-
-  const name = nameInput.value.trim();
-  const url = urlInput.value.trim();
-
-  if (!url) {
-    alert("Vui lòng nhập đường dẫn liên kết URL!");
-    return;
-  }
-  const finalName = name || (lead.stage === 'quotation' ? "Ảnh báo giá" : "Tài liệu đính kèm");
-
-  lead.files = lead.files || [];
-  lead.files.push({
-    name: finalName,
-    url: url,
-    date: formatDateTime(new Date()).substring(0, 10)
-  });
-
-  nameInput.value = '';
-  urlInput.value = '';
-  saveState();
-  renderActiveLeadStepPanel();
-}
+// Redundant duplicate handleLeadAddStepFile removed - main robust version is active above.
 
 function handleLeadAddStepComment() {
   const lead = AppState.leads.find(l => l.id === currentActiveLeadId);
