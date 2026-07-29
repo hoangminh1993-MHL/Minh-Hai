@@ -2,13 +2,17 @@
 function cleanVietnameseText(str) {
   if (!str || typeof str !== 'string') return str || '';
   if (typeof sanitizeVietnameseString === 'function') return sanitizeVietnameseString(str);
+  if (typeof sanitizeText === 'function') return sanitizeText(str);
   return str;
 }
 function formatRmb(v) { return v ? '¥' + Number(v).toLocaleString('vi-VN') : ''; }
 function formatVnd(v) { return v ? Number(v).toLocaleString('vi-VN') + 'đ' : ''; }
 
+window.cleanVietnameseText = cleanVietnameseText;
+window.formatRmb = formatRmb;
+window.formatVnd = formatVnd;
+
 document.addEventListener('DOMContentLoaded', () => {
-  window.renderCRMBoard = renderCRMBoard;
   initCRMEvents();
   if (typeof renderCRMBoard === 'function') renderCRMBoard();
 });
@@ -28,17 +32,10 @@ function getCurrentUser() {
   return { id: 'usr-1', name: 'Nguyễn Hoàng Minh', role: 'admin', username: 'hoangminh' };
 }
 
-function cleanVietnameseText(text) {
+function sanitizeText(text) {
   if (!text || typeof text !== 'string') return text || '';
   let s = text.trim();
-  s = s.replace(/C├fần tà┴╝m ngu├fuoồn haáng ruy bΓöÇóing decor 15\/6: Lv với\.\.\./g, 'Cần tìm nguồn hàng ruy băng decor. 15/6: Lv với xưởng ruy băng và lưới Kh gửi')
-       .replace(/C├fần tà┴╝m ngu├fuoồn haáng ruy bΓöÇóing decor/g, 'Cần tìm nguồn hàng ruy băng decor')
-       .replace(/Nhà ╞Æô║║ ║ªΓö¼íp s║ô║║H║║túåtíp vuà ╞Æô║║ ║ªùa┬¬t t ô║║H║║túô║║H║║r-\.\.\.\./g, 'Nhập sáp vuốt tóc. Đang làm tự công bố ở VN : dự kiến 1,5 tháng nữa mới xong. Sau khi xong mới có thể nhập hàng')
-       .replace(/Nhà ╞Æô║║ ║ª[\s\S]*?/g, 'Nhập sáp vuốt tóc. Đang làm tự công bố ở VN')
-       .replace(/Hu├íng Phạm/g, 'Hương Phạm').replace(/Hu├íng Phạ/g, 'Hương Phạm').replace(/Hu ├íng Phạm/g, 'Hương Phạm').replace(/Hu ├íng Phạ/g, 'Hương Phạm')
-       .replace(/KH yà┬¼u c├fẩu : HΓòPtΓûæờng d├fòæ┴╝n tạo tk app cty/g, 'KH yêu cầu : Hướng dẫn tạo tài khoản app công ty')
-       .replace(/KH yà┬¼u c├fẩu : HΓòPt[\s\S]*?/g, 'KH yêu cầu : Hướng dẫn tạo tài khoản app công ty')
-       .replace(/ΓöÇ├ëang xin sΓöÇÖc h├fÒùu triệu\. ΓöÇ├ëang g├fÒù┬íi/g, 'Đang xin số điện thoại hỗ trợ. Đã gửi báo giá.')
+  s = s.replace(/ΓöÇ├ëang xin sΓöÇÖc h├fÒùu triệu\. ΓöÇ├ëang g├fÒù┬íi/g, 'Đang xin số điện thoại hỗ trợ. Đã gửi báo giá.')
        .replace(/ΓöÇ├ëang xin sΓöÇÖc[\s\S]*?/g, 'Đang xin số điện thoại hỗ trợ.')
        .replace(/\[Tin nhß║»n tß╗½ Fanpage\]:/g, '[Tin nhắn từ Fanpage]:')
        .replace(/Huyun Sky/g, 'Huyền Sky')

@@ -67,45 +67,32 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Render native CRM board and capture exact throw stack
-        Write-Output "Populating AppState.leads and evaluating renderCRMBoard..."
+        # 4. Parse crm.js with new Function(code) to catch exact syntax error
+        Write-Output "Checking crm.js parse syntax in browser..."
         $crdJs = @"
             (async () => {
-                let errLog = [];
+                let parseErr = null;
                 try {
-                    const res = await fetch('/api/state');
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.leads && data.leads.length > 0) {
-                            AppState.leads = data.leads;
-                            AppState.users = data.users || AppState.users;
-                        }
+                    const res = await fetch('crm.js?t=' + Date.now());
+                    const code = await res.text();
+                    try {
+                        new Function(code);
+                    } catch(e) {
+                        parseErr = e.stack || e.message;
                     }
-                } catch (e) {
-                    errLog.push('fetch error: ' + e.message);
+                } catch(e) {
+                    parseErr = 'fetch error: ' + e.message;
                 }
-                
-                try {
-                    renderCRMBoard();
-                } catch (e) {
-                    errLog.push('renderCRMBoard throw: ' + (e.stack || e.message));
-                }
-
-                const containers = document.querySelectorAll('.kanban-cards-container');
-                let totalCardsInDom = 0;
-                containers.forEach(c => { totalCardsInDom += c.children.length; });
 
                 return JSON.stringify({
-                    totalLeads: (typeof AppState !== 'undefined' && AppState.leads) ? AppState.leads.length : 0,
-                    totalCardsInDom: totalCardsInDom,
-                    errLog: errLog
+                    parseErr: parseErr
                 });
             })()
 "@
         $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $crdJs; awaitPromise = $true }
-        Write-Output "Render Eval Response: $($res4.result.result.value)"
+        Write-Output "Parse Syntax Eval Response: $($res4.result.result.value)"
 
-        Start-Sleep -Seconds 3
+        Start-Sleep -Seconds 2
 
         # 5. Capture screenshot
         Write-Output "Capturing screenshot..."
