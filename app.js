@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.77';
+  const CURRENT_APP_VER = 'v21.78';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -337,19 +337,100 @@ async function syncLoadState() {
       const localLeads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
       const serverLeads = data.leads || [];
       const leadMap = new Map();
-      
-      // 1. Put server leads first
-      serverLeads.forEach(l => { if (l && l.id) leadMap.set(String(l.id), l); });
-      
-      // 2. Preserve any local leads not on server yet (e.g. newly created lead)
+
+      // Deep lead merger to prevent losing local files/comments/notes on page reload
+      const mergeLeadObjects = (sLead, lLead) => {
+        if (!sLead) return lLead;
+        if (!lLead) return sLead;
+
+        const merged = { ...sLead, ...lLead };
+
+        // Merge lead-level files
+        const sFiles = Array.isArray(sLead.files) ? sLead.files : [];
+        const lFiles = Array.isArray(lLead.files) ? lLead.files : [];
+        const fMap = new Map();
+        sFiles.forEach(f => { if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
+        lFiles.forEach(f => { if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
+        merged.files = Array.from(fMap.values());
+
+        // Merge steps (files, comments, checklists)
+        const sSteps = Array.isArray(sLead.steps) ? sLead.steps : [];
+        const lSteps = Array.isArray(lLead.steps) ? lLead.steps : [];
+        const stepMap = new Map();
+
+        sSteps.forEach(s => { if (s && s.stepNum) stepMap.set(s.stepNum, s); });
+        lSteps.forEach(ls => {
+          if (!ls || !ls.stepNum) return;
+          const ss = stepMap.get(ls.stepNum);
+          if (!ss) {
+            stepMap.set(ls.stepNum, ls);
+          } else {
+            const mergedStep = { ...ss, ...ls };
+
+            const sStepFiles = Array.isArray(ss.files) ? ss.files : [];
+            const lStepFiles = Array.isArray(ls.files) ? ls.files : [];
+            const stFMap = new Map();
+            sStepFiles.forEach(f => { if (f) stFMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
+            lStepFiles.forEach(f => { if (f) stFMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
+            mergedStep.files = Array.from(stFMap.values());
+
+            const sComments = Array.isArray(ss.comments) ? ss.comments : [];
+            const lComments = Array.isArray(ls.comments) ? ls.comments : [];
+            const commMap = new Map();
+            sComments.forEach(c => { if (c) commMap.set((c.user || '') + '|' + (c.text || '') + '|' + (c.date || ''), c); });
+            lComments.forEach(c => { if (c) commMap.set((c.user || '') + '|' + (c.text || '') + '|' + (c.date || ''), c); });
+            mergedStep.comments = Array.from(commMap.values());
+
+            const sChk = Array.isArray(ss.checklist) ? ss.checklist : [];
+            const lChk = Array.isArray(ls.checklist) ? ls.checklist : [];
+            const chkMap = new Map();
+            sChk.forEach(c => { if (c) chkMap.set(c.text || c, c); });
+            lChk.forEach(c => {
+              if (!c) return;
+              const k = c.text || c;
+              const existing = chkMap.get(k);
+              if (!existing) {
+                chkMap.set(k, c);
+              } else if (typeof c === 'object') {
+                chkMap.set(k, { ...existing, ...c });
+              }
+            });
+            mergedStep.checklist = Array.from(chkMap.values());
+
+            stepMap.set(ls.stepNum, mergedStep);
+          }
+        });
+
+        merged.steps = Array.from(stepMap.values());
+        return merged;
+      };
+
       let hasNewLocalLead = false;
-      localLeads.forEach(l => {
-        if (l && l.id && !leadMap.has(String(l.id))) {
-          leadMap.set(String(l.id), l);
+      const localLeadMap = new Map();
+      localLeads.forEach(l => { if (l && l.id) localLeadMap.set(String(l.id), l); });
+
+      serverLeads.forEach(sLead => {
+        if (!sLead || !sLead.id) return;
+        const sId = String(sLead.id);
+        const lLead = localLeadMap.get(sId);
+        if (lLead) {
+          const merged = mergeLeadObjects(sLead, lLead);
+          leadMap.set(sId, merged);
+          hasNewLocalLead = true;
+        } else {
+          leadMap.set(sId, sLead);
+        }
+      });
+
+      localLeads.forEach(lLead => {
+        if (!lLead || !lLead.id) return;
+        const lId = String(lLead.id);
+        if (!leadMap.has(lId)) {
+          leadMap.set(lId, lLead);
           hasNewLocalLead = true;
         }
       });
-      
+
       AppState.leads = Array.from(leadMap.values());
       
       AppState.tasks = data.tasks || [];
@@ -599,7 +680,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.77';
+const CLIENT_VERSION = '21.78';
 
 async function checkCodeVersionUpdate() {
   try {

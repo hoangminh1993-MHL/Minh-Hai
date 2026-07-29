@@ -1,4 +1,8 @@
-2026/07/29-22:16:05.010 8f5c Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
-2026/07/29-22:16:05.020 8f5c Recovering log #173
-2026/07/29-22:16:05.021 8f5c (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 4268 bytes; Corruption: checksum mismatch
-2026/07/29-22:16:05.024 8f5c Reusing old log d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log 
+2026/07/29-23:08:10.548 8b28 Reusing MANIFEST d:\antigravity\edge_profile\Default\Local Storage\leveldb/MANIFEST-000001
+2026/07/29-23:08:10.555 8b28 Recovering log #173
+2026/07/29-23:08:10.555 8b28 (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 28374 bytes; Corruption: checksum mismatch
+2026/07/29-23:08:10.556 8b28 (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 32761 bytes; Corruption: missing start of fragmented record(1)
+2026/07/29-23:08:10.556 8b28 (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 32761 bytes; Corruption: missing start of fragmented record(1)
+2026/07/29-23:08:10.556 8b28 (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 32761 bytes; Corruption: missing start of fragmented record(1)
+2026/07/29-23:08:10.556 8b28 (ignoring error) d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log: dropping 8020 bytes; Corruption: missing start of fragmented record(2)
+2026/07/29-23:08:10.557 8b28 Reusing old log d:\antigravity\edge_profile\Default\Local Storage\leveldb/000173.log 
