@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## [v21.82] - 2026-07-29
+## [v21.83] - 2026-07-29
+
+### Khắc Phục Lỗi Không Bấm Mở Được Thẻ Dự Án & Phòng Ban (CSKH, Khiếu Nại, Kho Việt)
+- **Kích Hoạt Sự Kiện Bấm Thẻ Phòng Ban (Project Card Click Handler):** Đã khắc phục triệt để sự kiện click trên các thẻ phòng ban/dự án (`CSKH`, `Khiếu nại`, `Kho Việt`) trong mục **Dự Án & Phòng Ban**. Khi bấm vào thẻ, hệ thống lập tức mở giao diện quản lý chuyên biệt (`#view-project-dedicated`).
+- **Nút Quay Lại Nhanh (Back Navigation):** Bổ sung sự kiện cho nút **"Quay lại"** trên góc trái màn hình dự án chuyên biệt giúp người dùng dễ dàng trở về danh sách dự án & phòng ban.
+- **Bảo Vệ Lỗi Null (Defensive Guards):** Thêm kiểm tra phòng vệ cho các phần tử DOM (`docsContainer`, `tasksContainer`, `discussionContainer`) tránh lỗi JavaScript ngầm.
 
 ### CRM Vận Hành - Phục Hồi Đầy Đủ Dữ Liệu Tháng 7
 - **Quét & Khôi Phục Dữ Liệu Vận Hành Lịch Sử (Operational CRM Recovery):** Đã trích xuất và tổng hợp toàn bộ hồ sơ khách hàng cũ (`clients`), dự án vận hành (`projects`), quy trình vận chuyển lô hàng (`shipment_workflows`), và công việc đơn lẻ (`single_tasks`) đã nhập trong tháng 7 từ lịch sử cơ sở dữ liệu.

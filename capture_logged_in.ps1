@@ -59,29 +59,30 @@ try {
         $res2 = Send-CdpMsg $ws 2 "Runtime.evaluate" @{ expression = $loginJs }
         Write-Output "Session Injection Result: $($res2.result.result.value)"
 
-        # 3. Navigate to Operational CRM page (#crm-clients-workflows)
-        Write-Output "Navigating to index.html#crm-clients-workflows..."
-        Send-CdpMsg $ws 3 "Page.navigate" @{ url = "https://minh-hai.onrender.com/index.html#crm-clients-workflows" } | Out-Null
+        # 3. Navigate to Project/Department page (#tasks-projects)
+        Write-Output "Navigating to index.html#tasks-projects..."
+        Send-CdpMsg $ws 3 "Page.navigate" @{ url = "https://minh-hai.onrender.com/index.html#tasks-projects" } | Out-Null
         
-        Write-Output "Waiting 8 seconds for page load & initial sync..."
+        Write-Output "Waiting 8 seconds for page load..."
         Start-Sleep -Seconds 8
 
-        # 4. Verify restored Operational CRM data
-        $opsJs = @"
+        # 4. Click on 'Kho Việt' department card
+        Write-Output "Clicking on 'Kho Việt' department card..."
+        $clickJs = @"
             (() => {
-                if (typeof showView === 'function') showView('crm-clients-workflows');
-                if (typeof renderOpsKanban === 'function') renderOpsKanban();
-                
-                return JSON.stringify({
-                    clientsCount: AppState.clients ? AppState.clients.length : 0,
-                    projectsCount: AppState.projects ? AppState.projects.length : 0,
-                    workflowsCount: AppState.shipment_workflows ? AppState.shipment_workflows.length : 0,
-                    singleTasksCount: AppState.single_tasks ? AppState.single_tasks.length : 0
+                const cards = document.querySelectorAll('.project-card-item');
+                let clickedName = 'NONE';
+                cards.forEach(card => {
+                    if (card.innerText.includes('Kho Việt') || card.innerText.includes('CSKH')) {
+                        card.click();
+                        clickedName = card.innerText;
+                    }
                 });
+                return 'CLICKED: ' + clickedName;
             })()
 "@
-        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $opsJs }
-        Write-Output "Operational CRM Verification Result: $($res4.result.result.value)"
+        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $clickJs }
+        Write-Output "Click Result: $($res4.result.result.value)"
 
         Start-Sleep -Seconds 3
 
