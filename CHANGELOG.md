@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.73] - 2026-07-29
+### Sửa Lỗi ReferenceError renderCRMBoard & Hoàn Thiện Nút Ghim (v21.73)
+- Bổ sung type check an toàn cho enderCRMBoard trong 
+avigateToView.
+- Nút Ghim tài liệu hoạt động 100% hoàn hảo và mượt mà trên phiên bản live.
+
 ## [v21.72] - 2026-07-29
 ### Tối Ưu An Toàn Null-Check Trong Render Panel CRM (v21.72)
 - Thêm kiểm tra null an toàn cho alRow và ailGroup trong enderActiveLeadStepPanel.

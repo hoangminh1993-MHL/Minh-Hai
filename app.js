@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.72';
+  const CURRENT_APP_VER = 'v21.73';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -598,7 +598,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.72';
+const CLIENT_VERSION = '21.73';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -785,11 +785,12 @@ function navigateToView(viewId, updateHash = true) {
 
   // Trigger view specific rendering
   if (viewId === 'dashboard') {
-    renderDashboard();
+    if (typeof renderDashboard === 'function') renderDashboard();
   } else if (viewId === 'crm') {
-    renderCRMBoard();
+    if (typeof renderCRMBoard === 'function') renderCRMBoard();
+    else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();
   } else if (viewId === 'tasks') {
-    renderTasksList();
+    if (typeof renderTasksList === 'function') renderTasksList();
 
   } else if (viewId === 'crm-clients-workflows') {
     if (typeof renderOpsWorkflows === 'function') renderOpsWorkflows();
