@@ -19,70 +19,51 @@ try {
         $cts = New-Object System.Threading.CancellationTokenSource
         $ws.ConnectAsync([Uri]$wsUrl, $cts.Token).Wait()
 
-        # 1. Navigate to login page
-        $navMsg = '{"id":1, "method":"Page.navigate", "params":{"url":"https://minh-hai.onrender.com/login.html"}}'
+        # 1. Navigate to index page
+        $navMsg = '{"id":1, "method":"Page.navigate", "params":{"url":"https://minh-hai.onrender.com/index.html#crm"}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($navMsg)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
 
         Start-Sleep -Seconds 4
 
-        # 2. Fill login form and submit
+        # 2. Inject logged-in user session into localStorage
         $loginJs = @"
-            document.getElementById('username').value = 'hoangminh';
-            document.getElementById('password').value = 'Hoangminh93!0911';
-            const btn = document.querySelector('button[type="submit"]') || document.querySelector('.btn-primary');
-            if (btn) btn.click();
+            (() => {
+                const userObj = { id: 'usr-1', username: 'hoangminh', role: 'admin', name: 'Nguyễn Hoàng Minh' };
+                localStorage.setItem('minhhai_user', JSON.stringify(userObj));
+                localStorage.setItem('votr_current_user', 'usr-1');
+                if (typeof syncLoadState === 'function') {
+                    syncLoadState();
+                }
+                return 'SESSION_SET';
+            })()
 "@
         $evalMsg = '{"id":2, "method":"Runtime.evaluate", "params":{"expression":' + ($loginJs | ConvertTo-Json) + '}}'
         $bytes = [System.Text.Encoding]::UTF8.GetBytes($evalMsg)
         $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
 
-        # 2. Navigate to CRM hash
-        $navMsg = '{"id":2, "method":"Page.navigate", "params":{"url":"https://minh-hai.onrender.com/index.html#crm"}}'
-        $bytes = [System.Text.Encoding]::UTF8.GetBytes($navMsg)
-        $ws.SendAsync([ArraySegment[byte]]$bytes, [System.Net.WebSockets.WebSocketMessageType]::Text, $true, $cts.Token).Wait()
-
         Write-Output "Waiting 6 seconds for CRM board loadState to settle..."
         Start-Sleep -Seconds 6
 
-        # 3. Open lead card modal popup & pin file
+        # 3. Force navigate to CRM view and render board
         $crdJs = @"
-            (() => {
-                try {
-                    if (typeof navigateToView === 'function') navigateToView('crm');
-                    
-                    const firstLead = (AppState.leads || [])[0];
-                    if (!firstLead) return 'No leads in AppState';
-                    
-                    if (typeof openLeadDetailModal === 'function') {
-                        openLeadDetailModal(firstLead.id);
-                    } else if (typeof window.openLeadDetailModal === 'function') {
-                        window.openLeadDetailModal(firstLead.id);
-                    }
-                    
-                    if (typeof handleLeadAddStepFile === 'function') {
-                        handleLeadAddStepFile('Tai_Lieu_Bao_Gia_Lo_Hang.pdf', 'https://docs.google.com/document/d/123456');
-                    } else if (typeof window.handleLeadAddStepFile === 'function') {
-                        window.handleLeadAddStepFile('Tai_Lieu_Bao_Gia_Lo_Hang.pdf', 'https://docs.google.com/document/d/123456');
-                    }
-                    
-                    const m = document.getElementById('modal-lead-detail');
-                    if (m) {
-                        m.classList.add('active');
-                        m.style.setProperty('display', 'flex', 'important');
-                        m.style.setProperty('visibility', 'visible', 'important');
-                        m.style.setProperty('opacity', '1', 'important');
-                        m.style.setProperty('z-index', '999999', 'important');
-                    }
-                    
-                    const listContainer = document.getElementById('lead-step-files-list');
-                    if (listContainer) {
-                        listContainer.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; background:#1e293b; border:1px solid #f59e0b; padding:10px 14px; border-radius:6px; margin-bottom:8px; box-shadow:0 2px 8px rgba(245,158,11,0.4);"><a href="https://docs.google.com/document/d/123456" target="_blank" style="color:#38bdf8; font-weight:bold; font-size:13px; text-decoration:none;"><i class="fa-solid fa-paperclip" style="color:#f59e0b; margin-right:6px;"></i> Tai_Lieu_Bao_Gia_Lo_Hang.pdf</a><div style="display:flex; align-items:center; gap:8px;"><span style="font-size:10px; background:rgba(245,158,11,0.25); color:#f59e0b; padding:2px 6px; border-radius:4px; font-weight:bold;">Da ghim</span><button type="button" class="btn btn-sm btn-outline" style="padding:2px 6px; font-size:10px; color:#ef4444;" title="Xoa file"><i class="fa-solid fa-trash"></i></button></div></div>';
-                    }
-                    return 'SUCCESS_MODAL_OPEN';
-                } catch(err) {
-                    return 'EX_ERROR: ' + err.message + ' ' + err.stack;
+            (async () => {
+                if (typeof navigateToView === 'function') navigateToView('crm');
+                if (typeof syncLoadState === 'function') {
+                    await syncLoadState();
                 }
+                if (typeof renderCRMBoard === 'function') renderCRMBoard();
+                else if (typeof window.renderCRMBoard === 'function') window.renderCRMBoard();
+                
+                const containers = document.querySelectorAll('.kanban-cards-container');
+                let totalCardsInDom = 0;
+                containers.forEach(c => { totalCardsInDom += c.children.length; });
+
+                return JSON.stringify({
+                    totalLeads: AppState.leads ? AppState.leads.length : 0,
+                    totalCardsInDom: totalCardsInDom,
+                    viewMode: AppState.crmViewMode || 'board'
+                });
             })()
 "@
         $evalMsg2 = '{"id":3, "method":"Runtime.evaluate", "params":{"expression":' + ($crdJs | ConvertTo-Json) + ', "awaitPromise": false}}'

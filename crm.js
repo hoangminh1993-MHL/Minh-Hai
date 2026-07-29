@@ -429,11 +429,11 @@ function renderCRMBoard() {
   });
 
   // Synchronize toggle UI state
-  const viewMode = AppState.crmViewMode || 'board';
-  const btnBoard = document.getElementById('btn-crm-view-board');
-  const btnList = document.getElementById('btn-crm-view-list');
   const kanbanWrapper = document.getElementById('crm-kanban-wrapper');
   const listWrapper = document.getElementById('crm-list-wrapper');
+  const viewMode = (AppState.crmViewMode === 'list' && listWrapper) ? 'list' : 'board';
+  const btnBoard = document.getElementById('btn-crm-view-board');
+  const btnList = document.getElementById('btn-crm-view-list');
 
   if (btnBoard && btnList && kanbanWrapper && listWrapper) {
     if (viewMode === 'list') {
@@ -584,7 +584,9 @@ function renderCRMBoard() {
     const card = document.createElement('div');
     const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
     card.className = `kanban-card crm-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
-    card.setAttribute('draggable', (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') ? 'true' : 'false');
+    const userRole = user ? user.role : 'admin';
+    const isAllowedDrag = (userRole === 'admin' || userRole === 'manager' || userRole === 'staff');
+    card.setAttribute('draggable', isAllowedDrag ? 'true' : 'false');
     card.setAttribute('data-id', lead.id);
 
     // Get assigned sales name
@@ -702,7 +704,7 @@ function renderCRMBoard() {
     }
 
     // Drag and Drop events
-    if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
+    if (isAllowedDrag) {
       card.addEventListener('dragstart', (e) => {
         draggingLeadId = lead.id;
         e.dataTransfer.setData('text/plain', lead.id);
@@ -731,7 +733,7 @@ function renderCRMBoard() {
     const count = filteredLeads.filter(l => l.stage === st).length;
     if (countSpan) countSpan.innerText = count;
 
-    if (user.role === 'admin' || user.role === 'manager' || user.role === 'staff') {
+    if (isAllowedDrag) {
       col.ondragover = (e) => {
         e.preventDefault();
         col.classList.add('drag-over');
