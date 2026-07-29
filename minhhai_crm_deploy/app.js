@@ -1,5 +1,5 @@
   // Auto-purge stale cache when client version changes
-  const CURRENT_APP_VER = 'v21.62';
+  const CURRENT_APP_VER = 'v21.63';
   if (localStorage.getItem('minhhai_app_version') !== CURRENT_APP_VER) {
     console.log('New version detected! Purging stale local cache...');
     Object.keys(localStorage).filter(k => k.startsWith('votr_')).forEach(k => localStorage.removeItem(k));
@@ -91,6 +91,26 @@ document.addEventListener('click', (e) => {
 });
 
 window.BaseState = null;
+
+window.showToast = function(message, type = 'info') {
+  console.log('[Toast] (' + type + '): ' + message);
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + type;
+  const bg = type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'danger' ? '#ef4444' : '#3b82f6';
+  toast.style.cssText = 'background:' + bg + '; color:#ffffff; padding:10px 16px; border-radius:6px; margin-top:8px; font-size:13px; font-weight:600; box-shadow:0 4px 12px rgba(0,0,0,0.3); display:flex; align-items:center; gap:8px; z-index:9999;';
+  toast.innerHTML = '<i class="fa-solid ' + (type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-triangle-exclamation' : 'fa-info-circle') + '"></i> <span>' + message + '</span>';
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }, 3000);
+};
+
 window.formatDateTimeLocal = function(date) {
   if (!date) return '';
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -104,14 +124,6 @@ function getApiUrl(path) {
   if (customApiBase === 'undefined' || customApiBase === 'null' || customApiBase === '/api' || customApiBase === '/api/') {
     localStorage.removeItem('minhhai_custom_api_base');
     customApiBase = null;
-  }
-  if (customApiBase) {
-    const base = customApiBase.endsWith('/') ? customApiBase.slice(0, -1) : customApiBase;
-    return `${base}${path}`;
-  }
-  // Nếu là file:// hoặc github.io thì mới trỏ về Render
-  if (window.location.hostname.includes('github.io') || window.location.protocol === 'file:') {
-    return `https://minh-hai.onrender.com${path}`;
   }
   // Còn lại khi truy cập qua HTTP/HTTPS thì tự động dùng origin hiện tại
   return `${window.location.origin}${path}`;
@@ -586,7 +598,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.62';
+const CLIENT_VERSION = '21.63';
 
 async function checkCodeVersionUpdate() {
   try {

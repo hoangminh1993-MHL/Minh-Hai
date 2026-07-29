@@ -362,7 +362,7 @@ function initOpsEvents() {
           }
         }
         
-        showToast('Đã cập nhật mô tả công việc!', 'success');
+        window.showToast('Đã cập nhật mô tả công việc!', 'success');
       }
     };
   }
@@ -1144,7 +1144,7 @@ function handleFlowMoveAttempt(flowId, targetStage) {
     const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
     const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
     if (!isAdminOrManager) {
-      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      window.showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
       
       // Automatically redirect to Step 3: Thương lượng instead of Step 12: Thất bại
       executeFlowMove(flow, 3);
@@ -1176,7 +1176,7 @@ function handleFlowMoveAttempt(flowId, targetStage) {
       const isNegotiationReason = !allowedFailReasons.includes(reason);
       
       if (isNegotiationReason) {
-        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển lô hàng sang cột Thương lượng.", "info");
+        window.showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển lô hàng sang cột Thương lượng.", "info");
         executeFlowMove(flow, 3);
         flow.failReason = null;
         flow.failEvidence = null;
@@ -1793,7 +1793,7 @@ function handleSaveActiveStepData() {
   autoSaveActiveStepData();
   closeModal('modal-flow-detail');
   renderOpsWorkflows();
-  showToast('Đã lưu thông tin bước xử lý!', 'success');
+  window.showToast('Đã lưu thông tin bước xử lý!', 'success');
 }
 
 function handleFlowAddStepChecklistItem() {
@@ -2075,7 +2075,7 @@ function exportWorkflowsToCSV() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  showToast('Đã xuất báo cáo CSV thành công!', 'success');
+  window.showToast('Đã xuất báo cáo CSV thành công!', 'success');
 }
 
 
@@ -2563,7 +2563,7 @@ function handleAddTaskFile() {
   let name = nameInput.value.trim();
   const url = urlInput.value.trim();
   if (!url) {
-    showToast("Vui lòng nhập đường dẫn liên kết URL!", "warning");
+    window.showToast("Vui lòng nhập đường dẫn liên kết URL!", "warning");
     return;
   }
   if (!name) {
@@ -2681,7 +2681,7 @@ function handleSaveTaskDetails() {
   closeModal('modal-ops-task-detail');
   renderOpsSingleTasks();
   if (typeof renderMyTasks === 'function') renderMyTasks();
-  showToast('Đã cập nhật thông tin công việc!', 'success');
+  window.showToast('Đã cập nhật thông tin công việc!', 'success');
 }
 
 function handleDeleteTask() {
@@ -2690,7 +2690,7 @@ function handleDeleteTask() {
     saveState();
     closeModal('modal-ops-task-detail');
     renderOpsSingleTasks();
-    showToast('Đã xóa công việc.', 'info');
+    window.showToast('Đã xóa công việc.', 'info');
   }
 }
 
@@ -3038,7 +3038,7 @@ function handleProjectAddDocSubmit(e) {
       openProjectDedicatedView(proj.id);
     }
 
-    showToast('Đã ghim tài liệu thành công!', 'success');
+    window.showToast('Đã ghim tài liệu thành công!', 'success');
   }
 }
 
@@ -3668,7 +3668,7 @@ window.handleMyCrmTaskStepChange = function(taskId, stepIdxVal) {
   saveState();
   if (typeof renderTasksList === 'function') renderTasksList();
   renderMyTasks();
-  showToast(`Đã cập nhật tiến độ công việc đến bước: ${steps[stepIdx]}`, 'success');
+  window.showToast(`Đã cập nhật tiến độ công việc đến bước: ${steps[stepIdx]}`, 'success');
 };
 
 window.handleMyCrmTaskSubmit = function(taskId) {
@@ -3891,7 +3891,7 @@ window.handleQuickCompleteTask = function(event, taskId) {
       window.awardPointsForCompletedTask(task);
     }
     saveState();
-    showToast('Đã đánh dấu hoàn thành công việc!', 'success');
+    window.showToast('Đã đánh dấu hoàn thành công việc!', 'success');
     openProjectDedicatedView(currentActiveProjectId);
   }
 };
@@ -4010,7 +4010,7 @@ document.addEventListener('DOMContentLoaded', () => {
         p.desc = document.getElementById('edit-project-desc-input').value.trim();
         p.notes = document.getElementById('edit-project-notes-input').value.trim();
         saveState();
-        showToast('Đã lưu thông tin dự án!', 'success');
+        window.showToast('Đã lưu thông tin dự án!', 'success');
         
         // Refresh view
         openProjectDedicatedView(p.id);
@@ -4040,7 +4040,7 @@ window.quickCompleteTask = function(taskId) {
   if (typeof renderMyTasks === 'function') renderMyTasks();
   if (typeof renderOpsBoard === 'function') renderOpsBoard();
   
-  showToast('Đã hoàn thành công việc!', 'success');
+  window.showToast('Đã hoàn thành công việc!', 'success');
 };
 
 let currentSortField = null;
@@ -4082,7 +4082,7 @@ window.archiveAssignedTask = function(taskId) {
     task.status = 'archived';
     saveState();
     if (typeof renderMyTasks === 'function') renderMyTasks();
-    showToast('Đã đóng công việc và lưu trữ thành công.', 'success');
+    window.showToast('Đã đóng công việc và lưu trữ thành công.', 'success');
   }
 };
 
@@ -4094,7 +4094,7 @@ window.toggleManagerVerify = function(flowId, checked) {
   const isAdminOrManager = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'phuongthao' || currentUser.username === 'nhuquynh';
 
   if (!isAdminOrManager) {
-    showToast('Chỉ Quản lý mới có quyền duyệt thời gian!', 'warning');
+    window.showToast('Chỉ Quản lý mới có quyền duyệt thời gian!', 'warning');
     renderOpsWorkflows();
     return;
   }
@@ -4102,7 +4102,7 @@ window.toggleManagerVerify = function(flowId, checked) {
   flow.managerVerified = !!checked;
   saveState();
   renderOpsWorkflows();
-  showToast(flow.managerVerified ? 'Đã duyệt thời gian phản hồi!' : 'Đã hủy duyệt thời gian phản hồi!', 'success');
+  window.showToast(flow.managerVerified ? 'Đã duyệt thời gian phản hồi!' : 'Đã hủy duyệt thời gian phản hồi!', 'success');
 };
 
 

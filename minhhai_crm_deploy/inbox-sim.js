@@ -67,7 +67,7 @@ function handleSendSimMsg() {
   const messageText = chatInput.value.trim();
 
   if (!messageText) {
-    showToast('Vui lòng nhập tin nhắn giả lập!', 'warning');
+    window.showToast('Vui lòng nhập tin nhắn giả lập!', 'warning');
     return;
   }
 

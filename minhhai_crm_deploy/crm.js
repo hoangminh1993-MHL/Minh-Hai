@@ -313,21 +313,21 @@ function initCRMEvents() {
       let reason = select.value;
 
       if (!reason) {
-        showToast('Vui lòng chọn lý do thất bại!', 'warning');
+        window.showToast('Vui lòng chọn lý do thất bại!', 'warning');
         return;
       }
 
       if (reason === 'Khác') {
         reason = otherInput.value.trim();
         if (!reason) {
-          showToast('Vui lòng nhập lý do cụ thể!', 'warning');
+          window.showToast('Vui lòng nhập lý do cụ thể!', 'warning');
           return;
         }
       }
 
       const evidence = evidenceInput.value.trim();
       if (!evidence) {
-        showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+        window.showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
         return;
       }
 
@@ -761,7 +761,7 @@ function handleLeadMove(leadId, targetStage) {
 
   const currentRole = getCurrentUser().role;
   if (currentRole !== 'admin' && currentRole !== 'manager' && currentRole !== 'staff') {
-    showToast('Bạn không có quyền chuyển đổi trạng thái khách hàng!', 'danger');
+    window.showToast('Bạn không có quyền chuyển đổi trạng thái khách hàng!', 'danger');
     return;
   }
 
@@ -787,7 +787,7 @@ function handleLeadMove(leadId, targetStage) {
     if (currentStepData && currentStepData.checklist && currentStepData.checklist.length > 0) {
       const requiredPending = currentStepData.checklist.filter(c => c.required && !c.done);
       if (requiredPending.length > 0) {
-        showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${currentStepData.name}) trước khi chuyển bước!`, 'warning');
+        window.showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${currentStepData.name}) trước khi chuyển bước!`, 'warning');
         renderCRMBoard(); // Reset visual drag status
         return;
       }
@@ -798,7 +798,7 @@ function handleLeadMove(leadId, targetStage) {
   if (currentStepNum === 3 && targetStepNum === 4) {
     const files = lead.files || [];
     if (files.length === 0) {
-      showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+      window.showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
       renderCRMBoard(); // Reset visual drag status
       return;
     }
@@ -817,14 +817,14 @@ function handleLeadMove(leadId, targetStage) {
       f.name.toLowerCase().includes('bao gia')
     );
     if (!hasImage) {
-      showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+      window.showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
       renderCRMBoard(); // Reset visual drag status
       return;
     }
 
     const quoteFeedback = (lead.quoteFeedback || '').trim();
     if (quoteFeedback.length < 3) {
-      showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+      window.showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
       renderCRMBoard(); // Reset visual drag status
       return;
     }
@@ -837,7 +837,7 @@ function handleLeadMove(leadId, targetStage) {
     const currentUser = getCurrentUser();
     const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
     if (!isAdminOrManager) {
-      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      window.showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
       
       // Automatically redirect to negotiation instead
       lead.stage = 'negotiating';
@@ -877,7 +877,7 @@ function handleLeadMove(leadId, targetStage) {
       const isNegotiationReason = !allowedFailReasons.includes(reason);
       
       if (isNegotiationReason) {
-        showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển khách hàng sang cột Thương lượng.", "info");
+        window.showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển khách hàng sang cột Thương lượng.", "info");
         
         lead.stage = 'negotiating';
         lead.stageEntryTimes = lead.stageEntryTimes || {};
@@ -1523,13 +1523,13 @@ function renderActiveLeadStepPanel() {
 
 function handleLeadAddStepFile() {
   window.handleLeadAddStepFile = handleLeadAddStepFile;
-  let lead = AppState.leads ? AppState.leads.find(l => l.id === currentActiveLeadId) : null;
+  let lead = AppState.leads ? AppState.leads.find(l => String(l.id) === String(currentActiveLeadId)) : null;
   if (!lead && AppState.leads && AppState.leads.length > 0) {
-    lead = AppState.leads[0];
-    currentActiveLeadId = lead.id;
+    lead = AppState.leads.find(l => String(l.id) === String(currentActiveLeadId)) || AppState.leads[0];
+    if (lead) currentActiveLeadId = lead.id;
   }
   if (!lead) {
-    if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
+    if (typeof window.showToast === 'function') window.showToast("Vui lòng chọn khách hàng!", "warning");
     return;
   }
 
@@ -1542,19 +1542,23 @@ function handleLeadAddStepFile() {
   const val = urlVal || nameVal;
   
   if (!val) {
-    // If input is empty, open file picker dialog
     const picker = document.getElementById('lead-step-file-picker');
     if (picker) {
       picker.click();
       return;
     }
-    if (typeof showToast === 'function') showToast("Vui lòng dán link file hoặc chọn tài liệu đính kèm!", "warning");
+    if (typeof window.showToast === 'function') window.showToast("Vui lòng dán link file hoặc chọn tài liệu đính kèm!", "warning");
     return;
   }
 
   if (!lead.files) lead.files = [];
-  const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
-  if (stepData && !stepData.files) stepData.files = [];
+  let stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
+  if (!stepData) {
+    if (!lead.steps) lead.steps = [];
+    stepData = { stepNum: currentActiveLeadStepNum || 1, name: 'Nhận thông tin', note: '', checklist: [], comments: [], files: [] };
+    lead.steps.push(stepData);
+  }
+  if (!stepData.files) stepData.files = [];
 
   let fileName = nameVal || urlVal;
   if (urlVal && (urlVal.startsWith('http://') || urlVal.startsWith('https://'))) {
@@ -1568,21 +1572,23 @@ function handleLeadAddStepFile() {
     }
   }
 
+  const fileUrl = (urlVal && (urlVal.startsWith('http://') || urlVal.startsWith('https://'))) ? urlVal : (urlVal ? `https://${urlVal}` : '#');
+
   const newFile = {
-    name: fileName,
-    url: urlVal.startsWith('http') ? urlVal : '#',
+    name: fileName || 'Tài liệu đính kèm',
+    url: fileUrl,
     date: new Date().toLocaleString('vi-VN')
   };
 
   lead.files.push(newFile);
-  if (stepData && stepData.files) stepData.files.push(newFile);
+  stepData.files.push(newFile);
 
   if (inputName) inputName.value = '';
   if (inputUrl) inputUrl.value = '';
   saveState();
   renderActiveLeadStepPanel();
   if (typeof addNotification === 'function') addNotification('Đính kèm tài liệu', `Đã đính kèm "${fileName}" cho khách hàng ${lead.name}`, 'info');
-  if (typeof showToast === 'function') showToast(`Đã đính kèm tài liệu "${fileName}" thành công!`, 'success');
+  if (typeof window.showToast === 'function') window.showToast(`Đã đính kèm tài liệu "${fileName}" thành công!`, 'success');
 }
 
 function handleLeadPickFile(fileInput) {
@@ -1603,7 +1609,7 @@ function handleLeadPickFile(fileInput) {
     fileInput.value = '';
     saveState();
     renderActiveLeadStepPanel();
-    if (typeof showToast === 'function') showToast(`Đã tải lên và đính kèm file "${file.name}"!`, 'success');
+    if (typeof showToast === 'function') window.showToast(`Đã tải lên và đính kèm file "${file.name}"!`, 'success');
   };
   reader.readAsDataURL(file);
 }
@@ -1641,7 +1647,7 @@ function handleLeadAddStepComment() {
     currentActiveLeadId = lead.id;
   }
   if (!lead) {
-    if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
+    if (typeof showToast === 'function') window.showToast("Vui lòng chọn khách hàng!", "warning");
     return;
   }
   const stepData = lead.steps ? lead.steps.find(s => s.stepNum === (currentActiveLeadStepNum || 1)) : null;
@@ -1651,7 +1657,7 @@ function handleLeadAddStepComment() {
   if (!input) return;
   const val = input.value.trim();
   if (!val) {
-    if (typeof showToast === 'function') showToast("Vui lòng nhập nội dung trao đổi!", "warning");
+    if (typeof showToast === 'function') window.showToast("Vui lòng nhập nội dung trao đổi!", "warning");
     return;
   }
 
@@ -1666,7 +1672,7 @@ function handleLeadAddStepComment() {
   input.value = '';
   saveState();
   renderActiveLeadStepPanel();
-  if (typeof showToast === 'function') showToast("Đã gửi thảo luận thành công!", "success");
+  if (typeof showToast === 'function') window.showToast("Đã gửi thảo luận thành công!", "success");
 }
 
 function handleSaveActiveLeadStepData() {
@@ -1677,7 +1683,7 @@ function handleSaveActiveLeadStepData() {
     currentActiveLeadId = lead.id;
   }
   if (!lead) {
-    if (typeof showToast === 'function') showToast("Vui lòng chọn khách hàng!", "warning");
+    if (typeof showToast === 'function') window.showToast("Vui lòng chọn khách hàng!", "warning");
     return;
   }
 
@@ -1730,14 +1736,14 @@ function handleSaveActiveLeadStepData() {
     const currentUser = getCurrentUser();
     const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.username === 'minhphuong');
     if (!isAdminOrManager) {
-      showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
+      window.showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
       return;
     }
 
     const reasonSelect = document.getElementById('lead-step-fail-reason');
     const reasonVal = reasonSelect.value;
     if (!reasonVal) {
-      showToast('Vui lòng chọn lý do thất bại!', 'warning');
+      window.showToast('Vui lòng chọn lý do thất bại!', 'warning');
       return;
     }
     
@@ -1745,7 +1751,7 @@ function handleSaveActiveLeadStepData() {
     if (reasonVal === 'Khác') {
       const reasonOtherVal = document.getElementById('lead-step-fail-reason-other').value.trim();
       if (!reasonOtherVal) {
-        showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
+        window.showToast('Vui lòng nhập chi tiết lý do thất bại khác!', 'warning');
         return;
       }
       finalReason = reasonOtherVal;
@@ -1753,7 +1759,7 @@ function handleSaveActiveLeadStepData() {
     
     const evidenceVal = document.getElementById('lead-step-fail-evidence').value.trim();
     if (!evidenceVal) {
-      showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
+      window.showToast('Vui lòng nhập link bằng chứng thất bại bắt buộc!', 'warning');
       return;
     }
     
@@ -1771,7 +1777,7 @@ function handleSaveActiveLeadStepData() {
       const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
       const requiredPending = currentStepData.checklist.filter(c => c.required && !c.done);
       if (requiredPending.length > 0) {
-        showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${currentStepData.name}) trước khi chuyển sang bước tiếp theo!`, 'warning');
+        window.showToast(`Bạn cần hoàn thành các việc bắt buộc (*) ở bước hiện tại (${currentStepData.name}) trước khi chuyển sang bước tiếp theo!`, 'warning');
         return;
       }
     }
@@ -1780,7 +1786,7 @@ function handleSaveActiveLeadStepData() {
     if (currentStepNum === 3 && currentActiveLeadStepNum === 4) {
       const files = lead.files || [];
       if (files.length === 0) {
-        showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
+        window.showToast("Để chuyển sang bước Báo giá, bạn bắt buộc phải đính kèm Tài liệu thông tin lô hàng vào mục tài liệu đính kèm!", "warning");
         return;
       }
     }
@@ -1798,13 +1804,13 @@ function handleSaveActiveLeadStepData() {
         f.name.toLowerCase().includes('bao gia')
       );
       if (!hasImage) {
-        showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
+        window.showToast("Để chuyển sang bước Thương lượng, bạn bắt buộc phải chèn Hình ảnh báo giá vào mục tài liệu đính kèm!", "warning");
         return;
       }
 
       const quoteFeedback = (lead.quoteFeedback || '').trim();
       if (quoteFeedback.length < 3) {
-        showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
+        window.showToast("Bạn bắt buộc phải nhập rõ Tình trạng khách hàng sau báo giá vào ô nhập liệu ở Bước 4!", "warning");
         return;
       }
 
@@ -1852,7 +1858,7 @@ function handleSaveActiveLeadStepData() {
   saveState();
   renderCRMBoard();
   closeModal('modal-lead-detail');
-  showToast('Lưu thông tin bước thành công!', 'success');
+  window.showToast('Lưu thông tin bước thành công!', 'success');
   renderCurrentUser();
 }
 
@@ -2094,7 +2100,7 @@ function handleDeleteLead() {
     closeModal('modal-lead-detail');
     renderCRMBoard();
     if (typeof addNotification === 'function') addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
-    if (typeof showToast === 'function') showToast("Đã xóa cơ hội khách hàng!", "info");
+    if (typeof showToast === 'function') window.showToast("Đã xóa cơ hội khách hàng!", "info");
   }
 }
 

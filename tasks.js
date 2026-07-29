@@ -13,7 +13,7 @@ function initTasksEvents() {
     btnAddTask.addEventListener('click', () => {
       const user = getCurrentUser();
       if (user.role !== 'admin' && user.role !== 'manager') {
-        showToast('Chỉ Quản lý/Admin mới có quyền giao việc!', 'danger');
+        window.showToast('Chỉ Quản lý/Admin mới có quyền giao việc!', 'danger');
         return;
       }
       
@@ -311,7 +311,7 @@ function handleAddTaskSubmit(e) {
 
   const user = getCurrentUser();
   if (user.role !== 'admin' && user.role !== 'manager') {
-    showToast('Chỉ Quản lý/Admin mới có quyền giao việc!', 'danger');
+    window.showToast('Chỉ Quản lý/Admin mới có quyền giao việc!', 'danger');
     return;
   }
 
@@ -373,7 +373,7 @@ function handleStepUpdate(e) {
 
   saveState();
   renderTasksList();
-  showToast(`Đã cập nhật tiến độ công việc đến bước: ${steps[stepIdx]}`, 'success');
+  window.showToast(`Đã cập nhật tiến độ công việc đến bước: ${steps[stepIdx]}`, 'success');
 }
 
 function submitTaskForApproval(taskId) {
@@ -398,7 +398,7 @@ function approveTask(taskId, direct = false) {
 
   const user = getCurrentUser();
   if (user.role !== 'admin' && user.role !== 'manager') {
-    showToast('Chỉ Quản lý/Admin mới có quyền phê duyệt công việc!', 'danger');
+    window.showToast('Chỉ Quản lý/Admin mới có quyền phê duyệt công việc!', 'danger');
     return;
   }
 
@@ -442,7 +442,7 @@ function deleteTask(taskId) {
     AppState.tasks = AppState.tasks.filter(t => t.id !== taskId);
     saveState();
     renderTasksList();
-    showToast('Đã xóa công việc.', 'warning');
+    window.showToast('Đã xóa công việc.', 'warning');
   }
 }
 
@@ -581,7 +581,7 @@ function handleAddWorkflowStep() {
   AppState.workflows[currentWorkflowDept].push(name);
   input.value = '';
   renderWorkflowSettings();
-  showToast(`Đã thêm bước quy trình: ${name}`, 'info');
+  window.showToast(`Đã thêm bước quy trình: ${name}`, 'info');
 }
 
 function handleResetWorkflow() {
@@ -589,7 +589,7 @@ function handleResetWorkflow() {
     AppState.workflows[currentWorkflowDept] = [...DEFAULT_WORKFLOWS[currentWorkflowDept]];
     saveState();
     renderWorkflowSettings();
-    showToast('Đã khôi phục quy trình mặc định.', 'info');
+    window.showToast('Đã khôi phục quy trình mặc định.', 'info');
     addNotification('Cấu hình Quy trình', `Đã khôi phục quy trình làm việc mặc định cho bộ phận: ${currentWorkflowDept.toUpperCase()}`, 'info');
   }
 }
@@ -597,6 +597,6 @@ function handleResetWorkflow() {
 function handleSaveWorkflow() {
   saveState();
   renderWorkflowSettings();
-  showToast('Đã lưu cấu hình quy trình phòng ban thành công!', 'success');
+  window.showToast('Đã lưu cấu hình quy trình phòng ban thành công!', 'success');
   addNotification('Cấu hình Quy trình', `Đã lưu thay đổi quy trình làm việc của bộ phận: ${currentWorkflowDept.toUpperCase()}`, 'success');
 }

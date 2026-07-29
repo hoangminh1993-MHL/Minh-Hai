@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.63] - 2026-07-29
+### Sửa Triệt Để Lỗi Không Bấm Độc Lập Nút Ghim, Gửi Thảo Luận, Lưu Thông Tin (v21.63)
+- Bổ sung hàm toàn cục window.showToast phòng chống lỗi ReferenceError: showToast is not defined làm ngắt tiến trình sự kiện click.
+- Tối ưu hàm handleLeadAddStepFile, handleLeadAddStepComment, handleSaveActiveLeadStepData đảm bảo khớp lead.id tuyệt đối dạng String.
+- Đảm bảo 100% nút Ghim (Tài liệu đính kèm), nút Gửi (Thảo luận nội bộ) và nút Lưu Thông Tin Bước hoạt động nhạy bén, lưu trạng thái tức thì.
+
 ## [v21.62] - 2026-07-29
 ### Tối Ưu Hóa Cache-Busting & Cập Nhật Tự Động Giao Diện Phiên Bản Mới (v21.62)
 - Tự động cập nhật thẻ phiên bản #app-version-tag trên Sidebar bằng JavaScript linh hoạt khi trang khởi chạy.

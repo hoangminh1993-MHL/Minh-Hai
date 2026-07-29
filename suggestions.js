@@ -58,12 +58,12 @@ function handleSuggestionSubmit(e) {
   const imageUrl = imageInput ? imageInput.value.trim() : '';
 
   if (!title || !desc) {
-    showToast("Vui lòng nhập đầy đủ thông tin đề xuất!", "warning");
+    window.showToast("Vui lòng nhập đầy đủ thông tin đề xuất!", "warning");
     return;
   }
 
   if (!imageUrl) {
-    showToast("Vui lòng dán link hình ảnh minh họa bắt buộc!", "warning");
+    window.showToast("Vui lòng dán link hình ảnh minh họa bắt buộc!", "warning");
     return;
   }
 
@@ -91,7 +91,7 @@ function handleSuggestionSubmit(e) {
   AppState.suggestions.push(sugg);
   saveState();
 
-  showToast(`Gửi đề xuất thành công!${pointsBonusText}`, "success");
+  window.showToast(`Gửi đề xuất thành công!${pointsBonusText}`, "success");
 
   // Reset form
   titleInput.value = '';
@@ -245,7 +245,7 @@ window.approveSuggestion = function(id) {
   }
 
   saveState();
-  showToast("Đã duyệt đề xuất và cộng 20 xúc xích thành công!", "success");
+  window.showToast("Đã duyệt đề xuất và cộng 20 xúc xích thành công!", "success");
   renderSuggestions();
   if (typeof renderCurrentUser === 'function') renderCurrentUser();
 };
@@ -260,7 +260,7 @@ window.rejectSuggestion = function(id) {
 
   s.status = 'rejected';
   saveState();
-  showToast("Đã từ chối đề xuất.", "info");
+  window.showToast("Đã từ chối đề xuất.", "info");
   renderSuggestions();
 };
 
