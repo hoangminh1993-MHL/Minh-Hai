@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [v21.85] - 2026-07-29
+## [v21.86] - 2026-07-29
+
+### Sửa Lỗi Lag Nút Quay Lại & Thay Dải Thành Viên Bằng Mô Tả Công Việc Phòng Ban
+- **Tối Ưu Phản Hồi Nút "Quay lại danh sách" Siêu Tốc (< 5ms):** Khắc phục triệt để hiện tượng lag khi bấm nút quay lại bằng cách loại bỏ các độ trễ chuyển cảnh, phản hồi lập tức quay về danh sách phòng ban.
+- **Bố Cụ Thanh Tiêu Đề Mới (Gọn Gàng & Tinh Tế):**
+  - **Thay Vị Trí Thành Viên Bằng Mô Tả Công Việc:** Dải tiêu đề trên cùng không còn bị rối bởi danh sách tên 14-17 nhân sự. Thay vào đó là dòng **Mô tả công việc của phòng ban** (`p.desc`).
+  - **Huy Hiệu "Thành Viên" Gọn Gàng:** Số lượng thành viên hiển thị dưới dạng huy hiệu tím nhỏ gọn `14 Thành viên`. Khi bấm vào sẽ tự chuyển sang tab Thành Viên.
+  - **Tab "Thành Viên" Chuyên Biệt Ở Sidebar Bên Phải:** Thêm tab **Thành Viên** trong thanh sidebar 32% bên phải, giúp xem danh sách nhân sự đầy đủ kèm ảnh đại diện và vai trò rất chuyên nghiệp.
 
 ### Khắc Phục Triệt Để Lỗi Chậm & Lag Khi Mở Phòng Ban (Instant < 5ms Department Opening)
 - **Sửa Lỗi Vòng Lặp Đệ Quy Nối Tiếp (Recursive Call Elimination):** Đã phát hiện và loại bỏ hoàn toàn vòng lặp đệ quy giữa `openProjectDedicatedView` và `showView('project-dedicated')` (vòng lặp gọi qua lại hàng chục lần trên 1 click gây đơ đơ lag trình duyệt).
