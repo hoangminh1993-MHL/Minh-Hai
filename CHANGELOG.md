@@ -1,6 +1,11 @@
 # CHANGELOG
 
-## [v21.79] - 2026-07-29
+## [v21.81] - 2026-07-29
+
+### CRM Khách Mới - Nhất Quán Popup Bảng Chi Tiết Khách Hàng Xuyên Suốt Tất Cả Các Bước
+- **Giao Diện Bảng Popup Duy Nhất (Unified Lead Detail Popup):** Chuyển đổi toàn bộ tài liệu đính kèm (`files`), thảo luận nội bộ (`comments`), và ghi chú khách hàng (`note`) thành bảng dữ liệu tập trung duy nhất cho mỗi khách hàng.
+- **Giữ Nguyên Dữ Liệu Khi Chuyển Bước:** Khi bấm qua lại giữa các bước (1 đến 7), toàn bộ danh sách tài liệu đính kèm, lịch sử thảo luận và ghi chú gốc của khách hàng luôn được duy trì 100% trên bảng popup, không bị mất hoặc xoá trống theo bước nữa.
+- **Đồng Bộ Dữ Liệu 2 Chiều:** Mọi bình luận mới hoặc file đính kèm mới được tự động ghim vào hồ sơ chung của khách hàng.
 
 ### CRM Khách Mới - Tính Năng Tự Động Sao Lưu Dữ Liệu Tự Động 12h & 17h30 Hàng Ngày
 - **Tự Động Chụp Bản Sao Lưu Dữ Liệu:** Đã thiết lập trình tự động chạy ngầm trên Server Node.js tự động lưu toàn bộ dữ liệu hệ thống (khách hàng, giao dịch, file, bình luận, công việc...) vào khung giờ cố định **12:00 (nửa ngày)** và **17:30 (cuối ngày làm việc)** mỗi ngày.

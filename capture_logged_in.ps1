@@ -67,20 +67,23 @@ try {
         Write-Output "Waiting 8 seconds for page load & initial sync..."
         Start-Sleep -Seconds 8
 
-        # 4. Trigger manual backup & open Backup Manager modal
-        Write-Output "Creating a manual backup & opening Backup Manager modal..."
-        $backupJs = @"
-            (async () => {
-                if (typeof createManualBackupSnapshot === 'function') {
-                    await createManualBackupSnapshot();
+        # 4. Open lead detail modal & click step 4
+        Write-Output "Opening lead detail modal & switching step..."
+        $leadJs = @"
+            (() => {
+                const lead = AppState.leads ? AppState.leads[0] : null;
+                if (lead && typeof openLeadDetailModal === 'function') {
+                    openLeadDetailModal(lead.id);
+                    
+                    // Click step 4 (Báo giá)
+                    const bubbles = document.querySelectorAll('#modal-lead-detail .flow-step-bubble');
+                    if (bubbles && bubbles[3]) bubbles[3].click();
                 }
-                const btn = document.getElementById('btn-open-backups-modal');
-                if (btn) btn.click();
-                return 'MODAL_OPENED';
+                return 'LEAD_MODAL_OPENED';
             })()
 "@
-        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $backupJs; awaitPromise = $true }
-        Write-Output "Backup Modal Result: $($res4.result.result.value)"
+        $res4 = Send-CdpMsg $ws 4 "Runtime.evaluate" @{ expression = $leadJs }
+        Write-Output "Lead Modal Result: $($res4.result.result.value)"
 
         Start-Sleep -Seconds 4
 
