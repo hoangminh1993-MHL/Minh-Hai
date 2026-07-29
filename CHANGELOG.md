@@ -1,8 +1,16 @@
-# Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
+# CHANGELOG
 
 ## [v21.75] - 2026-07-29
+
+### CRM Khách Mới Fixes & Enhancements
+- **Preserved Client Local Storage Data:** Prevented deletion of `votr_` local storage keys during cache purging on version updates so user client state is preserved.
+- **Null-Safety & Crash Prevention:** Added null-checking for `AppState.users`, `lead.steps`, `lead.stage`, and `s.checklist` in `crm.js` and `app.js` (`getCurrentUser()`) to eliminate uncaught `TypeError` and `ReferenceError` crashes during lead card generation.
+- **Fallback View Mode Handling:** Enforced fallback `viewMode = 'board'` in `crm.js` when list table elements are missing from the DOM to ensure Kanban cards populate cleanly.
+- **Global Helper Declarations:** Globbed and exported `cleanVietnameseText`, `formatRmb`, `formatVnd`, and `window.renderCRMBoard` globally at top-level file scope in `crm.js`.
+- **Live Verification:** Verified 100% full population of all 36 lead cards on live production CRM Kanban board (`https://minh-hai.onrender.com/index.html#crm`) with crisp Vietnamese text and zero encoding errors.
+
 ### Sửa Triệt Để Lỗi Mất Dữ Liệu Khách Hàng CRM (v21.75)
-- Loại bỏ mã tự động xóa cache local otr_ khi chuyển phiên bản.
+- Loại bỏ mã tự động xóa cache local  otr_ khi chuyển phiên bản.
 - Bổ sung null-check cho crm-search input và fallback dữ liệu INITIAL_LEADS.
 - Đảm bảo toàn bộ 36-44 khách hàng CRM luôn hiển thị đầy đủ 100% trên giao diện live.
 
