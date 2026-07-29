@@ -1587,7 +1587,6 @@ function handleLeadAddStepFile() {
   if (inputUrl) inputUrl.value = '';
   saveState();
   renderActiveLeadStepPanel();
-  if (typeof addNotification === 'function') addNotification('Đính kèm tài liệu', `Đã đính kèm "${fileName}" cho khách hàng ${lead.name}`, 'info');
   if (typeof window.showToast === 'function') window.showToast(`Đã đính kèm tài liệu "${fileName}" thành công!`, 'success');
 }
 

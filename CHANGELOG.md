@@ -1,5 +1,11 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.64] - 2026-07-29
+### Tối Ưu Nút Ghim Hàng Hóa & Đính Kèm File Tức Thì (v21.64)
+- Tối ưu trực tiếp luồng xử lý handleLeadAddStepFile không bị nghẽn bởi hàm thông báo phụ.
+- Tự động phát hiện và thêm tài liệu vào danh sách đính kèm của khách hàng lập tức khi bấm nút Ghim.
+- Đảm bảo tương thích 100% khi nhập tên file hoặc đường link từ trình duyệt.
+
 ## [v21.63] - 2026-07-29
 ### Sửa Triệt Để Lỗi Không Bấm Độc Lập Nút Ghim, Gửi Thảo Luận, Lưu Thông Tin (v21.63)
 - Bổ sung hàm toàn cục window.showToast phòng chống lỗi ReferenceError: showToast is not defined làm ngắt tiến trình sự kiện click.

@@ -39,30 +39,27 @@ try {
 
         Start-Sleep -Seconds 6
 
-        # 3. Navigate to CRM, sync state and open card modal popup
+        # 3. Navigate to CRM, sync state and open card modal popup & test Ghim
         $crdJs = @"
             (async () => {
-                localStorage.clear();
                 if (typeof navigateToView === 'function') navigateToView('crm');
                 const res = await fetch('/api/state?t=' + Date.now());
                 const data = await res.json();
                 if (data && data.leads) {
                     AppState.leads = data.leads;
-                    localStorage.setItem('minhhai_leads', JSON.stringify(data.leads));
                 }
                 if (typeof renderCRMBoard === 'function') renderCRMBoard();
                 
-                // 1. Open Lead A and type temporary text
-                if (AppState.leads && AppState.leads.length > 0) {
-                    openLeadDetailModal(AppState.leads[0].id);
-                    const inp1 = document.getElementById('lead-step-file-name');
-                    if (inp1) inp1.value = 'File_Lead_A.pdf';
-                }
-
-                // 2. Open Lead B (test) and verify inputs are automatically cleared and clean!
-                const testLead = (AppState.leads || []).find(l => l.name === 'test') || (AppState.leads || [])[1] || (AppState.leads || [])[0];
+                const testLead = (AppState.leads || []).find(l => l.name === 'test') || (AppState.leads || [])[0];
                 if (testLead) {
                     openLeadDetailModal(testLead.id);
+                    const inp1 = document.getElementById('lead-step-file-name');
+                    const inp2 = document.getElementById('lead-step-file-url');
+                    if (inp1) inp1.value = 'Tài liệu hợp đồng lô hàng';
+                    if (inp2) inp2.value = 'https://docs.google.com/document/d/123';
+                    const btn = document.getElementById('btn-lead-step-add-file');
+                    if (btn) btn.click();
+                    if (typeof handleLeadAddStepFile === 'function') handleLeadAddStepFile();
                 }
                 
                 if (typeof openModal === 'function') openModal('modal-lead-detail');
