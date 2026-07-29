@@ -1,5 +1,10 @@
 # Nhật Ký Thay Đổi (Changelog) - Minh Hải CRM
 
+## [v21.74] - 2026-07-29
+### Đồng Bộ App.js Safe renderCRMBoard Fix (v21.74)
+- Đảm bảo app.js được đồng bộ chính xác sang minhhai_crm_deploy.
+- Sửa triệt để lỗi ReferenceError renderCRMBoard khi tải trang.
+
 ## [v21.73] - 2026-07-29
 ### Sửa Lỗi ReferenceError renderCRMBoard & Hoàn Thiện Nút Ghim (v21.73)
 - Bổ sung type check an toàn cho enderCRMBoard trong 
