@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v21.94] - 2026-07-30
+
+### Khắc Phục Lỗi Kiến Trúc Đồng Bộ Nhiều Máy & Phân Quyền Nick Thảo
+- **Khắc Phục Lỗi Cache Offline Trình Duyệt Từng Máy (`app.js`):** 
+  - Thay thế cơ chế lưu bộ nhớ cũ bằng kiến trúc **Server-First Single Source of Truth**: Khi bất kỳ máy/tài khoản nào mở trang hoặc tự động đồng bộ, hệ thống ưu tiên lấy toàn bộ dữ liệu chuẩn mới nhất từ Server CSDL trung tâm, không bị đè hay chặn bởi cache `localStorage` cũ trên máy đó.
+- **Vòng Lặp Đồng Bộ Live Đa Máy Trực Tiếp (`startStatePolling`):**
+  - Cập nhật cơ chế nhận diện mốc thời gian `lastUpdated`: Bất kỳ khi nào một máy (ví dụ nick Linh Chi hoặc Admin) tạo/sửa/di chuyển lô hàng, Server ghi nhận mốc mới. Toàn bộ các máy còn lại (như nick Quản lý Thảo `phuongthao`) sẽ tự động phát hiện mốc mới trong vòng 2 giây và tự động cập nhật ngay trên giao diện mà không cần F5 hay đăng nhập lại.
+- **Xác Minh Tài Khoản Đặng Thị Phương Thảo (`phuongthao`):**
+  - Tài khoản Quản lý `phuongthao` hiển thị đầy đủ 100% toàn bộ 52 phễu lô hàng vận chuyển thực tế và thông số báo cáo toàn công ty trên môi trường live.
+
 ## [v21.93] - 2026-07-30
 
 ### Cập Nhật & Đẩy Đầy Đủ 52 Lô Hàng Vận Hành Thực Tế Vào Hệ Thống
