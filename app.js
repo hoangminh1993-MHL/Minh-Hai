@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.87';
+  const CURRENT_APP_VER = 'v21.88';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -593,8 +593,19 @@ function renderUserSwitcher() {
   }
 
   const currentUser = getCurrentUser();
+  let sessionUser = {};
+  try {
+    sessionUser = JSON.parse(localStorage.getItem('minhhai_user') || '{}');
+  } catch(e){}
 
-  users.forEach(user => {
+  // Manager accounts can only view/impersonate staff & manager accounts, NOT admin accounts
+  const isManagerSession = (sessionUser.role === 'manager') || (currentUser.role === 'manager' && sessionUser.role !== 'admin');
+  let allowedUsers = users;
+  if (isManagerSession) {
+    allowedUsers = users.filter(user => user.role !== 'admin');
+  }
+
+  allowedUsers.forEach(user => {
     const option = document.createElement('option');
     option.value = user.id;
     let roleText = 'Nhân viên';
@@ -613,42 +624,7 @@ function renderUserSwitcher() {
   });
   
   updateSidebarUserInfo(currentUser);
-  populateCRMUserFilter();
 }
-
-function populateCRMUserFilter() {
-  const filterSelect = document.getElementById('crm-user-filter');
-  if (!filterSelect) return;
-
-  const currentUser = getCurrentUser();
-  const users = (AppState.users && AppState.users.length > 0) ? AppState.users : [];
-  
-  const currentVal = filterSelect.value || 'all';
-  filterSelect.innerHTML = '';
-
-  const optAll = document.createElement('option');
-  optAll.value = 'all';
-  optAll.innerText = '👁️ Tất cả tài khoản cấp dưới';
-  filterSelect.appendChild(optAll);
-
-  const optMy = document.createElement('option');
-  optMy.value = 'my';
-  optMy.innerText = `👤 Chỉ tài khoản của tôi (${currentUser.name || 'Tài khoản hiện tại'})`;
-  filterSelect.appendChild(optMy);
-
-  const roleLabels = { admin: 'Quản Trị', manager: 'Quản Lý', sales: 'Sales', cskh: 'CSKH', sourcing: 'Đặt Hàng', warehouse: 'Kho' };
-
-  users.forEach(u => {
-    const opt = document.createElement('option');
-    opt.value = u.id;
-    const rText = roleLabels[u.role] || u.role;
-    opt.innerText = `🔹 ${u.name} (${rText})`;
-    filterSelect.appendChild(opt);
-  });
-
-  filterSelect.value = currentVal;
-}
-window.populateCRMUserFilter = populateCRMUserFilter;
 
 function initUserSwitcherEvents() {
   const switcher = document.getElementById('user-switcher');
@@ -740,7 +716,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.87';
+const CLIENT_VERSION = '21.88';
 
 async function checkCodeVersionUpdate() {
   try {
