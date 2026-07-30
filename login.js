@@ -1,9 +1,21 @@
 const INITIAL_USERS = [
-  { id: 'usr-1', name: 'Nguyễn Hoàng Minh', username: 'hoangminh', role: 'admin' },
-  { id: 'usr-2', name: 'Trần Tú Anh', username: 'tuanh', role: 'sales' },
-  { id: 'usr-3', name: 'M.Phương (CSKH)', username: 'minhphuong', role: 'sales' },
-  { id: 'usr-6', name: 'Trang (CSKH)', username: 'trang', role: 'sales' },
-  { id: 'usr-7', name: 'Phượng (CSKH)', username: 'phuong', role: 'sales' }
+  { id: 'usr-1', name: 'Nguyễn Hoàng Minh', username: 'hoangminh', password: 'a123', role: 'admin', dept: 'admin' },
+  { id: 'usr-2', name: 'Trần Tú Anh', username: 'tuanh', password: 'a123', role: 'admin', dept: 'admin' },
+  { id: 'usr-3', name: 'Phùng Thị Minh Phương', username: 'minhphuong', password: 'a123', role: 'manager', dept: 'cskh' },
+  { id: 'usr-4', name: 'Đoàn Thị Hải Linh', username: 'hailinh', password: 'a123', role: 'cskh', dept: 'cskh' },
+  { id: 'usr-5', name: 'Đặng Thị Phương Thảo', username: 'phuongthao', password: 'a123', role: 'manager', dept: 'sales' },
+  { id: 'usr-6', name: 'Lê Thị Thùy Trang', username: 'thuytrang', password: 'a123', role: 'sales', dept: 'sales' },
+  { id: 'usr-7', name: 'Bùi Thị Bích Phượng', username: 'bichphuong', password: 'a123', role: 'sales', dept: 'sales' },
+  { id: 'usr-8', name: 'Nguyễn Phương Anh', username: 'phuonganh', password: 'a123', role: 'sales', dept: 'sales' },
+  { id: 'usr-9', name: 'Phạm Duy Hưng', username: 'duyhung', password: 'a123', role: 'sourcing', dept: 'sourcing' },
+  { id: 'usr-10', name: 'Đỗ Như Quỳnh', username: 'nhuquynh', password: 'a123', role: 'sales', dept: 'sales' },
+  { id: 'usr-11', name: 'Vũ Linh Chi', username: 'linhchi', password: 'a123', role: 'cskh', dept: 'cskh' },
+  { id: 'usr-12', name: 'Lưu Thành Đạt', username: 'thanhdat', password: 'a123', role: 'sourcing', dept: 'sourcing' },
+  { id: 'usr-13', name: 'Dương Thị Hồng Yến', username: 'hongyen', password: 'a123', role: 'cskh', dept: 'cskh' },
+  { id: 'usr-14', name: 'Đào Minh Tuấn', username: 'minhtuan', password: 'a123', role: 'warehouse', dept: 'warehouse' },
+  { id: 'usr-15', name: 'Nguyễn Tuấn Anh', username: 'tuananh', password: 'a123', role: 'warehouse', dept: 'warehouse' },
+  { id: 'usr-16', name: 'Trịnh Thị Bình Dương', username: 'binhduong', password: 'a123', role: 'sales', dept: 'sales' },
+  { id: 'usr-17', name: 'Mai Thị Thu Hiền', username: 'thuhien', password: 'a123', role: 'cskh', dept: 'cskh' }
 ];
 
 function getApiUrl(path) {

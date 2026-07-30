@@ -1,4 +1,4 @@
-// Cleaned server.js v21.88
+// Cleaned server.js v21.89
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,27 +98,27 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.88';
+  state.dbVersion = '21.89';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
       'usr-1': 'Nguyễn Hoàng Minh',
       'usr-2': 'Trần Tú Anh',
-      'usr-3': 'Phượng Thị Minh Phương',
+      'usr-3': 'Phùng Thị Minh Phương',
       'usr-4': 'Đoàn Thị Hải Linh',
       'usr-5': 'Đặng Thị Phương Thảo',
       'usr-6': 'Lê Thị Thùy Trang',
       'usr-7': 'Bùi Thị Bích Phượng',
       'usr-8': 'Nguyễn Phương Anh',
       'usr-9': 'Phạm Duy Hưng',
-      'usr-10': 'Đặng Khánh Linh',
-      'usr-11': 'Ngô Gia Bảo',
-      'usr-12': 'Phùng Tiến Dũng',
-      'usr-13': 'Trịnh Hoài Nam',
-      'usr-14': 'Lý Hải Nam',
-      'usr-15': 'Vương Hồng Quân',
-      'usr-16': 'Nguyễn Văn Hùng',
-      'usr-17': 'Lê Văn Nam'
+      'usr-10': 'Đỗ Như Quỳnh',
+      'usr-11': 'Vũ Linh Chi',
+      'usr-12': 'Lưu Thành Đạt',
+      'usr-13': 'Dương Thị Hồng Yến',
+      'usr-14': 'Đào Minh Tuấn',
+      'usr-15': 'Nguyễn Tuấn Anh',
+      'usr-16': 'Trịnh Thị Bình Dương',
+      'usr-17': 'Mai Thị Thu Hiền'
     };
 
     state.users.forEach(u => {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.88';
+  localState.dbVersion = '21.89';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,7 +170,7 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        dbState.dbVersion = '21.88';
+        dbState.dbVersion = '21.89';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -192,7 +192,7 @@ async function saveState(newState) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.88';
+  newState.dbVersion = '21.89';
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -284,7 +284,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '21.88',
+        dbVersion: currentState.dbVersion || '21.89',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0

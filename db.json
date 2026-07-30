@@ -2,394 +2,177 @@
     "users":  [
                   {
                       "id":  "usr-1",
-                      "name":  "Nguyễn Hoàng Minh",
                       "username":  "hoangminh",
-                      "password":  "Hoangminh93!0911",
-                      "role":  "admin",
-                      "points":  0,
                       "avatar":  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format\u0026fit=crop\u0026w=150\u0026q=80",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Nguyễn Hoàng Minh",
+                      "dept":  "admin",
+                      "role":  "admin",
+                      "points":  350,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-2",
-                      "name":  "Trần Tú Anh",
                       "username":  "tuanh",
-                      "password":  "a123",
-                      "role":  "admin",
-                      "points":  0,
                       "avatar":  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format\u0026fit=crop\u0026w=150\u0026q=80",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Trần Tú Anh",
+                      "dept":  "admin",
+                      "role":  "admin",
+                      "points":  280,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-3",
-                      "name":  "Phùng Thị Minh Phương",
                       "username":  "minhphuong",
-                      "password":  "a123",
-                      "role":  "manager",
-                      "points":  0,
                       "avatar":  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format\u0026fit=crop\u0026w=150\u0026q=80",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Phùng Thị Minh Phương",
+                      "dept":  "cskh",
+                      "role":  "manager",
+                      "points":  150,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-4",
-                      "name":  "Đoàn Thị Hải Linh",
                       "username":  "hailinh",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Đoàn Thị Hải Linh",
+                      "dept":  "cskh",
+                      "role":  "cskh",
+                      "points":  420,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-5",
-                      "name":  "Đặng Thị Phương Thảo",
                       "username":  "phuongthao",
-                      "password":  "a123",
-                      "role":  "manager",
-                      "points":  0,
                       "avatar":  "fa-user-nurse",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Đặng Thị Phương Thảo",
+                      "dept":  "sales",
+                      "role":  "manager",
+                      "points":  310,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-6",
-                      "name":  "Lê Thị Thùy Trang",
                       "username":  "thuytrang",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format\u0026fit=crop\u0026w=150\u0026q=80",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Lê Thị Thùy Trang",
+                      "dept":  "sales",
+                      "role":  "sales",
+                      "points":  290,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-7",
-                      "name":  "Bùi Thị Bích Phượng",
                       "username":  "bichphuong",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
-                      "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "avatar":  "fa-user-nurse",
+                      "name":  "Bùi Thị Bích Phượng",
+                      "dept":  "sales",
+                      "role":  "sales",
+                      "points":  210,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-8",
-                      "name":  "Nguyễn Phương Anh",
                       "username":  "phuonganh",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Nguyễn Phương Anh",
+                      "dept":  "sales",
+                      "role":  "sales",
+                      "points":  180,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-9",
-                      "name":  "Phạm Duy Hưng",
                       "username":  "duyhung",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
-                      "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "avatar":  "fa-user-astronaut",
+                      "name":  "Phạm Duy Hưng",
+                      "dept":  "sourcing",
+                      "role":  "sourcing",
+                      "points":  320,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-10",
-                      "name":  "Đỗ Như Quỳnh",
                       "username":  "nhuquynh",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
-                      "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "avatar":  "fa-user-nurse",
+                      "name":  "Đỗ Như Quỳnh",
+                      "dept":  "sales",
+                      "role":  "sales",
+                      "points":  250,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-11",
-                      "name":  "Vũ Linh Chi",
                       "username":  "linhchi",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
-                      "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "avatar":  "fa-user-astronaut",
+                      "name":  "Vũ Linh Chi",
+                      "dept":  "cskh",
+                      "role":  "cskh",
+                      "points":  230,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-12",
-                      "name":  "Lưu Thành Đạt",
                       "username":  "thanhdat",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Lưu Thành Đạt",
+                      "dept":  "sourcing",
+                      "role":  "sourcing",
+                      "points":  190,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-13",
-                      "name":  "Dương Thị Hồng Yến",
                       "username":  "hongyen",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "name":  "Dương Thị Hồng Yến",
+                      "dept":  "cskh",
+                      "role":  "cskh",
+                      "points":  140,
+                      "password":  "a123"
                   },
                   {
                       "id":  "usr-14",
-                      "name":  "Đào Minh Tuấn",
                       "username":  "minhtuan",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "password":  "a123",
+                      "points":  240,
+                      "dept":  "warehouse",
+                      "role":  "warehouse",
+                      "name":  "Đào Minh Tuấn",
+                      "loc":  "Kho Quảng Châu"
                   },
                   {
                       "id":  "usr-15",
-                      "name":  "Nguyễn Tuấn Anh",
                       "username":  "tuananh",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "password":  "a123",
+                      "points":  260,
+                      "dept":  "warehouse",
+                      "role":  "warehouse",
+                      "name":  "Nguyễn Tuấn Anh",
+                      "loc":  "Kho Thâm Quyến"
                   },
                   {
                       "id":  "usr-16",
-                      "name":  "Trịnh Thị Bình Dương",
                       "username":  "binhduong",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "password":  "a123",
+                      "points":  180,
+                      "dept":  "sales",
+                      "role":  "sales",
+                      "name":  "Trịnh Thị Bình Dương",
+                      "loc":  "Kho Hà Nội"
                   },
                   {
                       "id":  "usr-17",
-                      "name":  "Mai Thị Thu Hiền",
                       "username":  "thuhien",
-                      "password":  "a123",
-                      "role":  "staff",
-                      "points":  0,
                       "avatar":  "fa-user-ninja",
-                      "teamPoints":  0,
-                      "streakDays":  0,
-                      "lastUpdateDate":  null,
-                      "spinsCount":  0,
-                      "lastSpinDate":  null,
-                      "treeLevel":  1,
-                      "treeProgress":  0,
-                      "badges":  [
-
-                                 ],
-                      "completedMissions":  [
-
-                                            ],
-                      "quizTakenToday":  false
+                      "password":  "a123",
+                      "points":  190,
+                      "dept":  "cskh",
+                      "role":  "cskh",
+                      "name":  "Mai Thị Thu Hiền",
+                      "loc":  "Kho Hà Nội"
                   }
               ],
     "leads":  [
