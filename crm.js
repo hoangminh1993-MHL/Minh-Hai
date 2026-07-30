@@ -434,7 +434,14 @@ function renderCRMBoard() {
                           nameVal.includes(searchVal) || 
                           phoneVal.includes(searchVal) ||
                           noteVal.includes(searchVal);
-    return matchesSearch;
+    if (!matchesSearch) return false;
+
+    // Admin & Manager see ALL leads, Staff only see leads assigned to them
+    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager';
+    if (!canSeeAll) {
+      return lead.salesId === currentUser.id || lead.cskhId === currentUser.id;
+    }
+    return true;
   });
   window.lastFilteredCount = filteredLeads.length;
 

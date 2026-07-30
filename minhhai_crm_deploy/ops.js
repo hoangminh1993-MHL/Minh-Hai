@@ -691,6 +691,15 @@ function renderOpsWorkflows() {
   AppState.shipment_workflows.forEach(flow => {
     const client = AppState.clients.find(c => c.id === flow.clientId) || {};
 
+    // Permission filter: Admin and Manager see ALL data, Staff only sees assigned data
+    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager';
+    if (!canSeeAll) {
+      const isAssigned = flow.assigneeId === currentUser.id || 
+                         flow.cskhId === currentUser.id ||
+                         (flow.steps && flow.steps.some(s => s.assigneeId === currentUser.id));
+      if (!isAssigned) return;
+    }
+
     // Search filter
     const matchesSearch = flow.name.toLowerCase().includes(searchVal) ||
                           (client.code && client.code.toLowerCase().includes(searchVal)) ||
