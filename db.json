@@ -5369,6 +5369,20 @@
                         "code":  "MH402",
                         "phone":  "0911223344",
                         "managerId":  "usr-admin"
+                    },
+                    {
+                        "code":  "MH214",
+                        "name":  "MH214-Dung hang",
+                        "id":  "client-mh214-dung-hang",
+                        "phone":  "0987654321",
+                        "salesId":  "usr-11"
+                    },
+                    {
+                        "code":  "MH40",
+                        "name":  "MH 40 Tuan Anh",
+                        "id":  "client-mh40-tuan-anh",
+                        "phone":  "0912345678",
+                        "salesId":  "usr-11"
                     }
                 ],
     "projects":  [
@@ -6405,6 +6419,80 @@
                                    "riskNote":  "Chu y hai quan kiem hoa lo hang vai det.",
                                    "buyerId":  "usr-2",
                                    "stage":  5
+                               },
+                               {
+                                   "debt":  0,
+                                   "id":  "flow-mh214-dung-hang",
+                                   "clientId":  "client-mh214-dung-hang",
+                                   "name":  "MH214-Dung hang - lô quần áo muji",
+                                   "cskhName":  "Vũ Linh Chi",
+                                   "revenue":  0,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-11",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  0,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  0,
+                                   "cskhId":  "usr-11",
+                                   "infoEntryTime":  "2026-07-30T14:24",
+                                   "deadline":  "2026-07-31T14:24",
+                                   "assigneeName":  "Vũ Linh Chi",
+                                   "history":  [
+                                                   "2026-07-30 14:24: Di chuyển sang bước 7 (Về kho TQ)"
+                                               ],
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-11",
+                                   "stage":  7,
+                                   "buyerId":  "usr-11",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  7,
+                                                     "assigneeId":  "usr-11",
+                                                     "name":  "Về kho TQ",
+                                                     "note":  "Đã kiểm hàng về kho TQ"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T14:10",
+                                   "clientName":  "MH214-Dung hang"
+                               },
+                               {
+                                   "debt":  0,
+                                   "id":  "flow-mh40-tuan-anh",
+                                   "clientId":  "client-mh40-tuan-anh",
+                                   "name":  "MH 40 Tuan Anh - Lô tất thể thao",
+                                   "cskhName":  "Vũ Linh Chi",
+                                   "revenue":  0,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-11",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  0,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  0,
+                                   "cskhId":  "usr-11",
+                                   "infoEntryTime":  "2026-07-30T14:35",
+                                   "deadline":  "2026-07-31T14:35",
+                                   "assigneeName":  "Vũ Linh Chi",
+                                   "history":  [
+                                                   "2026-07-30 14:35: Di chuyển sang bước 7 (Về kho TQ)"
+                                               ],
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-11",
+                                   "stage":  7,
+                                   "buyerId":  "usr-11",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  7,
+                                                     "assigneeId":  "usr-11",
+                                                     "name":  "Về kho TQ",
+                                                     "note":  "Đã kiểm hàng tất thể thao về kho TQ"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T14:20",
+                                   "clientName":  "MH 40 Tuan Anh"
                                }
                            ],
     "single_tasks":  [
