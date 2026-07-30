@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v21.95] - 2026-07-30
+
+### Giải Quyết Triệt Để Lỗi Không Đồng Bộ Các Lô Hàng Tạo Bởi Bùi Thị Bích Phượng
+- **Nguyên Nhân Được Phát Hiện:** 
+  - Trước đây khi một máy (như máy chị Phượng) tạo các lô hàng mới (`MH325 Tuyên`, `KG Tài 386`...), yêu cầu lưu dữ liệu lên Server POST `/api/state` sử dụng cơ chế ghi đè hoàn toàn (overwrite). Khi có một tài khoản khác tương tác cùng thời điểm, dữ liệu từ máy kia đã đè lên Server, làm mất các lô hàng mới của chị Phượng trên CSDL trung tâm.
+- **Giải Pháp Nâng Cấp Kiến Trúc Server (2-Way Map Union Merging):**
+  - Cập nhật hàm `saveState` trên `server.js` tự động hợp nhất (merge theo ID) toàn bộ danh sách `shipment_workflows`, `clients`, `leads`, `projects`, `single_tasks`.
+  - Mọi lô hàng do bất kỳ nhân sự nào thêm (bao gồm cả các lô hàng của chị Phượng) đều được gộp chung vào Server CSDL master mà **không bao giờ bị mất hoặc đè đè trùng lặp**.
+- **Đồng Bộ Dữ Liệu Lô Hàng Chị Phượng Trực Tiếp (`v21.95`):**
+  - Đã nạp và gộp thành công các lô hàng `MH325 Tuyên - Dụng cụ kiểm tra mô-men xoắn cho ống kính`, `KG Tài 386 - Hộp đựng trang sức` cùng các lô hàng `HPD349`, `HPD585` của chị Bùi Thị Bích Phượng.
+  - Khi xem bằng bất kỳ tài khoản nào (Admin, Chị Thảo, Chị Phượng...), toàn bộ các lô hàng này đều hiển thị đầy đủ trên hệ thống live.
+
 ## [v21.94] - 2026-07-30
 
 ### Khắc Phục Lỗi Kiến Trúc Đồng Bộ Nhiều Máy & Phân Quyền Nick Thảo
