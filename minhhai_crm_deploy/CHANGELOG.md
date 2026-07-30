@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v21.90] - 2026-07-30
+
+### Sửa Lỗi Hiển Thị Khách Hàng CRM Vận Hành Cũ Cho Tất Cả Tài Khoản
+- **Khắc Phục Ẩn Khách Hàng Ở CRM Vận Hành & Khách Cũ (`ops.js`):** Bỏ điều kiện giới hạn tài khoản chỉ xem được lô hàng/khách hàng do chính mình được phân công (`flow.assigneeId === currentUser.id`).
+- **Mở Rộng Quyền Quyền Quan Sát Cho Nhân Sự:** Tất cả tài khoản nhân viên (Sales, CSKH, Đặt Hàng, Kho) và Quản Lý khi truy cập **CRM Khách Cũ & Lô Hàng** đều có thể quan sát, theo dõi đầy đủ toàn bộ danh sách khách hàng và lô hàng vận hành 11 bước của công ty.
+- **Giữ Nguyên Bộ Lọc Tùy Chọn Theo Nhân Sự:** Người dùng vẫn có thể chủ động dùng ô chọn `-- Người phụ trách --` (`#ops-flow-filter-assignee`) để lọc xem riêng lô hàng của từng nhân sự khi cần.
+
 ## [v21.89] - 2026-07-30
 
 ### Cập Nhật Danh Sách 17 Tài Khoản Nhân Sự Chuẩn Xác
