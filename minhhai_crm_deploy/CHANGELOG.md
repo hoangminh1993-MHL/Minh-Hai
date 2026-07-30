@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v21.92] - 2026-07-30
+
+### Giải Thích & Đồng Bộ Dữ Liệu Lô Hàng Khách Cũ Giữa Các Tài Khoản
+- **Nguyên Nhân Tài Khoản Linh Chi Hiện Các Thẻ (`MH214-Dung hang`, `MH 40 Tuan Anh`):** Các thẻ lô hàng này ban đầu được tạo cục bộ trong bộ nhớ trình duyệt (`localStorage`) của máy/tài khoản Linh Chi nên chưa được đẩy lên Cơ sở dữ liệu trung tâm (`db.json` / Supabase DB) trên server.
+- **Đồng Bộ Dữ Liệu Lô Hàng Trung Tâm (`server.js` & `db.json`):** 
+  - Cập nhật các thẻ lô hàng thực tế (`MH214-Dung hang - lô quần áo muji` và `MH 40 Tuan Anh - Lô tất thể thao`) vào dữ liệu trung tâm `db.json` trên server.
+  - Bổ sung cơ chế tự động hợp nhất 2 chiều trong `server.js` (`loadState`) để tất cả dữ liệu lô hàng từ máy các nhân sự đều được lưu và đồng bộ tức thì sang toàn bộ tài khoản Admin, Quản Lý và Nhân viên khác.
+
 ## [v21.91] - 2026-07-30
 
 ### Phân Quyền Quyền Quan Sát Toàn Bộ Dữ Liệu CRM Cho Admin & Quản Lý
