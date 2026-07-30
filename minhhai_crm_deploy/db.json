@@ -5842,40 +5842,40 @@
     "shipment_workflows":  [
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-23",
-                                   "clientId":  "client-mh-23",
-                                   "name":  "MH20-Lana Nguyễn - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Đoàn Thị Hải Linh",
-                                   "revenue":  5550000,
-                                   "warehouseVn":  "TP Hồ Chí Minh",
-                                   "assigneeId":  "usr-4",
-                                   "warehouseCn":  "Quảng Châu",
-                                   "valTotal":  37000000,
+                                   "id":  "flow-mh-51",
+                                   "clientId":  "client-mh-51",
+                                   "name":  "OTV123 - Minh723 - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Lưu Thành Đạt",
+                                   "revenue":  19050000,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-12",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  127000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  2220000,
-                                   "cskhId":  "usr-4",
+                                   "profit":  7620000,
+                                   "cskhId":  "usr-12",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Đoàn Thị Hải Linh",
+                                   "assigneeName":  "Lưu Thành Đạt",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 2"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 8"
                                                ],
                                    "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-4",
-                                   "stage":  2,
+                                   "quoterId":  "usr-12",
+                                   "stage":  8,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  2,
-                                                     "assigneeId":  "usr-4",
-                                                     "name":  "Bước 2",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH20-Lana Nguyễn"
+                                                     "stepNum":  8,
+                                                     "assigneeId":  "usr-12",
+                                                     "name":  "Bước 8",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng OTV123 - Minh723"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH20-Lana Nguyễn"
+                                   "clientName":  "OTV123 - Minh723"
                                },
                                {
                                    "debt":  0,
@@ -6100,6 +6100,43 @@
                                    "clientName":  "MH36-thuy000"
                                },
                                {
+                                   "debt":  0,
+                                   "id":  "flow-mh-17",
+                                   "clientId":  "client-mh-17",
+                                   "name":  "MH274 - Thế Anh - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Đỗ Như Quỳnh",
+                                   "revenue":  4950000,
+                                   "warehouseVn":  "TP Hồ Chí Minh",
+                                   "assigneeId":  "usr-10",
+                                   "warehouseCn":  "Quảng Châu",
+                                   "valTotal":  33000000,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  1980000,
+                                   "cskhId":  "usr-10",
+                                   "infoEntryTime":  "2026-07-30T10:15",
+                                   "deadline":  "2026-07-31T17:00",
+                                   "assigneeName":  "Đỗ Như Quỳnh",
+                                   "history":  [
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 7"
+                                               ],
+                                   "serviceType":  "tiểu ngạch (ký gửi)",
+                                   "quoterId":  "usr-10",
+                                   "stage":  7,
+                                   "buyerId":  "usr-9",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  7,
+                                                     "assigneeId":  "usr-10",
+                                                     "name":  "Bước 7",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH274 - Thế Anh"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T10:00",
+                                   "clientName":  "MH274 - Thế Anh"
+                               },
+                               {
                                    "debt":  93000000,
                                    "id":  "flow-mh-42",
                                    "clientId":  "client-mh-42",
@@ -6212,43 +6249,6 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-8",
-                                   "clientId":  "client-mh-8",
-                                   "name":  "HPD888-MinhTuan - Lô hàng chính ngạch",
-                                   "cskhName":  "Dương Thị Hồng Yến",
-                                   "revenue":  13650000,
-                                   "warehouseVn":  "TP Hồ Chí Minh",
-                                   "assigneeId":  "usr-13",
-                                   "warehouseCn":  "Quảng Châu",
-                                   "valTotal":  91000000,
-                                   "files":  [
-
-                                             ],
-                                   "profit":  5460000,
-                                   "cskhId":  "usr-13",
-                                   "infoEntryTime":  "2026-07-30T10:15",
-                                   "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Dương Thị Hồng Yến",
-                                   "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 9"
-                                               ],
-                                   "serviceType":  "chính ngạch",
-                                   "quoterId":  "usr-13",
-                                   "stage":  9,
-                                   "buyerId":  "usr-9",
-                                   "steps":  [
-                                                 {
-                                                     "stepNum":  9,
-                                                     "assigneeId":  "usr-13",
-                                                     "name":  "Bước 9",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng HPD888-MinhTuan"
-                                                 }
-                                             ],
-                                   "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "HPD888-MinhTuan"
-                               },
-                               {
-                                   "debt":  0,
                                    "id":  "flow-mh-1",
                                    "clientId":  "client-mh-1",
                                    "name":  "HPD333-Hân Hân - Lô hàng tiểu ngạch (ký gửi)",
@@ -6323,40 +6323,77 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-17",
-                                   "clientId":  "client-mh-17",
-                                   "name":  "MH274 - Thế Anh - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Đỗ Như Quỳnh",
-                                   "revenue":  4950000,
-                                   "warehouseVn":  "TP Hồ Chí Minh",
-                                   "assigneeId":  "usr-10",
-                                   "warehouseCn":  "Quảng Châu",
-                                   "valTotal":  33000000,
+                                   "id":  "flow-mh214-dung-hang",
+                                   "clientId":  "client-mh214",
+                                   "name":  "MH214-Dung hang - lô quần áo muji",
+                                   "cskhName":  "Vũ Linh Chi",
+                                   "revenue":  0,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-11",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  0,
                                    "files":  [
 
                                              ],
-                                   "profit":  1980000,
-                                   "cskhId":  "usr-10",
-                                   "infoEntryTime":  "2026-07-30T10:15",
-                                   "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Đỗ Như Quỳnh",
+                                   "profit":  0,
+                                   "cskhId":  "usr-11",
+                                   "infoEntryTime":  "2026-07-30T14:24",
+                                   "deadline":  "2026-07-31T14:24",
+                                   "assigneeName":  "Vũ Linh Chi",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 7"
+                                                   "2026-07-30 14:24: Cập nhật lô hàng sang bước 7 (Về kho TQ)"
                                                ],
-                                   "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-10",
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-11",
                                    "stage":  7,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
                                                      "stepNum":  7,
-                                                     "assigneeId":  "usr-10",
-                                                     "name":  "Bước 7",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH274 - Thế Anh"
+                                                     "assigneeId":  "usr-11",
+                                                     "name":  "Về kho TQ",
+                                                     "note":  "Hàng lô quần áo muji đã nhập kho Bằng Tường TQ"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH274 - Thế Anh"
+                                   "clientName":  "MH214-Dung hang"
+                               },
+                               {
+                                   "debt":  0,
+                                   "id":  "flow-mh-8",
+                                   "clientId":  "client-mh-8",
+                                   "name":  "HPD888-MinhTuan - Lô hàng chính ngạch",
+                                   "cskhName":  "Dương Thị Hồng Yến",
+                                   "revenue":  13650000,
+                                   "warehouseVn":  "TP Hồ Chí Minh",
+                                   "assigneeId":  "usr-13",
+                                   "warehouseCn":  "Quảng Châu",
+                                   "valTotal":  91000000,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  5460000,
+                                   "cskhId":  "usr-13",
+                                   "infoEntryTime":  "2026-07-30T10:15",
+                                   "deadline":  "2026-07-31T17:00",
+                                   "assigneeName":  "Dương Thị Hồng Yến",
+                                   "history":  [
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 9"
+                                               ],
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-13",
+                                   "stage":  9,
+                                   "buyerId":  "usr-9",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  9,
+                                                     "assigneeId":  "usr-13",
+                                                     "name":  "Bước 9",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng HPD888-MinhTuan"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T10:00",
+                                   "clientName":  "HPD888-MinhTuan"
                                },
                                {
                                    "debt":  0,
@@ -6397,40 +6434,40 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-37",
-                                   "clientId":  "client-mh-37",
-                                   "name":  "MH19-Đồng Phương - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Nguyễn Phương Anh",
-                                   "revenue":  13500000,
-                                   "warehouseVn":  "Hải Phòng",
-                                   "assigneeId":  "usr-8",
-                                   "warehouseCn":  "Thâm Quyến",
-                                   "valTotal":  90000000,
+                                   "id":  "flow-mh325-tuyen",
+                                   "clientId":  "client-mh325-tuyen",
+                                   "name":  "MH325 Tuyên - Dụng cụ kiểm tra mô-men xoắn cho ống kính nhập khẩu",
+                                   "cskhName":  "Bùi Thị Bích Phượng",
+                                   "revenue":  0,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-7",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  0,
                                    "files":  [
 
                                              ],
-                                   "profit":  5400000,
-                                   "cskhId":  "usr-8",
-                                   "infoEntryTime":  "2026-07-30T10:15",
-                                   "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Nguyễn Phương Anh",
+                                   "profit":  0,
+                                   "cskhId":  "usr-7",
+                                   "infoEntryTime":  "2026-07-30T10:33",
+                                   "deadline":  "2026-07-31T10:24",
+                                   "assigneeName":  "Bùi Thị Bích Phượng",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 5"
+                                                   "2026-07-30 10:33: Cập nhật lô hàng sang bước 3 (Thương lượng)"
                                                ],
-                                   "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-8",
-                                   "stage":  5,
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-7",
+                                   "stage":  3,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  5,
-                                                     "assigneeId":  "usr-8",
-                                                     "name":  "Bước 5",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH19-Đồng Phương"
+                                                     "stepNum":  3,
+                                                     "assigneeId":  "usr-7",
+                                                     "name":  "Thương lượng",
+                                                     "note":  "Đang thương lượng báo giá dụng cụ kiểm tra mô-men xoắn"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH19-Đồng Phương"
+                                   "clientName":  "MH325 Tuyên"
                                },
                                {
                                    "debt":  0,
@@ -6582,40 +6619,77 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-21",
-                                   "clientId":  "client-mh-21",
-                                   "name":  "MH230 - Quynh347 - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Mai Thị Thu Hiền",
-                                   "revenue":  7500000,
-                                   "warehouseVn":  "Hà Nội",
-                                   "assigneeId":  "usr-17",
-                                   "warehouseCn":  "Bằng Tường",
-                                   "valTotal":  50000000,
+                                   "id":  "flow-mh-37",
+                                   "clientId":  "client-mh-37",
+                                   "name":  "MH19-Đồng Phương - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Nguyễn Phương Anh",
+                                   "revenue":  13500000,
+                                   "warehouseVn":  "Hải Phòng",
+                                   "assigneeId":  "usr-8",
+                                   "warehouseCn":  "Thâm Quyến",
+                                   "valTotal":  90000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  3000000,
-                                   "cskhId":  "usr-17",
+                                   "profit":  5400000,
+                                   "cskhId":  "usr-8",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Mai Thị Thu Hiền",
+                                   "assigneeName":  "Nguyễn Phương Anh",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 11"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 5"
                                                ],
                                    "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-17",
-                                   "stage":  11,
+                                   "quoterId":  "usr-8",
+                                   "stage":  5,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  11,
-                                                     "assigneeId":  "usr-17",
-                                                     "name":  "Bước 11",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH230 - Quynh347"
+                                                     "stepNum":  5,
+                                                     "assigneeId":  "usr-8",
+                                                     "name":  "Bước 5",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH19-Đồng Phương"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH230 - Quynh347"
+                                   "clientName":  "MH19-Đồng Phương"
+                               },
+                               {
+                                   "debt":  0,
+                                   "id":  "flow-mh-23",
+                                   "clientId":  "client-mh-23",
+                                   "name":  "MH20-Lana Nguyễn - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Đoàn Thị Hải Linh",
+                                   "revenue":  5550000,
+                                   "warehouseVn":  "TP Hồ Chí Minh",
+                                   "assigneeId":  "usr-4",
+                                   "warehouseCn":  "Quảng Châu",
+                                   "valTotal":  37000000,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  2220000,
+                                   "cskhId":  "usr-4",
+                                   "infoEntryTime":  "2026-07-30T10:15",
+                                   "deadline":  "2026-07-31T17:00",
+                                   "assigneeName":  "Đoàn Thị Hải Linh",
+                                   "history":  [
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 2"
+                                               ],
+                                   "serviceType":  "tiểu ngạch (ký gửi)",
+                                   "quoterId":  "usr-4",
+                                   "stage":  2,
+                                   "buyerId":  "usr-9",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  2,
+                                                     "assigneeId":  "usr-4",
+                                                     "name":  "Bước 2",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH20-Lana Nguyễn"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T10:00",
+                                   "clientName":  "MH20-Lana Nguyễn"
                                },
                                {
                                    "debt":  0,
@@ -6693,40 +6767,40 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-27",
-                                   "clientId":  "client-mh-27",
-                                   "name":  "MH16-Phương406 - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Phạm Duy Hưng",
-                                   "revenue":  17850000,
-                                   "warehouseVn":  "Hà Nội",
-                                   "assigneeId":  "usr-9",
-                                   "warehouseCn":  "Bằng Tường",
-                                   "valTotal":  119000000,
+                                   "id":  "flow-mh-34",
+                                   "clientId":  "client-mh-34",
+                                   "name":  "MH6-Phuong266 - Lô hàng chính ngạch",
+                                   "cskhName":  "Đoàn Thị Hải Linh",
+                                   "revenue":  8700000,
+                                   "warehouseVn":  "Hải Phòng",
+                                   "assigneeId":  "usr-4",
+                                   "warehouseCn":  "Thâm Quyến",
+                                   "valTotal":  58000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  7140000,
-                                   "cskhId":  "usr-9",
+                                   "profit":  3480000,
+                                   "cskhId":  "usr-4",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Phạm Duy Hưng",
+                                   "assigneeName":  "Đoàn Thị Hải Linh",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 6"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 2"
                                                ],
-                                   "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-9",
-                                   "stage":  6,
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-4",
+                                   "stage":  2,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  6,
-                                                     "assigneeId":  "usr-9",
-                                                     "name":  "Bước 6",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH16-Phương406"
+                                                     "stepNum":  2,
+                                                     "assigneeId":  "usr-4",
+                                                     "name":  "Bước 2",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH6-Phuong266"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH16-Phương406"
+                                   "clientName":  "MH6-Phuong266"
                                },
                                {
                                    "debt":  0,
@@ -6766,41 +6840,78 @@
                                    "clientName":  "HPD306-TienLinh"
                                },
                                {
-                                   "debt":  0,
-                                   "id":  "flow-mh325-tuyen",
-                                   "clientId":  "client-mh325-tuyen",
-                                   "name":  "MH325 Tuyên - Dụng cụ kiểm tra mô-men xoắn cho ống kính nhập khẩu",
-                                   "cskhName":  "Bùi Thị Bích Phượng",
-                                   "revenue":  0,
-                                   "warehouseVn":  "Hà Nội",
-                                   "assigneeId":  "usr-7",
-                                   "warehouseCn":  "Bằng Tường",
-                                   "valTotal":  0,
+                                   "debt":  63000000,
+                                   "id":  "flow-mh-20",
+                                   "clientId":  "client-mh-20",
+                                   "name":  "MH311 - A. Trung - Lô hàng chính ngạch",
+                                   "cskhName":  "Trịnh Thị Bình Dương",
+                                   "revenue":  9450000,
+                                   "warehouseVn":  "TP Hồ Chí Minh",
+                                   "assigneeId":  "usr-16",
+                                   "warehouseCn":  "Quảng Châu",
+                                   "valTotal":  63000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  0,
-                                   "cskhId":  "usr-7",
-                                   "infoEntryTime":  "2026-07-30T10:33",
-                                   "deadline":  "2026-07-31T10:24",
-                                   "assigneeName":  "Bùi Thị Bích Phượng",
+                                   "profit":  3780000,
+                                   "cskhId":  "usr-16",
+                                   "infoEntryTime":  "2026-07-30T10:15",
+                                   "deadline":  "2026-07-31T17:00",
+                                   "assigneeName":  "Trịnh Thị Bình Dương",
                                    "history":  [
-                                                   "2026-07-30 10:33: Cập nhật lô hàng sang bước 3 (Thương lượng)"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 10"
                                                ],
                                    "serviceType":  "chính ngạch",
-                                   "quoterId":  "usr-7",
-                                   "stage":  3,
+                                   "quoterId":  "usr-16",
+                                   "stage":  10,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  3,
-                                                     "assigneeId":  "usr-7",
-                                                     "name":  "Thương lượng",
-                                                     "note":  "Đang thương lượng báo giá dụng cụ kiểm tra mô-men xoắn"
+                                                     "stepNum":  10,
+                                                     "assigneeId":  "usr-16",
+                                                     "name":  "Bước 10",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH311 - A. Trung"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH325 Tuyên"
+                                   "clientName":  "MH311 - A. Trung"
+                               },
+                               {
+                                   "debt":  0,
+                                   "id":  "flow-mh-28",
+                                   "clientId":  "client-mh-28",
+                                   "name":  "MH47 -Thảo MHL - Lô hàng chính ngạch",
+                                   "cskhName":  "Đỗ Như Quỳnh",
+                                   "revenue":  2250000,
+                                   "warehouseVn":  "Hải Phòng",
+                                   "assigneeId":  "usr-10",
+                                   "warehouseCn":  "Thâm Quyến",
+                                   "valTotal":  15000000,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  900000,
+                                   "cskhId":  "usr-10",
+                                   "infoEntryTime":  "2026-07-30T10:15",
+                                   "deadline":  "2026-07-31T17:00",
+                                   "assigneeName":  "Đỗ Như Quỳnh",
+                                   "history":  [
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 7"
+                                               ],
+                                   "serviceType":  "chính ngạch",
+                                   "quoterId":  "usr-10",
+                                   "stage":  7,
+                                   "buyerId":  "usr-9",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  7,
+                                                     "assigneeId":  "usr-10",
+                                                     "name":  "Bước 7",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH47 -Thảo MHL"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T10:00",
+                                   "clientName":  "MH47 -Thảo MHL"
                                },
                                {
                                    "debt":  0,
@@ -6912,43 +7023,6 @@
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
                                    "clientName":  "OTV142 - Dung660"
-                               },
-                               {
-                                   "debt":  0,
-                                   "id":  "flow-mh-51",
-                                   "clientId":  "client-mh-51",
-                                   "name":  "OTV123 - Minh723 - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Lưu Thành Đạt",
-                                   "revenue":  19050000,
-                                   "warehouseVn":  "Hà Nội",
-                                   "assigneeId":  "usr-12",
-                                   "warehouseCn":  "Bằng Tường",
-                                   "valTotal":  127000000,
-                                   "files":  [
-
-                                             ],
-                                   "profit":  7620000,
-                                   "cskhId":  "usr-12",
-                                   "infoEntryTime":  "2026-07-30T10:15",
-                                   "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Lưu Thành Đạt",
-                                   "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 8"
-                                               ],
-                                   "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-12",
-                                   "stage":  8,
-                                   "buyerId":  "usr-9",
-                                   "steps":  [
-                                                 {
-                                                     "stepNum":  8,
-                                                     "assigneeId":  "usr-12",
-                                                     "name":  "Bước 8",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng OTV123 - Minh723"
-                                                 }
-                                             ],
-                                   "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "OTV123 - Minh723"
                                },
                                {
                                    "debt":  0,
@@ -7100,56 +7174,56 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-34",
-                                   "clientId":  "client-mh-34",
-                                   "name":  "MH6-Phuong266 - Lô hàng chính ngạch",
-                                   "cskhName":  "Đoàn Thị Hải Linh",
-                                   "revenue":  8700000,
-                                   "warehouseVn":  "Hải Phòng",
-                                   "assigneeId":  "usr-4",
-                                   "warehouseCn":  "Thâm Quyến",
-                                   "valTotal":  58000000,
+                                   "id":  "flow-dat-cang",
+                                   "clientId":  "client-dat-cang",
+                                   "name":  "Đạt Cảng - Lô hàng chính ngạch",
+                                   "cskhName":  "Vũ Linh Chi",
+                                   "revenue":  0,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-11",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  0,
                                    "files":  [
 
                                              ],
-                                   "profit":  3480000,
-                                   "cskhId":  "usr-4",
-                                   "infoEntryTime":  "2026-07-30T10:15",
-                                   "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Đoàn Thị Hải Linh",
+                                   "profit":  0,
+                                   "cskhId":  "usr-11",
+                                   "infoEntryTime":  "2026-07-30T14:31",
+                                   "deadline":  "2026-07-31T14:31",
+                                   "assigneeName":  "Vũ Linh Chi",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 2"
+                                                   "2026-07-30 14:31: Cập nhật lô hàng sang bước 5 (Mua hàng)"
                                                ],
                                    "serviceType":  "chính ngạch",
-                                   "quoterId":  "usr-4",
-                                   "stage":  2,
+                                   "quoterId":  "usr-11",
+                                   "stage":  5,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  2,
-                                                     "assigneeId":  "usr-4",
-                                                     "name":  "Bước 2",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH6-Phuong266"
+                                                     "stepNum":  5,
+                                                     "assigneeId":  "usr-11",
+                                                     "name":  "Mua hàng",
+                                                     "note":  "Đang xử lý mua hàng cho Đạt Cảng"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH6-Phuong266"
+                                   "clientName":  "Đạt Cảng"
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-38",
-                                   "clientId":  "client-mh-38",
-                                   "name":  "MH315-Dung772 - Lô hàng chính ngạch",
+                                   "id":  "flow-mh-16",
+                                   "clientId":  "client-mh-16",
+                                   "name":  "MH23-HienBNI (A Hiển) - Lô hàng chính ngạch",
                                    "cskhName":  "Phạm Duy Hưng",
-                                   "revenue":  750000,
-                                   "warehouseVn":  "TP Hồ Chí Minh",
+                                   "revenue":  9750000,
+                                   "warehouseVn":  "Hải Phòng",
                                    "assigneeId":  "usr-9",
-                                   "warehouseCn":  "Quảng Châu",
-                                   "valTotal":  5000000,
+                                   "warehouseCn":  "Thâm Quyến",
+                                   "valTotal":  65000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  300000,
+                                   "profit":  3900000,
                                    "cskhId":  "usr-9",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
@@ -7166,11 +7240,11 @@
                                                      "stepNum":  6,
                                                      "assigneeId":  "usr-9",
                                                      "name":  "Bước 6",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH315-Dung772"
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH23-HienBNI (A Hiển)"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH315-Dung772"
+                                   "clientName":  "MH23-HienBNI (A Hiển)"
                                },
                                {
                                    "debt":  0,
@@ -7395,41 +7469,41 @@
                                    "clientName":  "MH278 - Hà"
                                },
                                {
-                                   "debt":  63000000,
-                                   "id":  "flow-mh-20",
-                                   "clientId":  "client-mh-20",
-                                   "name":  "MH311 - A. Trung - Lô hàng chính ngạch",
-                                   "cskhName":  "Trịnh Thị Bình Dương",
-                                   "revenue":  9450000,
-                                   "warehouseVn":  "TP Hồ Chí Minh",
-                                   "assigneeId":  "usr-16",
-                                   "warehouseCn":  "Quảng Châu",
-                                   "valTotal":  63000000,
+                                   "debt":  0,
+                                   "id":  "flow-mh-21",
+                                   "clientId":  "client-mh-21",
+                                   "name":  "MH230 - Quynh347 - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Mai Thị Thu Hiền",
+                                   "revenue":  7500000,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-17",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  50000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  3780000,
-                                   "cskhId":  "usr-16",
+                                   "profit":  3000000,
+                                   "cskhId":  "usr-17",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Trịnh Thị Bình Dương",
+                                   "assigneeName":  "Mai Thị Thu Hiền",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 10"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 11"
                                                ],
-                                   "serviceType":  "chính ngạch",
-                                   "quoterId":  "usr-16",
-                                   "stage":  10,
+                                   "serviceType":  "tiểu ngạch (ký gửi)",
+                                   "quoterId":  "usr-17",
+                                   "stage":  11,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  10,
-                                                     "assigneeId":  "usr-16",
-                                                     "name":  "Bước 10",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH311 - A. Trung"
+                                                     "stepNum":  11,
+                                                     "assigneeId":  "usr-17",
+                                                     "name":  "Bước 11",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH230 - Quynh347"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH311 - A. Trung"
+                                   "clientName":  "MH230 - Quynh347"
                                },
                                {
                                    "debt":  0,
@@ -7470,6 +7544,43 @@
                                },
                                {
                                    "debt":  0,
+                                   "id":  "flow-mh-25",
+                                   "clientId":  "client-mh-25",
+                                   "name":  "MH266 - Hoàng Hùng - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Bùi Thị Bích Phượng",
+                                   "revenue":  15450000,
+                                   "warehouseVn":  "Hải Phòng",
+                                   "assigneeId":  "usr-7",
+                                   "warehouseCn":  "Thâm Quyến",
+                                   "valTotal":  103000000,
+                                   "files":  [
+
+                                             ],
+                                   "profit":  6180000,
+                                   "cskhId":  "usr-7",
+                                   "infoEntryTime":  "2026-07-30T10:15",
+                                   "deadline":  "2026-07-31T17:00",
+                                   "assigneeName":  "Bùi Thị Bích Phượng",
+                                   "history":  [
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 4"
+                                               ],
+                                   "serviceType":  "tiểu ngạch (ký gửi)",
+                                   "quoterId":  "usr-7",
+                                   "stage":  4,
+                                   "buyerId":  "usr-9",
+                                   "steps":  [
+                                                 {
+                                                     "stepNum":  4,
+                                                     "assigneeId":  "usr-7",
+                                                     "name":  "Bước 4",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH266 - Hoàng Hùng"
+                                                 }
+                                             ],
+                                   "customerMsgTime":  "2026-07-30T10:00",
+                                   "clientName":  "MH266 - Hoàng Hùng"
+                               },
+                               {
+                                   "debt":  0,
                                    "id":  "flow-mh-10",
                                    "clientId":  "client-mh-10",
                                    "name":  "HPD351-Phúc 669 - Lô hàng chính ngạch",
@@ -7507,40 +7618,40 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-48",
-                                   "clientId":  "client-mh-48",
-                                   "name":  "OTV175 - Trường451 - Lô hàng chính ngạch",
-                                   "cskhName":  "Nguyễn Phương Anh",
-                                   "revenue":  21900000,
+                                   "id":  "flow-mh40-tuan-anh",
+                                   "clientId":  "client-mh40",
+                                   "name":  "MH 40 Tuan Anh - Lô tất thể thao",
+                                   "cskhName":  "Vũ Linh Chi",
+                                   "revenue":  0,
                                    "warehouseVn":  "Hà Nội",
-                                   "assigneeId":  "usr-8",
+                                   "assigneeId":  "usr-11",
                                    "warehouseCn":  "Bằng Tường",
-                                   "valTotal":  146000000,
+                                   "valTotal":  0,
                                    "files":  [
 
                                              ],
-                                   "profit":  8760000,
-                                   "cskhId":  "usr-8",
-                                   "infoEntryTime":  "2026-07-30T10:15",
-                                   "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Nguyễn Phương Anh",
+                                   "profit":  0,
+                                   "cskhId":  "usr-11",
+                                   "infoEntryTime":  "2026-07-30T14:35",
+                                   "deadline":  "2026-07-31T14:35",
+                                   "assigneeName":  "Vũ Linh Chi",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 5"
+                                                   "2026-07-30 14:35: Cập nhật lô hàng sang bước 7 (Về kho TQ)"
                                                ],
                                    "serviceType":  "chính ngạch",
-                                   "quoterId":  "usr-8",
-                                   "stage":  5,
+                                   "quoterId":  "usr-11",
+                                   "stage":  7,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  5,
-                                                     "assigneeId":  "usr-8",
-                                                     "name":  "Bước 5",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng OTV175 - Trường451"
+                                                     "stepNum":  7,
+                                                     "assigneeId":  "usr-11",
+                                                     "name":  "Về kho TQ",
+                                                     "note":  "Lô tất thể thao đã về kho TQ"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "OTV175 - Trường451"
+                                   "clientName":  "MH 40 Tuan Anh"
                                },
                                {
                                    "debt":  0,
@@ -7581,40 +7692,40 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-28",
-                                   "clientId":  "client-mh-28",
-                                   "name":  "MH47 -Thảo MHL - Lô hàng chính ngạch",
-                                   "cskhName":  "Đỗ Như Quỳnh",
-                                   "revenue":  2250000,
-                                   "warehouseVn":  "Hải Phòng",
-                                   "assigneeId":  "usr-10",
-                                   "warehouseCn":  "Thâm Quyến",
-                                   "valTotal":  15000000,
+                                   "id":  "flow-mh-48",
+                                   "clientId":  "client-mh-48",
+                                   "name":  "OTV175 - Trường451 - Lô hàng chính ngạch",
+                                   "cskhName":  "Nguyễn Phương Anh",
+                                   "revenue":  21900000,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-8",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  146000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  900000,
-                                   "cskhId":  "usr-10",
+                                   "profit":  8760000,
+                                   "cskhId":  "usr-8",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Đỗ Như Quỳnh",
+                                   "assigneeName":  "Nguyễn Phương Anh",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 7"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 5"
                                                ],
                                    "serviceType":  "chính ngạch",
-                                   "quoterId":  "usr-10",
-                                   "stage":  7,
+                                   "quoterId":  "usr-8",
+                                   "stage":  5,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  7,
-                                                     "assigneeId":  "usr-10",
-                                                     "name":  "Bước 7",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH47 -Thảo MHL"
+                                                     "stepNum":  5,
+                                                     "assigneeId":  "usr-8",
+                                                     "name":  "Bước 5",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng OTV175 - Trường451"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH47 -Thảo MHL"
+                                   "clientName":  "OTV175 - Trường451"
                                },
                                {
                                    "debt":  0,
@@ -7729,19 +7840,19 @@
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-16",
-                                   "clientId":  "client-mh-16",
-                                   "name":  "MH23-HienBNI (A Hiển) - Lô hàng chính ngạch",
+                                   "id":  "flow-mh-38",
+                                   "clientId":  "client-mh-38",
+                                   "name":  "MH315-Dung772 - Lô hàng chính ngạch",
                                    "cskhName":  "Phạm Duy Hưng",
-                                   "revenue":  9750000,
-                                   "warehouseVn":  "Hải Phòng",
+                                   "revenue":  750000,
+                                   "warehouseVn":  "TP Hồ Chí Minh",
                                    "assigneeId":  "usr-9",
-                                   "warehouseCn":  "Thâm Quyến",
-                                   "valTotal":  65000000,
+                                   "warehouseCn":  "Quảng Châu",
+                                   "valTotal":  5000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  3900000,
+                                   "profit":  300000,
                                    "cskhId":  "usr-9",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
@@ -7758,48 +7869,48 @@
                                                      "stepNum":  6,
                                                      "assigneeId":  "usr-9",
                                                      "name":  "Bước 6",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH23-HienBNI (A Hiển)"
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH315-Dung772"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH23-HienBNI (A Hiển)"
+                                   "clientName":  "MH315-Dung772"
                                },
                                {
                                    "debt":  0,
-                                   "id":  "flow-mh-25",
-                                   "clientId":  "client-mh-25",
-                                   "name":  "MH266 - Hoàng Hùng - Lô hàng tiểu ngạch (ký gửi)",
-                                   "cskhName":  "Bùi Thị Bích Phượng",
-                                   "revenue":  15450000,
-                                   "warehouseVn":  "Hải Phòng",
-                                   "assigneeId":  "usr-7",
-                                   "warehouseCn":  "Thâm Quyến",
-                                   "valTotal":  103000000,
+                                   "id":  "flow-mh-27",
+                                   "clientId":  "client-mh-27",
+                                   "name":  "MH16-Phương406 - Lô hàng tiểu ngạch (ký gửi)",
+                                   "cskhName":  "Phạm Duy Hưng",
+                                   "revenue":  17850000,
+                                   "warehouseVn":  "Hà Nội",
+                                   "assigneeId":  "usr-9",
+                                   "warehouseCn":  "Bằng Tường",
+                                   "valTotal":  119000000,
                                    "files":  [
 
                                              ],
-                                   "profit":  6180000,
-                                   "cskhId":  "usr-7",
+                                   "profit":  7140000,
+                                   "cskhId":  "usr-9",
                                    "infoEntryTime":  "2026-07-30T10:15",
                                    "deadline":  "2026-07-31T17:00",
-                                   "assigneeName":  "Bùi Thị Bích Phượng",
+                                   "assigneeName":  "Phạm Duy Hưng",
                                    "history":  [
-                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 4"
+                                                   "2026-07-30 10:15: Cập nhật lô hàng sang bước 6"
                                                ],
                                    "serviceType":  "tiểu ngạch (ký gửi)",
-                                   "quoterId":  "usr-7",
-                                   "stage":  4,
+                                   "quoterId":  "usr-9",
+                                   "stage":  6,
                                    "buyerId":  "usr-9",
                                    "steps":  [
                                                  {
-                                                     "stepNum":  4,
-                                                     "assigneeId":  "usr-7",
-                                                     "name":  "Bước 4",
-                                                     "note":  "Đã cập nhật tiến độ lô hàng MH266 - Hoàng Hùng"
+                                                     "stepNum":  6,
+                                                     "assigneeId":  "usr-9",
+                                                     "name":  "Bước 6",
+                                                     "note":  "Đã cập nhật tiến độ lô hàng MH16-Phương406"
                                                  }
                                              ],
                                    "customerMsgTime":  "2026-07-30T10:00",
-                                   "clientName":  "MH266 - Hoàng Hùng"
+                                   "clientName":  "MH16-Phương406"
                                }
                            ],
     "single_tasks":  [

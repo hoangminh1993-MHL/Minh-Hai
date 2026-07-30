@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.95';
+  const CURRENT_APP_VER = 'v21.96';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -701,7 +701,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.95';
+const CLIENT_VERSION = '21.96';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -747,12 +747,12 @@ function startStatePolling() {
 
         const data = await res.json();
         
-        const clientLastUpdated = AppState.lastUpdated || 0;
-        const serverLastUpdated = data.lastUpdated || 0;
+        // Sync whenever server has new timestamp OR workflow count differs
+        const currentCount = AppState.shipment_workflows ? AppState.shipment_workflows.length : 0;
+        const serverCount = data.shipment_workflows ? data.shipment_workflows.length : 0;
         
-        // Sync whenever server has new data or client timestamp doesn't match
-        if (serverLastUpdated > 0 && serverLastUpdated !== clientLastUpdated) {
-          console.log('[Live Sync] Server state updated. Syncing live multi-user data...');
+        if (serverLastUpdated > 0 && (serverLastUpdated !== clientLastUpdated || serverCount !== currentCount)) {
+          console.log('[Live Sync] Server state updated (serverCount=' + serverCount + ', localCount=' + currentCount + '). Syncing live multi-user data...');
           AppState.lastUpdated = serverLastUpdated;
           if (data.users && data.users.length > 0) AppState.users = data.users;
           if (data.leads) AppState.leads = data.leads;
