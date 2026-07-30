@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## [v21.89] - 2026-07-30
+
+### Cập Nhật Danh Sách 17 Tài Khoản Nhân Sự Chuẩn Xác
+- **Đồng Bộ Hệ Thống Tài Khoản Thực Tế:** Cập nhật lại toàn bộ danh sách 17 nhân sự và tài khoản đăng nhập (`app.js`, `login.js`, `server.js`, `db.json`):
+  1. `Nguyễn Hoàng Minh` (Admin - ID: `hoangminh` - Pass: `a123`)
+  2. `Trần Tú Anh` (Admin - ID: `tuanh` - Pass: `a123`)
+  3. `Phùng Thị Minh Phương` (Quản Lý - ID: `minhphuong` - Pass: `a123`)
+  4. `Đoàn Thị Hải Linh` (Nhân Viên CSKH - ID: `hailinh` - Pass: `a123`)
+  5. `Đặng Thị Phương Thảo` (Quản Lý - ID: `phuongthao` - Pass: `a123`)
+  6. `Lê Thị Thùy Trang` (Nhân Viên Sales - ID: `thuytrang` - Pass: `a123`)
+  7. `Bùi Thị Bích Phượng` (Nhân Viên Sales - ID: `bichphuong` - Pass: `a123`)
+  8. `Nguyễn Phương Anh` (Nhân Viên Sales - ID: `phuonganh` - Pass: `a123`)
+  9. `Phạm Duy Hưng` (Nhân Viên Đặt Hàng - ID: `duyhung` - Pass: `a123`)
+  10. `Đỗ Như Quỳnh` (Nhân Viên - ID: `nhuquynh` - Pass: `a123`)
+  11. `Vũ Linh Chi` (Nhân Viên - ID: `linhchi` - Pass: `a123`)
+  12. `Lưu Thành Đạt` (Nhân Viên - ID: `thanhdat` - Pass: `a123`)
+  13. `Dương Thị Hồng Yến` (Nhân Viên - ID: `hongyen` - Pass: `a123`)
+  14. `Đào Minh Tuấn` (Nhân Viên Kho - ID: `minhtuan` - Pass: `a123`)
+  15. `Nguyễn Tuấn Anh` (Nhân Viên Kho - ID: `tuananh` - Pass: `a123`)
+  16. `Trịnh Thị Bình Dương` (Nhân Viên - ID: `binhduong` - Pass: `a123`)
+  17. `Mai Thị Thu Hiền` (Nhân Viên - ID: `thuhien` - Pass: `a123`)
+
 ## [v21.88] - 2026-07-30
 
 ### Tối Ưu Quyền Giả Lập Vai Trò Cho Quản Lý & Tối Giản Giao Diện CRM
