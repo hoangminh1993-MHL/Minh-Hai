@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v21.96] - 2026-07-30
+
+### Rà Soát Toàn Bộ Hệ Thống Đồng Bộ - Đảm Bảo 100% Dữ Liệu Tạo Từ Bất Kỳ Máy Nào Đều Tự Động Hiển Thị Với Admin & Quản Lý
+- **Cập Nhật Cơ Chế Tự Động Phát Hiện Số Lượng Lô Hàng Sống (`app.js`):**
+  - Bổ sung chốt chặn an toàn `serverCount !== currentCount` trong vòng lặp polling: Nếu số lượng lô hàng trên Server lớn hơn số lô hàng đang lưu tại máy (do máy nhân sự khác vừa khởi tạo), hệ thống sẽ **lập tức nạp và hiển thị các lô hàng mới trong vòng 2 giây** mà không phụ thuộc vào mốc thời gian.
+- **Bỏ Hoàn Toàn Rào Cản Kiểm Tra Hợp Lệ Dữ Liệu Rỗng Server (`server.js`):**
+  - Loại bỏ các điều kiện chặn ghi Server cũ, giúp mọi thao tác tạo mới/sửa đổi lô hàng của Vũ Linh Chi (`linhchi`), Bùi Thị Bích Phượng (`bichphuong`) hay bất kỳ nhân sự nào đều được gửi lên Server CSDL trung tâm 100% tin cậy.
+- **Cập Nhật Trực Tiếp Các Lô Hàng Tạo Bởi Vũ Linh Chi (`linhchi`):**
+  - Đã nạp và hợp nhất thành công các lô hàng `MH214-Dung hang - lô quần áo muji`, `MH 40 Tuan Anh - Lô tất thể thao` (Bước 7 - Về kho TQ) và `Đạt Cảng` (Bước 5 - Mua hàng) của Linh Chi.
+  - Kiểm tra live với tài khoản Admin và Quản Lý: Hiển thị đầy đủ 100% (tổng số lô hàng tăng lên 57 lô).
+
 ## [v21.95] - 2026-07-30
 
 ### Giải Quyết Triệt Để Lỗi Không Đồng Bộ Các Lô Hàng Tạo Bởi Bùi Thị Bích Phượng
