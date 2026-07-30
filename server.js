@@ -1,4 +1,4 @@
-// Cleaned server.js v21.94
+// Cleaned server.js v21.95
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '21.94';
+  state.dbVersion = '21.95';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '21.94';
+  localState.dbVersion = '21.95';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -179,7 +179,7 @@ async function loadState() {
             await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
           } catch (e) {}
         }
-        dbState.dbVersion = '21.94';
+        dbState.dbVersion = '21.95';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -196,12 +196,47 @@ async function loadState() {
   return sanitizeServerState(localState);
 }
 
+function mergeStateObjects(existingState, incomingState) {
+  if (!existingState) return incomingState;
+  if (!incomingState) return existingState;
+
+  const merged = { ...existingState, ...incomingState };
+  merged.lastUpdated = Date.now();
+  merged.dbVersion = '21.95';
+
+  const mergeArrayById = (arr1, arr2) => {
+    const map = new Map();
+    if (Array.isArray(arr1)) arr1.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+    if (Array.isArray(arr2)) arr2.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+    return Array.from(map.values());
+  };
+
+  if (incomingState.shipment_workflows || existingState.shipment_workflows) {
+    merged.shipment_workflows = mergeArrayById(existingState.shipment_workflows, incomingState.shipment_workflows);
+  }
+  if (incomingState.clients || existingState.clients) {
+    merged.clients = mergeArrayById(existingState.clients, incomingState.clients);
+  }
+  if (incomingState.leads || existingState.leads) {
+    merged.leads = mergeArrayById(existingState.leads, incomingState.leads);
+  }
+  if (incomingState.projects || existingState.projects) {
+    merged.projects = mergeArrayById(existingState.projects, incomingState.projects);
+  }
+  if (incomingState.single_tasks || existingState.single_tasks) {
+    merged.single_tasks = mergeArrayById(existingState.single_tasks, incomingState.single_tasks);
+  }
+
+  return merged;
+}
+
 async function saveState(newState) {
   if (!newState || !newState.leads || !Array.isArray(newState.leads) || newState.leads.length === 0) {
     console.warn('Rejected attempt to save empty state to database!');
     return false;
   }
-  newState.dbVersion = '21.94';
+
+  let currentState = readJsonFile(path.join(__dirname, 'db.json'));
   if (DATABASE_URL) {
     const client = new Client({
       connectionString: DATABASE_URL,
@@ -211,16 +246,30 @@ async function saveState(newState) {
       await client.connect();
       await client.query("SET client_encoding = 'UTF8'");
       await client.query('CREATE TABLE IF NOT EXISTS app_state (id INT PRIMARY KEY, state_json TEXT)');
-      await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(newState)]);
+      const res = await client.query('SELECT state_json FROM app_state WHERE id = 1');
+      if (res.rows.length > 0) {
+        let rawDb = res.rows[0].state_json;
+        if (rawDb && rawDb.charCodeAt(0) === 0xFEFF) rawDb = rawDb.slice(1);
+        try { currentState = JSON.parse(rawDb); } catch(e) {}
+      }
+      
+      const mergedState = mergeStateObjects(currentState, newState);
+      await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(mergedState)]);
       await client.end();
+
+      try {
+        fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(mergedState, null, 2), 'utf8');
+      } catch (err) {}
       return true;
     } catch (err) {
       console.error('Error saving state to Postgres:', err);
       try { await client.end(); } catch (e) {}
     }
   }
+
+  const mergedState = mergeStateObjects(currentState, newState);
   try {
-    fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(newState, null, 2), 'utf8');
+    fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(mergedState, null, 2), 'utf8');
   } catch (err) {
     console.error('Error writing local db.json:', err);
   }
@@ -293,7 +342,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '21.94',
+        dbVersion: currentState.dbVersion || '21.95',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0
