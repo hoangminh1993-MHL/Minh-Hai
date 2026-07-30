@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v21.91] - 2026-07-30
+
+### Phân Quyền Quyền Quan Sát Toàn Bộ Dữ Liệu CRM Cho Admin & Quản Lý
+- **Quyền Xem Toàn Bộ Dữ Liệu CRM Khách Cũ (`ops.js` & `crm.js`):** 
+  - Cấu hình phân quyền chuẩn xác: Tất cả tài khoản **Admin** (`role === 'admin'`) và **Quản Lý** (`role === 'manager'`) được phép xem **toàn bộ 100% dữ liệu phễu khách hàng & lô hàng vận hành cũ** của toàn công ty.
+  - Các tài khoản **Nhân Viên** (Sales, CSKH, Đặt Hàng, Kho) chỉ xem các lô hàng/khách hàng được giao phụ trách.
+
 ## [v21.90] - 2026-07-30
 
 ### Sửa Lỗi Hiển Thị Khách Hàng CRM Vận Hành Cũ Cho Tất Cả Tài Khoản
