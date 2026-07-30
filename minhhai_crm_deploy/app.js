@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.93';
+  const CURRENT_APP_VER = 'v21.94';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -439,36 +439,21 @@ async function syncLoadState() {
       AppState.notifications = data.notifications || [];
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
       
-      // Safe two-way merging for Operational CRM collections
-      const localClients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
-      const serverClients = data.clients || [];
-      const clientMap = new Map();
-      serverClients.forEach(c => { if (c && c.id) clientMap.set(String(c.id), c); });
-      localClients.forEach(c => { if (c && c.id && !clientMap.has(String(c.id))) clientMap.set(String(c.id), c); });
-      AppState.clients = Array.from(clientMap.values());
-
-      const localProjects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
-      const serverProjects = data.projects || [];
-      const projectMap = new Map();
-      serverProjects.forEach(p => { if (p && p.id) projectMap.set(String(p.id), p); });
-      localProjects.forEach(p => { if (p && p.id && !projectMap.has(String(p.id))) projectMap.set(String(p.id), p); });
-      AppState.projects = Array.from(projectMap.values());
-
-      const localWorkflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
-      const serverWorkflows = data.shipment_workflows || [];
-      const workflowMap = new Map();
-      serverWorkflows.forEach(w => { if (w && w.id) workflowMap.set(String(w.id), w); });
-      localWorkflows.forEach(w => { if (w && w.id && !workflowMap.has(String(w.id))) workflowMap.set(String(w.id), w); });
-      AppState.shipment_workflows = Array.from(workflowMap.values());
-
-      const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
-      const serverSingleTasks = data.single_tasks || [];
-      const singleTaskMap = new Map();
-      serverSingleTasks.forEach(t => { if (t && t.id) singleTaskMap.set(String(t.id), t); });
-      localSingleTasks.forEach(t => { if (t && t.id && !singleTaskMap.has(String(t.id))) singleTaskMap.set(String(t.id), t); });
-      AppState.single_tasks = Array.from(singleTaskMap.values());
-
+      // Server-First Single Source of Truth for Operational CRM collections
+      if (data.clients && data.clients.length > 0) {
+        AppState.clients = data.clients;
+      }
+      if (data.projects && data.projects.length > 0) {
+        AppState.projects = data.projects;
+      }
+      if (data.shipment_workflows && data.shipment_workflows.length > 0) {
+        AppState.shipment_workflows = data.shipment_workflows;
+      }
+      if (data.single_tasks && data.single_tasks.length > 0) {
+        AppState.single_tasks = data.single_tasks;
+      }
       AppState.suggestions = data.suggestions || [];
+      AppState.lastUpdated = data.lastUpdated || Date.now();
 
       if (window.initLeadSteps && AppState.leads) {
         AppState.leads.forEach(window.initLeadSteps);
@@ -716,7 +701,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.93';
+const CLIENT_VERSION = '21.94';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -762,36 +747,35 @@ function startStatePolling() {
 
         const data = await res.json();
         
-        // Ignore server state if it's older than or equal to our local updates (to prevent race conditions)
         const clientLastUpdated = AppState.lastUpdated || 0;
         const serverLastUpdated = data.lastUpdated || 0;
-        if (clientLastUpdated > 0 && serverLastUpdated <= clientLastUpdated) {
-          return;
-        }
-
-        if (clientLastUpdated < serverLastUpdated || clientLastUpdated === 0) {
-          console.log('Phát hiện dữ liệu mới từ server. Cập nhật giao diện...');
-          AppState.lastUpdated = data.lastUpdated || 0;
-          AppState.users = data.users;
-          AppState.leads = data.leads;
-          AppState.tasks = data.tasks;
-          AppState.workflows = data.workflows;
-          AppState.sausageLogs = data.sausageLogs;
-          AppState.notifications = data.notifications;
-          AppState.suggestions = data.suggestions || [];
-          AppState.fbConfig = data.fbConfig || AppState.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
+        
+        // Sync whenever server has new data or client timestamp doesn't match
+        if (serverLastUpdated > 0 && serverLastUpdated !== clientLastUpdated) {
+          console.log('[Live Sync] Server state updated. Syncing live multi-user data...');
+          AppState.lastUpdated = serverLastUpdated;
+          if (data.users && data.users.length > 0) AppState.users = data.users;
+          if (data.leads) AppState.leads = data.leads;
+          if (data.tasks) AppState.tasks = data.tasks;
+          if (data.workflows) AppState.workflows = data.workflows;
+          if (data.sausageLogs) AppState.sausageLogs = data.sausageLogs;
+          if (data.notifications) AppState.notifications = data.notifications;
+          if (data.suggestions) AppState.suggestions = data.suggestions || [];
+          if (data.fbConfig) AppState.fbConfig = data.fbConfig;
           
-          // Đồng bộ các phân hệ vận hành mới
-          AppState.clients = data.clients || [];
-          AppState.projects = data.projects || [];
-          AppState.shipment_workflows = data.shipment_workflows || [];
-          AppState.single_tasks = data.single_tasks || [];
+          if (data.clients && data.clients.length > 0) AppState.clients = data.clients;
+          if (data.projects && data.projects.length > 0) AppState.projects = data.projects;
+          if (data.shipment_workflows && data.shipment_workflows.length > 0) AppState.shipment_workflows = data.shipment_workflows;
+          if (data.single_tasks && data.single_tasks.length > 0) AppState.single_tasks = data.single_tasks;
 
-          // Đồng bộ dữ liệu trò chơi online
-          AppState.active_caro_games = data.active_caro_games || [];
-          AppState.daily_lottery_tickets = data.daily_lottery_tickets || [];
-          AppState.bet_pools = data.bet_pools || [];
-          
+          // Sync to localStorage
+          localStorage.setItem('votr_last_updated', String(serverLastUpdated));
+          localStorage.setItem('votr_clients_db', JSON.stringify(AppState.clients));
+          localStorage.setItem('votr_shipment_workflows_db', JSON.stringify(AppState.shipment_workflows));
+          localStorage.setItem('votr_single_tasks_db', JSON.stringify(AppState.single_tasks));
+          localStorage.setItem(CONFIG.LS_KEY_LEADS, JSON.stringify(AppState.leads));
+          localStorage.setItem(CONFIG.LS_KEY_USERS, JSON.stringify(AppState.users));
+
           if (AppState.leads) {
             AppState.leads.forEach(sanitizeLead);
             if (window.initLeadSteps) AppState.leads.forEach(window.initLeadSteps);
@@ -803,6 +787,10 @@ function startStatePolling() {
             const currentViewId = activeTabElement.getAttribute('data-view');
             if (currentViewId === 'crm' && typeof renderCRMBoard === 'function') {
               renderCRMBoard();
+            } else if (currentViewId === 'crm-clients-workflows' && typeof renderOpsWorkflows === 'function') {
+              renderOpsWorkflows();
+            } else if (currentViewId === 'tasks-single' && typeof renderOpsSingleTasks === 'function') {
+              renderOpsSingleTasks();
             } else if (currentViewId === 'dashboard' && typeof renderDashboard === 'function') {
               renderDashboard();
             }
