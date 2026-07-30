@@ -690,17 +690,6 @@ function renderOpsWorkflows() {
   const currentUser = typeof getCurrentUser === 'function' ? getCurrentUser() : {};
   AppState.shipment_workflows.forEach(flow => {
     const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-    
-    // Role-based permission filter: Non-admin only sees flows they are assigned to
-    const isSpecialAccess = currentUser.role === 'admin' || 
-                            currentUser.username === 'phuongthao' || 
-                            currentUser.username === 'nhuquynh';
-    if (currentUser && !isSpecialAccess) {
-      const isAssigned = flow.assigneeId === currentUser.id || 
-                         flow.cskhId === currentUser.id ||
-                         (flow.steps && flow.steps.some(s => s.assigneeId === currentUser.id));
-      if (!isAssigned) return;
-    }
 
     // Search filter
     const matchesSearch = flow.name.toLowerCase().includes(searchVal) ||
