@@ -1,6 +1,13 @@
 # CHANGELOG
 
-## [v21.86] - 2026-07-29
+## [v21.87] - 2026-07-30
+
+### Cấu Hình Quyền Quản Lý (Manager) Xem & Lọc Tất Cả Tài Khoản Cấp Dưới
+- **Bộ Lọc Tài Khoản Cấp Dưới Trong CRM (`#crm-user-filter`):** Bổ sung menu thả xuống **"Tài khoản"** ngay tại thanh điều khiển CRM (Khách Mới & Vận Hành Khách Cũ). Cho phép nick Quản Lý (`Đặng Thị Phương Thảo`, `Phượng Thị Minh Phương`, v.v.) và Quản Trị Viên dễ dàng lựa chọn:
+  - `👁️ Tất cả tài khoản cấp dưới`: Xem toàn bộ dữ liệu phễu khách hàng của các nhân sự cấp dưới.
+  - `👤 Chỉ tài khoản của tôi`: Lọc xem riêng danh sách khách hàng do cá nhân quản lý phụ trách.
+  - `🔹 Lựa chọn từng nhân sự cấp dưới`: Lọc nhanh danh sách khách hàng của từng nhân sự (Sales, CSKH, Đặt Hàng, Kho, v.v.).
+- **Mở Rộng Quyền Giả Lập Vai Trò Cho Quản Lý:** Giúp nick Quản Lý sử dụng bộ chuyển vai trò giả lập trên thanh tiêu đề để kiểm tra nhanh tài khoản làm việc của nhân sự cấp dưới.
 
 ### Sửa Lỗi Lag Nút Quay Lại & Thay Dải Thành Viên Bằng Mô Tả Công Việc Phòng Ban
 - **Tối Ưu Phản Hồi Nút "Quay lại danh sách" Siêu Tốc (< 5ms):** Khắc phục triệt để hiện tượng lag khi bấm nút quay lại bằng cách loại bỏ các độ trễ chuyển cảnh, phản hồi lập tức quay về danh sách phòng ban.

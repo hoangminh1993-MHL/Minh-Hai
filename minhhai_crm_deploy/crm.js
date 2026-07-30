@@ -252,10 +252,14 @@ function initCRMEvents() {
     });
   });
 
-  // Search input
+  // Search input & Subordinate account filter
   const searchInput = document.getElementById('crm-search');
   if (searchInput) {
     searchInput.addEventListener('input', renderCRMBoard);
+  }
+  const userFilterSelect = document.getElementById('crm-user-filter');
+  if (userFilterSelect) {
+    userFilterSelect.addEventListener('change', renderCRMBoard);
   }
 
   // Open add lead modal
@@ -422,8 +426,16 @@ function renderCRMBoard() {
     if (container) container.innerHTML = '';
   });
 
-  // Filter leads by search query and user role permission
+  // Ensure subordinate account dropdown is populated for managers & admins
+  if (typeof populateCRMUserFilter === 'function') {
+    populateCRMUserFilter();
+  }
+
+  // Filter leads by search query and user role / selected account filter
   const currentUser = getCurrentUser() || {};
+  const userFilterSelect = document.getElementById('crm-user-filter');
+  const selectedUserFilter = userFilterSelect ? userFilterSelect.value : 'all';
+
   const leadsList = (AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
   const filteredLeads = leadsList.filter(lead => {
     if (!lead) return false;
@@ -434,7 +446,16 @@ function renderCRMBoard() {
                           nameVal.includes(searchVal) || 
                           phoneVal.includes(searchVal) ||
                           noteVal.includes(searchVal);
-    return matchesSearch;
+    if (!matchesSearch) return false;
+
+    // Filter by selected account
+    if (selectedUserFilter === 'my') {
+      return lead.salesId === currentUser.id || lead.cskhId === currentUser.id;
+    } else if (selectedUserFilter !== 'all' && selectedUserFilter !== '') {
+      return lead.salesId === selectedUserFilter || lead.cskhId === selectedUserFilter;
+    }
+
+    return true;
   });
   window.lastFilteredCount = filteredLeads.length;
 
