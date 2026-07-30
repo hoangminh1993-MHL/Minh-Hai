@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v21.93] - 2026-07-30
+
+### Cập Nhật & Đẩy Đầy Đủ 52 Lô Hàng Vận Hành Thực Tế Vào Hệ Thống
+- **Nạp Dữ Liệu Lô Hàng Khách Cũ Thực Tế (`db.json` & `server.js`):** Trích xuất toàn bộ 52 khách hàng & lô hàng vận chuyển thực tế của Minh Hải Logistics (`MH...`, `HPD...`, `OTV...`) từ tệp dữ liệu hoạt động.
+- **Trải Đều 11 Bước Phễu Vận Hành:** Phân bổ toàn bộ 52 lô hàng vào đầy đủ 11 bước của phễu CRM Khách Cũ & Lô Hàng (từ Nhận thông tin, Báo giá, Thương lượng, Thành công, Mua hàng, Shop gửi hàng, Về kho TQ, Về kho VN, Giao hàng, Thu nợ đến Hoàn tất).
+- **Phân Công Nhân Sự Phụ Trách:** Gán thông tin nhân sự phụ trách (Chi, Linh, Trang, Phượng, Phương Anh, Hưng, Quỳnh, Đạt, Yến, Dương, Hiền, Phương, Thảo) cho từng lô hàng.
+- **Đồng Bộ Hệ Thống Live 100%:** Server trung tâm tự động cập nhật và lưu trữ 52 lô hàng này, giúp tất cả các tài khoản Admin, Quản Lý và Nhân Viên khi truy cập đều quan sát đầy đủ toàn bộ bảng Kanban.
+
 ## [v21.92] - 2026-07-30
 
 ### Giải Thích & Đồng Bộ Dữ Liệu Lô Hàng Khách Cũ Giữa Các Tài Khoản
