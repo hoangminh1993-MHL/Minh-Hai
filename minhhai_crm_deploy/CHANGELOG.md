@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v21.88] - 2026-07-30
+
+### Tối Ưu Quyền Giả Lập Vai Trò Cho Quản Lý & Tối Giản Giao Diện CRM
+- **Loại Bỏ Mục Ô Lọc Tài Khoản Cấp Dưới Tại CRM:** Giao diện CRM được trả lại sự gọn gàng, loại bỏ ô chọn lọc tài khoản cấp dưới tại thanh điều khiển CRM.
+- **Phân Quyền Thanh Giả Lập Vai Trò Cho Quản Lý:**
+  - Cho phép tài khoản Quản Lý (`manager`) sử dụng ô **`Vai trò giả lập:`** trên góc phải màn hình để chọn và xem tài khoản của tất cả nhân sự cấp dưới (Sales, CSKH, Đặt Hàng, Kho, v.v.).
+  - **Bảo Vệ Tài Khoản Quản Trị Viên (Admin):** Tài khoản Quản Lý hoàn toàn KHÔNG THỂ nhìn thấy hoặc lựa chọn các tài khoản cấp Admin (`Nguyễn Hoàng Minh`, `Trần Tú Anh`).
+
 ## [v21.87] - 2026-07-30
 
 ### Cấu Hình Quyền Quản Lý (Manager) Xem & Lọc Tất Cả Tài Khoản Cấp Dưới
