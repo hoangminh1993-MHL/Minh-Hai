@@ -436,10 +436,10 @@ function renderCRMBoard() {
                           noteVal.includes(searchVal);
     if (!matchesSearch) return false;
 
-    // Admin & Manager see ALL leads, Staff only see leads assigned to them
-    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager';
+    // Admin & Manager see ALL leads, Staff only see leads assigned to or created by them
+    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.dept === 'admin';
     if (!canSeeAll) {
-      return lead.salesId === currentUser.id || lead.cskhId === currentUser.id;
+      return lead.salesId === currentUser.id || lead.cskhId === currentUser.id || lead.creatorId === currentUser.id;
     }
     return true;
   });
@@ -2065,7 +2065,8 @@ function handleAddLeadSubmit(e) {
   const valRmb = parseInt(document.getElementById('lead-val-rmb').value) || 0;
   const valVnd = parseInt(document.getElementById('lead-val-vnd').value) || 0;
   const note = document.getElementById('lead-note').value.trim();
-  const salesId = document.getElementById('lead-sales').value;
+  const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : { id: 'usr-admin' };
+  const salesId = document.getElementById('lead-sales').value || currentUser.id || 'usr-admin';
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -2079,7 +2080,9 @@ function handleAddLeadSubmit(e) {
     valRmb,
     valVnd,
     note,
-    salesId,
+    salesId: salesId,
+    cskhId: salesId,
+    creatorId: currentUser.id || 'usr-admin',
     stage: 'receive_info',
     stageEntryTimes: { receive_info: Date.now() },
     failReason: null,

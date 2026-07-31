@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.96';
+  const CURRENT_APP_VER = 'v21.97';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -338,12 +338,13 @@ async function syncLoadState() {
       const serverLeads = data.leads || [];
       const leadMap = new Map();
 
-      // Deep lead merger to prevent losing local files/comments/notes on page reload
+      // Deep lead merger where SERVER lead takes priority, preserving local attachments/comments if missing from server
       const mergeLeadObjects = (sLead, lLead) => {
         if (!sLead) return lLead;
         if (!lLead) return sLead;
 
-        const merged = { ...sLead, ...lLead };
+        // Server lead takes precedence for all core attributes
+        const merged = { ...lLead, ...sLead };
 
         // Merge lead-level files
         const sFiles = Array.isArray(sLead.files) ? sLead.files : [];
@@ -365,7 +366,7 @@ async function syncLoadState() {
           if (!ss) {
             stepMap.set(ls.stepNum, ls);
           } else {
-            const mergedStep = { ...ss, ...ls };
+            const mergedStep = { ...ls, ...ss };
 
             const sStepFiles = Array.isArray(ss.files) ? ss.files : [];
             const lStepFiles = Array.isArray(ls.files) ? ls.files : [];
@@ -416,7 +417,6 @@ async function syncLoadState() {
         if (lLead) {
           const merged = mergeLeadObjects(sLead, lLead);
           leadMap.set(sId, merged);
-          hasNewLocalLead = true;
         } else {
           leadMap.set(sId, sLead);
         }
@@ -701,7 +701,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.96';
+const CLIENT_VERSION = '21.97';
 
 async function checkCodeVersionUpdate() {
   try {
