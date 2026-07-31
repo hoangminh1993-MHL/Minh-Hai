@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v21.97] - 2026-07-31
+
+### Khắc Phục Triệt Để Lỗi Thêm Khách Hàng Mới Từ Máy Khác Bị Mất Khi Reload
+- **Khắc Phục Lỗi Xung Đột Thứ Tự Gộp Dữ Liệu (`app.js`):** 
+  - Sửa lỗi trong hàm `mergeLeadObjects`: Đổi thứ tự gộp `{ ...lLead, ...sLead }` để **dữ liệu khách hàng mới nhất từ Server luôn luôn làm chuẩn**, loại bỏ tình trạng bộ nhớ tạm (`localStorage`) cũ trên các máy khác tự ghi đè làm mất khách vừa tạo trên Server.
+- **Loại Bỏ Lỗi Tự Động Kích Hoạt Lưu Lại Trùng Lặp Khởi Tạo Trang (`app.js`):**
+  - Đã xóa cờ `hasNewLocalLead` bị bật nhầm khi nạp khách trùng giữa Server và Local, loại bỏ triệt để xung đột race condition tự động POST dữ liệu cũ đè lên Server mỗi khi mở/reload trang.
+- **Thêm Trường `creatorId` Cho Khách Hàng Mới (`crm.js`):**
+  - Lưu thông tin người khởi tạo khách hàng (`creatorId`). Nhân viên tạo khách mới cho đồng nghiệp khác vẫn sẽ **luôn luôn quan sát được 100% khách hàng do chính mình tạo ra** ngay cả khi không phải là người phụ trách trực tiếp.
+
 ## [v21.96] - 2026-07-30
 
 ### Rà Soát Toàn Bộ Hệ Thống Đồng Bộ - Đảm Bảo 100% Dữ Liệu Tạo Từ Bất Kỳ Máy Nào Đều Tự Động Hiển Thị Với Admin & Quản Lý
