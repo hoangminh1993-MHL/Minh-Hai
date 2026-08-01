@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.98';
+  const CURRENT_APP_VER = 'v21.99';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -744,7 +744,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.98';
+const CLIENT_VERSION = '21.99';
 
 async function checkCodeVersionUpdate() {
   try {

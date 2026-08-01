@@ -668,6 +668,58 @@ function renderOpsWorkflows() {
     });
   }
 
+window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStage) {
+  if (!flowId) return;
+  const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(w => w.id === flowId);
+  if (!flow) {
+    console.error('Không tìm thấy lô hàng ID:', flowId);
+    return;
+  }
+
+  const newStage = parseInt(targetStage);
+  if (isNaN(newStage) || newStage < 1 || newStage > 12) return;
+
+  const oldStage = flow.stage;
+  flow.stage = newStage;
+
+  // If moved to step 12 (Thất bại), set default fail reason if empty
+  if (newStage === 12 && !flow.failReason) {
+    flow.failReason = 'Chưa chọn lý do';
+  }
+
+  // Update step status inside flow.steps array
+  if (Array.isArray(flow.steps)) {
+    flow.steps.forEach(s => {
+      if (s.stepNum < newStage) {
+        s.status = 'done';
+      } else if (s.stepNum === newStage) {
+        s.status = 'doing';
+      } else {
+        s.status = 'todo';
+      }
+    });
+  }
+
+  // Add history log
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+  ];
+  const stepName = stepNames[newStage - 1] || `Bước ${newStage}`;
+  const nowStr = typeof formatDateTime === 'function' ? formatDateTime(new Date()) : new Date().toLocaleString('vi-VN');
+  
+  if (!Array.isArray(flow.history)) flow.history = [];
+  flow.history.push(`${nowStr}: Chuyển từ bước ${oldStage} sang bước ${newStage} (${stepName})`);
+
+  // Persist state and update UI immediately
+  saveState();
+  renderOpsWorkflows();
+
+  if (typeof addNotification === 'function') {
+    addNotification('Cập nhật quy trình lô hàng 🚚', `Lô hàng "${flow.name}" đã được chuyển sang bước ${newStage}: ${stepName}.`, 'info');
+  }
+};
+
   const container = document.getElementById('ops-workflows-kanban');
   if (!container) return;
   container.innerHTML = '';
