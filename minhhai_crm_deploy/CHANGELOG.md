@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v21.98] - 2026-08-01
+
+### Khắc Phục Triệt Để Lỗi Thẻ Mới Trong CRM Khách Hàng Cũ Bị Mất Khi Load Lại Trang (F5)
+- **Cập Nhật Cơ Chế Gộp Hai Chiều An Toàn Cho Vận Hành (`app.js`):**
+  - Sửa đổi hàm `loadDataFromServer` để bổ sung quy trình **Safe Two-Way Union Merging** cho toàn bộ danh sách `shipment_workflows` (Phễu CRM Khách Hàng Cũ), `clients` (Danh sách khách hàng), `projects` và `single_tasks`.
+  - Khi người dùng ấn khởi tạo lô hàng mới và tải lại trang (F5) ngay lập tức, hệ thống tự động kiểm tra `localStorage` và hợp nhất các thẻ vừa tạo chưa kịp ghi xong lên Server vào `AppState`, sau đó tự động gửi resync lại lên Server CSDL master.
+- **Đảm Bảo Tuyệt Đối Không Mất Thẻ:**
+  - Mọi thẻ lô hàng được tạo ở giao diện CRM Khách Hàng Cũ đều được bảo tồn 100% qua mọi lần reload trình duyệt và hiển thị đồng bộ tức thì trên tất cả các tài khoản Admin, Quản Lý và Nhân Viên.
+
 ## [v21.97] - 2026-07-31
 
 ### Khắc Phục Triệt Để Lỗi Thêm Khách Hàng Mới Từ Máy Khác Bị Mất Khi Reload
