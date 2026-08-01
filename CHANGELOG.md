@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v22.02] - 2026-08-01
+
+### Khắc Phục Lỗi Tự Động Nhảy Bước Khi Mở Popup & Thống Nhất Duy Nhất 1 Popup Modal
+- **Sửa Lỗi Tự Động Nhảy Bước (`ops.js`):**
+  - Khắc phục triệt để lỗi mở Popup Modal làm thẻ tự động nhảy bước: Hàm `openFlowDetailModal(flowId, initialStepNum)` hiện tại chỉ thiết lập tab hiển thị thông tin (`currentActiveStepNum`) mà **tuyệt đối không làm thay đổi hay ghi đè `flow.stage`** của thẻ.
+  - Thẻ chỉ di chuyển bước khi người dùng chủ động chọn `Chuyển bước:` ở ô dropdown hoặc thực hiện thao tác kéo thả trên bảng Kanban.
+- **Thống Nhất Sử Dụng Duy Nhất 1 Popup Modal (`modal-flow-detail`):**
+  - Toàn bộ quy trình phễu CRM Vận Hành & Khách Hàng Cũ được tích hợp đồng bộ duy nhất trên 1 Popup Modal (`modal-flow-detail`).
+  - Mọi thông tin công việc, thời gian phản hồi SLA, phản hồi báo giá, danh sách việc cần làm, tệp đính kèm, thảo luận và lý do thất bại đều được hiển thị gọn gàng, trực quan tại một nơi duy nhất.
+
 ## [v22.01] - 2026-08-01
 
 ### Chuyển Đổi Trải Nghiệm Chuyển Bước - Mở Trực Tiếp Popup Chi Tiết Thay Vì Cảnh Báo
