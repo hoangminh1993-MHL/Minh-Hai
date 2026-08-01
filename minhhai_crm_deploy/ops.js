@@ -669,28 +669,50 @@ function renderOpsWorkflows() {
   }
 
 window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStage) {
-  if (!flowId) return;
+  if (!flowId) {
+    const errorMsg = '❌ LỖI CHUYỂN BƯỚC: Thiếu thông tin định danh lô hàng!';
+    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
+    return;
+  }
+
   const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(w => w.id === flowId);
-  if (!flow) return;
+  if (!flow) {
+    const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Không tìm thấy lô hàng với ID "${flowId}" trên hệ thống!`;
+    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
+    return;
+  }
 
   const newStage = parseInt(targetStage);
-  if (isNaN(newStage) || newStage < 1 || newStage > 12) return;
+  if (isNaN(newStage) || newStage < 1 || newStage > 12) {
+    const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Bước chuyển "${targetStage}" không hợp lệ (Phân vùng hợp lệ: 1 - 12)!`;
+    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
+    return;
+  }
 
   const oldStage = flow.stage || 1;
   if (newStage === oldStage) return;
 
-  // ===== RÀ SOÁT ĐIỀU KIỆN CHUYỂN BƯỚC ===== //
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+  ];
+  const targetStepName = stepNames[newStage - 1] || `Bước ${newStage}`;
+
+  // ===== RÀ SOÁT CHI TIẾT LỖI CHUYỂN BƯỚC ===== //
   
   // Điều kiện 1: Chuyển tiến từ Bước 1 -> Yêu cầu nhập Thời gian khách nhắn & Thời gian nhập thông tin (SLA)
   if (oldStage === 1 && newStage > 1) {
     if (!flow.customerMsgTime || !flow.infoEntryTime) {
-      const msg = '⚠️ Cần nhập "Thời gian khách nhắn" & "Thời gian nhập thông tin" ở Bước 1 trước khi chuyển bước!';
+      const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): Không thể chuyển từ Bước 1 sang Bước ${newStage} (${targetStepName}) vì THIẾU "Thời gian khách nhắn" hoặc "Thời gian nhập thông tin"! Vui lòng mở thẻ bổ sung trước.`;
       if (typeof window.showToast === 'function') {
-        window.showToast(msg, 'warning');
+        window.showToast(errorMsg, 'danger');
       } else {
-        alert(msg);
+        alert(errorMsg);
       }
-      return; // CHẶN CHUYỂN BƯỚC VÀ KHÔNG MỞ POPUP
+      if (typeof addNotification === 'function') {
+        addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
+      }
+      return; // CHẶN CHUYỂN BƯỚC VÀ HIỂN THỊ THÔNG BÁO LỖI
     }
   }
 
@@ -700,13 +722,16 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 3) || 
                              (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
     if (!hasQuoteFeedback) {
-      const msg = '⚠️ Cần nhập "Tình trạng khách hàng sau báo giá" ở Bước 2 trước khi chuyển bước!';
+      const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): Không thể chuyển từ Bước 2 sang Bước ${newStage} (${targetStepName}) vì THIẾU "Tình trạng khách hàng sau báo giá"! Vui lòng mở thẻ nhập phản hồi báo giá.`;
       if (typeof window.showToast === 'function') {
-        window.showToast(msg, 'warning');
+        window.showToast(errorMsg, 'danger');
       } else {
-        alert(msg);
+        alert(errorMsg);
       }
-      return; // CHẶN CHUYỂN BƯỚC VÀ KHÔNG MỞ POPUP
+      if (typeof addNotification === 'function') {
+        addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
+      }
+      return; // CHẶN CHUYỂN BƯỚC VÀ HIỂN THỊ THÔNG BÁO LỖI
     }
   }
 
@@ -716,17 +741,20 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     const uncompletedRequired = currentStepData.checklist.filter(c => c.required && !c.done);
     if (uncompletedRequired.length > 0) {
       const names = uncompletedRequired.map(c => `"${c.text}"`).join(', ');
-      const msg = `⚠️ Cần hoàn thành các việc bắt buộc: ${names} ở Bước ${oldStage} trước khi chuyển bước!`;
+      const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì CHƯA HOÀN THÀNH việc bắt buộc ở Bước ${oldStage}: ${names}!`;
       if (typeof window.showToast === 'function') {
-        window.showToast(msg, 'warning');
+        window.showToast(errorMsg, 'danger');
       } else {
-        alert(msg);
+        alert(errorMsg);
       }
-      return; // CHẶN CHUYỂN BƯỚC VÀ KHÔNG MỞ POPUP
+      if (typeof addNotification === 'function') {
+        addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
+      }
+      return; // CHẶN CHUYỂN BƯỚC VÀ HIỂN THỊ THÔNG BÁO LỖI
     }
   }
 
-  // Thực hiện chuyển bước chính thức cho lô hàng (KHÔNG TỰ ĐỘNG MỞ POPUP)
+  // Thực hiện chuyển bước chính thức cho lô hàng
   executeFlowMove(flow, newStage);
 };
 
