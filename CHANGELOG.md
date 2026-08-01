@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## [v22.04] - 2026-08-01
+
+### Bổ Sung Thông Báo Chi Tiết Lý Do Khi Không Chuyển Bước Được
+- **Cập Nhật Thông Báo Lỗi Chuyển Bước Rõ Ràng (`ops.js` & `crm.js`):**
+  - Bổ sung thông báo lỗi chi tiết định dạng `❌ LỖI CHUYỂN BƯỚC ([Tên Lô Hàng])` khi thao tác chuyển bước bị chặn.
+  - Thông báo nêu rõ bước bắt đầu, bước đích đến và nguyên nhân chính xác vì sao không thể chuyển bước:
+    - *Lỗi Bước 1:* `Không thể chuyển từ Bước 1 sang Bước X vì THIẾU "Thời gian khách nhắn" hoặc "Thời gian nhập thông tin"! Vui lòng mở thẻ bổ sung trước.`
+    - *Lỗi Bước 2:* `Không thể chuyển từ Bước 2 sang Bước X vì THIẾU "Tình trạng khách hàng sau báo giá"! Vui lòng mở thẻ nhập phản hồi báo giá.`
+    - *Lỗi Việc bắt buộc:* `Không thể chuyển sang Bước X vì CHƯA HOÀN THÀNH việc bắt buộc ở Bước Y: [Tên công việc]!`
+- **Cảnh Báo Nổi Nổi Bật & Ghi Nhật Ký:**
+  - Hiển thị Toast cảnh báo màu đỏ (`danger`) nổi bật có biểu tượng lỗi `fa-circle-xmark` và đồng thời lưu nhật ký tại trung tâm thông báo hệ thống.
+
 ## [v22.03] - 2026-08-01
 
 ### Khắc Phục Lỗi Mất Dữ Liệu Khi Reload & Tối Ưu Cảnh Báo Khi Kéo Thẻ Sang Bước Khác
