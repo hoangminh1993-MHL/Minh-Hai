@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.02';
+  const CURRENT_APP_VER = 'v22.03';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -466,16 +466,107 @@ async function syncLoadState() {
       });
       AppState.projects = Array.from(projectMap.values());
 
+      // Deep workflow merger to prevent losing local card notes, checklist items, audit times, quote feedback, files or comments on page reload
+      const mergeWorkflowObjects = (sFlow, lFlow) => {
+        if (!sFlow) return lFlow;
+        if (!lFlow) return sFlow;
+
+        const merged = { ...sFlow, ...lFlow };
+
+        merged.customerMsgTime = lFlow.customerMsgTime || sFlow.customerMsgTime || '';
+        merged.infoEntryTime = lFlow.infoEntryTime || sFlow.infoEntryTime || '';
+        merged.evidenceUrl = lFlow.evidenceUrl || sFlow.evidenceUrl || '';
+        merged.quoteFeedback = lFlow.quoteFeedback || sFlow.quoteFeedback || '';
+        merged.failReason = lFlow.failReason || sFlow.failReason || null;
+
+        // Merge workflow level files
+        const sFiles = Array.isArray(sFlow.files) ? sFlow.files : [];
+        const lFiles = Array.isArray(lFlow.files) ? lFlow.files : [];
+        const fMap = new Map();
+        sFiles.forEach(f => { if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
+        lFiles.forEach(f => { if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
+        merged.files = Array.from(fMap.values());
+
+        // Merge steps (note, assigneeId, deadline, checklist, comments)
+        const sSteps = Array.isArray(sFlow.steps) ? sFlow.steps : [];
+        const lSteps = Array.isArray(lFlow.steps) ? lFlow.steps : [];
+        const stepMap = new Map();
+
+        sSteps.forEach(s => { if (s && s.stepNum) stepMap.set(s.stepNum, s); });
+        lSteps.forEach(ls => {
+          if (!ls || !ls.stepNum) return;
+          const ss = stepMap.get(ls.stepNum);
+          if (!ss) {
+            stepMap.set(ls.stepNum, ls);
+          } else {
+            const mergedStep = { ...ss, ...ls };
+            
+            mergedStep.note = (ls.note !== undefined && ls.note !== '') ? ls.note : (ss.note || '');
+
+            const sComments = Array.isArray(ss.comments) ? ss.comments : [];
+            const lComments = Array.isArray(ls.comments) ? ls.comments : [];
+            const commMap = new Map();
+            sComments.forEach(c => { if (c) commMap.set((c.user || '') + '|' + (c.text || '') + '|' + (c.date || ''), c); });
+            lComments.forEach(c => { if (c) commMap.set((c.user || '') + '|' + (c.text || '') + '|' + (c.date || ''), c); });
+            mergedStep.comments = Array.from(commMap.values());
+
+            const sChk = Array.isArray(ss.checklist) ? ss.checklist : [];
+            const lChk = Array.isArray(ls.checklist) ? ls.checklist : [];
+            const chkMap = new Map();
+            sChk.forEach(c => { if (c) chkMap.set(c.text || c, c); });
+            lChk.forEach(c => {
+              if (!c) return;
+              const k = c.text || c;
+              const existing = chkMap.get(k);
+              if (!existing) {
+                chkMap.set(k, c);
+              } else if (typeof c === 'object') {
+                chkMap.set(k, { ...existing, ...c });
+              }
+            });
+            mergedStep.checklist = Array.from(chkMap.values());
+
+            stepMap.set(ls.stepNum, mergedStep);
+          }
+        });
+
+        merged.steps = Array.from(stepMap.values());
+
+        const sHist = Array.isArray(sFlow.history) ? sFlow.history : [];
+        const lHist = Array.isArray(lFlow.history) ? lFlow.history : [];
+        const hSet = new Set([...sHist, ...lHist]);
+        merged.history = Array.from(hSet);
+
+        return merged;
+      };
+
       const localWorkflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
       const serverWorkflows = data.shipment_workflows || [];
+      const localWorkflowMap = new Map();
+      localWorkflows.forEach(w => { if (w && w.id) localWorkflowMap.set(String(w.id), w); });
       const workflowMap = new Map();
-      serverWorkflows.forEach(w => { if (w && w.id) workflowMap.set(String(w.id), w); });
-      localWorkflows.forEach(w => {
-        if (w && w.id && !workflowMap.has(String(w.id))) {
-          workflowMap.set(String(w.id), w);
+
+      serverWorkflows.forEach(sFlow => {
+        if (!sFlow || !sFlow.id) return;
+        const sId = String(sFlow.id);
+        const lFlow = localWorkflowMap.get(sId);
+        if (lFlow) {
+          const merged = mergeWorkflowObjects(sFlow, lFlow);
+          workflowMap.set(sId, merged);
+        } else {
+          workflowMap.set(sId, sFlow);
+        }
+      });
+
+      localWorkflows.forEach(lFlow => {
+        if (!lFlow || !lFlow.id) return;
+        const lId = String(lFlow.id);
+        if (!workflowMap.has(lId)) {
+          workflowMap.set(lId, lFlow);
           hasPendingOpsSync = true;
         }
       });
+
       AppState.shipment_workflows = Array.from(workflowMap.values());
 
       const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
@@ -744,7 +835,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.02';
+const CLIENT_VERSION = '22.03';
 
 async function checkCodeVersionUpdate() {
   try {

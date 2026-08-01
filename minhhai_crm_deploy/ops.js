@@ -676,11 +676,58 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   const newStage = parseInt(targetStage);
   if (isNaN(newStage) || newStage < 1 || newStage > 12) return;
 
-  // Thực hiện chuyển bước chính thức cho lô hàng
-  executeFlowMove(flow, newStage);
+  const oldStage = flow.stage || 1;
+  if (newStage === oldStage) return;
 
-  // Mở Popup Modal duy nhất (modal-flow-detail) hiển thị ở bước mới
-  openFlowDetailModal(flow.id, newStage);
+  // ===== RÀ SOÁT ĐIỀU KIỆN CHUYỂN BƯỚC ===== //
+  
+  // Điều kiện 1: Chuyển tiến từ Bước 1 -> Yêu cầu nhập Thời gian khách nhắn & Thời gian nhập thông tin (SLA)
+  if (oldStage === 1 && newStage > 1) {
+    if (!flow.customerMsgTime || !flow.infoEntryTime) {
+      const msg = '⚠️ Cần nhập "Thời gian khách nhắn" & "Thời gian nhập thông tin" ở Bước 1 trước khi chuyển bước!';
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, 'warning');
+      } else {
+        alert(msg);
+      }
+      return; // CHẶN CHUYỂN BƯỚC VÀ KHÔNG MỞ POPUP
+    }
+  }
+
+  // Điều kiện 2: Chuyển tiến từ Bước 2 -> Yêu cầu Cập nhật tình trạng sau báo giá (Feedback Báo Giá)
+  if (oldStage === 2 && newStage > 2) {
+    const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+    const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 3) || 
+                             (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
+    if (!hasQuoteFeedback) {
+      const msg = '⚠️ Cần nhập "Tình trạng khách hàng sau báo giá" ở Bước 2 trước khi chuyển bước!';
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, 'warning');
+      } else {
+        alert(msg);
+      }
+      return; // CHẶN CHUYỂN BƯỚC VÀ KHÔNG MỞ POPUP
+    }
+  }
+
+  // Điều kiện 3: Rà soát các việc bắt buộc (Required Checklist Items) của bước hiện tại
+  const currentStepData = flow.steps && flow.steps.find(s => s.stepNum === oldStage);
+  if (currentStepData && Array.isArray(currentStepData.checklist) && newStage > oldStage && newStage !== 12) {
+    const uncompletedRequired = currentStepData.checklist.filter(c => c.required && !c.done);
+    if (uncompletedRequired.length > 0) {
+      const names = uncompletedRequired.map(c => `"${c.text}"`).join(', ');
+      const msg = `⚠️ Cần hoàn thành các việc bắt buộc: ${names} ở Bước ${oldStage} trước khi chuyển bước!`;
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, 'warning');
+      } else {
+        alert(msg);
+      }
+      return; // CHẶN CHUYỂN BƯỚC VÀ KHÔNG MỞ POPUP
+    }
+  }
+
+  // Thực hiện chuyển bước chính thức cho lô hàng (KHÔNG TỰ ĐỘNG MỞ POPUP)
+  executeFlowMove(flow, newStage);
 };
 
   const container = document.getElementById('ops-workflows-kanban');
