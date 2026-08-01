@@ -671,53 +671,15 @@ function renderOpsWorkflows() {
 window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStage) {
   if (!flowId) return;
   const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(w => w.id === flowId);
-  if (!flow) {
-    console.error('Không tìm thấy lô hàng ID:', flowId);
-    return;
-  }
+  if (!flow) return;
 
   const newStage = parseInt(targetStage);
   if (isNaN(newStage) || newStage < 1 || newStage > 12) return;
 
-  const oldStage = flow.stage || 1;
+  // Thực hiện chuyển bước chính thức cho lô hàng
+  executeFlowMove(flow, newStage);
 
-  // Cập nhật bước mới cho lô hàng
-  flow.stage = newStage;
-
-  // Nếu chuyển sang Bước 12 (Thất bại) mà chưa có lý do -> Gán lý do mặc định
-  if (newStage === 12 && (!flow.failReason || flow.failReason === 'Chưa chọn lý do')) {
-    flow.failReason = 'Khác';
-  }
-
-  // Cập nhật trạng thái các bước con trong quy trình (done cho bước trước, doing cho bước hiện tại, todo cho bước sau)
-  if (Array.isArray(flow.steps)) {
-    flow.steps.forEach(s => {
-      if (s.stepNum < newStage) {
-        s.status = 'done';
-      } else if (s.stepNum === newStage) {
-        s.status = 'doing';
-      } else {
-        s.status = 'todo';
-      }
-    });
-  }
-
-  // Ghi nhật ký lịch sử di chuyển
-  const stepNames = [
-    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
-    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
-  ];
-  const stepName = stepNames[newStage - 1] || `Bước ${newStage}`;
-  const nowStr = typeof formatDateTime === 'function' ? formatDateTime(new Date()) : new Date().toLocaleString('vi-VN');
-  
-  if (!Array.isArray(flow.history)) flow.history = [];
-  flow.history.push(`${nowStr}: Chuyển từ bước ${oldStage} sang bước ${newStage} (${stepName})`);
-
-  // Lưu trạng thái và vẽ lại giao diện
-  saveState();
-  renderOpsWorkflows();
-
-  // MỞ TRỰC TIẾP POPUP MODAL BƯỚC MỚI ĐỂ NGƯỜI DÙNG XEM & ĐIỀN THÔNG TIN BỔ SUNG (KHÔNG BÁO LỖI CẢNH BÁO)
+  // Mở Popup Modal duy nhất (modal-flow-detail) hiển thị ở bước mới
   openFlowDetailModal(flow.id, newStage);
 };
 
@@ -1376,17 +1338,17 @@ function executeFlowMove(flow, targetStage) {
 let currentActiveFlowId = null;
 let currentActiveStepNum = 1;
 
-function openFlowDetailModal(flowId) {
+function openFlowDetailModal(flowId, initialStepNum) {
   const flow = AppState.shipment_workflows.find(f => f.id === flowId);
   if (!flow) return;
   ensureTwelveSteps(flow);
 
   currentActiveFlowId = flowId;
-  currentActiveStepNum = flow.stage; // Set default view to current active step
+  currentActiveStepNum = initialStepNum || flow.stage; // Set default view tab to initialStepNum or current active step (WITHOUT mutating flow.stage)
 
   document.getElementById('flow-detail-title').innerText = flow.name;
   const client = AppState.clients.find(c => c.id === flow.clientId) || {};
-  document.getElementById('flow-detail-subtitle').innerText = `${flow.serviceType.toUpperCase()} - Khách: ${client.name || 'Không rõ'} (${client.code || 'KH CŨ'})`;
+  document.getElementById('flow-detail-subtitle').innerText = `${(flow.serviceType || '').toUpperCase()} - Khách: ${client.name || 'Không rõ'} (${client.code || 'KH CŨ'})`;
 
   const stageSelect = document.getElementById('modal-flow-stage-select');
   if (stageSelect) {
@@ -1394,11 +1356,8 @@ function openFlowDetailModal(flowId) {
     stageSelect.onchange = (e) => {
       const val = parseInt(e.target.value);
       if (val && val !== flow.stage) {
-        handleFlowMoveAttempt(flow.id, val);
-        const updatedFlow = AppState.shipment_workflows.find(f => f.id === flow.id);
-        if (updatedFlow) {
-          openFlowDetailModal(updatedFlow.id);
-        }
+        executeFlowMove(flow, val);
+        openFlowDetailModal(flow.id, val);
       }
     };
   }
