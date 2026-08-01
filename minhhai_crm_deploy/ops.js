@@ -679,15 +679,69 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   const newStage = parseInt(targetStage);
   if (isNaN(newStage) || newStage < 1 || newStage > 12) return;
 
-  const oldStage = flow.stage;
-  flow.stage = newStage;
+  const oldStage = flow.stage || 1;
 
-  // If moved to step 12 (Thất bại), set default fail reason if empty
-  if (newStage === 12 && !flow.failReason) {
-    flow.failReason = 'Chưa chọn lý do';
+  // ===== BẢO TỒN CÁC ĐIỀU KIỆN CHUYỂN BƯỚC ===== //
+  
+  // Điều kiện 1: Chuyển tiến từ Bước 1 -> Yêu cầu nhập Thời gian nhắn & Thời gian nhập thông tin (SLA)
+  if (oldStage === 1 && newStage > 1) {
+    if (!flow.customerMsgTime || !flow.infoEntryTime) {
+      const msg = 'Vui lòng nhập Thời gian khách nhắn & Thời gian nhập thông tin ở Bước 1 trước khi chuyển bước!';
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, 'warning');
+      } else {
+        alert(msg);
+      }
+      openFlowDetailModal(flow.id, 1);
+      return;
+    }
   }
 
-  // Update step status inside flow.steps array
+  // Điều kiện 2: Chuyển tiến từ Bước 2 -> Yêu cầu Cập nhật tình trạng sau báo giá (Feedback Báo Giá)
+  if (oldStage === 2 && newStage > 2) {
+    const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+    const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 3) || 
+                             (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
+    if (!hasQuoteFeedback) {
+      const msg = 'Vui lòng Cập nhật tình trạng sau báo giá ở Bước 2 trước khi chuyển bước!';
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, 'warning');
+      } else {
+        alert(msg);
+      }
+      openFlowDetailModal(flow.id, 2);
+      return;
+    }
+  }
+
+  // Điều kiện 3: Rà soát việc bắt buộc (Required Checklist Items) của bước hiện tại
+  const currentStepData = flow.steps && flow.steps.find(s => s.stepNum === oldStage);
+  if (currentStepData && Array.isArray(currentStepData.checklist) && newStage > oldStage && newStage !== 12) {
+    const uncompletedRequired = currentStepData.checklist.filter(c => c.required && !c.done);
+    if (uncompletedRequired.length > 0) {
+      const names = uncompletedRequired.map(c => `"${c.text}"`).join(', ');
+      const msg = `Cần hoàn thành các việc bắt buộc: ${names} ở Bước ${oldStage} trước khi chuyển bước!`;
+      if (typeof window.showToast === 'function') {
+        window.showToast(msg, 'warning');
+      } else {
+        alert(msg);
+      }
+      openFlowDetailModal(flow.id, oldStage);
+      return;
+    }
+  }
+
+  // Điều kiện 4: Chuyển sang Bước 12 (Thất bại) -> Đảm bảo có Lý do thất bại
+  if (newStage === 12) {
+    if (!flow.failReason || flow.failReason === 'Chưa chọn lý do') {
+      flow.failReason = 'Khác';
+    }
+  }
+
+  // Thực hiện chuyển bước sau khi thỏa mãn toàn bộ điều kiện
+  flow.stage = newStage;
+
+  // Cập nhật trạng thái các bước con trong quy trình
   if (Array.isArray(flow.steps)) {
     flow.steps.forEach(s => {
       if (s.stepNum < newStage) {
@@ -700,7 +754,7 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     });
   }
 
-  // Add history log
+  // Ghi nhật ký lịch sử di chuyển
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
     "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
@@ -711,7 +765,7 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   if (!Array.isArray(flow.history)) flow.history = [];
   flow.history.push(`${nowStr}: Chuyển từ bước ${oldStage} sang bước ${newStage} (${stepName})`);
 
-  // Persist state and update UI immediately
+  // Lưu trạng thái và vẽ lại giao diện
   saveState();
   renderOpsWorkflows();
 
