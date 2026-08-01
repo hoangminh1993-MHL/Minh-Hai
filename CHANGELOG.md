@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.01] - 2026-08-01
+
+### Chuyển Đổi Trải Nghiệm Chuyển Bước - Mở Trực Tiếp Popup Chi Tiết Thay Vì Cảnh Báo
+- **Cập Nhật Luồng Chuyển Bước Trong CRM Vận Hành (`ops.js`):**
+  - Loại bỏ hoàn toàn các ô thông báo cảnh báo/chặn (`alert`, `toast warning`) khi chuyển bước.
+  - Khi người dùng thực hiện chuyển bước (qua thao tác kéo thả thẻ hoặc ô chọn nhanh `Chuyển bước`), hệ thống tự động **mở trực tiếp Popup Modal chi tiết lô hàng (`openFlowDetailModal`)** tại đúng bước mới.
+- **Tối Ưu Nhập Liệu Tiện Lợi:**
+  - Người dùng xem ngay toàn bộ thông tin chi tiết bước mới, danh sách công việc, thời gian SLA và điền thông tin bổ sung trực tiếp trong Popup Modal một cách mượt mà nhất.
+
 ## [v22.00] - 2026-08-01
 
 ### Bảo Tồn & Thắt Chặt 100% Các Điều Kiện Chuyển Bước Trong CRM Vận Hành & Khách Hàng Cũ
