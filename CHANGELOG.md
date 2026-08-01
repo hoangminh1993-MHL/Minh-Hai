@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v21.99] - 2026-08-01
+
+### Bổ Sung Hàm Di Chuyển Thẻ `handleFlowMoveAttempt` - Khắc Phục Triệt Để Lỗi Chuyển Sang Cột 12 Thất Bại
+- **Phát Hiện Nguyên Nhân Sự Cố (`ops.js`):**
+  - Hàm lắng nghe sự kiện kéo thả (Drag & Drop) và dropdown chọn chuyển bước (`card-stage-select`) gọi đến hàm `handleFlowMoveAttempt(flowId, targetStage)`.
+  - Trước đây hàm này chưa được định nghĩa trong file `ops.js`, dẫn đến khi chọn di chuyển thẻ sang cột 12 (Thất bại), trình duyệt báo lỗi `ReferenceError: handleFlowMoveAttempt is not defined` làm thẻ không di chuyển và cột 12 bị trống 0 thẻ.
+- **Xử Lý & Cập Nhật Hàm Di Chuyển Thẻ Chuẩn (`ops.js`):**
+  - Đã khai báo hàm `window.handleFlowMoveAttempt(flowId, targetStage)`: Tự động cập nhật `flow.stage = newStage`, tự động khởi tạo lý do hỏng mặc định khi vào Bước 12, cập nhật trạng thái các bước con trong quy trình, lưu nhật ký lịch sử và tự động lưu Server (`saveState()`) & re-render bảng Kanban ngay lập tức.
+- **Xác Minh Trực Quan Live:**
+  - Thẻ di chuyển sang Bước 12 (Thất bại) hiển thị đầy đủ thông tin lý do thất bại, thông tin nhân sự và lưu giữ đồng bộ 100% trên hệ thống.
+
 ## [v21.98] - 2026-08-01
 
 ### Khắc Phục Triệt Để Lỗi Thẻ Mới Trong CRM Khách Hàng Cũ Bị Mất Khi Load Lại Trang (F5)
