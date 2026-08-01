@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v21.97';
+  const CURRENT_APP_VER = 'v21.98';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -439,21 +439,64 @@ async function syncLoadState() {
       AppState.notifications = data.notifications || [];
       AppState.fbConfig = data.fbConfig || { accessToken: '', pageUrl: 'https://www.facebook.com/MinhHailogistcs.Muahangtaobao.vanchuyentrungviet' };
       
-      // Server-First Single Source of Truth for Operational CRM collections
-      if (data.clients && data.clients.length > 0) {
-        AppState.clients = data.clients;
-      }
-      if (data.projects && data.projects.length > 0) {
-        AppState.projects = data.projects;
-      }
-      if (data.shipment_workflows && data.shipment_workflows.length > 0) {
-        AppState.shipment_workflows = data.shipment_workflows;
-      }
-      if (data.single_tasks && data.single_tasks.length > 0) {
-        AppState.single_tasks = data.single_tasks;
-      }
+      // Safe Two-Way Union Merging for Operational Collections across Reloads
+      let hasPendingOpsSync = false;
+
+      const localClients = JSON.parse(localStorage.getItem('votr_clients_db')) || [];
+      const serverClients = data.clients || [];
+      const clientMap = new Map();
+      serverClients.forEach(c => { if (c && c.id) clientMap.set(String(c.id), c); });
+      localClients.forEach(c => {
+        if (c && c.id && !clientMap.has(String(c.id))) {
+          clientMap.set(String(c.id), c);
+          hasPendingOpsSync = true;
+        }
+      });
+      AppState.clients = Array.from(clientMap.values());
+
+      const localProjects = JSON.parse(localStorage.getItem('votr_projects_db')) || [];
+      const serverProjects = data.projects || [];
+      const projectMap = new Map();
+      serverProjects.forEach(p => { if (p && p.id) projectMap.set(String(p.id), p); });
+      localProjects.forEach(p => {
+        if (p && p.id && !projectMap.has(String(p.id))) {
+          projectMap.set(String(p.id), p);
+          hasPendingOpsSync = true;
+        }
+      });
+      AppState.projects = Array.from(projectMap.values());
+
+      const localWorkflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
+      const serverWorkflows = data.shipment_workflows || [];
+      const workflowMap = new Map();
+      serverWorkflows.forEach(w => { if (w && w.id) workflowMap.set(String(w.id), w); });
+      localWorkflows.forEach(w => {
+        if (w && w.id && !workflowMap.has(String(w.id))) {
+          workflowMap.set(String(w.id), w);
+          hasPendingOpsSync = true;
+        }
+      });
+      AppState.shipment_workflows = Array.from(workflowMap.values());
+
+      const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
+      const serverSingleTasks = data.single_tasks || [];
+      const singleTaskMap = new Map();
+      serverSingleTasks.forEach(t => { if (t && t.id) singleTaskMap.set(String(t.id), t); });
+      localSingleTasks.forEach(t => {
+        if (t && t.id && !singleTaskMap.has(String(t.id))) {
+          singleTaskMap.set(String(t.id), t);
+          hasPendingOpsSync = true;
+        }
+      });
+      AppState.single_tasks = Array.from(singleTaskMap.values());
+
       AppState.suggestions = data.suggestions || [];
       AppState.lastUpdated = data.lastUpdated || Date.now();
+
+      if (hasPendingOpsSync) {
+        console.log('[Sync] Resynced newly created local operational workflows/clients to server...');
+        saveState();
+      }
 
       if (window.initLeadSteps && AppState.leads) {
         AppState.leads.forEach(window.initLeadSteps);
@@ -701,7 +744,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '21.97';
+const CLIENT_VERSION = '21.98';
 
 async function checkCodeVersionUpdate() {
   try {
