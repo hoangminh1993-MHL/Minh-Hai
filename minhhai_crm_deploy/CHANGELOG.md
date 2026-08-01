@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v22.00] - 2026-08-01
+
+### Bảo Tồn & Thắt Chặt 100% Các Điều Kiện Chuyển Bước Trong CRM Vận Hành & Khách Hàng Cũ
+- **Bảo Tồn 4 Quy Tắc Kiểm Tra Khi Di Chuyển Thẻ (`ops.js`):**
+  - **Điều kiện 1 (Bước 1 -> Bước 2+):** Bắt buộc phải có *Thời gian khách nhắn* & *Thời gian nhập thông tin* (SLA) ở Bước 1 mới được chuyển tiếp.
+  - **Điều kiện 2 (Bước 2 -> Bước 3+):** Bắt buộc phải có *Cập nhật tình trạng sau báo giá* (Quote Feedback) ở Bước 2 mới được chuyển tiếp.
+  - **Điều kiện 3 (Công việc bắt buộc):** Kiểm tra danh sách checklist của bước hiện tại. Nếu còn công việc đánh dấu bắt buộc (`required: true`) chưa hoàn thành, hệ thống sẽ chặn chuyển bước.
+  - **Điều kiện 4 (Bước 12 Thất bại):** Bắt buộc phải có *Lý do thất bại* hợp lệ được chọn và lưu vết.
+- **Tự Động Mở Modal Hướng Dẫn Nhập Liệu:**
+  - Nếu người dùng cố tình chuyển bước khi chưa thỏa mãn điều kiện, hệ thống phát cảnh báo Toast rõ ràng và tự động mở đúng Modal bước cần bổ sung thông tin để người dùng thao tác tiện lợi nhất.
+
 ## [v21.99] - 2026-08-01
 
 ### Bổ Sung Hàm Di Chuyển Thẻ `handleFlowMoveAttempt` - Khắc Phục Triệt Để Lỗi Chuyển Sang Cột 12 Thất Bại
