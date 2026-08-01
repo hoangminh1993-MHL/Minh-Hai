@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v22.03] - 2026-08-01
+
+### Khắc Phục Lỗi Mất Dữ Liệu Khi Reload & Tối Ưu Cảnh Báo Khi Kéo Thẻ Sang Bước Khác
+- **Tối Ưu Thao Tác Kéo Thẻ (`ops.js`):**
+  - Khi kéo thẻ hoặc chuyển bước: Hệ thống **không tự động nảy Popup Modal làm gián đoạn thao tác**.
+  - Nếu thiếu điều kiện (Thời gian phản hồi SLA ở Bước 1, Phản hồi báo giá ở Bước 2, Công việc bắt buộc), hệ thống hiển thị **thông báo cảnh báo Toast màu vàng rõ ràng** (`⚠️ Cần nhập...`) hướng dẫn chính xác việc cần làm.
+  - Khi thỏa mãn điều kiện, thẻ di chuyển ngay lập tức trên bảng Kanban một cách mượt mà.
+- **Bảo Tồn 100% Dữ Liệu Thẻ Khi Reload Trang (`app.js`):**
+  - Xây dựng hàm `mergeWorkflowObjects` hợp nhất sâu hai chiều giữa dữ liệu Server và `localStorage`.
+  - Mọi thông tin người dùng nhập vào thẻ (Ghi chú bước, Thời gian nhắn/nhập TT SLA, Phản hồi báo giá, Công việc checklist, Tệp tài liệu đính kèm, Thảo luận) đều được **lưu giữ bảo toàn 100% khi tải lại trang (F5)**.
+
 ## [v22.02] - 2026-08-01
 
 ### Khắc Phục Lỗi Tự Động Nhảy Bước Khi Mở Popup & Thống Nhất Duy Nhất 1 Popup Modal
