@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.11] - 2026-08-03
+
+### Khắc Phục Lỗi Hiển Thị Dữ Liệu CRM Khách Cũ & Xử Lý An Toàn Bộ Lọc Trễ Hạn
+- **Khắc Phục Lỗi Crash Truy Cập Thuộc Tính Chuỗi (Null-Safety in `ops.js`):**
+  - Bổ sung xử lý an toàn chống crash `TypeError` khi đọc thuộc tính `flow.serviceType`, `flow.name`, `client.name`, `client.code` trong hàm `renderOpsWorkflows`.
+  - Đảm bảo bảng Kanban luôn kết xuất 100% dữ liệu ngay cả khi có lô hàng thiếu thuộc tính dịch vụ.
+- **Xử Lý Trạng Thái Trống Khi Bật Bộ Lọc "Trễ Hạn Bước":**
+  - Khi người dùng tích chọn bộ lọc *"Trễ hạn bước"*, nếu hiện tại không có lô hàng nào quá hạn, hệ thống kết xuất thông báo rõ ràng *"Không tìm thấy lô hàng nào phù hợp với bộ lọc hiện tại. Bộ lọc 'Trễ hạn bước' đang được bật. Hãy thử bỏ tích để xem toàn bộ lô hàng"* thay vì hiển thị khoảng trắng trống.
+
 ## [v22.10] - 2026-08-03
 
 ### Khắc Phục Lỗi Thẻ Tự Chuyển Sang Cột Thương Lượng Khi Chọn Thất Bại Trong CRM Khách Mới Page
