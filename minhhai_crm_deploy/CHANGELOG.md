@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v22.10] - 2026-08-03
+
+### Khắc Phục Lỗi Thẻ Tự Chuyển Sang Cột Thương Lượng Khi Chọn Thất Bại Trong CRM Khách Mới Page
+- **Loại Bỏ Điều Kiện Chặn Chuyển Bước Thất Bại Cho CSKH (`crm.js`):**
+  - Trước đây, khi tài khoản nhân viên (CSKH) thực hiện chuyển thẻ khách hàng mới sang bước *Thất Bại*, mã nguồn cũ tự động ghi đè và chuyển thẻ sang bước *Thương Lượng*.
+  - Đã loại bỏ hạn chế này: Cho phép mọi nhân sự khi cập nhật thất bại cho khách hàng mới đều được chuyển chính xác sang cột **Thất Bại** sau khi nhập lý do.
+- **Loại Bỏ Danh Sách Giới Hạn 4 Lý Do Thất Bại (`crm.js`):**
+  - Loại bỏ bộ lọc `allowedFailReasons` (trước đây tự động ép thẻ về bước *Thương Lượng* nếu người dùng chọn các lý do thất bại như *Giá dịch vụ cao, Trả lời chậm, Vận chuyển lâu...*).
+  - Hiện tại, bất kỳ lý do thất bại hợp lệ nào người dùng nhập/chọn đều được hệ thống chấp nhận và giữ thẻ khách hàng chuẩn xác ở bước **Thất Bại** (`lead.stage = 'failed'`).
+
 ## [v22.09] - 2026-08-03
 
 ### Nâng Cấp Hệ Thống Màu Sắc Phân Loại Bước & Bộ Lọc Nhanh Theo Bước
