@@ -842,66 +842,26 @@ function handleLeadMove(leadId, targetStage) {
 
   // If moving to FAILED, ask for reason
   if (targetStage === 'failed') {
-    const currentUser = getCurrentUser();
-    const isAdminOrManager = currentUser && (currentUser.role === 'admin' || currentUser.role === 'manager');
-    if (!isAdminOrManager) {
-      window.showToast("Chỉ tài khoản Admin hoặc Quản lý mới có quyền chuyển sang Thất bại! CSKH chỉ được phép chuyển sang cột Thương lượng.", "warning");
-      
-      // Automatically redirect to negotiation instead
-      lead.stage = 'negotiating';
-      lead.stageEntryTimes = lead.stageEntryTimes || {};
-      lead.stageEntryTimes['negotiating'] = Date.now();
-      lead.failReason = null;
-      lead.failEvidence = null;
-      lead.failApproved = null;
-      lead.updatedTime = formatDateTime(new Date());
-      
-      const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
-      if (currentStepData) currentStepData.status = 'done';
-      const negoStep = lead.steps.find(s => s.stepNum === 5); // Negotiation step
-      if (negoStep) negoStep.status = 'doing';
-
-      saveState();
-      renderCRMBoard();
-      return;
+    const elName = document.getElementById('fail-prompt-client-name');
+    if (elName) elName.innerText = lead.name;
+    
+    const elReason = document.getElementById('prompt-fail-reason');
+    if (elReason) elReason.value = '';
+    
+    const elReasonOther = document.getElementById('prompt-fail-reason-other');
+    if (elReasonOther) {
+      elReasonOther.value = '';
+      elReasonOther.style.display = 'none';
     }
-
-    document.getElementById('fail-prompt-client-name').innerText = lead.name;
-    document.getElementById('prompt-fail-reason').value = '';
-    document.getElementById('prompt-fail-reason-other').value = '';
-    document.getElementById('prompt-fail-reason-other').style.display = 'none';
-    document.getElementById('prompt-fail-evidence').value = '';
+    
+    const elEvidence = document.getElementById('prompt-fail-evidence');
+    if (elEvidence) elEvidence.value = '';
     
     openModal('modal-fail-reason-prompt');
     
     failPromptCallback = (reason, evidence) => {
-      const allowedFailReasons = [
-        "Không đủ năng lực xử lý hàng",
-        "Hàng khó từ chối",
-        "Khách lẻ, hàng khó => chủ động từ chối",
-        "Không tìm được hàng cho KH"
-      ];
-      
-      const isNegotiationReason = !allowedFailReasons.includes(reason);
-      
-      if (isNegotiationReason) {
-        window.showToast("Lý do này thuộc khâu Thương lượng! Hệ thống đã chuyển khách hàng sang cột Thương lượng.", "info");
-        
-        lead.stage = 'negotiating';
-        lead.stageEntryTimes = lead.stageEntryTimes || {};
-        lead.stageEntryTimes['negotiating'] = Date.now();
-        lead.failReason = null;
-        lead.failEvidence = null;
-        lead.failApproved = null;
-        lead.updatedTime = formatDateTime(new Date());
-        
-        const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
-        if (currentStepData) currentStepData.status = 'done';
-        const negoStep = lead.steps.find(s => s.stepNum === 5); // Negotiation step
-        if (negoStep) negoStep.status = 'doing';
-
-        saveState();
-        renderCRMBoard();
+      if (!reason || !reason.trim()) {
+        window.showToast("Vui lòng chọn hoặc nhập lý do thất bại!", "warning");
         return;
       }
 
@@ -909,21 +869,26 @@ function handleLeadMove(leadId, targetStage) {
       lead.stage = 'failed';
       lead.stageEntryTimes = lead.stageEntryTimes || {};
       lead.stageEntryTimes['failed'] = Date.now();
-      lead.failReason = reason;
-      lead.failEvidence = evidence;
-      lead.failApproved = false; // Initialize to false
+      lead.failReason = reason.trim();
+      lead.failEvidence = (evidence || '').trim();
+      lead.failApproved = true;
       lead.updatedTime = formatDateTime(new Date());
       
       // Update step status
       const currentStepData = lead.steps.find(s => s.stepNum === currentStepNum);
       if (currentStepData) currentStepData.status = 'done';
       const failStep = lead.steps.find(s => s.stepNum === 7);
-      if (failStep) failStep.status = 'doing';
+      if (failStep) failStep.status = 'done';
 
       saveState();
+      closeModal('modal-fail-reason-prompt');
       renderCRMBoard();
-      addNotification('Cập nhật CRM', `Khách hàng ${lead.name} đã chuyển sang Thất bại: ${reason}`, 'warning');
+      window.showToast(`Đã chuyển khách hàng "${lead.name}" sang Thất Bại!`, 'success');
+      if (typeof addNotification === 'function') {
+        addNotification('Cập nhật CRM', `Khách hàng ${lead.name} đã chuyển sang Thất Bại: ${reason}`, 'warning');
+      }
     };
+    return;
   } 
   // If moving to SUCCESS, check and reward points
   else if (targetStage === 'success') {
