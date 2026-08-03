@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## [v22.09] - 2026-08-03
+
+### Nâng Cấp Hệ Thống Màu Sắc Phân Loại Bước & Bộ Lọc Nhanh Theo Bước
+- **Bộ Màu Sắc Độc Lập Cho 12 Bước (Distinct Vibrant Step Badges):**
+  - Đã loại bỏ màu vàng đơn điệu dùng chung cho tất cả các bước.
+  - Thiết kế bảng màu gradient cao cấp, chuẩn UI/UX cho từng bước:
+    - **Bước 1 (Nhận thông tin):** Cyan / Sky Blue Gradient
+    - **Bước 2 (Báo giá):** Indigo / Violet Gradient
+    - **Bước 3 (Thương lượng):** Deep Purple Gradient
+    - **Bước 4 (Thành công):** Emerald Green Gradient
+    - **Bước 5 (Mua hàng):** Jade Teal Gradient
+    - **Bước 6 (Shop gửi hàng):** Amber Gold Gradient
+    - **Bước 7 (Về kho TQ):** Coral Orange Gradient
+    - **Bước 8 (Về kho VN):** Lime Olive Gradient
+    - **Bước 9 (Giao hàng):** Ocean Blue Gradient
+    - **Bước 10 (Thu nợ):** Rose Pink Gradient
+    - **Bước 11 (Hoàn tất):** Success Green Gradient
+    - **Bước 12 (Thất bại):** Crimson Red Gradient
+- **Cột Kanban & Thẻ Nhãn Phân Loại:**
+  - Tiêu đề từng cột Kanban được trang bị đường viền 3px và dấu chấm phát sáng theo đúng dải màu đại diện của bước đó.
+  - Thẻ nhãn trong chế độ Bảng / Danh sách hiển thị theo dạng Pill tròn hiện đại, kèm số thứ tự bước giúp rà soát cực kỳ dễ nhìn.
+- **Bộ Lọc Nhanh Theo Bước (Step Filter Dropdown & Quick Pills Bar):**
+  - Bổ sung ô chọn `-- Lọc theo tất cả các bước --` (`#ops-flow-filter-stage`) tại thanh công cụ lọc.
+  - Bổ sung thanh Tab lọc nhanh dạng Pill (`#ops-quick-step-filter-container`) cho phép bấm trực tiếp để xem nhanh danh sách lô hàng ở từng bước cụ thể (*Tất cả*, *1. Nhận thông tin*, *2. Báo giá*, *3. Thương lượng*...).
+
 ## [v22.08] - 2026-08-03
 
 ### Khắc Phục Triệt Để Sự Cố Nút Bấm Trong Popup & Đồng Bộ Chuyển Bước Trực Tiếp
