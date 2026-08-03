@@ -1033,13 +1033,21 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     }
 
     // Search filter
-    const matchesSearch = flow.name.toLowerCase().includes(searchVal) ||
-                          (client.code && client.code.toLowerCase().includes(searchVal)) ||
-                          (client.name && client.name.toLowerCase().includes(searchVal));
+    const flowName = (flow.name || '').toLowerCase();
+    const flowService = (flow.serviceType || '').toLowerCase();
+    const clientName = (client.name || '').toLowerCase();
+    const clientCode = (client.code || '').toLowerCase();
+
+    const matchesSearch = !searchVal || 
+                          flowName.includes(searchVal) ||
+                          clientCode.includes(searchVal) ||
+                          clientName.includes(searchVal);
     if (!matchesSearch) return;
 
     // Service type filter
-    if (serviceVal !== 'all' && (serviceVal === 'chính ngạch' ? !flow.serviceType.toLowerCase().includes('ch') : !flow.serviceType.toLowerCase().includes('hàng'))) return;
+    if (serviceVal !== 'all') {
+      if (serviceVal === 'chính ngạch' ? !flowService.includes('ch') : !flowService.includes('hàng')) return;
+    }
 
     // Assignee filter
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
@@ -1054,7 +1062,7 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     filteredFlows.push(flow);
 
     // Place into corresponding step array (flow.stage is 1-indexed)
-    const idx = flow.stage - 1;
+    const idx = (flow.stage || 1) - 1;
     if (idx >= 0 && idx < 12) {
       stepLists[idx].push(flow);
     }
@@ -1208,7 +1216,7 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     if (listBody) {
       listBody.innerHTML = '';
       if (filteredFlows.length === 0) {
-        listBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">Không tìm thấy lô hàng nào.</td></tr>`;
+        listBody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px; color: var(--text-muted);">${overdueVal ? 'Bộ lọc "Trễ hạn bước" đang bật - Không tìm thấy lô hàng trễ hạn nào.' : 'Không tìm thấy lô hàng nào.'}</td></tr>`;
       } else {
         filteredFlows.forEach(flow => {
           const client = AppState.clients.find(c => c.id === flow.clientId) || {};
@@ -1235,8 +1243,8 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
             slaBadge = `<span class="badge" style="background:#f59e0b; color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Chờ nhập thời gian</span>`;
           }
           
-          const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
-          const stepBadge = getStepBadgeHtml(flow.stage, currentStepName);
+          const currentStepName = stepNames[(flow.stage || 1) - 1] || 'Không rõ';
+          const stepBadge = getStepBadgeHtml(flow.stage || 1, currentStepName);
           
           const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
           const deadlineBadge = isOverdue
@@ -1272,6 +1280,25 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
         });
       }
     }
+    return;
+  }
+
+  // If filtered flows is empty, render clean empty notice inside Kanban
+  if (filteredFlows.length === 0) {
+    const emptyNotice = document.createElement('div');
+    emptyNotice.style.gridColumn = '1 / -1';
+    emptyNotice.style.padding = '40px 20px';
+    emptyNotice.style.textAlign = 'center';
+    emptyNotice.style.background = 'rgba(31, 41, 55, 0.4)';
+    emptyNotice.style.borderRadius = '12px';
+    emptyNotice.style.border = '1px dashed rgba(255,255,255,0.15)';
+    emptyNotice.style.margin = '20px 0';
+    emptyNotice.innerHTML = `
+      <i class="fa-solid fa-folder-open" style="font-size:36px; color:var(--text-muted); margin-bottom:12px; display:block;"></i>
+      <h4 style="font-size:15px; color:var(--text-secondary); margin:0 0 6px 0;">Không tìm thấy lô hàng nào phù hợp với bộ lọc hiện tại</h4>
+      <p style="font-size:12px; color:var(--text-muted); margin:0;">${overdueVal ? 'Bộ lọc "Trễ hạn bước" đang được bật. Hãy thử bỏ tích "Trễ hạn bước" để xem toàn bộ lô hàng.' : 'Vui lòng thử thay đổi từ khóa tìm kiếm hoặc chọn "Tất cả các bước".'}</p>
+    `;
+    container.appendChild(emptyNotice);
     return;
   }
 
