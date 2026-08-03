@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v22.07] - 2026-08-03
+
+### Bổ Sung Popup Nhập Liệu Tương Tác & Cảnh Báo Bật Trực Tiếp Trước Khi Chuyển Bước
+- **Popup Nhập Lý Do Thất Bại Trước Khi Chuyển Sang Bước Thất Bại (`modal-flow-fail-reason`):**
+  - Khi kéo thả hoặc chọn chuyển thẻ sang Bước 12 (Thất bại), nếu chưa có lý do thất bại, hệ thống tự động **bật Popup chuyên dụng yêu cầu nhập Lý do thất bại ngay lập tức**.
+  - Người dùng chọn danh sách lý do (*Giá dịch vụ cao, Trả lời chậm, Không cạnh tranh được...*) hoặc nhập chi tiết lý do khác + link ảnh bằng chứng. Nhấn *"Xác Nhận Chuyển Thất Bại"* sẽ lưu dữ liệu và di chuyển thẻ thành công.
+- **Popup Tải Tài Liệu / Báo Giá Trước Khi Chuyển Sang Báo Giá (`modal-flow-quote-upload`):**
+  - Khi kéo thả hoặc chọn chuyển thẻ sang Bước 2 (Báo giá), nếu chưa có ảnh/tệp báo giá, hệ thống **bật Popup yêu cầu dán link ảnh/tài liệu báo giá**.
+- **Popup Nhập Phản Hồi Báo Giá Trước Khi Chuyển Sang Thương Lượng (`modal-flow-quote-feedback`):**
+  - Tương tự, nếu chưa có phản hồi báo giá ở Bước 2 khi chuyển sang Bước 3 (Thương lượng), Popup nhập phản hồi xuất hiện để người dùng nhập thông tin nhanh.
+- **Thông Báo Cảnh Báo Trực Tiếp Của Trình Duyệt (`alert` & Toast):**
+  - Mọi lỗi chuyển bước do thiếu thông tin đều bật cửa sổ `alert` trực tiếp trên màn hình kết hợp Toast cảnh báo đỏ, đảm bảo người dùng không thể bỏ lỡ nguyên nhân bị chặn.
+
 ## [v22.06] - 2026-08-03
 
 ### Bổ Sung 3 Điều Kiện Bắt Buộc Khi Chuyển Bước Trong Quy Trình Vận Hành
