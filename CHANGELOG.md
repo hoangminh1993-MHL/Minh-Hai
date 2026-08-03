@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [v22.05] - 2026-08-03
+
+### Thắt Chặt Rà Soát Điều Kiện Chuyển Bước Toàn Diện Trên Tất Cả Thao Tác
+- **Thắt Chặt Rà Soát Điều Kiện Bước (`ops.js`):**
+  - Xây dựng hàm rà soát cổng `canMoveFlowToStage` kiểm tra toàn bộ điều kiện các bước trước khi cho phép di chuyển thẻ:
+    1. *Điều kiện Bước 1:* Bắt buộc có đủ "Thời gian khách nhắn" và "Thời gian nhập thông tin" (SLA).
+    2. *Điều kiện Bước 2:* Bắt buộc có "Tình trạng khách hàng sau báo giá" nếu chuyển quá Bước 2.
+    3. *Điều kiện Checklist bắt buộc:* Bắt buộc hoàn thành 100% các công việc bắt buộc ở tất cả các bước trước đó.
+- **Đồng Bộ Kiểm Tra Trên Mọi Thao Tác (Drag-and-Drop, Thẻ, Popup):**
+  - Cập nhật cả ô chọn dropdown trên góc Popup Modal (`modal-flow-stage-select`) và ô chọn trên thẻ Kanban: nếu người dùng chọn bước mới mà chưa đủ thông tin, hệ thống lập tức phát cảnh báo đỏ và **tự động hoàn giá trị dropdown về bước cũ ngay lập tức**, không cho phép vượt cấp/chuyển bước tự do khi chưa đủ dữ liệu.
+
 ## [v22.04] - 2026-08-01
 
 ### Bổ Sung Thông Báo Chi Tiết Lý Do Khi Không Chuyển Bước Được
