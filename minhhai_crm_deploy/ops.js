@@ -683,30 +683,50 @@ window.canMoveFlowToStage = function canMoveFlowToStage(flow, targetStage) {
   ];
   const targetStepName = stepNames[newStage - 1] || `Bước ${newStage}`;
 
-  // Nếu chuyển TIẾN (newStage > oldStage), bắt buộc rà soát toàn bộ điều kiện các bước trước:
+  // ===== YÊU CẦU 1: Bắt buộc tải hình ảnh/tài liệu báo giá lên để chuyển sang Bước 2 (Báo giá) hoặc tiến xa hơn ===== //
+  if (newStage >= 2 && newStage !== 12) {
+    const hasFiles = (Array.isArray(flow.files) && flow.files.length > 0) ||
+                     (flow.steps && flow.steps.some(s => Array.isArray(s.files) && s.files.length > 0));
+    if (!hasFiles) {
+      return {
+        canMove: false,
+        reason: `Để chuyển sang ${targetStepName}, BẮT BUỘC phải tải hình ảnh/tài liệu báo giá lên phần "Tài liệu & Hình ảnh của lô hàng"!`
+      };
+    }
+  }
+
+  // ===== YÊU CẦU 2: Bắt buộc nhập "Tình trạng khách hàng sau báo giá" để chuyển sang Bước 3 (Thương lượng) hoặc tiến xa hơn ===== //
+  if (newStage >= 3 && newStage !== 12) {
+    const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+    const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 2) || 
+                             (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
+    if (!hasQuoteFeedback) {
+      return {
+        canMove: false,
+        reason: `Để chuyển sang ${targetStepName}, BẮT BUỘC phải nhập "Tình trạng khách hàng sau báo giá" ở Bước 2!`
+      };
+    }
+  }
+
+  // ===== YÊU CẦU 3: Bắt buộc nhập "Lý do thất bại" để chuyển sang Bước 12 (Thất bại) ===== //
+  if (newStage === 12) {
+    if (!flow.failReason || !flow.failReason.trim()) {
+      return {
+        canMove: false,
+        reason: `Để chuyển sang bước Thất Bại, BẮT BUỘC phải nhập/chọn "Lý do thất bại"!`
+      };
+    }
+  }
+
+  // Nếu chuyển TIẾN (newStage > oldStage), rà soát thông tin SLA Bước 1 & việc checklist bắt buộc:
   if (newStage > oldStage && newStage !== 12) {
-    // 1. Kiểm tra thông tin SLA Bước 1
     if (!flow.customerMsgTime || !flow.customerMsgTime.trim() || !flow.infoEntryTime || !flow.infoEntryTime.trim()) {
       return {
         canMove: false,
-        reason: `Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì THIẾU "Thời gian khách nhắn" hoặc "Thời gian nhập thông tin" ở Bước 1! Vui lòng điền đủ thông tin Bước 1 trước.`
+        reason: `Không thể chuyển sang ${targetStepName} vì THIẾU "Thời gian khách nhắn" hoặc "Thời gian nhập thông tin" ở Bước 1!`
       };
     }
 
-    // 2. Kiểm tra phản hồi báo giá Bước 2 nếu chuyển quá Bước 2 (newStage > 2)
-    if (newStage > 2) {
-      const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
-      const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 3) || 
-                               (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
-      if (!hasQuoteFeedback) {
-        return {
-          canMove: false,
-          reason: `Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì THIẾU thông tin "Tình trạng khách hàng sau báo giá" ở Bước 2! Vui lòng nhập thông tin báo giá trước.`
-        };
-      }
-    }
-
-    // 3. Kiểm tra danh sách công việc bắt buộc của tất cả các bước từ 1 đến oldStage
     if (Array.isArray(flow.steps)) {
       for (let sNum = 1; sNum <= oldStage; sNum++) {
         const stepObj = flow.steps.find(s => s.stepNum === sNum);
@@ -716,7 +736,7 @@ window.canMoveFlowToStage = function canMoveFlowToStage(flow, targetStage) {
             const names = uncompletedRequired.map(c => `"${c.text}"`).join(', ');
             return {
               canMove: false,
-              reason: `Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì CHƯA HOÀN THÀNH việc bắt buộc ở Bước ${sNum}: ${names}!`
+              reason: `Không thể chuyển sang ${targetStepName} vì CHƯA HOÀN THÀNH việc bắt buộc ở Bước ${sNum}: ${names}!`
             };
           }
         }
