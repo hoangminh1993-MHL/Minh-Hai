@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## [v22.08] - 2026-08-03
+
+### Khắc Phục Triệt Để Sự Cố Nút Bấm Trong Popup & Đồng Bộ Chuyển Bước Trực Tiếp
+- **Sửa Lỗi Sự Cố Nút Bấm Không Phản Hồi (`ops.js` & `index.html`):**
+  - Khai báo trực tiếp các hàm xử lý sự kiện lên phạm vi `window` toàn cục: `window.handleConfirmFlowFail`, `window.handleConfirmQuoteUpload`, và `window.handleConfirmQuoteFeedback`.
+  - Gắn thuộc tính `onclick="..."` trực tiếp trên các nút bấm trong HTML:
+    - Nút *"Tải Lên & Chuyển Sang Báo Giá"* (`#btn-confirm-quote-upload`).
+    - Nút *"Xác Nhận Chuyển Thất Bại"* (`#btn-confirm-flow-fail`).
+    - Nút *"Lưu Phản Hồi & Chuyển Bước"* (`#btn-confirm-quote-feedback`).
+- **Xử Lý Chuyển Bước & Tải Bảng Kanban Ngay Lập Tức:**
+  - Sau khi người dùng dán link tài liệu/ảnh hoặc nhập lý do thất bại và nhấn xác nhận: Hệ thống cập nhật dữ liệu, thực hiện di chuyển bước `executeFlowMove`, đóng Popup và làm mới giao diện bảng Kanban ngay lập tức.
+  - Từ góc chọn bước trong Popup (`modal-flow-stage-select`) khi chọn bước 3 (*Thương lượng*), nếu chưa có phản hồi báo giá, Popup nhập phản hồi xuất hiện tức thì để người dùng hoàn tất trước khi di chuyển.
+
 ## [v22.07] - 2026-08-03
 
 ### Bổ Sung Popup Nhập Liệu Tương Tác & Cảnh Báo Bật Trực Tiếp Trước Khi Chuyển Bước
