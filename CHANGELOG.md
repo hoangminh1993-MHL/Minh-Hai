@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## [v22.06] - 2026-08-03
+
+### Bổ Sung 3 Điều Kiện Bắt Buộc Khi Chuyển Bước Trong Quy Trình Vận Hành
+- **Cập Nhật Hàm Rà Soát `canMoveFlowToStage` (`ops.js`):**
+  1. **Bước 2 (Báo giá):** BẮT BUỘC phải tải hình ảnh/tài liệu báo giá lên tại mục *"Tài liệu & Hình ảnh của lô hàng"*. Nếu chưa có file/ảnh, hệ thống chặn chuyển bước và báo lỗi `❌ Để chuyển sang Báo Giá, BẮT BUỘC phải tải hình ảnh/tài liệu báo giá lên phần "Tài liệu & Hình ảnh của lô hàng"!`.
+  2. **Bước 3 (Thương lượng):** BẮT BUỘC phải nhập thông tin *"Tình trạng khách hàng sau báo giá"* ở Bước 2. Nếu chưa nhập, hệ thống chặn chuyển bước và báo lỗi `❌ Để chuyển sang Thương Lượng, BẮT BUỘC phải nhập "Tình trạng khách hàng sau báo giá" ở Bước 2!`.
+  3. **Bước 12 (Thất bại):** BẮT BUỘC phải nhập/chọn *"Lý do thất bại"*. Nếu chưa nhập, hệ thống chặn chuyển bước và báo lỗi `❌ Để chuyển sang bước Thất Bại, BẮT BUỘC phải nhập/chọn "Lý do thất bại"!`.
+
 ## [v22.05] - 2026-08-03
 
 ### Thắt Chặt Rà Soát Điều Kiện Chuyển Bước Toàn Diện Trên Tất Cả Thao Tác
