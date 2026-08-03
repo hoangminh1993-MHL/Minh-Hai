@@ -719,94 +719,102 @@ function openFlowQuoteFeedbackModal(flowId, targetStage) {
   openModal('modal-flow-quote-feedback');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  const btnFailConfirm = document.getElementById('btn-confirm-flow-fail');
-  if (btnFailConfirm) {
-    btnFailConfirm.onclick = () => {
-      if (!pendingFailMoveFlowId) return;
-      const flow = AppState.shipment_workflows.find(w => w.id === pendingFailMoveFlowId);
-      if (!flow) return;
+window.handleConfirmFlowFail = function handleConfirmFlowFail() {
+  if (!pendingFailMoveFlowId) return;
+  const flow = AppState.shipment_workflows.find(w => w.id === pendingFailMoveFlowId);
+  if (!flow) return;
 
-      const reasonVal = document.getElementById('prompt-fail-reason-select').value;
-      if (!reasonVal) {
-        alert('⚠️ Vui lòng chọn Lý do thất bại!');
-        return;
-      }
-
-      let finalReason = reasonVal;
-      if (reasonVal === 'Khác') {
-        finalReason = document.getElementById('prompt-fail-other-text').value.trim();
-        if (!finalReason) {
-          alert('⚠️ Vui lòng nhập chi tiết Lý do thất bại khác!');
-          return;
-        }
-      }
-
-      flow.failReason = finalReason;
-      flow.failEvidence = document.getElementById('prompt-fail-evidence-url').value.trim();
-
-      saveState();
-      closeModal('modal-flow-fail-reason');
-      executeFlowMove(flow, 12);
-      pendingFailMoveFlowId = null;
-    };
+  const reasonVal = document.getElementById('prompt-fail-reason-select').value;
+  if (!reasonVal) {
+    alert('⚠️ Vui lòng chọn Lý do thất bại!');
+    return;
   }
 
-  const btnQuoteConfirm = document.getElementById('btn-confirm-quote-upload');
-  if (btnQuoteConfirm) {
-    btnQuoteConfirm.onclick = () => {
-      if (!pendingQuoteUploadFlowId) return;
-      const flow = AppState.shipment_workflows.find(w => w.id === pendingQuoteUploadFlowId);
-      if (!flow) return;
-
-      const fileName = document.getElementById('prompt-quote-file-name').value.trim() || 'Ảnh báo giá';
-      const fileUrl = document.getElementById('prompt-quote-file-url').value.trim();
-      if (!fileUrl) {
-        alert('⚠️ Vui lòng nhập Đường dẫn link ảnh/tài liệu báo giá!');
-        return;
-      }
-
-      if (!Array.isArray(flow.files)) flow.files = [];
-      flow.files.push({ name: fileName, url: fileUrl, uploader: 'Hệ thống', date: new Date().toLocaleString('vi-VN') });
-
-      saveState();
-      closeModal('modal-flow-quote-upload');
-      
-      const targetStage = pendingQuoteUploadTargetStage;
-      pendingQuoteUploadFlowId = null;
-      handleFlowMoveAttempt(flow.id, targetStage);
-    };
+  let finalReason = reasonVal;
+  if (reasonVal === 'Khác') {
+    finalReason = document.getElementById('prompt-fail-other-text').value.trim();
+    if (!finalReason) {
+      alert('⚠️ Vui lòng nhập chi tiết Lý do thất bại khác!');
+      return;
+    }
   }
 
-  const btnFeedbackConfirm = document.getElementById('btn-confirm-quote-feedback');
-  if (btnFeedbackConfirm) {
-    btnFeedbackConfirm.onclick = () => {
-      if (!pendingFeedbackFlowId) return;
-      const flow = AppState.shipment_workflows.find(w => w.id === pendingFeedbackFlowId);
-      if (!flow) return;
+  flow.failReason = finalReason;
+  flow.failEvidence = document.getElementById('prompt-fail-evidence-url').value.trim();
 
-      const feedback = document.getElementById('prompt-feedback-text').value.trim();
-      if (!feedback || feedback.length < 2) {
-        alert('⚠️ Vui lòng nhập Tình trạng khách hàng sau báo giá!');
-        return;
-      }
-
-      flow.quoteFeedback = feedback;
-      const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
-      if (step2 && Array.isArray(step2.checklist)) {
-        const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
-        if (item) item.done = true;
-      }
-
-      saveState();
-      closeModal('modal-flow-quote-feedback');
-
-      const targetStage = pendingFeedbackTargetStage;
-      pendingFeedbackFlowId = null;
-      handleFlowMoveAttempt(flow.id, targetStage);
-    };
+  saveState();
+  closeModal('modal-flow-fail-reason');
+  executeFlowMove(flow, 12);
+  renderOpsWorkflows();
+  if (typeof window.showToast === 'function') {
+    window.showToast(`Đã chuyển lô hàng "${flow.name}" sang Thất bại!`, 'success');
   }
-});
+  pendingFailMoveFlowId = null;
+};
+
+window.handleConfirmQuoteUpload = function handleConfirmQuoteUpload() {
+  if (!pendingQuoteUploadFlowId) return;
+  const flow = AppState.shipment_workflows.find(w => w.id === pendingQuoteUploadFlowId);
+  if (!flow) return;
+
+  const fileName = document.getElementById('prompt-quote-file-name').value.trim() || 'Ảnh báo giá';
+  const fileUrl = document.getElementById('prompt-quote-file-url').value.trim();
+  if (!fileUrl) {
+    alert('⚠️ Vui lòng nhập Đường dẫn link ảnh/tài liệu báo giá!');
+    return;
+  }
+
+  if (!Array.isArray(flow.files)) flow.files = [];
+  flow.files.push({ name: fileName, url: fileUrl, uploader: 'Hệ thống', date: new Date().toLocaleString('vi-VN') });
+
+  const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+  if (step2 && Array.isArray(step2.checklist)) {
+    step2.checklist.forEach(c => { if (c) c.done = true; });
+  }
+
+  saveState();
+  closeModal('modal-flow-quote-upload');
+  
+  const targetStage = pendingQuoteUploadTargetStage || 2;
+  pendingQuoteUploadFlowId = null;
+
+  executeFlowMove(flow, targetStage);
+  renderOpsWorkflows();
+  if (typeof window.showToast === 'function') {
+    window.showToast(`Đã tải tài liệu báo giá & chuyển lô hàng sang bước Báo giá!`, 'success');
+  }
+};
+
+window.handleConfirmQuoteFeedback = function handleConfirmQuoteFeedback() {
+  if (!pendingFeedbackFlowId) return;
+  const flow = AppState.shipment_workflows.find(w => w.id === pendingFeedbackFlowId);
+  if (!flow) return;
+
+  const feedback = document.getElementById('prompt-feedback-text').value.trim();
+  if (!feedback || feedback.length < 2) {
+    alert('⚠️ Vui lòng nhập Tình trạng khách hàng sau báo giá!');
+    return;
+  }
+
+  flow.quoteFeedback = feedback;
+  const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+  if (step2 && Array.isArray(step2.checklist)) {
+    const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+    if (item) item.done = true;
+  }
+
+  saveState();
+  closeModal('modal-flow-quote-feedback');
+
+  const targetStage = pendingFeedbackTargetStage || 3;
+  pendingFeedbackFlowId = null;
+
+  executeFlowMove(flow, targetStage);
+  renderOpsWorkflows();
+  if (typeof window.showToast === 'function') {
+    window.showToast(`Đã lưu tình trạng sau báo giá & chuyển sang bước Thương lượng!`, 'success');
+  }
+};
 
 window.canMoveFlowToStage = function canMoveFlowToStage(flow, targetStage) {
   const newStage = parseInt(targetStage);
