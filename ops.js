@@ -668,29 +668,14 @@ function renderOpsWorkflows() {
     });
   }
 
-window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStage) {
-  if (!flowId) {
-    const errorMsg = '❌ LỖI CHUYỂN BƯỚC: Thiếu thông tin định danh lô hàng!';
-    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
-    return;
-  }
-
-  const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(w => w.id === flowId);
-  if (!flow) {
-    const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Không tìm thấy lô hàng với ID "${flowId}" trên hệ thống!`;
-    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
-    return;
-  }
-
+window.canMoveFlowToStage = function canMoveFlowToStage(flow, targetStage) {
   const newStage = parseInt(targetStage);
   if (isNaN(newStage) || newStage < 1 || newStage > 12) {
-    const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Bước chuyển "${targetStage}" không hợp lệ (Phân vùng hợp lệ: 1 - 12)!`;
-    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
-    return;
+    return { canMove: false, reason: 'Bước chuyển không hợp lệ (Phân vùng hợp lệ: 1 - 12)!' };
   }
 
   const oldStage = flow.stage || 1;
-  if (newStage === oldStage) return;
+  if (newStage === oldStage) return { canMove: true };
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
@@ -698,64 +683,88 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   ];
   const targetStepName = stepNames[newStage - 1] || `Bước ${newStage}`;
 
-  // ===== RÀ SOÁT CHI TIẾT LỖI CHUYỂN BƯỚC ===== //
-  
-  // Điều kiện 1: Chuyển tiến từ Bước 1 -> Yêu cầu nhập Thời gian khách nhắn & Thời gian nhập thông tin (SLA)
-  if (oldStage === 1 && newStage > 1) {
-    if (!flow.customerMsgTime || !flow.infoEntryTime) {
-      const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): Không thể chuyển từ Bước 1 sang Bước ${newStage} (${targetStepName}) vì THIẾU "Thời gian khách nhắn" hoặc "Thời gian nhập thông tin"! Vui lòng mở thẻ bổ sung trước.`;
-      if (typeof window.showToast === 'function') {
-        window.showToast(errorMsg, 'danger');
-      } else {
-        alert(errorMsg);
+  // Nếu chuyển TIẾN (newStage > oldStage), bắt buộc rà soát toàn bộ điều kiện các bước trước:
+  if (newStage > oldStage && newStage !== 12) {
+    // 1. Kiểm tra thông tin SLA Bước 1
+    if (!flow.customerMsgTime || !flow.customerMsgTime.trim() || !flow.infoEntryTime || !flow.infoEntryTime.trim()) {
+      return {
+        canMove: false,
+        reason: `Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì THIẾU "Thời gian khách nhắn" hoặc "Thời gian nhập thông tin" ở Bước 1! Vui lòng điền đủ thông tin Bước 1 trước.`
+      };
+    }
+
+    // 2. Kiểm tra phản hồi báo giá Bước 2 nếu chuyển quá Bước 2 (newStage > 2)
+    if (newStage > 2) {
+      const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+      const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 3) || 
+                               (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
+      if (!hasQuoteFeedback) {
+        return {
+          canMove: false,
+          reason: `Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì THIẾU thông tin "Tình trạng khách hàng sau báo giá" ở Bước 2! Vui lòng nhập thông tin báo giá trước.`
+        };
       }
-      if (typeof addNotification === 'function') {
-        addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
+    }
+
+    // 3. Kiểm tra danh sách công việc bắt buộc của tất cả các bước từ 1 đến oldStage
+    if (Array.isArray(flow.steps)) {
+      for (let sNum = 1; sNum <= oldStage; sNum++) {
+        const stepObj = flow.steps.find(s => s.stepNum === sNum);
+        if (stepObj && Array.isArray(stepObj.checklist)) {
+          const uncompletedRequired = stepObj.checklist.filter(c => c.required && !c.done);
+          if (uncompletedRequired.length > 0) {
+            const names = uncompletedRequired.map(c => `"${c.text}"`).join(', ');
+            return {
+              canMove: false,
+              reason: `Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì CHƯA HOÀN THÀNH việc bắt buộc ở Bước ${sNum}: ${names}!`
+            };
+          }
+        }
       }
-      return; // CHẶN CHUYỂN BƯỚC VÀ HIỂN THỊ THÔNG BÁO LỖI
     }
   }
 
-  // Điều kiện 2: Chuyển tiến từ Bước 2 -> Yêu cầu Cập nhật tình trạng sau báo giá (Feedback Báo Giá)
-  if (oldStage === 2 && newStage > 2) {
-    const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
-    const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 3) || 
-                             (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
-    if (!hasQuoteFeedback) {
-      const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): Không thể chuyển từ Bước 2 sang Bước ${newStage} (${targetStepName}) vì THIẾU "Tình trạng khách hàng sau báo giá"! Vui lòng mở thẻ nhập phản hồi báo giá.`;
-      if (typeof window.showToast === 'function') {
-        window.showToast(errorMsg, 'danger');
-      } else {
-        alert(errorMsg);
-      }
-      if (typeof addNotification === 'function') {
-        addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
-      }
-      return; // CHẶN CHUYỂN BƯỚC VÀ HIỂN THỊ THÔNG BÁO LỖI
-    }
+  return { canMove: true };
+};
+
+window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStage) {
+  if (!flowId) {
+    const errorMsg = '❌ LỖI CHUYỂN BƯỚC: Thiếu thông tin định danh lô hàng!';
+    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
+    return false;
   }
 
-  // Điều kiện 3: Rà soát các việc bắt buộc (Required Checklist Items) của bước hiện tại
-  const currentStepData = flow.steps && flow.steps.find(s => s.stepNum === oldStage);
-  if (currentStepData && Array.isArray(currentStepData.checklist) && newStage > oldStage && newStage !== 12) {
-    const uncompletedRequired = currentStepData.checklist.filter(c => c.required && !c.done);
-    if (uncompletedRequired.length > 0) {
-      const names = uncompletedRequired.map(c => `"${c.text}"`).join(', ');
-      const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): Không thể chuyển sang Bước ${newStage} (${targetStepName}) vì CHƯA HOÀN THÀNH việc bắt buộc ở Bước ${oldStage}: ${names}!`;
-      if (typeof window.showToast === 'function') {
-        window.showToast(errorMsg, 'danger');
-      } else {
-        alert(errorMsg);
-      }
-      if (typeof addNotification === 'function') {
-        addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
-      }
-      return; // CHẶN CHUYỂN BƯỚC VÀ HIỂN THỊ THÔNG BÁO LỖI
+  const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(w => w.id === flowId);
+  if (!flow) {
+    const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Không tìm thấy lô hàng với ID "${flowId}" trên hệ thống!`;
+    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
+    return false;
+  }
+
+  const newStage = parseInt(targetStage);
+  if (isNaN(newStage) || newStage < 1 || newStage > 12) {
+    const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Bước chuyển "${targetStage}" không hợp lệ!`;
+    if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
+    return false;
+  }
+
+  const validation = canMoveFlowToStage(flow, newStage);
+  if (!validation.canMove) {
+    const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): ${validation.reason}`;
+    if (typeof window.showToast === 'function') {
+      window.showToast(errorMsg, 'danger');
+    } else {
+      alert(errorMsg);
     }
+    if (typeof addNotification === 'function') {
+      addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
+    }
+    return false; // BLOCKED 100%!
   }
 
   // Thực hiện chuyển bước chính thức cho lô hàng
   executeFlowMove(flow, newStage);
+  return true;
 };
 
   const container = document.getElementById('ops-workflows-kanban');
@@ -1431,8 +1440,12 @@ function openFlowDetailModal(flowId, initialStepNum) {
     stageSelect.onchange = (e) => {
       const val = parseInt(e.target.value);
       if (val && val !== flow.stage) {
-        executeFlowMove(flow, val);
-        openFlowDetailModal(flow.id, val);
+        const ok = handleFlowMoveAttempt(flow.id, val);
+        if (!ok) {
+          e.target.value = flow.stage; // Revert dropdown selection back to flow.stage if blocked
+        } else {
+          openFlowDetailModal(flow.id, val);
+        }
       }
     };
   }
