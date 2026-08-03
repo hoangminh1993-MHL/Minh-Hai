@@ -668,6 +668,146 @@ function renderOpsWorkflows() {
     });
   }
 
+// Helper variables for prompt modal state
+let pendingFailMoveFlowId = null;
+let pendingQuoteUploadFlowId = null;
+let pendingQuoteUploadTargetStage = 2;
+let pendingFeedbackFlowId = null;
+let pendingFeedbackTargetStage = 3;
+
+function openFlowFailReasonModal(flowId) {
+  const flow = AppState.shipment_workflows.find(w => w.id === flowId);
+  if (!flow) return;
+
+  pendingFailMoveFlowId = flowId;
+  document.getElementById('prompt-fail-flow-name').innerText = `Lô hàng: "${flow.name}"`;
+  document.getElementById('prompt-fail-reason-select').value = '';
+  document.getElementById('prompt-fail-other-text').value = '';
+  document.getElementById('prompt-fail-evidence-url').value = '';
+  document.getElementById('prompt-fail-other-group').style.display = 'none';
+
+  const selectEl = document.getElementById('prompt-fail-reason-select');
+  selectEl.onchange = () => {
+    document.getElementById('prompt-fail-other-group').style.display = (selectEl.value === 'Khác') ? 'block' : 'none';
+  };
+
+  openModal('modal-flow-fail-reason');
+}
+
+function openFlowQuoteUploadModal(flowId, targetStage) {
+  const flow = AppState.shipment_workflows.find(w => w.id === flowId);
+  if (!flow) return;
+
+  pendingQuoteUploadFlowId = flowId;
+  pendingQuoteUploadTargetStage = targetStage || 2;
+  document.getElementById('prompt-quote-flow-name').innerText = `Lô hàng: "${flow.name}"`;
+  document.getElementById('prompt-quote-file-name').value = 'Ảnh báo giá lô hàng';
+  document.getElementById('prompt-quote-file-url').value = '';
+
+  openModal('modal-flow-quote-upload');
+}
+
+function openFlowQuoteFeedbackModal(flowId, targetStage) {
+  const flow = AppState.shipment_workflows.find(w => w.id === flowId);
+  if (!flow) return;
+
+  pendingFeedbackFlowId = flowId;
+  pendingFeedbackTargetStage = targetStage || 3;
+  document.getElementById('prompt-feedback-flow-name').innerText = `Lô hàng: "${flow.name}"`;
+  document.getElementById('prompt-feedback-text').value = '';
+
+  openModal('modal-flow-quote-feedback');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const btnFailConfirm = document.getElementById('btn-confirm-flow-fail');
+  if (btnFailConfirm) {
+    btnFailConfirm.onclick = () => {
+      if (!pendingFailMoveFlowId) return;
+      const flow = AppState.shipment_workflows.find(w => w.id === pendingFailMoveFlowId);
+      if (!flow) return;
+
+      const reasonVal = document.getElementById('prompt-fail-reason-select').value;
+      if (!reasonVal) {
+        alert('⚠️ Vui lòng chọn Lý do thất bại!');
+        return;
+      }
+
+      let finalReason = reasonVal;
+      if (reasonVal === 'Khác') {
+        finalReason = document.getElementById('prompt-fail-other-text').value.trim();
+        if (!finalReason) {
+          alert('⚠️ Vui lòng nhập chi tiết Lý do thất bại khác!');
+          return;
+        }
+      }
+
+      flow.failReason = finalReason;
+      flow.failEvidence = document.getElementById('prompt-fail-evidence-url').value.trim();
+
+      saveState();
+      closeModal('modal-flow-fail-reason');
+      executeFlowMove(flow, 12);
+      pendingFailMoveFlowId = null;
+    };
+  }
+
+  const btnQuoteConfirm = document.getElementById('btn-confirm-quote-upload');
+  if (btnQuoteConfirm) {
+    btnQuoteConfirm.onclick = () => {
+      if (!pendingQuoteUploadFlowId) return;
+      const flow = AppState.shipment_workflows.find(w => w.id === pendingQuoteUploadFlowId);
+      if (!flow) return;
+
+      const fileName = document.getElementById('prompt-quote-file-name').value.trim() || 'Ảnh báo giá';
+      const fileUrl = document.getElementById('prompt-quote-file-url').value.trim();
+      if (!fileUrl) {
+        alert('⚠️ Vui lòng nhập Đường dẫn link ảnh/tài liệu báo giá!');
+        return;
+      }
+
+      if (!Array.isArray(flow.files)) flow.files = [];
+      flow.files.push({ name: fileName, url: fileUrl, uploader: 'Hệ thống', date: new Date().toLocaleString('vi-VN') });
+
+      saveState();
+      closeModal('modal-flow-quote-upload');
+      
+      const targetStage = pendingQuoteUploadTargetStage;
+      pendingQuoteUploadFlowId = null;
+      handleFlowMoveAttempt(flow.id, targetStage);
+    };
+  }
+
+  const btnFeedbackConfirm = document.getElementById('btn-confirm-quote-feedback');
+  if (btnFeedbackConfirm) {
+    btnFeedbackConfirm.onclick = () => {
+      if (!pendingFeedbackFlowId) return;
+      const flow = AppState.shipment_workflows.find(w => w.id === pendingFeedbackFlowId);
+      if (!flow) return;
+
+      const feedback = document.getElementById('prompt-feedback-text').value.trim();
+      if (!feedback || feedback.length < 2) {
+        alert('⚠️ Vui lòng nhập Tình trạng khách hàng sau báo giá!');
+        return;
+      }
+
+      flow.quoteFeedback = feedback;
+      const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+      if (step2 && Array.isArray(step2.checklist)) {
+        const item = step2.checklist.find(c => c.text === "cập nhật tình trạng sau báo giá");
+        if (item) item.done = true;
+      }
+
+      saveState();
+      closeModal('modal-flow-quote-feedback');
+
+      const targetStage = pendingFeedbackTargetStage;
+      pendingFeedbackFlowId = null;
+      handleFlowMoveAttempt(flow.id, targetStage);
+    };
+  }
+});
+
 window.canMoveFlowToStage = function canMoveFlowToStage(flow, targetStage) {
   const newStage = parseInt(targetStage);
   if (isNaN(newStage) || newStage < 1 || newStage > 12) {
@@ -750,6 +890,7 @@ window.canMoveFlowToStage = function canMoveFlowToStage(flow, targetStage) {
 window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStage) {
   if (!flowId) {
     const errorMsg = '❌ LỖI CHUYỂN BƯỚC: Thiếu thông tin định danh lô hàng!';
+    alert(errorMsg);
     if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
     return false;
   }
@@ -757,6 +898,7 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   const flow = AppState.shipment_workflows && AppState.shipment_workflows.find(w => w.id === flowId);
   if (!flow) {
     const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Không tìm thấy lô hàng với ID "${flowId}" trên hệ thống!`;
+    alert(errorMsg);
     if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
     return false;
   }
@@ -764,17 +906,46 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   const newStage = parseInt(targetStage);
   if (isNaN(newStage) || newStage < 1 || newStage > 12) {
     const errorMsg = `❌ LỖI CHUYỂN BƯỚC: Bước chuyển "${targetStage}" không hợp lệ!`;
+    alert(errorMsg);
     if (typeof window.showToast === 'function') window.showToast(errorMsg, 'danger');
     return false;
+  }
+
+  // Check interactive prompts for missing data BEFORE blocking:
+
+  // Prompt A: Moving to Step 12 ("Thất Bại") & failReason missing
+  if (newStage === 12 && (!flow.failReason || !flow.failReason.trim())) {
+    openFlowFailReasonModal(flow.id);
+    return false;
+  }
+
+  // Prompt B: Moving to Step 2 ("Báo Giá") or past Step 2 & files missing
+  if (newStage >= 2 && newStage !== 12) {
+    const hasFiles = (Array.isArray(flow.files) && flow.files.length > 0) ||
+                     (flow.steps && flow.steps.some(s => Array.isArray(s.files) && s.files.length > 0));
+    if (!hasFiles) {
+      openFlowQuoteUploadModal(flow.id, newStage);
+      return false;
+    }
+  }
+
+  // Prompt C: Moving to Step 3 ("Thương Lượng") or past Step 3 & quote feedback missing
+  if (newStage >= 3 && newStage !== 12) {
+    const step2 = flow.steps && flow.steps.find(s => s.stepNum === 2);
+    const hasQuoteFeedback = (flow.quoteFeedback && flow.quoteFeedback.trim().length >= 2) || 
+                             (step2 && step2.checklist && step2.checklist.some(c => c.text === "cập nhật tình trạng sau báo giá" && c.done));
+    if (!hasQuoteFeedback) {
+      openFlowQuoteFeedbackModal(flow.id, newStage);
+      return false;
+    }
   }
 
   const validation = canMoveFlowToStage(flow, newStage);
   if (!validation.canMove) {
     const errorMsg = `❌ LỖI CHUYỂN BƯỚC (${flow.name}): ${validation.reason}`;
+    alert(errorMsg); // EXPLICIT UN-MISSABLE BROWSER POPUP ALERT!
     if (typeof window.showToast === 'function') {
       window.showToast(errorMsg, 'danger');
-    } else {
-      alert(errorMsg);
     }
     if (typeof addNotification === 'function') {
       addNotification('Lỗi chuyển bước ❌', errorMsg, 'danger');
