@@ -247,8 +247,9 @@ function initOpsEvents() {
 
   // Filter triggers
   const opsFlowSearch = document.getElementById('ops-flow-search');
-  if (opsFlowSearch) {
-    opsFlowSearch.oninput = renderOpsWorkflows;
+  const opsFlowFilterStage = document.getElementById('ops-flow-filter-stage');
+  if (opsFlowFilterStage) {
+    opsFlowFilterStage.onchange = renderOpsWorkflows;
   }
   const opsFlowFilterService = document.getElementById('ops-flow-filter-service');
   if (opsFlowFilterService) {
@@ -262,6 +263,37 @@ function initOpsEvents() {
   if (opsFlowFilterOverdue) {
     opsFlowFilterOverdue.onchange = renderOpsWorkflows;
   }
+
+window.getStepColorStyle = function getStepColorStyle(stageNum) {
+  const styles = [
+    { bg: 'linear-gradient(135deg, #0284c7, #06b6d4)', text: '#ffffff', border: '#0284c7', glow: 'rgba(6, 182, 212, 0.4)' }, // 1. Nhận thông tin (Sky/Cyan)
+    { bg: 'linear-gradient(135deg, #4f46e5, #6366f1)', text: '#ffffff', border: '#4f46e5', glow: 'rgba(99, 102, 241, 0.4)' }, // 2. Báo giá (Indigo/Violet)
+    { bg: 'linear-gradient(135deg, #7c3aed, #8b5cf6)', text: '#ffffff', border: '#7c3aed', glow: 'rgba(139, 92, 246, 0.4)' }, // 3. Thương lượng (Purple)
+    { bg: 'linear-gradient(135deg, #059669, #10b981)', text: '#ffffff', border: '#059669', glow: 'rgba(16, 185, 129, 0.4)' }, // 4. Thành công (Emerald)
+    { bg: 'linear-gradient(135deg, #0d9488, #14b8a6)', text: '#ffffff', border: '#0d9488', glow: 'rgba(20, 184, 166, 0.4)' }, // 5. Mua hàng (Teal)
+    { bg: 'linear-gradient(135deg, #d97706, #f59e0b)', text: '#ffffff', border: '#d97706', glow: 'rgba(245, 158, 11, 0.4)' }, // 6. Shop gửi hàng (Amber)
+    { bg: 'linear-gradient(135deg, #ea580c, #f97316)', text: '#ffffff', border: '#ea580c', glow: 'rgba(249, 115, 22, 0.4)' }, // 7. Về kho TQ (Orange)
+    { bg: 'linear-gradient(135deg, #65a30d, #84cc16)', text: '#ffffff', border: '#65a30d', glow: 'rgba(132, 204, 22, 0.4)' }, // 8. Về kho VN (Lime)
+    { bg: 'linear-gradient(135deg, #2563eb, #3b82f6)', text: '#ffffff', border: '#2563eb', glow: 'rgba(59, 130, 246, 0.4)' }, // 9. Giao hàng (Blue)
+    { bg: 'linear-gradient(135deg, #e11d48, #f43f5e)', text: '#ffffff', border: '#e11d48', glow: 'rgba(244, 63, 94, 0.4)' }, // 10. Thu nợ (Rose)
+    { bg: 'linear-gradient(135deg, #16a34a, #22c55e)', text: '#ffffff', border: '#16a34a', glow: 'rgba(34, 197, 94, 0.4)' }, // 11. Hoàn tất (Green)
+    { bg: 'linear-gradient(135deg, #991b1b, #dc2626)', text: '#ffffff', border: '#991b1b', glow: 'rgba(220, 38, 38, 0.4)' }  // 12. Thất bại (Red)
+  ];
+  return styles[stageNum - 1] || { bg: 'linear-gradient(135deg, #4b5563, #6b7280)', text: '#ffffff', border: '#4b5563', glow: 'rgba(107, 114, 128, 0.4)' };
+};
+
+window.getStepBadgeHtml = function getStepBadgeHtml(stageNum, customLabel) {
+  const stepNames = [
+    "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
+    "Shop gửi hàng", "Về kho TQ", "Về kho VN", "Giao hàng", "Thu nợ", "Hoàn tất", "Thất bại"
+  ];
+  const name = customLabel || stepNames[stageNum - 1] || `Bước ${stageNum}`;
+  const style = getStepColorStyle(stageNum);
+  return `<span class="badge" style="background: ${style.bg}; color: ${style.text}; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11px; box-shadow: 0 2px 5px ${style.glow}; display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.2); white-space: nowrap;">
+            <span style="background: rgba(255,255,255,0.25); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800;">${stageNum}</span>
+            ${name}
+          </span>`;
+};
 
   // --- Single Tasks events ---
   const btnAddSingleTaskModal = document.getElementById('btn-add-single-task-modal');
@@ -974,6 +1006,8 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   const serviceVal = document.getElementById('ops-flow-filter-service').value;
   const assigneeVal = document.getElementById('ops-flow-filter-assignee').value;
   const overdueVal = document.getElementById('ops-flow-filter-overdue').checked;
+  const stageFilterEl = document.getElementById('ops-flow-filter-stage');
+  const stageVal = stageFilterEl ? stageFilterEl.value : 'all';
 
   const stepNames = [
     "Nhận thông tin", "Báo giá", "Thương lượng", "Thành công", "Mua hàng",
@@ -1010,6 +1044,9 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
     // Assignee filter
     if (assigneeVal !== 'all' && flow.assigneeId !== assigneeVal) return;
 
+    // Stage filter
+    if (stageVal !== 'all' && flow.stage !== parseInt(stageVal)) return;
+
     // Overdue filter
     const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11 && flow.stage !== 12;
     if (overdueVal && !isOverdue) return;
@@ -1022,6 +1059,62 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
       stepLists[idx].push(flow);
     }
   });
+
+  // Render Quick Step Filter Pills Bar
+  const quickPillsContainer = document.getElementById('ops-quick-step-filter-container');
+  if (quickPillsContainer) {
+    quickPillsContainer.innerHTML = '';
+    
+    // "Tất cả" pill
+    const isAllActive = (stageVal === 'all');
+    const allPill = document.createElement('button');
+    allPill.className = `btn btn-sm ${isAllActive ? 'btn-primary' : 'btn-outline'}`;
+    allPill.style.padding = '4px 12px';
+    allPill.style.borderRadius = '20px';
+    allPill.style.fontSize = '11.5px';
+    allPill.style.fontWeight = 'bold';
+    allPill.style.whiteSpace = 'nowrap';
+    allPill.style.cursor = 'pointer';
+    allPill.innerHTML = `<i class="fa-solid fa-layer-group"></i> Tất cả (${AppState.shipment_workflows.length})`;
+    allPill.onclick = () => {
+      if (stageFilterEl) stageFilterEl.value = 'all';
+      renderOpsWorkflows();
+    };
+    quickPillsContainer.appendChild(allPill);
+
+    // 12 Step Pills with unique colors
+    for (let s = 1; s <= 12; s++) {
+      const stepStyle = getStepColorStyle(s);
+      const count = AppState.shipment_workflows.filter(f => f.stage === s).length;
+      const isActive = (stageVal === String(s));
+      const pill = document.createElement('button');
+      pill.style.padding = '4px 12px';
+      pill.style.borderRadius = '20px';
+      pill.style.fontSize = '11.5px';
+      pill.style.fontWeight = 'bold';
+      pill.style.whiteSpace = 'nowrap';
+      pill.style.cursor = 'pointer';
+      pill.style.transition = 'all 0.2s';
+      
+      if (isActive) {
+        pill.style.background = stepStyle.bg;
+        pill.style.color = '#ffffff';
+        pill.style.border = `1px solid ${stepStyle.border}`;
+        pill.style.boxShadow = `0 2px 6px ${stepStyle.glow}`;
+      } else {
+        pill.style.background = 'rgba(31, 41, 55, 0.6)';
+        pill.style.color = '#d1d5db';
+        pill.style.border = `1px solid rgba(75, 85, 99, 0.5)`;
+      }
+      
+      pill.innerHTML = `<span style="background:rgba(255,255,255,0.2); width:16px; height:16px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:10px; margin-right:4px;">${s}</span> ${stepNames[s-1]} (${count})`;
+      pill.onclick = () => {
+        if (stageFilterEl) stageFilterEl.value = String(s);
+        renderOpsWorkflows();
+      };
+      quickPillsContainer.appendChild(pill);
+    }
+  }
 
   const viewMode = AppState.opsViewMode || 'board';
   const btnBoard = document.getElementById('btn-ops-view-board');
@@ -1143,7 +1236,7 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
           }
           
           const currentStepName = stepNames[flow.stage - 1] || 'Không rõ';
-          const stepBadge = `<span class="badge" style="background:var(--color-primary); color:white; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:11px;">Bước ${flow.stage}: ${currentStepName}</span>`;
+          const stepBadge = getStepBadgeHtml(flow.stage, currentStepName);
           
           const isOverdue = flow.deadline && new Date(flow.deadline) < new Date() && flow.stage < 11;
           const deadlineBadge = isOverdue
@@ -1184,19 +1277,21 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
 
   // Render 12 columns
   for (let i = 0; i < 12; i++) {
+    const stepStyle = getStepColorStyle(i + 1);
     const col = document.createElement('div');
     col.className = 'kanban-column';
     col.setAttribute('data-stage', i + 1);
     col.id = `ops-col-stage-${i + 1}`;
+    col.style.borderTop = `3px solid ${stepStyle.border}`;
 
     const colHeader = document.createElement('div');
     colHeader.className = 'column-header';
     colHeader.innerHTML = `
       <div class="col-title">
-        <span class="col-dot" style="background: var(--color-primary);"></span>
+        <span class="col-dot" style="background: ${stepStyle.bg}; box-shadow: 0 0 6px ${stepStyle.glow};"></span>
         <h3>${i + 1}. ${stepNames[i]}</h3>
       </div>
-      <span class="col-count">${stepLists[i].length}</span>
+      <span class="col-count" style="background: ${stepStyle.bg}; color: ${stepStyle.text}; font-weight: 800; border-radius: 12px; padding: 2px 8px; font-size: 11px;">${stepLists[i].length}</span>
     `;
     col.appendChild(colHeader);
 
