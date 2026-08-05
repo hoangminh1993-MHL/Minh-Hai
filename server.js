@@ -1,4 +1,4 @@
-// Cleaned server.js v22.18
+// Cleaned server.js v22.19
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.18';
+  state.dbVersion = '22.19';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.18';
+  localState.dbVersion = '22.19';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,16 +170,27 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        if (!dbState.shipment_workflows || !Array.isArray(dbState.shipment_workflows) || dbState.shipment_workflows.length < localState.shipment_workflows.length) {
-          const workflowMap = new Map();
-          if (localState.shipment_workflows) localState.shipment_workflows.forEach(w => { if (w && w.id) workflowMap.set(String(w.id), w); });
-          if (dbState.shipment_workflows) dbState.shipment_workflows.forEach(w => { if (w && w.id) workflowMap.set(String(w.id), w); });
-          dbState.shipment_workflows = Array.from(workflowMap.values());
-          try {
-            await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
-          } catch (e) {}
+        // Ensure deletedIds from local db.json are merged into Postgres dbState
+        const deletedSet = new Set([
+          ...(dbState.deletedIds || []),
+          ...(localState.deletedIds || [])
+        ]);
+        dbState.deletedIds = Array.from(deletedSet);
+
+        // Always purge any items matching deletedIds from shipment_workflows and leads
+        if (Array.isArray(dbState.shipment_workflows)) {
+          dbState.shipment_workflows = dbState.shipment_workflows.filter(w => w && w.id && !deletedSet.has(String(w.id)));
         }
-        dbState.dbVersion = '22.18';
+        if (Array.isArray(dbState.leads)) {
+          dbState.leads = dbState.leads.filter(l => l && l.id && !deletedSet.has(String(l.id)));
+        }
+
+        // Sync purged state to Postgres DB
+        try {
+          await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
+        } catch (e) {}
+
+        dbState.dbVersion = '22.19';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -241,7 +252,7 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.18';
+  merged.dbVersion = '22.19';
 
   const deletedSet = new Set([
     ...(existingState.deletedIds || []),
@@ -411,7 +422,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '22.18',
+        dbVersion: currentState.dbVersion || '22.19',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0

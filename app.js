@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.18';
+  const CURRENT_APP_VER = 'v22.19';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -607,15 +607,17 @@ async function syncLoadState() {
       serverWorkflows.forEach(sFlow => {
         if (!sFlow || !sFlow.id || deletedSet.has(String(sFlow.id))) return;
         const wId = String(sFlow.id);
-        const lFlow = localWorkflows.find(w => String(w.id) === wId);
+        const lFlow = localWorkflows.find(w => w && String(w.id) === wId);
         if (lFlow) {
           const merged = mergeWorkflowObjects(sFlow, lFlow);
-          workflowMap.set(sId, sFlow);
+          workflowMap.set(wId, merged);
+        } else {
+          workflowMap.set(wId, sFlow);
         }
       });
 
       localWorkflows.forEach(lFlow => {
-        if (!lFlow || !lFlow.id) return;
+        if (!lFlow || !lFlow.id || deletedSet.has(String(lFlow.id))) return;
         const lId = String(lFlow.id);
         if (!workflowMap.has(lId)) {
           workflowMap.set(lId, lFlow);
@@ -623,7 +625,7 @@ async function syncLoadState() {
         }
       });
 
-      AppState.shipment_workflows = Array.from(workflowMap.values());
+      AppState.shipment_workflows = Array.from(workflowMap.values()).filter(w => w && w.id && !deletedSet.has(String(w.id)));
 
       const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || [];
       const serverSingleTasks = data.single_tasks || [];
@@ -898,7 +900,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.18';
+const CLIENT_VERSION = '22.19';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -1032,7 +1034,7 @@ function startStatePolling() {
             }
           });
 
-          AppState.shipment_workflows = Array.from(workflowMap.values());
+          AppState.shipment_workflows = Array.from(workflowMap.values()).filter(w => w && w.id && !deletedSet.has(String(w.id)));
 
           // 3. Two-Way Single Tasks Merging
           const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || AppState.single_tasks || [];
