@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.15';
+  const CURRENT_APP_VER = 'v22.16';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -898,7 +898,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.15';
+const CLIENT_VERSION = '22.16';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -961,7 +961,6 @@ function startStatePolling() {
           console.log('[Live Sync] Server state updated (serverWf=' + serverWfCount + ', localWf=' + currentWfCount + '). Syncing live multi-user data...');
           AppState.lastUpdated = serverLastUpdated;
           if (data.users && data.users.length > 0) AppState.users = data.users;
-          if (data.leads) AppState.leads = data.leads;
           if (data.tasks) AppState.tasks = data.tasks;
           if (data.workflows) AppState.workflows = data.workflows;
           if (data.sausageLogs) AppState.sausageLogs = data.sausageLogs;
@@ -971,8 +970,82 @@ function startStatePolling() {
           
           if (data.clients && data.clients.length > 0) AppState.clients = data.clients;
           if (data.projects && data.projects.length > 0) AppState.projects = data.projects;
-          if (data.shipment_workflows && data.shipment_workflows.length > 0) AppState.shipment_workflows = data.shipment_workflows;
-          if (data.single_tasks && data.single_tasks.length > 0) AppState.single_tasks = data.single_tasks;
+
+          const deletedSet = new Set([
+            ...(AppState.deletedIds || []),
+            ...(data.deletedIds || []),
+            ...JSON.parse(localStorage.getItem('votr_deleted_ids') || '[]')
+          ]);
+          AppState.deletedIds = Array.from(deletedSet);
+
+          // 1. Two-Way Lead Merging: Keep newly created local leads so polling never wipes them!
+          const localLeads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || AppState.leads || [];
+          const serverLeads = data.leads || [];
+          const leadMap = new Map();
+          const localLeadMap = new Map();
+          localLeads.forEach(l => { if (l && l.id) localLeadMap.set(String(l.id), l); });
+
+          serverLeads.forEach(sLead => {
+            if (!sLead || !sLead.id || deletedSet.has(String(sLead.id))) return;
+            const sId = String(sLead.id);
+            const lLead = localLeadMap.get(sId);
+            if (lLead) {
+              leadMap.set(sId, mergeLeadObjects(sLead, lLead));
+            } else {
+              leadMap.set(sId, sLead);
+            }
+          });
+
+          localLeads.forEach(lLead => {
+            if (!lLead || !lLead.id || deletedSet.has(String(lLead.id))) return;
+            const lId = String(lLead.id);
+            if (!leadMap.has(lId)) {
+              leadMap.set(lId, lLead);
+            }
+          });
+
+          AppState.leads = Array.from(leadMap.values());
+
+          // 2. Two-Way Workflow Merging: Keep newly created local workflows
+          const localWorkflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || AppState.shipment_workflows || [];
+          const serverWorkflows = data.shipment_workflows || [];
+          const workflowMap = new Map();
+          const localWfMap = new Map();
+          localWorkflows.forEach(w => { if (w && w.id) localWfMap.set(String(w.id), w); });
+
+          serverWorkflows.forEach(sFlow => {
+            if (!sFlow || !sFlow.id || deletedSet.has(String(sFlow.id))) return;
+            const wId = String(sFlow.id);
+            const lFlow = localWfMap.get(wId);
+            if (lFlow) {
+              workflowMap.set(wId, mergeWorkflowObjects(sFlow, lFlow));
+            } else {
+              workflowMap.set(wId, sFlow);
+            }
+          });
+
+          localWorkflows.forEach(lFlow => {
+            if (!lFlow || !lFlow.id || deletedSet.has(String(lFlow.id))) return;
+            const lId = String(lFlow.id);
+            if (!workflowMap.has(lId)) {
+              workflowMap.set(lId, lFlow);
+            }
+          });
+
+          AppState.shipment_workflows = Array.from(workflowMap.values());
+
+          // 3. Two-Way Single Tasks Merging
+          const localSingleTasks = JSON.parse(localStorage.getItem('votr_single_tasks_db')) || AppState.single_tasks || [];
+          const serverSingleTasks = data.single_tasks || [];
+          const singleTaskMap = new Map();
+
+          serverSingleTasks.forEach(st => { if (st && st.id && !deletedSet.has(String(st.id))) singleTaskMap.set(String(st.id), st); });
+          localSingleTasks.forEach(st => {
+            if (st && st.id && !deletedSet.has(String(st.id)) && !singleTaskMap.has(String(st.id))) {
+              singleTaskMap.set(String(st.id), st);
+            }
+          });
+          AppState.single_tasks = Array.from(singleTaskMap.values());
 
           // Sync to localStorage
           localStorage.setItem('votr_last_updated', String(serverLastUpdated));

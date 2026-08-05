@@ -439,7 +439,12 @@ function renderCRMBoard() {
     // Admin & Manager see ALL leads, Staff only see leads assigned to or created by them
     const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.dept === 'admin';
     if (!canSeeAll) {
-      return lead.salesId === currentUser.id || lead.cskhId === currentUser.id || lead.creatorId === currentUser.id;
+      const isOwnerOrAssigned = 
+        lead.salesId === currentUser.id || 
+        lead.cskhId === currentUser.id || 
+        lead.creatorId === currentUser.id ||
+        (currentUser.username && (lead.salesId === currentUser.username || lead.creatorId === currentUser.username));
+      return isOwnerOrAssigned;
     }
     return true;
   });
@@ -2030,8 +2035,10 @@ function handleAddLeadSubmit(e) {
   const valRmb = parseInt(document.getElementById('lead-val-rmb').value) || 0;
   const valVnd = parseInt(document.getElementById('lead-val-vnd').value) || 0;
   const note = document.getElementById('lead-note').value.trim();
-  const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : { id: 'usr-admin' };
-  const salesId = document.getElementById('lead-sales').value || currentUser.id || 'usr-admin';
+  const currentUser = (typeof getCurrentUser === 'function') ? getCurrentUser() : { id: 'usr-1', name: 'Nguyễn Hoàng Minh' };
+  const salesIdSelect = document.getElementById('lead-sales');
+  const selectedSalesId = salesIdSelect ? salesIdSelect.value : '';
+  const salesId = selectedSalesId || currentUser.id || 'usr-1';
 
   const now = new Date();
   const dateStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
@@ -2047,7 +2054,8 @@ function handleAddLeadSubmit(e) {
     note,
     salesId: salesId,
     cskhId: salesId,
-    creatorId: currentUser.id || 'usr-admin',
+    creatorId: currentUser.id || 'usr-1',
+    creatorName: currentUser.name || '',
     stage: 'receive_info',
     stageEntryTimes: { receive_info: Date.now() },
     failReason: null,
