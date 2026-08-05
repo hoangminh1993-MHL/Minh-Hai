@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.18] - 2026-08-05
+
+### Xóa Thẻ Dữ Liệu Thử Nghiệm CRM Khách Cũ & Phân Quyền Cho Tài Khoản Thảo
+- **Xóa Sạch Dữ Liệu Thẻ CRM Khách Cũ (`shipment_workflows`):**
+  - Đã làm sạch toàn bộ 58 thẻ lô hàng mẫu/thử nghiệm trên trang **CRM Khách Cũ & Lô Hàng** (`db.json` và Postgres DB).
+  - Đưa toàn bộ mã định danh thẻ đã xóa vào `deletedIds` để đảm bảo hệ thống không bị nạp lại dữ liệu cũ từ các máy client.
+- **Cấp Quyền Xem Toàn Bộ CRM Cho Tài Khoản Thảo (`phuongthao` / `usr-5`):**
+  - Đã cập nhật phân quyền trong `ops.js` và `crm.js`: Cấp quyền xem và quản lý 100% dữ liệu toàn bộ CRM (Khách mới & Khách cũ/Lô hàng) cho tài khoản của **Đặng Thị Phương Thảo** (`phuongthao`).
+
 ## [v22.17] - 2026-08-05
 
 ### Bổ Sung Bộ Lọc Khách Hàng Theo Từng Tháng Tạo Thẻ
