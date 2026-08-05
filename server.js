@@ -1,4 +1,4 @@
-// Cleaned server.js v22.11
+// Cleaned server.js v22.12
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.11';
+  state.dbVersion = '22.12';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.11';
+  localState.dbVersion = '22.12';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -179,7 +179,7 @@ async function loadState() {
             await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
           } catch (e) {}
         }
-        dbState.dbVersion = '22.11';
+        dbState.dbVersion = '22.12';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -196,18 +196,57 @@ async function loadState() {
   return sanitizeServerState(localState);
 }
 
+function getItemLatestTimestamp(item) {
+  if (!item) return 0;
+  let maxT = 0;
+  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
+    Object.values(item.stageEntryTimes).forEach(t => {
+      const val = Number(t);
+      if (!isNaN(val) && val > maxT) maxT = val;
+    });
+  }
+  if (item.updatedTime) {
+    const parsed = new Date(item.updatedTime).getTime();
+    if (!isNaN(parsed) && parsed > maxT) maxT = parsed;
+  }
+  if (item.updatedAt) {
+    const parsed = new Date(item.updatedAt).getTime();
+    if (!isNaN(parsed) && parsed > maxT) maxT = parsed;
+  }
+  return maxT;
+}
+
 function mergeStateObjects(existingState, incomingState) {
   if (!existingState) return incomingState;
   if (!incomingState) return existingState;
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.11';
+  merged.dbVersion = '22.12';
 
   const mergeArrayById = (arr1, arr2) => {
     const map = new Map();
-    if (Array.isArray(arr1)) arr1.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
-    if (Array.isArray(arr2)) arr2.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+    if (Array.isArray(arr1)) {
+      arr1.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+    }
+    if (Array.isArray(arr2)) {
+      arr2.forEach(item => {
+        if (!item || !item.id) return;
+        const key = String(item.id);
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, item);
+        } else {
+          const existingTime = getItemLatestTimestamp(existing);
+          const incomingTime = getItemLatestTimestamp(item);
+          if (incomingTime >= existingTime) {
+            map.set(key, { ...existing, ...item });
+          } else {
+            map.set(key, { ...item, ...existing });
+          }
+        }
+      });
+    }
     return Array.from(map.values());
   };
 
@@ -342,7 +381,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '22.11',
+        dbVersion: currentState.dbVersion || '22.12',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0

@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.11';
+  const CURRENT_APP_VER = 'v22.12';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -333,18 +333,43 @@ async function syncLoadState() {
       AppState.lastUpdated = data.lastUpdated || parseInt(localStorage.getItem('votr_last_updated')) || 0;
       AppState.users = data.users || [];
       
-      // Smart Two-Way Lead Merging: Keep newly created local leads that are missing from server
+      function getItemLatestTimestamp(item) {
+        if (!item) return 0;
+        let maxT = 0;
+        if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
+          Object.values(item.stageEntryTimes).forEach(t => {
+            const val = Number(t);
+            if (!isNaN(val) && val > maxT) maxT = val;
+          });
+        }
+        if (item.updatedTime) {
+          const parsed = new Date(item.updatedTime).getTime();
+          if (!isNaN(parsed) && parsed > maxT) maxT = parsed;
+        }
+        if (item.updatedAt) {
+          const parsed = new Date(item.updatedAt).getTime();
+          if (!isNaN(parsed) && parsed > maxT) maxT = parsed;
+        }
+        return maxT;
+      }
+
+      // Smart Two-Way Lead Merging: Keep newly created local leads and prioritize newest stage changes
       const localLeads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || [];
       const serverLeads = data.leads || [];
       const leadMap = new Map();
 
-      // Deep lead merger where SERVER lead takes priority, preserving local attachments/comments if missing from server
       const mergeLeadObjects = (sLead, lLead) => {
         if (!sLead) return lLead;
         if (!lLead) return sLead;
 
-        // Server lead takes precedence for all core attributes
-        const merged = { ...lLead, ...sLead };
+        const sTime = getItemLatestTimestamp(sLead);
+        const lTime = getItemLatestTimestamp(lLead);
+
+        // Prioritize the lead with the newest stage/update timestamp
+        const primary = lTime > sTime ? lLead : sLead;
+        const secondary = lTime > sTime ? sLead : lLead;
+
+        const merged = { ...secondary, ...primary };
 
         // Merge lead-level files
         const sFiles = Array.isArray(sLead.files) ? sLead.files : [];
@@ -471,7 +496,13 @@ async function syncLoadState() {
         if (!sFlow) return lFlow;
         if (!lFlow) return sFlow;
 
-        const merged = { ...sFlow, ...lFlow };
+        const sTime = getItemLatestTimestamp(sFlow);
+        const lTime = getItemLatestTimestamp(lFlow);
+
+        const primary = lTime > sTime ? lFlow : sFlow;
+        const secondary = lTime > sTime ? sFlow : lFlow;
+
+        const merged = { ...secondary, ...primary };
 
         merged.customerMsgTime = lFlow.customerMsgTime || sFlow.customerMsgTime || '';
         merged.infoEntryTime = lFlow.infoEntryTime || sFlow.infoEntryTime || '';
@@ -835,7 +866,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.11';
+const CLIENT_VERSION = '22.12';
 
 async function checkCodeVersionUpdate() {
   try {
