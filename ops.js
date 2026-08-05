@@ -1097,8 +1097,11 @@ function populateOpsMonthFilterOptions() {
   AppState.shipment_workflows.forEach(flow => {
     const client = AppState.clients.find(c => c.id === flow.clientId) || {};
 
-    // Permission filter: Admin and Manager see ALL data, Staff only sees assigned data
-    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager';
+    // Permission filter: Admin, Manager, and Thảo see ALL data, Staff only sees assigned data
+    const isThao = currentUser.id === 'usr-5' || 
+                   currentUser.username === 'phuongthao' || 
+                   (currentUser.name && currentUser.name.includes('Thảo'));
+    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || isThao;
     if (!canSeeAll) {
       const isAssigned = flow.assigneeId === currentUser.id || 
                          flow.cskhId === currentUser.id ||

@@ -516,8 +516,11 @@ function renderCRMBoard() {
       if (leadMonthKey !== selectedMonthVal) return false;
     }
 
-    // Admin & Manager see ALL leads, Staff only see leads assigned to or created by them
-    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.dept === 'admin';
+    // Admin, Manager & Thảo see ALL leads, Staff only see leads assigned to or created by them
+    const isThao = currentUser.id === 'usr-5' || 
+                   currentUser.username === 'phuongthao' || 
+                   (currentUser.name && currentUser.name.includes('Thảo'));
+    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.dept === 'admin' || isThao;
     if (!canSeeAll) {
       const isOwnerOrAssigned = 
         lead.salesId === currentUser.id || 
