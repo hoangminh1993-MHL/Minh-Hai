@@ -1,4 +1,4 @@
-// Cleaned server.js v22.16
+// Cleaned server.js v22.17
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.16';
+  state.dbVersion = '22.17';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.16';
+  localState.dbVersion = '22.17';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -179,7 +179,7 @@ async function loadState() {
             await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
           } catch (e) {}
         }
-        dbState.dbVersion = '22.16';
+        dbState.dbVersion = '22.17';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -241,7 +241,7 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.16';
+  merged.dbVersion = '22.17';
 
   const deletedSet = new Set([
     ...(existingState.deletedIds || []),
@@ -411,7 +411,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '22.16',
+        dbVersion: currentState.dbVersion || '22.17',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0

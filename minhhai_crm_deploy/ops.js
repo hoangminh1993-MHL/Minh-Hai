@@ -247,6 +247,10 @@ function initOpsEvents() {
 
   // Filter triggers
   const opsFlowSearch = document.getElementById('ops-flow-search');
+  const opsFlowFilterMonth = document.getElementById('ops-flow-filter-month');
+  if (opsFlowFilterMonth) {
+    opsFlowFilterMonth.onchange = renderOpsWorkflows;
+  }
   const opsFlowFilterStage = document.getElementById('ops-flow-filter-stage');
   if (opsFlowFilterStage) {
     opsFlowFilterStage.onchange = renderOpsWorkflows;
@@ -998,9 +1002,79 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
   return true;
 };
 
+function getItemCreationMonthKey(item) {
+  if (!item) return '';
+  if (item.createdTime) {
+    const match = String(item.createdTime).match(/^(\d{4})[\-\/](\d{1,2})/);
+    if (match) return `${match[1]}-${String(match[2]).padStart(2, '0')}`;
+  }
+  if (item.date) {
+    const match = String(item.date).match(/^(\d{4})[\-\/](\d{1,2})/);
+    if (match) return `${match[1]}-${String(match[2]).padStart(2, '0')}`;
+  }
+  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
+    const times = Object.values(item.stageEntryTimes).map(Number).filter(t => !isNaN(t) && t > 0);
+    if (times.length > 0) {
+      const minT = Math.min(...times);
+      const d = new Date(minT);
+      if (!isNaN(d.getTime())) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+  }
+  if (item.id) {
+    const matchId = String(item.id).match(/(\d{10,13})/);
+    if (matchId) {
+      const ts = parseInt(matchId[1], 10);
+      const d = new Date(ts);
+      if (!isNaN(d.getTime()) && d.getFullYear() >= 2024 && d.getFullYear() <= 2030) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+  }
+  return '2026-08';
+}
+
+function populateOpsMonthFilterOptions() {
+  const selectEl = document.getElementById('ops-flow-filter-month');
+  if (!selectEl) return;
+
+  const currentSelVal = selectEl.value || 'all';
+  const monthSet = new Set();
+  const flowList = (AppState && AppState.shipment_workflows && AppState.shipment_workflows.length > 0) ? AppState.shipment_workflows : [];
+
+  flowList.forEach(flow => {
+    if (flow) {
+      const monthKey = getItemCreationMonthKey(flow);
+      if (monthKey) monthSet.add(monthKey);
+    }
+  });
+
+  const now = new Date();
+  const nowKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  monthSet.add(nowKey);
+
+  const sortedMonths = Array.from(monthSet).sort().reverse();
+
+  let html = '<option value="all">-- Tất cả các tháng --</option>';
+  sortedMonths.forEach(mk => {
+    const parts = mk.split('-');
+    if (parts.length === 2) {
+      const label = `Tháng ${parts[1]}/${parts[0]}`;
+      html += `<option value="${mk}" ${currentSelVal === mk ? 'selected' : ''}>${label}</option>`;
+    }
+  });
+
+  selectEl.innerHTML = html;
+}
+
   const container = document.getElementById('ops-workflows-kanban');
   if (!container) return;
   container.innerHTML = '';
+
+  populateOpsMonthFilterOptions();
+  const monthFilterEl = document.getElementById('ops-flow-filter-month');
+  const monthVal = monthFilterEl ? monthFilterEl.value : 'all';
 
   const searchVal = document.getElementById('ops-flow-search').value.toLowerCase().trim();
   const serviceVal = document.getElementById('ops-flow-filter-service').value;
@@ -1043,6 +1117,12 @@ window.handleFlowMoveAttempt = function handleFlowMoveAttempt(flowId, targetStag
                           clientCode.includes(searchVal) ||
                           clientName.includes(searchVal);
     if (!matchesSearch) return;
+
+    // Month filter
+    if (monthVal !== 'all') {
+      const flowMonthKey = getItemCreationMonthKey(flow);
+      if (flowMonthKey !== monthVal) return;
+    }
 
     // Service type filter
     if (serviceVal !== 'all') {

@@ -12,6 +12,72 @@ window.cleanVietnameseText = cleanVietnameseText;
 window.formatRmb = formatRmb;
 window.formatVnd = formatVnd;
 
+function getItemCreationMonthKey(item) {
+  if (!item) return '';
+  if (item.createdTime) {
+    const match = String(item.createdTime).match(/^(\d{4})[\-\/](\d{1,2})/);
+    if (match) return `${match[1]}-${String(match[2]).padStart(2, '0')}`;
+  }
+  if (item.date) {
+    const match = String(item.date).match(/^(\d{4})[\-\/](\d{1,2})/);
+    if (match) return `${match[1]}-${String(match[2]).padStart(2, '0')}`;
+  }
+  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
+    const times = Object.values(item.stageEntryTimes).map(Number).filter(t => !isNaN(t) && t > 0);
+    if (times.length > 0) {
+      const minT = Math.min(...times);
+      const d = new Date(minT);
+      if (!isNaN(d.getTime())) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+  }
+  if (item.id) {
+    const matchId = String(item.id).match(/(\d{10,13})/);
+    if (matchId) {
+      const ts = parseInt(matchId[1], 10);
+      const d = new Date(ts);
+      if (!isNaN(d.getTime()) && d.getFullYear() >= 2024 && d.getFullYear() <= 2030) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+  }
+  return '2026-08';
+}
+
+function populateCrmMonthFilterOptions() {
+  const selectEl = document.getElementById('crm-month-filter');
+  if (!selectEl) return;
+
+  const currentSelVal = selectEl.value || 'all';
+  const monthSet = new Set();
+  const leadsList = (typeof AppState !== 'undefined' && AppState && AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
+
+  leadsList.forEach(lead => {
+    if (lead) {
+      const monthKey = getItemCreationMonthKey(lead);
+      if (monthKey) monthSet.add(monthKey);
+    }
+  });
+
+  const now = new Date();
+  const nowKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  monthSet.add(nowKey);
+
+  const sortedMonths = Array.from(monthSet).sort().reverse();
+
+  let html = '<option value="all">-- Tất cả các tháng --</option>';
+  sortedMonths.forEach(mk => {
+    const parts = mk.split('-');
+    if (parts.length === 2) {
+      const label = `Tháng ${parts[1]}/${parts[0]}`;
+      html += `<option value="${mk}" ${currentSelVal === mk ? 'selected' : ''}>${label}</option>`;
+    }
+  });
+
+  selectEl.innerHTML = html;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initCRMEvents();
   if (typeof renderCRMBoard === 'function') renderCRMBoard();
@@ -252,10 +318,14 @@ function initCRMEvents() {
     });
   });
 
-  // Search input
+  // Search input & Month filter
   const searchInput = document.getElementById('crm-search');
   if (searchInput) {
     searchInput.addEventListener('input', renderCRMBoard);
+  }
+  const monthFilterSelect = document.getElementById('crm-month-filter');
+  if (monthFilterSelect) {
+    monthFilterSelect.addEventListener('change', renderCRMBoard);
   }
 
   // Open add lead modal
@@ -422,6 +492,10 @@ function renderCRMBoard() {
     if (container) container.innerHTML = '';
   });
 
+  populateCrmMonthFilterOptions();
+  const monthFilterSelect = document.getElementById('crm-month-filter');
+  const selectedMonthVal = monthFilterSelect ? monthFilterSelect.value : 'all';
+
   // Filter leads by search query and user role permission
   const currentUser = getCurrentUser() || {};
   const leadsList = (AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
@@ -435,6 +509,12 @@ function renderCRMBoard() {
                           phoneVal.includes(searchVal) ||
                           noteVal.includes(searchVal);
     if (!matchesSearch) return false;
+
+    // Filter by creation month
+    if (selectedMonthVal !== 'all') {
+      const leadMonthKey = getItemCreationMonthKey(lead);
+      if (leadMonthKey !== selectedMonthVal) return false;
+    }
 
     // Admin & Manager see ALL leads, Staff only see leads assigned to or created by them
     const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.dept === 'admin';
