@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.15] - 2026-08-05
+
+### Giải Quyết Triệt Để Lỗi Thẻ Nhảy Về Bước Cũ Khi Reload Trang
+- **Thuật Toán Đọc Mốc Thời Gian Đa Định Dạng (`parseTimestampSafe`):**
+  - **Nguyên nhân cũ:** Trước đây hàm so sánh mốc thời gian dùng `new Date(string).getTime()`. Với các định dạng chuỗi ngày tháng kiểu Việt Nam (`2026-07-25 15:35`), trình duyệt trả về `NaN` dẫn đến mốc thời gian bằng `0`. Khi so sánh `0 > 0` bị trả về `false`, hệ thống mặc định lấy dữ liệu Server với bước cũ đè lên bước mới vừa chuyển.
+  - **Khắc phục:** Xây dựng hàm `parseTimestampSafe` hỗ trợ tự động nhận diện và chuyển đổi mọi định dạng mốc thời gian (chuỗi ISO, số miligiây, định dạng ngày tháng tiếng Việt `DD/MM/YYYY`, `YYYY-MM-DD`).
+  - **Ưu tiên bước mới nhất (`lTime >= sTime`):** Khi mốc thời gian thao tác local mới hơn hoặc bằng Server, dữ liệu bước mới của người dùng sẽ luôn được ưu tiên 100%.
+  - Cập nhật cả CRM Khách mới (`crm.js`) và CRM Khách cũ (`ops.js`) tự động ghi nhận mốc miligiây `stageEntryTimes[targetStage] = Date.now()` và `updatedAt = ISO` ngay khi thả/chuyển bước.
+
 ## [v22.14] - 2026-08-05
 
 ### Khắc Phục Triệt Để Lỗi Thẻ Bị Hiện Lại Sau Khi Nhấn Xóa (Xóa Cơ Hội / Xóa Lô Hàng)
