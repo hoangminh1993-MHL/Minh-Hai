@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.14] - 2026-08-05
+
+### Khắc Phục Triệt Để Lỗi Thẻ Bị Hiện Lại Sau Khi Nhấn Xóa (Xóa Cơ Hội / Xóa Lô Hàng)
+- **Cơ Chế Ghi Nhận Danh Sách Đã Xóa Vĩnh Viễn (`deletedIds`):**
+  - **Nguyên nhân cũ:** Trước đây khi xóa một thẻ khách hàng hay lô hàng trên máy local, hàm hợp nhất trên Server và Client vẫn lưu bản ghi cũ trong cơ sở dữ liệu `db.json` / Postgres DB, dẫn đến việc khi Polling chạy ngầm hoặc reload trang, thẻ bị xóa lại được tải ngược từ Server về làm hiện lại trên màn hình.
+  - **Khắc phục:** Bổ sung mảng `AppState.deletedIds` theo dõi toàn bộ danh sách ID đã bị xóa trên toàn hệ thống.
+  - Khi người dùng bấm **Xóa cơ hội** hoặc **Xóa lô hàng**, ID tương ứng lập tức được đưa vào danh sách `deletedIds` và đồng bộ lên Server.
+  - Cả Client và Server đều lọc triệt để danh sách `deletedIds`, thanh lọc vĩnh viễn khỏi cơ sở dữ liệu `db.json` và Postgres, đảm bảo thẻ sau khi xóa **không bao giờ bị hiện lại trên bất kỳ thiết bị nào**.
+
 ## [v22.13] - 2026-08-05
 
 ### Khắc Phục Triệt Để Lỗi Không Đồng Bộ Dữ Liệu Thời Gian Thực Giữa Nhiều Máy Tính / Tài Khoản (Trang & Thảo)
