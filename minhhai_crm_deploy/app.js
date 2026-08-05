@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.12';
+  const CURRENT_APP_VER = 'v22.13';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -853,12 +853,19 @@ async function saveState() {
   if (!window.syncStateQueue) window.syncStateQueue = Promise.resolve();
   window.syncStateQueue = window.syncStateQueue.then(async () => {
     try {
-      await fetch(getApiUrl('/api/state'), {
+      const res = await fetch(getApiUrl('/api/state'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(AppState),
         keepalive: true
       });
+      if (res.ok) {
+        const resData = await res.json();
+        if (resData && resData.lastUpdated) {
+          AppState.lastUpdated = resData.lastUpdated;
+          localStorage.setItem('votr_last_updated', String(resData.lastUpdated));
+        }
+      }
       window.BaseState = JSON.parse(JSON.stringify(AppState));
     } catch (err) {
       console.error('Không lưu được lên server API:', err);
@@ -866,7 +873,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.12';
+const CLIENT_VERSION = '22.13';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -912,12 +919,21 @@ function startStatePolling() {
 
         const data = await res.json();
         
-        // Sync whenever server has new timestamp OR workflow count differs
-        const currentCount = AppState.shipment_workflows ? AppState.shipment_workflows.length : 0;
-        const serverCount = data.shipment_workflows ? data.shipment_workflows.length : 0;
+        const serverLastUpdated = data.lastUpdated || 0;
+        const clientLastUpdated = AppState.lastUpdated || 0;
+
+        // Sync whenever server has new timestamp OR workflow/lead count differs
+        const currentWfCount = AppState.shipment_workflows ? AppState.shipment_workflows.length : 0;
+        const serverWfCount = data.shipment_workflows ? data.shipment_workflows.length : 0;
+        const currentLeadCount = AppState.leads ? AppState.leads.length : 0;
+        const serverLeadCount = data.leads ? data.leads.length : 0;
+
+        const isStateChanged = (serverLastUpdated > 0 && serverLastUpdated !== clientLastUpdated) || 
+                               (serverWfCount !== currentWfCount) || 
+                               (serverLeadCount !== currentLeadCount);
         
-        if (serverLastUpdated > 0 && (serverLastUpdated !== clientLastUpdated || serverCount !== currentCount)) {
-          console.log('[Live Sync] Server state updated (serverCount=' + serverCount + ', localCount=' + currentCount + '). Syncing live multi-user data...');
+        if (isStateChanged) {
+          console.log('[Live Sync] Server state updated (serverWf=' + serverWfCount + ', localWf=' + currentWfCount + '). Syncing live multi-user data...');
           AppState.lastUpdated = serverLastUpdated;
           if (data.users && data.users.length > 0) AppState.users = data.users;
           if (data.leads) AppState.leads = data.leads;

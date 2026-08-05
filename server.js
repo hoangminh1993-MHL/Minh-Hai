@@ -1,4 +1,4 @@
-// Cleaned server.js v22.12
+// Cleaned server.js v22.13
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.12';
+  state.dbVersion = '22.13';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.12';
+  localState.dbVersion = '22.13';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -179,7 +179,7 @@ async function loadState() {
             await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
           } catch (e) {}
         }
-        dbState.dbVersion = '22.12';
+        dbState.dbVersion = '22.13';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -222,7 +222,7 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.12';
+  merged.dbVersion = '22.13';
 
   const mergeArrayById = (arr1, arr2) => {
     const map = new Map();
@@ -299,7 +299,7 @@ async function saveState(newState) {
       try {
         fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(mergedState, null, 2), 'utf8');
       } catch (err) {}
-      return true;
+      return mergedState.lastUpdated;
     } catch (err) {
       console.error('Error saving state to Postgres:', err);
       try { await client.end(); } catch (e) {}
@@ -312,6 +312,7 @@ async function saveState(newState) {
   } catch (err) {
     console.error('Error writing local db.json:', err);
   }
+  return mergedState.lastUpdated;
 }
 
 // GET /api/state: Load entire CRM database
@@ -337,8 +338,8 @@ let saveStateQueue = Promise.resolve();
 app.post('/api/state', async (req, res) => {
   saveStateQueue = saveStateQueue.then(async () => {
     try {
-      await saveState(req.body);
-      res.json({ success: true });
+      const lastUpdated = await saveState(req.body);
+      res.json({ success: true, lastUpdated: lastUpdated || Date.now() });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: err.message });
@@ -381,7 +382,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '22.12',
+        dbVersion: currentState.dbVersion || '22.13',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0
