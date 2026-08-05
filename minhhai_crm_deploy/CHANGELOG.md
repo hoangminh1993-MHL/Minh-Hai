@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.16] - 2026-08-05
+
+### Khắc Phục Triệt Để Lỗi Thẻ Mới Nhập Bị Biến Mất Ở Máy Nhân Sự
+- **Hợp Nhất Hai Chiều Trong Tiến Trình Polling Chạy Ngầm (`app.js`):**
+  - **Nguyên nhân:** Trước đây hàm `startStatePolling()` chạy ngầm mỗi 3-4 giây lấy dữ liệu từ Server đè trực tiếp `AppState.leads = data.leads`. Khi nhân sự vừa tạo thẻ mới trên máy local, nếu yêu cầu ghi dữ liệu `POST /api/state` chưa kịp lưu xong trên Server thì tiến trình Polling đã tải dữ liệu cũ về và xóa mất thẻ mới vừa tạo.
+  - **Khắc phục:** Đã bổ sung thuật toán **Smart Two-Way Merging** ngay trong tiến trình Polling ngầm `startStatePolling()`. Thẻ mới vừa tạo trên máy local sẽ luôn được bảo vệ và giữ lại 100%, không bị đè hay biến mất bởi tiến trình Polling ngầm.
+- **Tối Ưu Quyền Hạn Nhân Sự Tạo Thẻ (`crm.js`):**
+  - Bổ sung kiểm tra `creatorId` và `username` đối với tài khoản nhân viên (Sales/CSKH). Nhân sự tạo thẻ sẽ luôn giữ quyền hiển thị và quản lý đối với thẻ mình tạo ra, không bị bộ lọc phân quyền ẩn mất.
+
 ## [v22.15] - 2026-08-05
 
 ### Giải Quyết Triệt Để Lỗi Thẻ Nhảy Về Bước Cũ Khi Reload Trang
