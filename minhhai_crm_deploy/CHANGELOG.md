@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v22.12] - 2026-08-05
+
+### Khắc Phục Triệt Để Lỗi Thẻ Tự Quay Về Bước Cũ Khi Reload Trang
+- **Thuật Toán Hợp Nhất Trạng Thái Thông Minh Theo Dấu Mốc Thời Gian (`app.js` & `server.js`):**
+  - Trước đây, khi đồng bộ hai chiều giữa `localStorage` và Server (`/api/state`), hàm hợp nhất lấy dữ liệu cũ từ Server đè lên dữ liệu mới trên máy local, khiến thẻ vừa chuyển bước xong khi reload trang bị quay trở lại bước cũ.
+  - Đã bổ sung hàm `getItemLatestTimestamp(item)` trên cả Client & Server: Tự động so sánh dấu mốc thời gian cập nhật bước mới nhất (`stageEntryTimes`, `updatedTime`, `updatedAt`).
+  - Đảm bảo bước mới nhất của khách hàng/lô hàng luôn được ưu tiên giữ nguyên 100%, không bị reset hay đè bởi dữ liệu cũ.
+- **Sửa Lỗi Khai Báo Biến Polling Tự Động (`app.js`):**
+  - Khắc phục lỗi `ReferenceError` biến `serverLastUpdated` chưa khai báo trong hàm `startStatePolling`, giúp tiến trình chạy ngầm đồng bộ thời gian thực diễn ra mượt mà, không gây gián đoạn.
+
 ## [v22.11] - 2026-08-03
 
 ### Khắc Phục Lỗi Hiển Thị Dữ Liệu CRM Khách Cũ & Xử Lý An Toàn Bộ Lọc Trễ Hạn
