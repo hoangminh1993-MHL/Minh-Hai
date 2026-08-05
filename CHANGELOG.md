@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## [v22.13] - 2026-08-05
+
+### Khắc Phục Triệt Để Lỗi Không Đồng Bộ Dữ Liệu Thời Gian Thực Giữa Nhiều Máy Tính / Tài Khoản (Trang & Thảo)
+- **Sửa Lỗi Khai Báo Biến Polling Chạy Ngầm Tự Động (`app.js`):**
+  - Khắc phục lỗi `ReferenceError` do biến `serverLastUpdated` và `clientLastUpdated` chưa được khai báo bên trong hàm `startStatePolling()`.
+  - Tiến trình polling tự động đọc trạng thái Server mỗi 3-4 giây hiện hoạt động chuẩn xác 100%. Khi máy tính của Trang (hoặc bất kỳ nhân sự nào) tạo/sửa dữ liệu Khách cũ hay Khách mới, máy tính của Thảo (Quản lý) và toàn bộ tài khoản khác lập tức tự động nhận và hiển thị dữ liệu mới mà không cần F5 hay tải lại trang.
+- **Hợp Nhất Mốc Thời Gian Cập Nhật Server (`server.js`):**
+  - Cập nhật endpoint `POST /api/state` tự động phản hồi `lastUpdated` mới nhất về cho Client để cập nhật đồng bộ tức thì.
+
 ## [v22.12] - 2026-08-05
 
 ### Khắc Phục Triệt Để Lỗi Thẻ Tự Quay Về Bước Cũ Khi Reload Trang
