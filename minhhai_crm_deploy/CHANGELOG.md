@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v22.17] - 2026-08-05
+
+### Bổ Sung Bộ Lọc Khách Hàng Theo Từng Tháng Tạo Thẻ
+- **Tính Năng Lọc Đa Năng Theo Tháng Tạo (`getItemCreationMonthKey`):**
+  - Trích xuất mốc thời gian tạo thẻ chuẩn xác từ `createdTime`, `date`, mốc chuyển bước `stageEntryTimes`, hoặc mã định danh `id`.
+  - Tự động tạo danh sách chọn linh hoạt: `-- Tất cả các tháng --`, `Tháng 08/2026`, `Tháng 07/2026`, `Tháng 06/2026`... được sắp xếp từ tháng mới nhất đến cũ nhất.
+- **Tích Hợp Đồng Bộ Trên Tất Cả Bảng Quản Lý:**
+  - **Bảng CRM Khách Mới (`#crm`):** Thêm ô chọn `#crm-month-filter` đặt ngay cạnh ô tìm kiếm. Khi chọn tháng cụ thể, màn hình lập tức hiển thị chính xác toàn bộ khách hàng được tạo trong tháng đó.
+  - **Bảng CRM Khách Cũ & Lô Hàng (`#crm-clients-workflows`):** Thêm ô chọn `#ops-flow-filter-month` tại thanh công cụ lọc. Giúp quản lý dễ dàng tra cứu lô hàng theo tháng khởi tạo.
+
 ## [v22.16] - 2026-08-05
 
 ### Khắc Phục Triệt Để Lỗi Thẻ Mới Nhập Bị Biến Mất Ở Máy Nhân Sự
