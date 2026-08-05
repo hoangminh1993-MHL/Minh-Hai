@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.14';
+  const CURRENT_APP_VER = 'v22.15';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -343,23 +343,42 @@ async function syncLoadState() {
       AppState.lastUpdated = data.lastUpdated || parseInt(localStorage.getItem('votr_last_updated')) || 0;
       AppState.users = data.users || [];
       
+      function parseTimestampSafe(val) {
+        if (!val) return 0;
+        if (typeof val === 'number') return isNaN(val) ? 0 : val;
+        if (typeof val === 'string') {
+          if (/^\d+$/.test(val)) return parseInt(val, 10);
+          let iso = val.trim().replace(' ', 'T');
+          let parsed = new Date(iso).getTime();
+          if (!isNaN(parsed)) return parsed;
+          const parts = val.split(/[\s/:\-]+/);
+          if (parts.length >= 3) {
+            if (parts[0].length === 2 && parts[2].length === 4) {
+              parsed = new Date(parts[2], parts[1] - 1, parts[0], parts[3] || 0, parts[4] || 0).getTime();
+              if (!isNaN(parsed)) return parsed;
+            }
+            if (parts[0].length === 4) {
+              parsed = new Date(parts[0], parts[1] - 1, parts[2], parts[3] || 0, parts[4] || 0).getTime();
+              if (!isNaN(parsed)) return parsed;
+            }
+          }
+        }
+        return 0;
+      }
+
       function getItemLatestTimestamp(item) {
         if (!item) return 0;
         let maxT = 0;
         if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
           Object.values(item.stageEntryTimes).forEach(t => {
-            const val = Number(t);
-            if (!isNaN(val) && val > maxT) maxT = val;
+            const val = parseTimestampSafe(t);
+            if (val > maxT) maxT = val;
           });
         }
-        if (item.updatedTime) {
-          const parsed = new Date(item.updatedTime).getTime();
-          if (!isNaN(parsed) && parsed > maxT) maxT = parsed;
-        }
-        if (item.updatedAt) {
-          const parsed = new Date(item.updatedAt).getTime();
-          if (!isNaN(parsed) && parsed > maxT) maxT = parsed;
-        }
+        const uTime = parseTimestampSafe(item.updatedTime);
+        if (uTime > maxT) maxT = uTime;
+        const uAt = parseTimestampSafe(item.updatedAt);
+        if (uAt > maxT) maxT = uAt;
         return maxT;
       }
 
@@ -375,9 +394,9 @@ async function syncLoadState() {
         const sTime = getItemLatestTimestamp(sLead);
         const lTime = getItemLatestTimestamp(lLead);
 
-        // Prioritize the lead with the newest stage/update timestamp
-        const primary = lTime > sTime ? lLead : sLead;
-        const secondary = lTime > sTime ? sLead : lLead;
+        // Prioritize local lead if local timestamp is newer or equal
+        const primary = lTime >= sTime ? lLead : sLead;
+        const secondary = lTime >= sTime ? sLead : lLead;
 
         const merged = { ...secondary, ...primary };
 
@@ -509,8 +528,8 @@ async function syncLoadState() {
         const sTime = getItemLatestTimestamp(sFlow);
         const lTime = getItemLatestTimestamp(lFlow);
 
-        const primary = lTime > sTime ? lFlow : sFlow;
-        const secondary = lTime > sTime ? sFlow : lFlow;
+        const primary = lTime >= sTime ? lFlow : sFlow;
+        const secondary = lTime >= sTime ? sFlow : lFlow;
 
         const merged = { ...secondary, ...primary };
 
@@ -879,7 +898,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.14';
+const CLIENT_VERSION = '22.15';
 
 async function checkCodeVersionUpdate() {
   try {

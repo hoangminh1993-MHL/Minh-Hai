@@ -1732,6 +1732,11 @@ function executeFlowMove(flow, targetStage) {
     }
   }
 
+  flow.stageEntryTimes = flow.stageEntryTimes || {};
+  flow.stageEntryTimes[targetStage] = Date.now();
+  flow.updatedAt = new Date().toISOString();
+  flow.updatedTime = dateStr;
+
   flow.history.push(`${dateStr}: Di chuyển từ bước ${oldStage} sang ${targetStage} (${stepNames[targetStage - 1]})`);
 
   saveState();
