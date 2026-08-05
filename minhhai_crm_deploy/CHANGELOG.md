@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v22.19] - 2026-08-05
+
+### Xóa Triệt Để Dữ Liệu Cũ CRM Khách Cũ Trên Database PostgreSQL & Trình Duyệt Client
+- **Nâng Cấp Tiến Trình Đồng Bộ Database PostgreSQL Server (`server.js`):**
+  - **Nguyên nhân cũ:** Mặc dù file local `db.json` đã làm sạch, nhưng Database PostgreSQL trên Render (`app_state` table) vẫn lưu giữ 58 thẻ lô hàng thử nghiệm cũ từ trước. Khi server khởi động hoặc xử lý Polling, dữ liệu từ PostgreSQL tự động trả về và làm khôi phục các thẻ cũ trên máy người dùng.
+  - **Khắc phục:** Bổ sung cơ chế tự động hợp nhất danh sách mã xóa `deletedIds` và lọc sạch toàn bộ thẻ cũ ngay từ khâu nạp cơ sở dữ liệu (`loadState()`) trên Server. Tiến trình lập tức ghi đè bản nạp đã làm sạch vào Database PostgreSQL.
+- **Dọn Sạch Bộ Nhớ Đệm Trình Duyệt Trực Tiếp (`app.js`):**
+  - Cập nhật cả `syncLoadState` và `startStatePolling`: Tự động loại bỏ các thẻ nằm trong `deletedIds` khỏi bộ nhớ tạm `localStorage.getItem('votr_shipment_workflows_db')` của người dùng.
+  - Xóa bỏ triệt để 100% toàn bộ thẻ cũ (`MH12-Hồng Anh`, `OTV130`, `MH325 Tuyên`, `MH306`, `HPD552`...) trên mọi trình duyệt client.
+
 ## [v22.18] - 2026-08-05
 
 ### Xóa Thẻ Dữ Liệu Thử Nghiệm CRM Khách Cũ & Phân Quyền Cho Tài Khoản Thảo
