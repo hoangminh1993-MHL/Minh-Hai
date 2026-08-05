@@ -1,4 +1,4 @@
-// Cleaned server.js v22.13
+// Cleaned server.js v22.14
 const fs = require('fs');
 const path = require('path');
 let EMBEDDED_DEFAULT_STATE = {};
@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.13';
+  state.dbVersion = '22.14';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.13';
+  localState.dbVersion = '22.14';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -179,7 +179,7 @@ async function loadState() {
             await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
           } catch (e) {}
         }
-        dbState.dbVersion = '22.13';
+        dbState.dbVersion = '22.14';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -222,16 +222,26 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.13';
+  merged.dbVersion = '22.14';
+
+  const deletedSet = new Set([
+    ...(existingState.deletedIds || []),
+    ...(incomingState.deletedIds || [])
+  ]);
+  merged.deletedIds = Array.from(deletedSet);
 
   const mergeArrayById = (arr1, arr2) => {
     const map = new Map();
     if (Array.isArray(arr1)) {
-      arr1.forEach(item => { if (item && item.id) map.set(String(item.id), item); });
+      arr1.forEach(item => {
+        if (item && item.id && !deletedSet.has(String(item.id))) {
+          map.set(String(item.id), item);
+        }
+      });
     }
     if (Array.isArray(arr2)) {
       arr2.forEach(item => {
-        if (!item || !item.id) return;
+        if (!item || !item.id || deletedSet.has(String(item.id))) return;
         const key = String(item.id);
         const existing = map.get(key);
         if (!existing) {
@@ -382,7 +392,7 @@ async function createBackupSnapshot(type = 'auto', customLabel = '') {
         type: type === 'auto_daily' ? `Tự động (${customLabel || 'Khung giờ 12h/17h30'})` : 'Sao lưu thủ công',
         createdAt: `${dd}/${mm}/${yyyy} ${hh}:${min}:${ss}`,
         timestamp: vnTime.getTime(),
-        dbVersion: currentState.dbVersion || '22.13',
+        dbVersion: currentState.dbVersion || '22.14',
         totalLeads: currentState.leads ? currentState.leads.length : 0,
         totalTasks: currentState.tasks ? currentState.tasks.length : 0,
         totalUsers: currentState.users ? currentState.users.length : 0

@@ -2132,12 +2132,15 @@ function handleDeleteLead() {
   }
   if (!lead) return;
   if (confirm(`Bạn chắc chắn muốn xóa cơ hội khách hàng "${lead.name}"? Dữ liệu sẽ mất vĩnh viễn.`)) {
+    if (!AppState.deletedIds) AppState.deletedIds = [];
+    if (!AppState.deletedIds.includes(String(lead.id))) AppState.deletedIds.push(String(lead.id));
+
     AppState.leads = AppState.leads.filter(l => l.id !== lead.id);
     saveState();
     closeModal('modal-lead-detail');
     renderCRMBoard();
-    if (typeof addNotification === 'function') addNotification('Xóa khách hàng', `Đã xóa khách hàng khỏi CRM.`, 'warning');
-    if (typeof showToast === 'function') window.showToast("Đã xóa cơ hội khách hàng!", "info");
+    if (typeof addNotification === 'function') addNotification('Xóa khách hàng', `Đã xóa khách hàng "${lead.name}" khỏi CRM.`, 'warning');
+    if (typeof showToast === 'function') window.showToast(`Đã xóa cơ hội khách hàng "${lead.name}"!`, "info");
   }
 }
 

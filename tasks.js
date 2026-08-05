@@ -439,6 +439,9 @@ function deleteTask(taskId) {
   if (!task) return;
 
   if (confirm(`Bạn có chắc muốn xóa công việc: "${task.title}"?`)) {
+    if (!AppState.deletedIds) AppState.deletedIds = [];
+    if (!AppState.deletedIds.includes(String(taskId))) AppState.deletedIds.push(String(taskId));
+
     AppState.tasks = AppState.tasks.filter(t => t.id !== taskId);
     saveState();
     renderTasksList();

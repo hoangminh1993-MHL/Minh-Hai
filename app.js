@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.13';
+  const CURRENT_APP_VER = 'v22.14';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -330,6 +330,16 @@ async function syncLoadState() {
     const res = await fetch(getApiUrl('/api/state'), { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
+      
+      // Merge and sanitize deletedIds
+      const deletedSet = new Set([
+        ...(AppState.deletedIds || []),
+        ...(data.deletedIds || []),
+        ...JSON.parse(localStorage.getItem('votr_deleted_ids') || '[]')
+      ]);
+      AppState.deletedIds = Array.from(deletedSet);
+      localStorage.setItem('votr_deleted_ids', JSON.stringify(AppState.deletedIds));
+
       AppState.lastUpdated = data.lastUpdated || parseInt(localStorage.getItem('votr_last_updated')) || 0;
       AppState.users = data.users || [];
       
@@ -436,7 +446,7 @@ async function syncLoadState() {
       localLeads.forEach(l => { if (l && l.id) localLeadMap.set(String(l.id), l); });
 
       serverLeads.forEach(sLead => {
-        if (!sLead || !sLead.id) return;
+        if (!sLead || !sLead.id || deletedSet.has(String(sLead.id))) return;
         const sId = String(sLead.id);
         const lLead = localLeadMap.get(sId);
         if (lLead) {
@@ -448,7 +458,7 @@ async function syncLoadState() {
       });
 
       localLeads.forEach(lLead => {
-        if (!lLead || !lLead.id) return;
+        if (!lLead || !lLead.id || deletedSet.has(String(lLead.id))) return;
         const lId = String(lLead.id);
         if (!leadMap.has(lId)) {
           leadMap.set(lId, lLead);
@@ -456,9 +466,9 @@ async function syncLoadState() {
         }
       });
 
-      AppState.leads = Array.from(leadMap.values());
+      AppState.leads = Array.from(leadMap.values()).filter(l => l && l.id && !deletedSet.has(String(l.id)));
       
-      AppState.tasks = data.tasks || [];
+      AppState.tasks = (data.tasks || []).filter(t => t && t.id && !deletedSet.has(String(t.id)));
       AppState.workflows = data.workflows || {};
       AppState.sausageLogs = data.sausageLogs || [];
       AppState.notifications = data.notifications || [];
@@ -573,18 +583,14 @@ async function syncLoadState() {
 
       const localWorkflows = JSON.parse(localStorage.getItem('votr_shipment_workflows_db')) || [];
       const serverWorkflows = data.shipment_workflows || [];
-      const localWorkflowMap = new Map();
-      localWorkflows.forEach(w => { if (w && w.id) localWorkflowMap.set(String(w.id), w); });
       const workflowMap = new Map();
 
       serverWorkflows.forEach(sFlow => {
-        if (!sFlow || !sFlow.id) return;
-        const sId = String(sFlow.id);
-        const lFlow = localWorkflowMap.get(sId);
+        if (!sFlow || !sFlow.id || deletedSet.has(String(sFlow.id))) return;
+        const wId = String(sFlow.id);
+        const lFlow = localWorkflows.find(w => String(w.id) === wId);
         if (lFlow) {
           const merged = mergeWorkflowObjects(sFlow, lFlow);
-          workflowMap.set(sId, merged);
-        } else {
           workflowMap.set(sId, sFlow);
         }
       });
@@ -873,7 +879,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.13';
+const CLIENT_VERSION = '22.14';
 
 async function checkCodeVersionUpdate() {
   try {

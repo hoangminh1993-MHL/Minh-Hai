@@ -1805,11 +1805,15 @@ function openFlowDetailModal(flowId, initialStepNum) {
   // Handle Delete flow button
   document.getElementById('btn-flow-delete').onclick = () => {
     if (confirm(`Bạn chắc chắn muốn xóa lô hàng "${flow.name}"?`)) {
+      if (!AppState.deletedIds) AppState.deletedIds = [];
+      if (!AppState.deletedIds.includes(String(flowId))) AppState.deletedIds.push(String(flowId));
+
       AppState.shipment_workflows = AppState.shipment_workflows.filter(f => f.id !== flowId);
       saveState();
       closeModal('modal-flow-detail');
       renderOpsWorkflows();
-      addNotification('Xóa Lô Hàng', `Đã xóa lô hàng thành công.`, 'warning');
+      addNotification('Xóa Lô Hàng', `Đã xóa lô hàng "${flow.name}" thành công.`, 'warning');
+      window.showToast(`Đã xóa lô hàng "${flow.name}"!`, 'info');
     }
   };
 
@@ -3105,6 +3109,11 @@ function handleSaveTaskDetails() {
 
 function handleDeleteTask() {
   if (confirm('Bạn có thực sự muốn xóa công việc này?')) {
+    if (!AppState.deletedIds) AppState.deletedIds = [];
+    if (currentActiveTaskId && !AppState.deletedIds.includes(String(currentActiveTaskId))) {
+      AppState.deletedIds.push(String(currentActiveTaskId));
+    }
+
     AppState.single_tasks = AppState.single_tasks.filter(t => t.id !== currentActiveTaskId);
     saveState();
     closeModal('modal-ops-task-detail');
