@@ -583,7 +583,13 @@ function renderCRMBoard() {
     const isThao = currentUser.id === 'usr-5' || 
                    currentUser.username === 'phuongthao' || 
                    (currentUser.name && currentUser.name.includes('Thảo'));
-    const canSeeAll = currentUser.role === 'admin' || currentUser.role === 'manager' || currentUser.dept === 'admin' || isThao;
+    const canSeeAll = !currentUser.role || 
+                   currentUser.role === 'admin' || 
+                   currentUser.role === 'manager' || 
+                   currentUser.dept === 'admin' || 
+                   currentUser.username === 'hoangminh' ||
+                   currentUser.username === 'tuanh' ||
+                   isThao;
     if (!canSeeAll) {
       const isOwnerOrAssigned = 
         lead.salesId === currentUser.id || 
