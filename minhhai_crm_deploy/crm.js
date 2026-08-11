@@ -81,7 +81,9 @@ function populateCrmMonthFilterOptions() {
   const selectEl = document.getElementById('crm-month-filter');
   if (!selectEl) return;
 
-  const currentSelVal = selectEl.value || 'all';
+  let currentSelVal = selectEl.value;
+  if (!currentSelVal || currentSelVal === '--') currentSelVal = 'all';
+
   const monthSet = new Set();
   const leadsList = (typeof AppState !== 'undefined' && AppState && AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
 
@@ -98,7 +100,7 @@ function populateCrmMonthFilterOptions() {
 
   const sortedMonths = Array.from(monthSet).sort().reverse();
 
-  let html = '<option value="all">-- Tất cả các tháng --</option>';
+  let html = `<option value="all" ${currentSelVal === 'all' ? 'selected' : ''}>-- Tất cả các tháng --</option>`;
   sortedMonths.forEach(mk => {
     const parts = mk.split('-');
     if (parts.length === 2) {
@@ -108,6 +110,7 @@ function populateCrmMonthFilterOptions() {
   });
 
   selectEl.innerHTML = html;
+  selectEl.value = currentSelVal;
 }
 
 document.addEventListener('DOMContentLoaded', () => {
