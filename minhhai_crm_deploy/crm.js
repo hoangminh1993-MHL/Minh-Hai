@@ -543,7 +543,7 @@ function renderCRMBoard() {
     if (!matchesSearch) return false;
 
     // Filter by creation month
-    if (selectedMonthVal !== 'all') {
+    if (selectedMonthVal && selectedMonthVal !== 'all' && selectedMonthVal !== '' && selectedMonthVal !== '--') {
       const leadMonthKey = getItemCreationMonthKey(lead);
       if (leadMonthKey !== selectedMonthVal) return false;
     }
