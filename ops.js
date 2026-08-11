@@ -1,5 +1,40 @@
 // ==================== MINH HAI LOGISTICS - OPERATION PORTAL ==================== //
 
+function getUpdateTimeAndTodayStatus(item) {
+  if (!item) return { text: '', isToday: false };
+
+  let timeStr = item.updatedTime || item.updatedAt || item.createdTime || item.date || '';
+  if (!timeStr && item.history && item.history.length > 0) {
+    timeStr = item.history[item.history.length - 1].split(': ')[0];
+  }
+
+  let ts = 0;
+  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object' && item.stage !== undefined && item.stage !== null) {
+    const entryT = item.stageEntryTimes[item.stage] || item.stageEntryTimes[String(item.stage)];
+    if (entryT && typeof parseTimestampSafe === 'function') ts = parseTimestampSafe(entryT);
+  }
+  if (!ts && typeof parseTimestampSafe === 'function') {
+    ts = parseTimestampSafe(item.updatedAt || item.updatedTime || timeStr);
+  }
+
+  let isToday = false;
+  if (ts > 0) {
+    const d = new Date(ts);
+    const now = new Date();
+    isToday = (d.getFullYear() === now.getFullYear() &&
+               d.getMonth() === now.getMonth() &&
+               d.getDate() === now.getDate());
+  } else if (typeof timeStr === 'string' && timeStr.trim()) {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    isToday = timeStr.startsWith(todayStr) || timeStr.includes(todayStr);
+  }
+
+  return { text: timeStr, isToday };
+}
+
+window.getUpdateTimeAndTodayStatus = getUpdateTimeAndTodayStatus;
+
 document.addEventListener('DOMContentLoaded', () => {
   initOpsEvents();
   setupFounderDashboardTabs();
@@ -1450,12 +1485,11 @@ function populateOpsMonthFilterOptions() {
       const overdueBadge = isOverdue ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.2); color:#ef4444;" title="Quá hạn chót lô hàng!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` : '';
 
       // Highlight if updated today
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-      const lastHistoryTime = flow.history && flow.history.length > 0 ? flow.history[flow.history.length - 1].split(': ')[0] : '';
-      const isUpdatedToday = lastHistoryTime.startsWith(todayStr);
-      const timeColor = isUpdatedToday ? '#34d399' : '#38bdf8';
-      const timeFontWeight = isUpdatedToday ? '700' : '600';
+      const updateInfo = getUpdateTimeAndTodayStatus(flow);
+      const lastHistoryTime = updateInfo.text;
+      const opsUpdateStyle = updateInfo.isToday
+        ? 'color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 3px; margin-top: 6px; justify-content: flex-end;'
+        : 'font-size: 10px; color: #6b7280; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;';
 
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1521,7 +1555,7 @@ function populateOpsMonthFilterOptions() {
           </div>
           <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
         </div>
-        <div style="font-size: 10px; color: ${timeColor}; font-weight: ${timeFontWeight}; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;">
+        <div style="${opsUpdateStyle}">
           <i class="fa-solid fa-rotate"></i> Cập nhật: ${lastHistoryTime}
         </div>
         <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">

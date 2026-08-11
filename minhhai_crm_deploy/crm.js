@@ -12,6 +12,38 @@ window.cleanVietnameseText = cleanVietnameseText;
 window.formatRmb = formatRmb;
 window.formatVnd = formatVnd;
 
+function getUpdateTimeAndTodayStatus(item) {
+  if (!item) return { text: '', isToday: false };
+
+  let timeStr = item.updatedTime || item.updatedAt || item.createdTime || item.date || '';
+
+  let ts = 0;
+  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object' && item.stage !== undefined && item.stage !== null) {
+    const entryT = item.stageEntryTimes[item.stage] || item.stageEntryTimes[String(item.stage)];
+    if (entryT && typeof parseTimestampSafe === 'function') ts = parseTimestampSafe(entryT);
+  }
+  if (!ts && typeof parseTimestampSafe === 'function') {
+    ts = parseTimestampSafe(item.updatedAt || item.updatedTime || item.createdTime || item.date);
+  }
+
+  let isToday = false;
+  if (ts > 0) {
+    const d = new Date(ts);
+    const now = new Date();
+    isToday = (d.getFullYear() === now.getFullYear() &&
+               d.getMonth() === now.getMonth() &&
+               d.getDate() === now.getDate());
+  } else if (typeof timeStr === 'string' && timeStr.trim()) {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    isToday = timeStr.startsWith(todayStr) || timeStr.includes(todayStr);
+  }
+
+  return { text: timeStr, isToday };
+}
+
+window.getUpdateTimeAndTodayStatus = getUpdateTimeAndTodayStatus;
+
 function getItemCreationMonthKey(item) {
   if (!item) return '';
   if (item.createdTime) {
@@ -665,84 +697,101 @@ function renderCRMBoard() {
             <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
             <td style="padding: 12px 10px;">${stageBadge}</td>
             <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cleanVietnameseText(lead.note) || ''}">${cleanVietnameseText(lead.note) || 'Không có ghi chú.'}</td>
-            <td style="padding: 12px 10px; color: var(--text-secondary); font-size: 12px;">${lead.updatedTime || lead.createdTime || lead.date || ''}</td>
-            <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
-              <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
-            </td>
-          `;
-          listBody.appendChild(tr);
-        });
+            const updateInfoList = getUpdateTimeAndTodayStatus(lead);
+            const updateTdHtml = updateInfoList.isToday
+              ? `<span style="color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-rotate"></i>${updateInfoList.text}</span>`
+              : `<span style="color: #6b7280;">${updateInfoList.text}</span>`;
+
+            tr.innerHTML = `
+              <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${cleanVietnameseText(lead.name)}</td>
+              <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.phone || 'Chưa có'}</td>
+              <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.source || 'Trực tiếp'}</td>
+              <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
+              <td style="padding: 12px 10px;">${stageBadge}</td>
+              <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cleanVietnameseText(lead.note) || ''}">${cleanVietnameseText(lead.note) || 'Không có ghi chú.'}</td>
+              <td style="padding: 12px 10px; font-size: 12px;">${updateTdHtml}</td>
+              <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
+                <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
+              </td>
+            `;
+            listBody.appendChild(tr);
+          });
+        }
       }
+      
+      // Still update column counts in background
+      stages.forEach(st => {
+        const countSpan = document.getElementById(`count-${st}`);
+        if (countSpan) {
+          const count = AppState.leads.filter(l => l.stage === st).length;
+          countSpan.innerText = count;
+        }
+      });
     }
-    
-    // Still update column counts in background
-    stages.forEach(st => {
-      const countSpan = document.getElementById(`count-${st}`);
-      if (countSpan) {
-        const count = AppState.leads.filter(l => l.stage === st).length;
-        countSpan.innerText = count;
-      }
-    });
-  }
 
-  // Render cards
-  filteredLeads.forEach(lead => {
-    try {
-      const container = document.querySelector(`.kanban-cards-container[data-stage="${lead.stage}"]`);
-      if (!container) return;
+    // Render cards
+    filteredLeads.forEach(lead => {
+      try {
+        const container = document.querySelector(`.kanban-cards-container[data-stage="${lead.stage}"]`);
+        if (!container) return;
 
-      const card = document.createElement('div');
-      const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
-      card.className = `kanban-card crm-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
-      const userRole = user ? user.role : 'admin';
-      const isAllowedDrag = (userRole === 'admin' || userRole === 'manager' || userRole === 'staff');
-      card.setAttribute('draggable', isAllowedDrag ? 'true' : 'false');
-      card.setAttribute('data-id', lead.id);
+        const card = document.createElement('div');
+        const isOverdue = typeof checkLeadOverdue === 'function' ? checkLeadOverdue(lead) : false;
+        card.className = `kanban-card crm-card ${lead.stage === 'failed' ? 'failed-card' : ''} ${isOverdue ? 'overdue-card' : ''}`;
+        const userRole = user ? user.role : 'admin';
+        const isAllowedDrag = (userRole === 'admin' || userRole === 'manager' || userRole === 'staff');
+        card.setAttribute('draggable', isAllowedDrag ? 'true' : 'false');
+        card.setAttribute('data-id', lead.id);
 
-      const usersList = (typeof AppState !== 'undefined' && Array.isArray(AppState.users)) ? AppState.users : [];
-      const salesUser = usersList.find(u => u.id === lead.salesId);
-      const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
+        const usersList = (typeof AppState !== 'undefined' && Array.isArray(AppState.users)) ? AppState.users : [];
+        const salesUser = usersList.find(u => u.id === lead.salesId);
+        const salesName = (salesUser && salesUser.name) ? salesUser.name.split(' ').pop() : 'Chưa giao';
 
-      const valRmbStr = lead.valRmb > 0 ? (typeof formatRmb === 'function' ? formatRmb(lead.valRmb) : `¥${lead.valRmb}`) : '';
-      const valVndStr = lead.valVnd > 0 ? (typeof formatVnd === 'function' ? formatVnd(lead.valVnd) : `${lead.valVnd}đ`) : '';
-      const valDisplay = [valRmbStr, valVndStr].filter(Boolean).join(' / ');
+        const valRmbStr = lead.valRmb > 0 ? (typeof formatRmb === 'function' ? formatRmb(lead.valRmb) : `¥${lead.valRmb}`) : '';
+        const valVndStr = lead.valVnd > 0 ? (typeof formatVnd === 'function' ? formatVnd(lead.valVnd) : `${lead.valVnd}đ`) : '';
+        const valDisplay = [valRmbStr, valVndStr].filter(Boolean).join(' / ');
 
-      let failReasonHtml = '';
-      if (lead.stage === 'failed') {
-        const statusText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
-        const statusBg = lead.failApproved ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)';
-        const statusColor = lead.failApproved ? '#ef4444' : '#f59e0b';
-        failReasonHtml = `
-          <div class="card-fail-reason" style="background:${statusBg}; color:${statusColor}; font-size:10.5px; padding:3px 6px; border-radius:4px; margin-top:4px; display:flex; justify-content:space-between; align-items:center;" title="${lead.failReason || 'Thất bại'}">
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px;"><i class="fa-solid fa-triangle-exclamation"></i> ${lead.failReason || 'Thất bại'}</span>
-            <span style="font-weight:bold; font-size:9.5px; padding:1px 4px; border-radius:3px; background:rgba(0,0,0,0.3);">${statusText}</span>
+        let failReasonHtml = '';
+        if (lead.stage === 'failed') {
+          const statusText = lead.failApproved ? 'Đã duyệt thất bại' : 'Chờ duyệt thất bại';
+          const statusBg = lead.failApproved ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)';
+          const statusColor = lead.failApproved ? '#ef4444' : '#f59e0b';
+          failReasonHtml = `
+            <div class="card-fail-reason" style="background:${statusBg}; color:${statusColor}; font-size:10.5px; padding:3px 6px; border-radius:4px; margin-top:4px; display:flex; justify-content:space-between; align-items:center;" title="${lead.failReason || 'Thất bại'}">
+              <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:130px;"><i class="fa-solid fa-triangle-exclamation"></i> ${lead.failReason || 'Thất bại'}</span>
+              <span style="font-weight:bold; font-size:9.5px; padding:1px 4px; border-radius:3px; background:rgba(0,0,0,0.3);">${statusText}</span>
+            </div>
+          `;
+        }
+
+        const overdueBadge = isOverdue 
+          ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444; font-size:10.5px; padding:2px 6px; border-radius:4px; margin-top:4px;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
+          : '';
+
+        const leadNameClean = typeof cleanVietnameseText === 'function' ? cleanVietnameseText(lead.name) : (lead.name || '');
+        const leadNoteClean = typeof cleanVietnameseText === 'function' ? cleanVietnameseText(lead.note) : (lead.note || '');
+
+        const updateInfo = getUpdateTimeAndTodayStatus(lead);
+        const updateStyle = updateInfo.isToday
+          ? 'color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 3px;'
+          : 'color: #6b7280; font-weight: 500;';
+
+        card.innerHTML = `
+          <div class="card-client-name" style="font-weight: bold; color: #f3f4f6; font-size: 13px;">${leadNameClean}</div>
+          <div class="card-desc" style="font-size: 11.5px; color: #9ca3af; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${leadNoteClean || 'Không có ghi chú thêm.'}</div>
+          ${failReasonHtml}
+          ${overdueBadge}
+          <div class="card-meta" style="display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-top: 8px;">
+            <div class="card-phone"><i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}</div>
+            <div class="card-value" style="color: #f59e0b; font-weight: 600;">${valDisplay}</div>
           </div>
-        `;
-      }
-
-      const overdueBadge = isOverdue 
-        ? `<div class="card-fail-reason" style="background:rgba(239,68,68,0.15); color:#ef4444; font-size:10.5px; padding:2px 6px; border-radius:4px; margin-top:4px;" title="Quá hạn chót khâu này!"><i class="fa-solid fa-triangle-exclamation"></i> Quá hạn</div>` 
-        : '';
-
-      const leadNameClean = typeof cleanVietnameseText === 'function' ? cleanVietnameseText(lead.name) : (lead.name || '');
-      const leadNoteClean = typeof cleanVietnameseText === 'function' ? cleanVietnameseText(lead.note) : (lead.note || '');
-
-      card.innerHTML = `
-        <div class="card-client-name" style="font-weight: bold; color: #f3f4f6; font-size: 13px;">${leadNameClean}</div>
-        <div class="card-desc" style="font-size: 11.5px; color: #9ca3af; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${leadNoteClean || 'Không có ghi chú thêm.'}</div>
-        ${failReasonHtml}
-        ${overdueBadge}
-        <div class="card-meta" style="display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; margin-top: 8px;">
-          <div class="card-phone"><i class="fa-solid fa-phone" style="font-size: 10px; margin-right: 4px;"></i>${lead.phone || 'Chưa có SĐT'}</div>
-          <div class="card-value" style="color: #f59e0b; font-weight: 600;">${valDisplay}</div>
-        </div>
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 6px; font-size: 11px;">
-          <span class="card-sales-assignee" style="color: #9ca3af;" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
-          <div style="font-size: 10.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px;">
-            <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date || ''}</div>
-            <div style="color: #38bdf8; font-weight: 600;"><i class="fa-solid fa-rotate"></i> Cập nhật: ${lead.updatedTime || lead.createdTime || lead.date || ''}</div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 6px; font-size: 11px;">
+            <span class="card-sales-assignee" style="color: #9ca3af;" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
+            <div style="font-size: 10.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px; align-items: flex-end;">
+              <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date || ''}</div>
+              <div style="${updateStyle}"><i class="fa-solid fa-rotate"></i> Cập nhật: ${updateInfo.text}</div>
+            </div>
           </div>
-        </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08);">
           <div style="display: flex; flex-direction: column; gap: 2px;">
             <span style="font-size: 9.5px; color: var(--text-muted); font-weight: bold;"><i class="fa-solid fa-share-nodes"></i> Nguồn KH:</span>
