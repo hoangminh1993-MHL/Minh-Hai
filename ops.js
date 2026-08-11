@@ -1488,8 +1488,8 @@ function populateOpsMonthFilterOptions() {
       const updateInfo = getUpdateTimeAndTodayStatus(flow);
       const lastHistoryTime = updateInfo.text;
       const opsUpdateStyle = updateInfo.isToday
-        ? 'color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 3px; margin-top: 6px; justify-content: flex-end;'
-        : 'font-size: 10px; color: #6b7280; font-weight: 500; display: flex; align-items: center; gap: 4px; margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.05); justify-content: flex-end;';
+        ? 'color: #10b981; font-weight: 600; font-size: 9px; background: rgba(16, 185, 129, 0.15); padding: 1px 4px; border-radius: 3px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 2px;'
+        : 'color: #6b7280; font-weight: 500; font-size: 9px; display: inline-flex; align-items: center; gap: 2px;';
 
       card.innerHTML = `
         <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1555,8 +1555,11 @@ function populateOpsMonthFilterOptions() {
           </div>
           <strong style="font-size:11px; color:#34d399;">${flow.valTotal > 0 ? formatVnd(flow.valTotal) : '0đ'}</strong>
         </div>
-        <div style="${opsUpdateStyle}">
-          <i class="fa-solid fa-rotate"></i> Cập nhật: ${lastHistoryTime}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 9.5px; color: #9ca3af;">
+          <span style="font-size: 9.5px; color: #9ca3af;"><i class="fa-solid fa-clock" style="font-size: 8.5px;"></i> Tạo: ${flow.createdTime || flow.date || 'Chưa rõ'}</span>
+          <div style="${opsUpdateStyle}">
+            <i class="fa-solid fa-rotate" style="font-size: 8.5px;"></i> Cập nhật: ${lastHistoryTime || 'Chưa rõ'}
+          </div>
         </div>
         <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.05); gap: 6px;">
           <span style="font-size: 10px; color: var(--text-muted);"><i class="fa-solid fa-right-left"></i> Chuyển:</span>

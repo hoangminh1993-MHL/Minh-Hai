@@ -529,11 +529,22 @@ function renderCRMBoard() {
 
   populateCrmMonthFilterOptions();
   const monthFilterSelect = document.getElementById('crm-month-filter');
-  const selectedMonthVal = monthFilterSelect ? monthFilterSelect.value : 'all';
+  let selectedMonthVal = monthFilterSelect ? monthFilterSelect.value : 'all';
+  if (!selectedMonthVal || selectedMonthVal === '--') selectedMonthVal = 'all';
 
-  // Filter leads by search query and user role permission
   const currentUser = getCurrentUser() || {};
   const leadsList = (AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
+
+  // Auto-fallback to 'all' if selected month has 0 leads so user NEVER sees empty board
+  if (selectedMonthVal !== 'all') {
+    const countInMonth = leadsList.filter(l => l && getItemCreationMonthKey(l) === selectedMonthVal).length;
+    if (countInMonth === 0) {
+      selectedMonthVal = 'all';
+      if (monthFilterSelect) monthFilterSelect.value = 'all';
+    }
+  }
+
+  // Filter leads by search query and user role permission
   const filteredLeads = leadsList.filter(lead => {
     if (!lead) return false;
     const nameVal = String(lead.name || '').toLowerCase();
@@ -776,8 +787,8 @@ function renderCRMBoard() {
 
         const updateInfo = getUpdateTimeAndTodayStatus(lead);
         const updateStyle = updateInfo.isToday
-          ? 'color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 3px;'
-          : 'color: #6b7280; font-weight: 500;';
+          ? 'color: #10b981; font-weight: 600; font-size: 9px; background: rgba(16, 185, 129, 0.15); padding: 1px 4px; border-radius: 3px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 2px;'
+          : 'color: #6b7280; font-weight: 500; font-size: 9px; display: inline-flex; align-items: center; gap: 2px;';
 
         card.innerHTML = `
           <div class="card-client-name" style="font-weight: bold; color: #f3f4f6; font-size: 13px;">${leadNameClean}</div>
@@ -790,9 +801,9 @@ function renderCRMBoard() {
           </div>
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 6px; font-size: 11px;">
             <span class="card-sales-assignee" style="color: #9ca3af;" title="Người phụ trách: ${salesUser ? salesUser.name : ''}"><i class="fa-solid fa-headset"></i> ${salesName}</span>
-            <div style="font-size: 10.5px; line-height: 1.3; color: var(--text-muted); text-align: right; display: flex; flex-direction: column; gap: 2px; align-items: flex-end;">
-              <div><i class="fa-solid fa-clock"></i> Tạo: ${lead.createdTime || lead.date || ''}</div>
-              <div style="${updateStyle}"><i class="fa-solid fa-rotate"></i> Cập nhật: ${updateInfo.text}</div>
+            <div style="font-size: 9.5px; line-height: 1.35; color: #9ca3af; text-align: right; display: flex; flex-direction: column; gap: 2px; align-items: flex-end;">
+              <div style="color: #9ca3af; font-size: 9.5px;"><i class="fa-solid fa-clock" style="font-size: 8.5px;"></i> Tạo: ${lead.createdTime || lead.date || 'Chưa rõ'}</div>
+              <div style="${updateStyle}"><i class="fa-solid fa-rotate" style="font-size: 8.5px;"></i> Cập nhật: ${updateInfo.text || 'Chưa rõ'}</div>
             </div>
           </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.08);">
