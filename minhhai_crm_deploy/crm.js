@@ -601,6 +601,7 @@ function renderCRMBoard() {
     return true;
   });
   window.lastFilteredCount = filteredLeads.length;
+  console.log('CRM Filter Debug:', { leadsCount: leadsList.length, searchVal, selectedMonthVal, filteredCount: filteredLeads.length });
 
   // Synchronize toggle UI state
   const kanbanWrapper = document.getElementById('crm-kanban-wrapper');
@@ -727,6 +728,11 @@ function renderCRMBoard() {
             openLeadDetailModal(lead.id);
           });
           
+          const updateInfoList = getUpdateTimeAndTodayStatus(lead);
+          const updateTdHtml = updateInfoList.isToday
+            ? `<span style="color: #10b981; font-weight: 600; font-size: 9.5px; background: rgba(16, 185, 129, 0.15); padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 3px;"><i class="fa-solid fa-rotate"></i>${updateInfoList.text}</span>`
+            : `<span style="color: #6b7280; font-size: 9.5px;">${updateInfoList.text}</span>`;
+
           tr.innerHTML = `
             <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${cleanVietnameseText(lead.name)}</td>
             <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.phone || 'Chưa có'}</td>
@@ -734,24 +740,12 @@ function renderCRMBoard() {
             <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
             <td style="padding: 12px 10px;">${stageBadge}</td>
             <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cleanVietnameseText(lead.note) || ''}">${cleanVietnameseText(lead.note) || 'Không có ghi chú.'}</td>
-            const updateInfoList = getUpdateTimeAndTodayStatus(lead);
-            const updateTdHtml = updateInfoList.isToday
-              ? `<span style="color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-rotate"></i>${updateInfoList.text}</span>`
-              : `<span style="color: #6b7280;">${updateInfoList.text}</span>`;
-
-            tr.innerHTML = `
-              <td style="padding: 12px 10px; font-weight: bold; color: var(--color-primary);">${cleanVietnameseText(lead.name)}</td>
-              <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.phone || 'Chưa có'}</td>
-              <td style="padding: 12px 10px; color: var(--text-secondary);">${lead.source || 'Trực tiếp'}</td>
-              <td style="padding: 12px 10px; color: var(--text-secondary);">${salesName}</td>
-              <td style="padding: 12px 10px;">${stageBadge}</td>
-              <td style="padding: 12px 10px; color: var(--text-muted); max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${cleanVietnameseText(lead.note) || ''}">${cleanVietnameseText(lead.note) || 'Không có ghi chú.'}</td>
-              <td style="padding: 12px 10px; font-size: 12px;">${updateTdHtml}</td>
-              <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
-                <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
-              </td>
-            `;
-            listBody.appendChild(tr);
+            <td style="padding: 12px 10px; font-size: 11px;">${updateTdHtml}</td>
+            <td style="padding: 12px 10px; text-align: center;" onclick="event.stopPropagation();">
+              <button class="btn btn-sm btn-outline" onclick="openLeadDetailModal('${lead.id}')" style="padding: 4px 8px; font-size: 11px;"><i class="fa-solid fa-pen-to-square"></i> Chi tiết</button>
+            </td>
+          `;
+          listBody.appendChild(tr);
           });
         }
       }
