@@ -533,6 +533,23 @@ function renderCRMBoard() {
   if (!selectedMonthVal || selectedMonthVal === '--') selectedMonthVal = 'all';
 
   const currentUser = getCurrentUser() || {};
+
+  // Auto-fetch state from server if AppState.leads is empty so board is NEVER empty
+  if ((!AppState.leads || AppState.leads.length === 0) && !window._fetchingCrmState) {
+    window._fetchingCrmState = true;
+    const apiUrl = (typeof getApiUrl === 'function') ? getApiUrl('/api/state') : '/api/state';
+    fetch(apiUrl)
+      .then(r => r.json())
+      .then(data => {
+        window._fetchingCrmState = false;
+        if (data && Array.isArray(data.leads) && data.leads.length > 0) {
+          AppState.leads = data.leads;
+          if (typeof renderCRMBoard === 'function') renderCRMBoard();
+        }
+      })
+      .catch(e => { window._fetchingCrmState = false; });
+  }
+
   const leadsList = (AppState.leads && AppState.leads.length > 0) ? AppState.leads : (typeof INITIAL_LEADS !== 'undefined' ? INITIAL_LEADS : []);
 
   // Auto-fallback to 'all' if selected month has 0 leads so user NEVER sees empty board
