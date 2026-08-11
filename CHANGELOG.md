@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## [v22.20] - 2026-08-11
+
+### Khắc Phục Triệt Để Lỗi Chuyển Bước Thẻ & Đồng Bộ Thời Gian Thực Quản Lý - Nhân Viên
+- **Thuật Toán So Sánh Mốc Thời Gian Chuyển Bước Chuẩn Xác (`getItemStageTimestamp`):**
+  - **Phân tích nguyên nhân:** Trước đây hàm `getItemLatestTimestamp` lấy thời gian `updatedTime` hoặc `updatedAt` chung của thẻ. Khi quản lý hoặc nhân sự khác mở tab cũ, thao tác bất kỳ hoặc lưu dữ liệu (`saveState()`), `updatedTime` của thẻ cũ ở tab stale bị cập nhật lại. Khi đè lên Server, thuật toán cũ tưởng nhầm thẻ cũ là "mới hơn" và đè thẻ quay về bước cũ.
+  - **Khắc phục:** Đã bổ sung hàm `getItemStageTimestamp(item)` trên cả Server & Client. Hệ thống chỉ so sánh mốc thời gian **chuyển bước thực tế** (`stageEntryTimes[stage]`). Mốc thời gian chuyển bước mới nhất sẽ luôn được ưu tiên 100%, tuyệt đối không bị đè bởi bất kỳ tab cũ nào.
+- **Nâng Cấp Tiến Trình Hợp Nhất Thẻ Chuyên Sâu (`mergeLeadObjects` & `mergeWorkflowObjects`):**
+  - Đồng bộ thuật toán hợp nhất thông minh trên cả `server.js` và `app.js`. Khi nhân viên chuyển bước, Server và trình duyệt Quản lý (`startStatePolling()`) sẽ ngay lập tức ghi nhận bước mới nhất trong vòng 3.5 giây.
+  - Tự động lưu `updatedAt` chuẩn ISO timestamp trên tất cả các luồng chuyển bước (`crm.js` & `ops.js`). Thẻ không bao giờ bị nhảy lại bước cũ sau khi load lại hay sang ngày hôm sau.
+
 ## [v22.19] - 2026-08-05
 
 ### Xóa Triệt Để Dữ Liệu Cũ CRM Khách Cũ Trên Database PostgreSQL & Trình Duyệt Client
