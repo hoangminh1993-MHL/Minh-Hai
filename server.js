@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.19';
+  state.dbVersion = '22.20';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.19';
+  localState.dbVersion = '22.20';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -190,7 +190,7 @@ async function loadState() {
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
         } catch (e) {}
 
-        dbState.dbVersion = '22.19';
+        dbState.dbVersion = '22.20';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -230,20 +230,181 @@ function parseTimestampSafe(val) {
   return 0;
 }
 
-function getItemLatestTimestamp(item) {
+function getItemStageTimestamp(item) {
   if (!item) return 0;
-  let maxT = 0;
-  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
-    Object.values(item.stageEntryTimes).forEach(t => {
-      const val = parseTimestampSafe(t);
-      if (val > maxT) maxT = val;
-    });
+  if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object' && item.stage !== undefined && item.stage !== null) {
+    const stageKey = String(item.stage);
+    const entryT = item.stageEntryTimes[stageKey] || item.stageEntryTimes[item.stage];
+    if (entryT) {
+      const val = parseTimestampSafe(entryT);
+      if (val > 0) return val;
+    }
+    const times = Object.values(item.stageEntryTimes).map(parseTimestampSafe).filter(t => t > 0);
+    if (times.length > 0) return Math.max(...times);
   }
-  const uTime = parseTimestampSafe(item.updatedTime);
-  if (uTime > maxT) maxT = uTime;
-  const uAt = parseTimestampSafe(item.updatedAt);
-  if (uAt > maxT) maxT = uAt;
-  return maxT;
+  return parseTimestampSafe(item.updatedAt || item.updatedTime || item.createdTime || item.date);
+}
+
+function mergeLeadObjects(leadA, leadB) {
+  if (!leadA) return leadB;
+  if (!leadB) return leadA;
+
+  const tA = getItemStageTimestamp(leadA);
+  const tB = getItemStageTimestamp(leadB);
+
+  const stagesOrder = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
+  const rankA = stagesOrder.indexOf(leadA.stage);
+  const rankB = stagesOrder.indexOf(leadB.stage);
+
+  let primary = leadA;
+  let secondary = leadB;
+
+  if (tA > tB) {
+    primary = leadA;
+    secondary = leadB;
+  } else if (tB > tA) {
+    primary = leadB;
+    secondary = leadA;
+  } else {
+    if (rankB > rankA) {
+      primary = leadB;
+      secondary = leadA;
+    } else if (rankA > rankB) {
+      primary = leadA;
+      secondary = leadB;
+    } else {
+      const uA = parseTimestampSafe(leadA.updatedAt || leadA.updatedTime);
+      const uB = parseTimestampSafe(leadB.updatedAt || leadB.updatedTime);
+      primary = uB >= uA ? leadB : leadA;
+      secondary = uB >= uA ? leadA : leadB;
+    }
+  }
+
+  const merged = { ...secondary, ...primary };
+  merged.stage = primary.stage;
+
+  const mergedTimes = { ...(secondary.stageEntryTimes || {}), ...(primary.stageEntryTimes || {}) };
+  for (const k in secondary.stageEntryTimes || {}) {
+    const v1 = parseTimestampSafe(secondary.stageEntryTimes[k]);
+    const v2 = parseTimestampSafe(primary.stageEntryTimes[k]);
+    if (v1 > v2) mergedTimes[k] = v1;
+  }
+  merged.stageEntryTimes = mergedTimes;
+
+  if (primary.failReason || secondary.failReason) {
+    merged.failReason = primary.failReason || secondary.failReason;
+  }
+  if (primary.failEvidence || secondary.failEvidence) {
+    merged.failEvidence = primary.failEvidence || secondary.failEvidence;
+  }
+
+  const sSteps = Array.isArray(secondary.steps) ? secondary.steps : [];
+  const pSteps = Array.isArray(primary.steps) ? primary.steps : [];
+  const stepMap = new Map();
+  sSteps.forEach(s => { if (s && s.stepNum) stepMap.set(s.stepNum, s); });
+  pSteps.forEach(ps => {
+    if (!ps || !ps.stepNum) return;
+    const ss = stepMap.get(ps.stepNum);
+    if (!ss) {
+      stepMap.set(ps.stepNum, ps);
+    } else {
+      const mStep = { ...ss, ...ps };
+      const commMap = new Map();
+      (ss.comments || []).concat(ps.comments || []).forEach(c => {
+        if (c) commMap.set((c.user || '') + '|' + (c.text || '') + '|' + (c.date || ''), c);
+      });
+      mStep.comments = Array.from(commMap.values());
+      stepMap.set(ps.stepNum, mStep);
+    }
+  });
+  merged.steps = Array.from(stepMap.values());
+
+  const fMap = new Map();
+  (secondary.files || []).concat(primary.files || []).forEach(f => {
+    if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f);
+  });
+  merged.files = Array.from(fMap.values());
+
+  return merged;
+}
+
+function mergeWorkflowObjects(flowA, flowB) {
+  if (!flowA) return flowB;
+  if (!flowB) return flowA;
+
+  const tA = getItemStageTimestamp(flowA);
+  const tB = getItemStageTimestamp(flowB);
+
+  const stageA = parseInt(flowA.stage) || 1;
+  const stageB = parseInt(flowB.stage) || 1;
+
+  let primary = flowA;
+  let secondary = flowB;
+
+  if (tA > tB) {
+    primary = flowA;
+    secondary = flowB;
+  } else if (tB > tA) {
+    primary = flowB;
+    secondary = flowA;
+  } else {
+    if (stageB > stageA) {
+      primary = flowB;
+      secondary = flowA;
+    } else if (stageA > stageB) {
+      primary = flowA;
+      secondary = flowB;
+    } else {
+      const uA = parseTimestampSafe(flowA.updatedAt || flowA.updatedTime);
+      const uB = parseTimestampSafe(flowB.updatedAt || flowB.updatedTime);
+      primary = uB >= uA ? flowB : flowA;
+      secondary = uB >= uA ? flowA : flowB;
+    }
+  }
+
+  const merged = { ...secondary, ...primary };
+  merged.stage = primary.stage;
+
+  const mergedTimes = { ...(secondary.stageEntryTimes || {}), ...(primary.stageEntryTimes || {}) };
+  for (const k in secondary.stageEntryTimes || {}) {
+    const v1 = parseTimestampSafe(secondary.stageEntryTimes[k]);
+    const v2 = parseTimestampSafe(primary.stageEntryTimes[k]);
+    if (v1 > v2) mergedTimes[k] = v1;
+  }
+  merged.stageEntryTimes = mergedTimes;
+
+  const sSteps = Array.isArray(secondary.steps) ? secondary.steps : [];
+  const pSteps = Array.isArray(primary.steps) ? primary.steps : [];
+  const stepMap = new Map();
+  sSteps.forEach(s => { if (s && s.stepNum) stepMap.set(s.stepNum, s); });
+  pSteps.forEach(ps => {
+    if (!ps || !ps.stepNum) return;
+    const ss = stepMap.get(ps.stepNum);
+    if (!ss) {
+      stepMap.set(ps.stepNum, ps);
+    } else {
+      const mStep = { ...ss, ...ps };
+      const commMap = new Map();
+      (ss.comments || []).concat(ps.comments || []).forEach(c => {
+        if (c) commMap.set((c.user || '') + '|' + (c.text || '') + '|' + (c.date || ''), c);
+      });
+      mStep.comments = Array.from(commMap.values());
+      stepMap.set(ps.stepNum, mStep);
+    }
+  });
+  merged.steps = Array.from(stepMap.values());
+
+  const sHist = Array.isArray(secondary.history) ? secondary.history : [];
+  const pHist = Array.isArray(primary.history) ? primary.history : [];
+  merged.history = Array.from(new Set([...sHist, ...pHist]));
+
+  const fMap = new Map();
+  (secondary.files || []).concat(primary.files || []).forEach(f => {
+    if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f);
+  });
+  merged.files = Array.from(fMap.values());
+
+  return merged;
 }
 
 function mergeStateObjects(existingState, incomingState) {
@@ -252,7 +413,7 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.19';
+  merged.dbVersion = '22.20';
 
   const deletedSet = new Set([
     ...(existingState.deletedIds || []),
@@ -277,8 +438,8 @@ function mergeStateObjects(existingState, incomingState) {
         if (!existing) {
           map.set(key, item);
         } else {
-          const existingTime = getItemLatestTimestamp(existing);
-          const incomingTime = getItemLatestTimestamp(item);
+          const existingTime = parseTimestampSafe(existing.updatedAt || existing.updatedTime);
+          const incomingTime = parseTimestampSafe(item.updatedAt || item.updatedTime);
           if (incomingTime >= existingTime) {
             map.set(key, { ...existing, ...item });
           } else {
@@ -291,13 +452,37 @@ function mergeStateObjects(existingState, incomingState) {
   };
 
   if (incomingState.shipment_workflows || existingState.shipment_workflows) {
-    merged.shipment_workflows = mergeArrayById(existingState.shipment_workflows, incomingState.shipment_workflows);
+    const map = new Map();
+    (existingState.shipment_workflows || []).forEach(w => {
+      if (w && w.id && !deletedSet.has(String(w.id))) map.set(String(w.id), w);
+    });
+    (incomingState.shipment_workflows || []).forEach(w => {
+      if (!w || !w.id || deletedSet.has(String(w.id))) return;
+      const key = String(w.id);
+      const existing = map.get(key);
+      if (!existing) map.set(key, w);
+      else map.set(key, mergeWorkflowObjects(existing, w));
+    });
+    merged.shipment_workflows = Array.from(map.values());
   }
+
+  if (incomingState.leads || existingState.leads) {
+    const map = new Map();
+    (existingState.leads || []).forEach(l => {
+      if (l && l.id && !deletedSet.has(String(l.id))) map.set(String(l.id), l);
+    });
+    (incomingState.leads || []).forEach(l => {
+      if (!l || !l.id || deletedSet.has(String(l.id))) return;
+      const key = String(l.id);
+      const existing = map.get(key);
+      if (!existing) map.set(key, l);
+      else map.set(key, mergeLeadObjects(existing, l));
+    });
+    merged.leads = Array.from(map.values());
+  }
+
   if (incomingState.clients || existingState.clients) {
     merged.clients = mergeArrayById(existingState.clients, incomingState.clients);
-  }
-  if (incomingState.leads || existingState.leads) {
-    merged.leads = mergeArrayById(existingState.leads, incomingState.leads);
   }
   if (incomingState.projects || existingState.projects) {
     merged.projects = mergeArrayById(existingState.projects, incomingState.projects);

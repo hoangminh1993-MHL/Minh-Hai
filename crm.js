@@ -960,6 +960,7 @@ function handleLeadMove(leadId, targetStage) {
       lead.failReason = reason.trim();
       lead.failEvidence = (evidence || '').trim();
       lead.failApproved = true;
+      lead.updatedAt = new Date().toISOString();
       lead.updatedTime = formatDateTime(new Date());
       
       // Update step status
@@ -985,6 +986,7 @@ function handleLeadMove(leadId, targetStage) {
     lead.stageEntryTimes = lead.stageEntryTimes || {};
     lead.stageEntryTimes['success'] = Date.now();
     lead.failReason = null;
+    lead.updatedAt = new Date().toISOString();
     lead.updatedTime = formatDateTime(new Date());
     
     // Update step status
@@ -1026,6 +1028,7 @@ function handleLeadMove(leadId, targetStage) {
     lead.stageEntryTimes = lead.stageEntryTimes || {};
     lead.stageEntryTimes[targetStage] = Date.now();
     lead.failReason = null;
+    lead.updatedAt = new Date().toISOString();
     lead.updatedTime = formatDateTime(new Date());
     
     // Update step status

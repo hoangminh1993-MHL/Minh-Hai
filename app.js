@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.19';
+  const CURRENT_APP_VER = 'v22.20';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -366,20 +366,23 @@ async function syncLoadState() {
         return 0;
       }
 
-      function getItemLatestTimestamp(item) {
+      function getItemStageTimestamp(item) {
         if (!item) return 0;
-        let maxT = 0;
-        if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object') {
-          Object.values(item.stageEntryTimes).forEach(t => {
-            const val = parseTimestampSafe(t);
-            if (val > maxT) maxT = val;
-          });
+        if (item.stageEntryTimes && typeof item.stageEntryTimes === 'object' && item.stage !== undefined && item.stage !== null) {
+          const stageKey = String(item.stage);
+          const entryT = item.stageEntryTimes[stageKey] || item.stageEntryTimes[item.stage];
+          if (entryT) {
+            const val = parseTimestampSafe(entryT);
+            if (val > 0) return val;
+          }
+          const times = Object.values(item.stageEntryTimes).map(parseTimestampSafe).filter(t => t > 0);
+          if (times.length > 0) return Math.max(...times);
         }
-        const uTime = parseTimestampSafe(item.updatedTime);
-        if (uTime > maxT) maxT = uTime;
-        const uAt = parseTimestampSafe(item.updatedAt);
-        if (uAt > maxT) maxT = uAt;
-        return maxT;
+        return parseTimestampSafe(item.updatedAt || item.updatedTime || item.createdTime || item.date);
+      }
+
+      function getItemLatestTimestamp(item) {
+        return getItemStageTimestamp(item);
       }
 
       // Smart Two-Way Lead Merging: Keep newly created local leads and prioritize newest stage changes
@@ -387,22 +390,62 @@ async function syncLoadState() {
       const serverLeads = data.leads || [];
       const leadMap = new Map();
 
-      const mergeLeadObjects = (sLead, lLead) => {
-        if (!sLead) return lLead;
-        if (!lLead) return sLead;
+      const mergeLeadObjects = (leadA, leadB) => {
+        if (!leadA) return leadB;
+        if (!leadB) return leadA;
 
-        const sTime = getItemLatestTimestamp(sLead);
-        const lTime = getItemLatestTimestamp(lLead);
+        const tA = getItemStageTimestamp(leadA);
+        const tB = getItemStageTimestamp(leadB);
 
-        // Prioritize local lead if local timestamp is newer or equal
-        const primary = lTime >= sTime ? lLead : sLead;
-        const secondary = lTime >= sTime ? sLead : lLead;
+        const stagesOrder = ['receive_info', 'get_phone', 'explore_info', 'quotation', 'negotiating', 'success', 'failed'];
+        const rankA = stagesOrder.indexOf(leadA.stage);
+        const rankB = stagesOrder.indexOf(leadB.stage);
+
+        let primary = leadA;
+        let secondary = leadB;
+
+        if (tA > tB) {
+          primary = leadA;
+          secondary = leadB;
+        } else if (tB > tA) {
+          primary = leadB;
+          secondary = leadA;
+        } else {
+          if (rankB > rankA) {
+            primary = leadB;
+            secondary = leadA;
+          } else if (rankA > rankB) {
+            primary = leadA;
+            secondary = leadB;
+          } else {
+            const uA = parseTimestampSafe(leadA.updatedAt || leadA.updatedTime);
+            const uB = parseTimestampSafe(leadB.updatedAt || leadB.updatedTime);
+            primary = uB >= uA ? leadB : leadA;
+            secondary = uB >= uA ? leadA : leadB;
+          }
+        }
 
         const merged = { ...secondary, ...primary };
+        merged.stage = primary.stage;
+
+        const mergedTimes = { ...(secondary.stageEntryTimes || {}), ...(primary.stageEntryTimes || {}) };
+        for (const k in secondary.stageEntryTimes || {}) {
+          const v1 = parseTimestampSafe(secondary.stageEntryTimes[k]);
+          const v2 = parseTimestampSafe(primary.stageEntryTimes[k]);
+          if (v1 > v2) mergedTimes[k] = v1;
+        }
+        merged.stageEntryTimes = mergedTimes;
+
+        if (primary.failReason || secondary.failReason) {
+          merged.failReason = primary.failReason || secondary.failReason;
+        }
+        if (primary.failEvidence || secondary.failEvidence) {
+          merged.failEvidence = primary.failEvidence || secondary.failEvidence;
+        }
 
         // Merge lead-level files
-        const sFiles = Array.isArray(sLead.files) ? sLead.files : [];
-        const lFiles = Array.isArray(lLead.files) ? lLead.files : [];
+        const sFiles = Array.isArray(leadB.files) ? leadB.files : [];
+        const lFiles = Array.isArray(leadA.files) ? leadA.files : [];
         const fMap = new Map();
         sFiles.forEach(f => { if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
         lFiles.forEach(f => { if (f) fMap.set(typeof f === 'string' ? f : ((f.name || '') + '|' + (f.url || '')), f); });
@@ -521,23 +564,56 @@ async function syncLoadState() {
       AppState.projects = Array.from(projectMap.values());
 
       // Deep workflow merger to prevent losing local card notes, checklist items, audit times, quote feedback, files or comments on page reload
-      const mergeWorkflowObjects = (sFlow, lFlow) => {
-        if (!sFlow) return lFlow;
-        if (!lFlow) return sFlow;
+      const mergeWorkflowObjects = (flowA, flowB) => {
+        if (!flowA) return flowB;
+        if (!flowB) return flowA;
 
-        const sTime = getItemLatestTimestamp(sFlow);
-        const lTime = getItemLatestTimestamp(lFlow);
+        const tA = getItemStageTimestamp(flowA);
+        const tB = getItemStageTimestamp(flowB);
 
-        const primary = lTime >= sTime ? lFlow : sFlow;
-        const secondary = lTime >= sTime ? sFlow : lFlow;
+        const stageA = parseInt(flowA.stage) || 1;
+        const stageB = parseInt(flowB.stage) || 1;
+
+        let primary = flowA;
+        let secondary = flowB;
+
+        if (tA > tB) {
+          primary = flowA;
+          secondary = flowB;
+        } else if (tB > tA) {
+          primary = flowB;
+          secondary = flowA;
+        } else {
+          if (stageB > stageA) {
+            primary = flowB;
+            secondary = flowA;
+          } else if (stageA > stageB) {
+            primary = flowA;
+            secondary = flowB;
+          } else {
+            const uA = parseTimestampSafe(flowA.updatedAt || flowA.updatedTime);
+            const uB = parseTimestampSafe(flowB.updatedAt || flowB.updatedTime);
+            primary = uB >= uA ? flowB : flowA;
+            secondary = uB >= uA ? flowA : flowB;
+          }
+        }
 
         const merged = { ...secondary, ...primary };
+        merged.stage = primary.stage;
 
-        merged.customerMsgTime = lFlow.customerMsgTime || sFlow.customerMsgTime || '';
-        merged.infoEntryTime = lFlow.infoEntryTime || sFlow.infoEntryTime || '';
-        merged.evidenceUrl = lFlow.evidenceUrl || sFlow.evidenceUrl || '';
-        merged.quoteFeedback = lFlow.quoteFeedback || sFlow.quoteFeedback || '';
-        merged.failReason = lFlow.failReason || sFlow.failReason || null;
+        const mergedTimes = { ...(secondary.stageEntryTimes || {}), ...(primary.stageEntryTimes || {}) };
+        for (const k in secondary.stageEntryTimes || {}) {
+          const v1 = parseTimestampSafe(secondary.stageEntryTimes[k]);
+          const v2 = parseTimestampSafe(primary.stageEntryTimes[k]);
+          if (v1 > v2) mergedTimes[k] = v1;
+        }
+        merged.stageEntryTimes = mergedTimes;
+
+        merged.customerMsgTime = primary.customerMsgTime || secondary.customerMsgTime || '';
+        merged.infoEntryTime = primary.infoEntryTime || secondary.infoEntryTime || '';
+        merged.evidenceUrl = primary.evidenceUrl || secondary.evidenceUrl || '';
+        merged.quoteFeedback = primary.quoteFeedback || secondary.quoteFeedback || '';
+        merged.failReason = primary.failReason || secondary.failReason || null;
 
         // Merge workflow level files
         const sFiles = Array.isArray(sFlow.files) ? sFlow.files : [];
@@ -900,7 +976,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.19';
+const CLIENT_VERSION = '22.20';
 
 async function checkCodeVersionUpdate() {
   try {
