@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.25';
+  state.dbVersion = '22.26';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.25';
+  localState.dbVersion = '22.26';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -196,7 +196,7 @@ async function loadState() {
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
         } catch (e) {}
 
-        dbState.dbVersion = '22.25';
+        dbState.dbVersion = '22.26';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -419,7 +419,7 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.25';
+  merged.dbVersion = '22.26';
 
   const deletedSet = new Set([
     ...(existingState.deletedIds || []),

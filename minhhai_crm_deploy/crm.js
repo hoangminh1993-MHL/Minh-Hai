@@ -579,25 +579,7 @@ function renderCRMBoard() {
       if (leadMonthKey !== selectedMonthVal) return false;
     }
 
-    // Admin, Manager & Thảo see ALL leads, Staff only see leads assigned to or created by them
-    const isThao = currentUser.id === 'usr-5' || 
-                   currentUser.username === 'phuongthao' || 
-                   (currentUser.name && currentUser.name.includes('Thảo'));
-    const canSeeAll = !currentUser.role || 
-                   currentUser.role === 'admin' || 
-                   currentUser.role === 'manager' || 
-                   currentUser.dept === 'admin' || 
-                   currentUser.username === 'hoangminh' ||
-                   currentUser.username === 'tuanh' ||
-                   isThao;
-    if (!canSeeAll) {
-      const isOwnerOrAssigned = 
-        lead.salesId === currentUser.id || 
-        lead.cskhId === currentUser.id || 
-        lead.creatorId === currentUser.id ||
-        (currentUser.username && (lead.salesId === currentUser.username || lead.creatorId === currentUser.username));
-      return isOwnerOrAssigned;
-    }
+    // All logged-in staff members can view all leads across the organization
     return true;
   });
   window.lastFilteredCount = filteredLeads.length;
