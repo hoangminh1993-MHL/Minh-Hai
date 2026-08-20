@@ -98,7 +98,7 @@ function sanitizeVietnameseString(str) {
 // Helper to clean any residual Mojibake in server state
 function sanitizeServerState(state) {
   if (!state) return state;
-  state.dbVersion = '22.26';
+  state.dbVersion = '22.27';
 
   if (Array.isArray(state.users)) {
     const authenticNames = {
@@ -142,7 +142,7 @@ function sanitizeServerState(state) {
 // Helper to load state from Supabase PostgreSQL or local db.json
 async function loadState() {
   const localState = readJsonFile(path.join(__dirname, 'db.json'));
-  localState.dbVersion = '22.26';
+  localState.dbVersion = '22.27';
 
   if (DATABASE_URL) {
     const client = new Client({
@@ -170,14 +170,25 @@ async function loadState() {
           await client.end();
           return sanitizeServerState(localState);
         }
-        // Ensure deletedIds from local db.json are merged into Postgres dbState
+        // Protect active lead and workflow IDs from deletedIds
+        const activeLeadIds = new Set([
+          ...(dbState.leads || []).map(l => l && String(l.id)),
+          ...(localState.leads || []).map(l => l && String(l.id))
+        ]);
+        const activeWfIds = new Set([
+          ...(dbState.shipment_workflows || []).map(w => w && String(w.id)),
+          ...(localState.shipment_workflows || []).map(w => w && String(w.id))
+        ]);
+
         const deletedSet = new Set([
           ...(dbState.deletedIds || []),
           ...(localState.deletedIds || [])
         ]);
+        activeLeadIds.forEach(id => deletedSet.delete(String(id)));
+        activeWfIds.forEach(id => deletedSet.delete(String(id)));
+
         dbState.deletedIds = Array.from(deletedSet);
 
-        // Always purge any items matching deletedIds from shipment_workflows and leads
         if (Array.isArray(dbState.shipment_workflows)) {
           dbState.shipment_workflows = dbState.shipment_workflows.filter(w => w && w.id && !deletedSet.has(String(w.id)));
         }
@@ -196,7 +207,7 @@ async function loadState() {
           await client.query('INSERT INTO app_state (id, state_json) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET state_json = $1', [JSON.stringify(dbState)]);
         } catch (e) {}
 
-        dbState.dbVersion = '22.26';
+        dbState.dbVersion = '22.27';
         await client.end();
         return sanitizeServerState(dbState);
       } else {
@@ -419,12 +430,24 @@ function mergeStateObjects(existingState, incomingState) {
 
   const merged = { ...existingState, ...incomingState };
   merged.lastUpdated = Date.now();
-  merged.dbVersion = '22.26';
+  merged.dbVersion = '22.27';
+
+  const activeLeadIds = new Set([
+    ...(existingState.leads || []).map(l => l && String(l.id)),
+    ...(incomingState.leads || []).map(l => l && String(l.id))
+  ]);
+  const activeWfIds = new Set([
+    ...(existingState.shipment_workflows || []).map(w => w && String(w.id)),
+    ...(incomingState.shipment_workflows || []).map(w => w && String(w.id))
+  ]);
 
   const deletedSet = new Set([
     ...(existingState.deletedIds || []),
     ...(incomingState.deletedIds || [])
   ]);
+  activeLeadIds.forEach(id => deletedSet.delete(String(id)));
+  activeWfIds.forEach(id => deletedSet.delete(String(id)));
+
   merged.deletedIds = Array.from(deletedSet);
 
   const mergeArrayById = (arr1, arr2) => {

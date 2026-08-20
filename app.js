@@ -1,5 +1,5 @@
   // Update client version tag without wiping active leads data
-  const CURRENT_APP_VER = 'v22.26';
+  const CURRENT_APP_VER = 'v22.27';
   localStorage.setItem('minhhai_app_version', CURRENT_APP_VER);
 
 function sanitizeVietnameseString(str) {
@@ -331,12 +331,23 @@ async function syncLoadState() {
     if (res.ok) {
       const data = await res.json();
       
-      // Merge and sanitize deletedIds
+      // Protect active lead and workflow IDs from deletedIds
+      const activeLeadIds = new Set([
+        ...(AppState.leads || []).map(l => l && String(l.id)),
+        ...(data.leads || []).map(l => l && String(l.id))
+      ]);
+      const activeWfIds = new Set([
+        ...(AppState.shipment_workflows || []).map(w => w && String(w.id)),
+        ...(data.shipment_workflows || []).map(w => w && String(w.id))
+      ]);
+
       const deletedSet = new Set([
         ...(AppState.deletedIds || []),
-        ...(data.deletedIds || []),
-        ...JSON.parse(localStorage.getItem('votr_deleted_ids') || '[]')
+        ...(data.deletedIds || [])
       ]);
+      activeLeadIds.forEach(id => deletedSet.delete(String(id)));
+      activeWfIds.forEach(id => deletedSet.delete(String(id)));
+
       AppState.deletedIds = Array.from(deletedSet);
       localStorage.setItem('votr_deleted_ids', JSON.stringify(AppState.deletedIds));
 
@@ -976,7 +987,7 @@ async function saveState() {
   });
   updateMyTasksBadge();
 }
-const CLIENT_VERSION = '22.26';
+const CLIENT_VERSION = '22.27';
 
 async function checkCodeVersionUpdate() {
   try {
@@ -1049,12 +1060,24 @@ function startStatePolling() {
           if (data.clients && data.clients.length > 0) AppState.clients = data.clients;
           if (data.projects && data.projects.length > 0) AppState.projects = data.projects;
 
+          const activeLeadIds = new Set([
+            ...(AppState.leads || []).map(l => l && String(l.id)),
+            ...(data.leads || []).map(l => l && String(l.id))
+          ]);
+          const activeWfIds = new Set([
+            ...(AppState.shipment_workflows || []).map(w => w && String(w.id)),
+            ...(data.shipment_workflows || []).map(w => w && String(w.id))
+          ]);
+
           const deletedSet = new Set([
             ...(AppState.deletedIds || []),
-            ...(data.deletedIds || []),
-            ...JSON.parse(localStorage.getItem('votr_deleted_ids') || '[]')
+            ...(data.deletedIds || [])
           ]);
+          activeLeadIds.forEach(id => deletedSet.delete(String(id)));
+          activeWfIds.forEach(id => deletedSet.delete(String(id)));
+
           AppState.deletedIds = Array.from(deletedSet);
+          localStorage.setItem('votr_deleted_ids', JSON.stringify(AppState.deletedIds));
 
           // 1. Two-Way Lead Merging: Keep newly created local leads so polling never wipes them!
           const localLeads = JSON.parse(localStorage.getItem(CONFIG.LS_KEY_LEADS)) || AppState.leads || [];
